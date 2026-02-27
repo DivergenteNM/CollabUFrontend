@@ -8,4 +8,20 @@ export const EVALUATIONS_ROUTES: Routes = [
         (m) => m.EvaluationListComponent
       ),
   },
+  {
+    path: 'create',
+    loadComponent: () =>
+      import('./pages/evaluation-create/evaluation-create.component').then(
+        (m) => m.EvaluationCreateComponent
+      ),
+    data: { title: 'Crear Evaluación' },
+  },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/evaluation-detail/evaluation-detail.component').then(
+        (m) => m.EvaluationDetailComponent
+      ),
+    data: { title: 'Detalle de Evaluación' },
+  },
 ];
