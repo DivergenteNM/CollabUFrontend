@@ -1,0 +1,6 @@
+.editorconfig
+.gitignore
+.vscode
+public
+dist
+node_modules
