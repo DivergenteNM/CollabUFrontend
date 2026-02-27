@@ -326,7 +326,7 @@ export class RegisterCompanyComponent {
       password: ['', [Validators.required, CustomValidators.strongPassword]],
       confirmPassword: ['', [Validators.required]],
     },
-    { validators: [CustomValidators.passwordsMatch] }
+    { validators: [CustomValidators.passwordsMatch('password', 'confirmPassword')] }
   );
 
   companyForm = this.fb.nonNullable.group({

@@ -28,22 +28,47 @@ export class CustomValidators {
   }
 
   /**
-   * Validates that the 'confirmPassword' field matches the 'password' field.
-   * Apply at group level.
+   * Validates that two named controls in a group match.
+   * Apply at group level: formGroup(controls, { validators: CustomValidators.passwordsMatch('password', 'confirmPassword') })
    */
-  static passwordsMatch(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password')?.value;
-    const confirm = control.get('confirmPassword')?.value;
-    if (!password || !confirm) return null;
-    return password === confirm ? null : { passwordsMismatch: true };
+  static passwordsMatch(controlName: string, matchingControlName: string): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const control = group.get(controlName);
+      const matching = group.get(matchingControlName);
+      if (!control?.value || !matching?.value) return null;
+      if (control.value !== matching.value) {
+        matching.setErrors({ passwordsMismatch: true });
+        return { passwordsMismatch: true };
+      }
+      // Only clear if the error is ours
+      if (matching.hasError('passwordsMismatch')) {
+        matching.setErrors(null);
+      }
+      return null;
+    };
   }
 
   /**
-   * Validates Colombian NIT format: digits with optional verification digit (e.g., 900123456-1)
+   * Validates Colombian NIT format: digits with optional verification digit (e.g., 900123456-1 or 900.123.456-7)
    */
   static nit(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
-    const valid = /^\d{9,10}(-\d)?$/.test(control.value);
+    const valid = /^\d{3}\.?\d{3}\.?\d{3}-?\d$/.test(control.value) || /^\d{9,10}(-\d)?$/.test(control.value);
     return valid ? null : { nit: true };
+  }
+
+  /**
+   * Validates that a date is after the value of another control in the same form group.
+   */
+  static dateAfter(beforeControlName: string): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const parent = control.parent;
+      if (!parent) return null;
+      const beforeControl = parent.get(beforeControlName);
+      if (!beforeControl?.value || !control.value) return null;
+      return new Date(control.value) > new Date(beforeControl.value)
+        ? null
+        : { dateNotAfter: true };
+    };
   }
 }
