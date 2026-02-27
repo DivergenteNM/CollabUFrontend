@@ -15,6 +15,13 @@ export interface MatchResult {
   calculatedAt: string;
 }
 
+export interface MatchDetail extends MatchResult {
+  project: Project;
+  matchBreakdown: MatchBreakdown;
+  matchingSkills: string[];
+  missingSkills: string[];
+}
+
 export interface Recommendation {
   id: string;
   project: Project;

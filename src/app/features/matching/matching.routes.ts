@@ -8,4 +8,12 @@ export const MATCHING_ROUTES: Routes = [
         (m) => m.RecommendationsListComponent
       ),
   },
+  {
+    path: 'project/:projectId',
+    loadComponent: () =>
+      import('./pages/match-detail/match-detail.component').then(
+        (m) => m.MatchDetailComponent
+      ),
+    data: { title: 'Detalle de Match' },
+  },
 ];
