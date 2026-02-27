@@ -1,0 +1,36 @@
+// =============================================================================
+// Collab-U — Typography
+// =============================================================================
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// Escala tipográfica
+.text-xs   { font-size: var(--font-size-xs);   line-height: 1.5; }
+.text-sm   { font-size: var(--font-size-sm);   line-height: 1.5; }
+.text-base { font-size: var(--font-size-base); line-height: 1.5; }
+.text-lg   { font-size: var(--font-size-lg);   line-height: 1.5; }
+.text-xl   { font-size: var(--font-size-xl);   line-height: 1.4; }
+.text-2xl  { font-size: var(--font-size-2xl);  line-height: 1.3; }
+.text-3xl  { font-size: var(--font-size-3xl);  line-height: 1.2; }
+
+// Pesos
+.font-light    { font-weight: 300; }
+.font-regular  { font-weight: 400; }
+.font-medium   { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold     { font-weight: 700; }
+
+// Colores de texto
+.text-primary   { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-disabled  { color: var(--text-disabled); }
+.text-success   { color: var(--color-success); }
+.text-error     { color: var(--color-error); }
+.text-warning   { color: var(--color-warning); }
+.text-info      { color: var(--color-info); }
+
+// Heading styles
+h1, .h1 { font-size: var(--font-size-3xl); font-weight: 700; margin-bottom: var(--space-6); }
+h2, .h2 { font-size: var(--font-size-2xl); font-weight: 600; margin-bottom: var(--space-4); }
+h3, .h3 { font-size: var(--font-size-xl);  font-weight: 600; margin-bottom: var(--space-3); }
+h4, .h4 { font-size: var(--font-size-lg);  font-weight: 500; margin-bottom: var(--space-2); }

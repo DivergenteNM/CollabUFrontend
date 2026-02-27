@@ -1,0 +1,64 @@
+// =============================================================================
+// Collab-U — Accessibility
+// =============================================================================
+
+// Skip links — hidden until focused
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 10000;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 var(--border-radius-sm) 0;
+  transition: top var(--transition-fast);
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// Globally disable animations when user prefers reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Ensure focus styles are always visible
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+// Screen-reader-only utility
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// High contrast mode adjustments
+@media (forced-colors: active) {
+  .skeleton,
+  .skeleton-text,
+  .skeleton-circle,
+  .skeleton-card {
+    forced-color-adjust: none;
+    background: ButtonFace;
+  }
+}

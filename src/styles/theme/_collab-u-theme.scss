@@ -1,0 +1,37 @@
+@use '@angular/material' as mat;
+
+// =============================================================================
+// Collab-U — Material Design 3 Theme
+// Verde institucional Universidad de Nariño + Azul complementario
+//
+// Paletas M3 pre-construidas más cercanas a los colores institucionales:
+//   primary:  green  (~#2e7d32 verde UDENAR)
+//   tertiary: blue   (~#1976d2 azul complementario)
+//   error:    red    (~#d32f2f)
+// =============================================================================
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$green-palette,
+      tertiary: mat.$blue-palette,
+      error: mat.$red-palette,
+      theme-type: light,
+    ),
+    typography: Inter,
+    density: 0,
+  ));
+}
+
+.dark-theme {
+  @include mat.theme((
+    color: (
+      primary: mat.$green-palette,
+      tertiary: mat.$blue-palette,
+      error: mat.$red-palette,
+      theme-type: dark,
+    ),
+    typography: Inter,
+    density: 0,
+  ));
+}

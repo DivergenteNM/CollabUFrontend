@@ -1,0 +1,102 @@
+// =============================================================================
+// Collab-U — CSS Animations
+// =============================================================================
+
+// Shimmer skeleton loading
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeleton-text {
+  @extend .skeleton;
+  height: 1em;
+  margin-bottom: var(--space-2);
+
+  &--sm { width: 40%; }
+  &--md { width: 60%; }
+  &--lg { width: 80%; }
+}
+
+.skeleton-circle {
+  @extend .skeleton;
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  @extend .skeleton;
+  height: 200px;
+  border-radius: var(--border-radius-md);
+}
+
+// Fade-in
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+.fade-out {
+  animation: fadeOut var(--transition-normal) forwards;
+}
+
+// Slide-up for cards
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 300ms ease-out forwards;
+}
+
+// Counter bounce for badges
+@keyframes counterBounce {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.counter-bounce {
+  animation: counterBounce 200ms ease-out;
+}
+
+// Spin (for loading indicators)
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
