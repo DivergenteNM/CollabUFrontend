@@ -8,4 +8,11 @@ export const FACULTY_ROUTES: Routes = [
         (m) => m.AssignedStudentsListComponent
       ),
   },
+  {
+    path: ':applicationId',
+    loadComponent: () =>
+      import('./pages/student-supervision/student-supervision.component').then(
+        (m) => m.StudentSupervisionComponent
+      ),
+  },
 ];

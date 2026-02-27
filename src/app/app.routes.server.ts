@@ -34,6 +34,22 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server,
   },
   {
+    path: 'admin/verifications/:id',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'my-students/:applicationId',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'profile/student/:id',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'profile/company/:id',
+    renderMode: RenderMode.Server,
+  },
+  {
     path: '**',
     renderMode: RenderMode.Prerender,
   },
