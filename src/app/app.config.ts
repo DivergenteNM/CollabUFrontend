@@ -13,10 +13,9 @@ import { provideClientHydration, withIncrementalHydration } from '@angular/platf
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 import { routes } from './app.routes';
-// Interceptors se crearán en Fase 03
-// import { authInterceptor } from './core/interceptors/auth.interceptor';
-// import { errorInterceptor } from './core/interceptors/error.interceptor';
-// import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideHttpClient(
       withFetch(),
-      withInterceptors([/* authInterceptor, errorInterceptor, loadingInterceptor */])
+      withInterceptors([authInterceptor, errorInterceptor, loadingInterceptor])
     ),
     provideAnimationsAsync(),
     provideClientHydration(withIncrementalHydration()),

@@ -1,0 +1,43 @@
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { BaseApiService } from '../../../core/services/base-api.service';
+import {
+  ApiResponse,
+  PaginatedResponse,
+  PaginationParams,
+  Project,
+  ProjectFilters,
+} from '../../../core/models';
+
+@Injectable({ providedIn: 'root' })
+export class ProjectService extends BaseApiService {
+  protected readonly basePath = '/projects';
+
+  getAll(filters: ProjectFilters & PaginationParams): Observable<PaginatedResponse<Project>> {
+    return this.http.get<PaginatedResponse<Project>>(this.apiUrl, {
+      params: this.buildParams(filters)
+    });
+  }
+
+  getById(id: string): Observable<ApiResponse<Project>> {
+    return this.http.get<ApiResponse<Project>>(`${this.apiUrl}/${id}`);
+  }
+
+  create(data: Partial<Project>): Observable<ApiResponse<Project>> {
+    return this.http.post<ApiResponse<Project>>(this.apiUrl, data);
+  }
+
+  update(id: string, data: Partial<Project>): Observable<ApiResponse<Project>> {
+    return this.http.put<ApiResponse<Project>>(`${this.apiUrl}/${id}`, data);
+  }
+
+  publish(id: string): Observable<ApiResponse<Project>> {
+    return this.http.patch<ApiResponse<Project>>(`${this.apiUrl}/${id}/publish`, {});
+  }
+
+  getMyProjects(params: PaginationParams): Observable<PaginatedResponse<Project>> {
+    return this.http.get<PaginatedResponse<Project>>(`${this.apiUrl}/my-projects`, {
+      params: this.buildParams(params)
+    });
+  }
+}
