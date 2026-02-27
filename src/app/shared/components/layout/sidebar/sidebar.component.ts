@@ -1,0 +1,202 @@
+import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatDividerModule } from '@angular/material/divider';
+import { AuthStore } from '../../../../state/auth.store';
+import { NotificationsStore } from '../../../../state/notifications.store';
+import { UserRole } from '../../../../core/enums/user-role.enum';
+
+export interface MenuItem {
+  icon?: string;
+  label?: string;
+  route?: string;
+  badge?: number;
+  children?: MenuItem[];
+  divider?: boolean;
+}
+
+@Component({
+  selector: 'app-sidebar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule, MatBadgeModule, MatDividerModule],
+  host: {
+    'class': 'app-sidebar',
+    'role': 'navigation',
+    '[attr.aria-label]': "'Menú de navegación principal'",
+  },
+  template: `
+    <div class="sidebar">
+      <div class="sidebar__brand">
+        <span class="sidebar__brand-icon">🎓</span>
+        <span class="sidebar__brand-text">Collab-U</span>
+      </div>
+
+      <mat-nav-list class="sidebar__nav">
+        @for (item of menuItems(); track item.label ?? $index) {
+          @if (item.divider) {
+            <mat-divider class="sidebar__divider"></mat-divider>
+          } @else {
+            <a
+              mat-list-item
+              [routerLink]="item.route"
+              routerLinkActive="sidebar__item--active"
+              [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' || item.route === '/admin/dashboard' }"
+              class="sidebar__item"
+            >
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+              @if (item.label === 'Notificaciones' && unreadCount() > 0) {
+                <span matListItemMeta class="sidebar__badge" [matBadge]="unreadCount()" matBadgeColor="warn" matBadgeSize="small" matBadgeOverlap="false"></span>
+              }
+            </a>
+            @if (item.children) {
+              @for (child of item.children; track child.label) {
+                <a
+                  mat-list-item
+                  [routerLink]="child.route"
+                  routerLinkActive="sidebar__item--active"
+                  class="sidebar__item sidebar__item--child"
+                >
+                  <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+                  <span matListItemTitle>{{ child.label }}</span>
+                </a>
+              }
+            }
+          }
+        }
+      </mat-nav-list>
+    </div>
+  `,
+  styles: `
+    :host {
+      display: block;
+      height: 100%;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 260px;
+      background: var(--mat-sys-surface-container);
+      overflow-y: auto;
+    }
+
+    .sidebar__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 16px 12px;
+    }
+
+    .sidebar__brand-icon {
+      font-size: 28px;
+    }
+
+    .sidebar__brand-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--mat-sys-on-surface);
+    }
+
+    .sidebar__nav {
+      flex: 1;
+      padding: 8px;
+    }
+
+    .sidebar__item {
+      border-radius: 12px;
+      margin-bottom: 2px;
+    }
+
+    .sidebar__item--active {
+      background: var(--mat-sys-primary-container) !important;
+      color: var(--mat-sys-on-primary-container) !important;
+
+      mat-icon {
+        color: var(--mat-sys-on-primary-container);
+      }
+    }
+
+    .sidebar__item--child {
+      padding-left: 32px;
+    }
+
+    .sidebar__divider {
+      margin: 8px 16px;
+    }
+
+    .sidebar__badge {
+      display: inline-block;
+    }
+  `,
+})
+export class SidebarComponent {
+  private readonly authStore = inject(AuthStore);
+  private readonly notificationsStore = inject(NotificationsStore);
+
+  readonly unreadCount = this.notificationsStore.unreadCount;
+
+  readonly menuItems = computed(() => {
+    const role = this.authStore.role();
+    return this.getMenuByRole(role);
+  });
+
+  private getMenuByRole(role: UserRole | null): MenuItem[] {
+    if (!role) return [];
+
+    const menus: Record<UserRole, MenuItem[]> = {
+      [UserRole.STUDENT]: [
+        { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
+        { icon: 'folder_open', label: 'Proyectos', route: '/projects' },
+        { icon: 'mail_outline', label: 'Mis Aplicaciones', route: '/my-applications' },
+        { icon: 'star_outline', label: 'Recomendaciones', route: '/matching' },
+        { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat' },
+        { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
+        { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications' },
+        { divider: true },
+        { icon: 'person_outline', label: 'Mi Perfil', route: '/profile/view' },
+        { icon: 'settings', label: 'Configuración', route: '/settings' },
+      ],
+      [UserRole.COMPANY]: [
+        { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
+        {
+          icon: 'folder_open', label: 'Mis Proyectos', route: '/my-projects',
+          children: [{ icon: 'add', label: 'Crear Proyecto', route: '/my-projects/create' }],
+        },
+        { icon: 'mail_outline', label: 'Aplicaciones', route: '/received-applications' },
+        { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat' },
+        { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
+        { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications' },
+        { divider: true },
+        { icon: 'business', label: 'Mi Perfil', route: '/profile/view' },
+        { icon: 'settings', label: 'Configuración', route: '/settings' },
+      ],
+      [UserRole.FACULTY]: [
+        { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
+        { icon: 'school', label: 'Mis Estudiantes', route: '/my-students' },
+        { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
+        { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat' },
+        { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications' },
+        { divider: true },
+        { icon: 'person_outline', label: 'Mi Perfil', route: '/profile/view' },
+        { icon: 'settings', label: 'Configuración', route: '/settings' },
+      ],
+      [UserRole.ADMIN]: [
+        { icon: 'analytics', label: 'Panel Analítico', route: '/admin/dashboard' },
+        { icon: 'verified', label: 'Verificaciones', route: '/admin/verifications' },
+        { icon: 'supervisor_account', label: 'Supervisores', route: '/admin/supervisors' },
+        { icon: 'date_range', label: 'Periodos', route: '/admin/periods' },
+        { icon: 'group', label: 'Usuarios', route: '/admin/users' },
+        { divider: true },
+        { icon: 'folder_open', label: 'Proyectos', route: '/projects' },
+        { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications' },
+        { icon: 'settings', label: 'Configuración', route: '/settings' },
+      ],
+    };
+
+    return menus[role] ?? [];
+  }
+}
