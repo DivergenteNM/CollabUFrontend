@@ -32,7 +32,7 @@ export const AuthStore = signalStore(
     isAdmin: computed(() => store.user()?.role === UserRole.ADMIN),
     displayName: computed(() => {
       const user = store.user();
-      return user ? user.email : '';
+      return user ? `${(user as any).firstName ?? ''} ${(user as any).lastName ?? ''}`.trim() || user.email : '';
     }),
   })),
 
@@ -67,9 +67,6 @@ export const AuthStore = signalStore(
       if (token && user) {
         patchState(store, { user, token });
       }
-    },
-    onDestroy() {
-      console.log('[AuthStore] destroyed');
     },
   })
 );
