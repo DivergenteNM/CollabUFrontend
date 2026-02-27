@@ -1,23 +1,28 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { AuthStore } from '../../../../state/auth.store';
+import { StudentDashboardComponent } from '../student-dashboard/student-dashboard.component';
+import { CompanyDashboardComponent } from '../company-dashboard/company-dashboard.component';
+import { FacultyDashboardComponent } from '../faculty-dashboard/faculty-dashboard.component';
+import { AdminRedirectComponent } from '../admin-redirect/admin-redirect.component';
 
 @Component({
   selector: 'app-dashboard-router',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    StudentDashboardComponent,
+    CompanyDashboardComponent,
+    FacultyDashboardComponent,
+    AdminRedirectComponent,
+  ],
   template: `
-    <div class="dashboard-placeholder">
-      <h1>Dashboard</h1>
-      <p>Contenido del dashboard según rol (próxima fase).</p>
-    </div>
-  `,
-  styles: `
-    .dashboard-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 60vh;
-      color: var(--mat-sys-on-surface-variant);
+    @switch (authStore.role()) {
+      @case ('student')  { <app-student-dashboard /> }
+      @case ('company')  { <app-company-dashboard /> }
+      @case ('faculty')  { <app-faculty-dashboard /> }
+      @case ('admin')    { <app-admin-redirect /> }
     }
   `,
 })
-export class DashboardRouterComponent {}
+export class DashboardRouterComponent {
+  readonly authStore = inject(AuthStore);
+}

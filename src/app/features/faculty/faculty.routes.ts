@@ -4,8 +4,8 @@ export const FACULTY_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./pages/faculty-dashboard/faculty-dashboard.component').then(
-        (m) => m.FacultyDashboardComponent
+      import('./pages/assigned-students-list/assigned-students-list.component').then(
+        (m) => m.AssignedStudentsListComponent
       ),
   },
 ];
