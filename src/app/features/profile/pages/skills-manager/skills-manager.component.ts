@@ -97,7 +97,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/co
               <span class="skill-level" [class]="'level-' + skill.proficiencyLevel">
                 {{ levelLabel(skill.proficiencyLevel) }}
               </span>
-              <button mat-icon-button (click)="removeSkill(skill)" [disabled]="removing()">
+              <button mat-icon-button aria-label="Eliminar habilidad" (click)="removeSkill(skill)" [disabled]="removing()">
                 <mat-icon>close</mat-icon>
               </button>
             </div>

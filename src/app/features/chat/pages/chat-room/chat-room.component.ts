@@ -39,7 +39,7 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
       <!-- Header -->
       <header class="room__header">
         @if (uiStore.isMobile()) {
-          <button mat-icon-button (click)="goBack()">
+          <button mat-icon-button aria-label="Volver" (click)="goBack()">
             <mat-icon>arrow_back</mat-icon>
           </button>
         }
@@ -91,6 +91,7 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
       <footer class="room__input">
         <div class="room__input-row">
           <mat-form-field appearance="outline" class="room__input-field">
+            <mat-label>Mensaje</mat-label>
             <textarea
               matInput
               placeholder="Escribe un mensaje..."
@@ -103,7 +104,7 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
             </textarea>
           </mat-form-field>
 
-          <button mat-icon-button class="room__send-btn"
+          <button mat-icon-button class="room__send-btn" aria-label="Enviar mensaje"
             [disabled]="!messageText().trim()"
             (click)="sendMessage()">
             <mat-icon>send</mat-icon>

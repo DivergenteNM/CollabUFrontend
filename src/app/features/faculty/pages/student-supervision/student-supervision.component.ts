@@ -137,7 +137,7 @@ interface EvaluationSummary {
                         </mat-chip>
                       </mat-chip-set>
                       @if (d.fileUrl) {
-                        <a mat-icon-button [href]="d.fileUrl" target="_blank">
+                        <a mat-icon-button aria-label="Descargar entregable" [href]="d.fileUrl" target="_blank">
                           <mat-icon>download</mat-icon>
                         </a>
                       }

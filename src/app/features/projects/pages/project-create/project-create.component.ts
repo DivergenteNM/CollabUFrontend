@@ -180,7 +180,7 @@ const DRAFT_KEY = 'collabu_project_draft';
                       (change)="updateRequirement($index, 'isMandatory', $event.checked)">
                       Obligatorio
                     </mat-slide-toggle>
-                    <button mat-icon-button color="warn" (click)="removeRequirement($index)">
+                    <button mat-icon-button color="warn" aria-label="Eliminar requisito" (click)="removeRequirement($index)">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>

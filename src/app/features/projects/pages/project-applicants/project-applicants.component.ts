@@ -26,7 +26,7 @@ import { StatusBadgeComponent } from '../../../../shared/components/ui/status-ba
   template: `
     <div class="applicants">
       <header class="applicants__header">
-        <button mat-icon-button (click)="router.navigate(['/my-projects'])">
+        <button mat-icon-button aria-label="Volver" (click)="router.navigate(['/my-projects'])">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <h1>Aplicantes del Proyecto</h1>
@@ -70,7 +70,7 @@ import { StatusBadgeComponent } from '../../../../shared/components/ui/status-ba
 
       <!-- Actions column template -->
       <ng-template #actionsTpl let-row>
-        <button mat-icon-button [matMenuTriggerFor]="actionsMenu" (click)="$event.stopPropagation()">
+        <button mat-icon-button aria-label="Acciones" [matMenuTriggerFor]="actionsMenu" (click)="$event.stopPropagation()">
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #actionsMenu="matMenu">

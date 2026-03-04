@@ -38,7 +38,7 @@ interface CriteriaItem {
   template: `
     <div class="eval-create">
       <header class="eval-create__header">
-        <button mat-icon-button (click)="router.navigate(['/my-evaluations'])">
+        <button mat-icon-button aria-label="Volver" (click)="router.navigate(['/my-evaluations'])">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <h1>Crear Evaluación</h1>

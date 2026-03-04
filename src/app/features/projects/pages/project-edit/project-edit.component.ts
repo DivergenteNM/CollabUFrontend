@@ -166,7 +166,7 @@ import { ApiResponse, Project, ProjectRequirement } from '../../../../core/model
                                         (change)="updateReq($index, 'isMandatory', $event.checked)">
                         Obligatorio
                       </mat-slide-toggle>
-                      <button mat-icon-button color="warn" (click)="removeReq($index)">
+                      <button mat-icon-button color="warn" aria-label="Eliminar requisito" (click)="removeReq($index)">
                         <mat-icon>delete</mat-icon>
                       </button>
                     </div>

@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
   host: { 'class': 'chat-search' },
   template: `
     <mat-form-field appearance="outline" class="chat-search__field">
+      <mat-label>Buscar conversación</mat-label>
       <mat-icon matPrefix>search</mat-icon>
       <input
         matInput
@@ -18,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
         [ngModel]="query()"
         (ngModelChange)="onSearch($event)" />
       @if (query()) {
-        <button matSuffix mat-icon-button (click)="onSearch('')">
+        <button matSuffix mat-icon-button aria-label="Limpiar búsqueda" (click)="onSearch('')">
           <mat-icon>close</mat-icon>
         </button>
       }

@@ -54,7 +54,7 @@ import { EmptyStateComponent } from '../../../../shared/components/ui/empty-stat
             <div class="project-list__mobile-filters">
               <div class="project-list__mobile-filters-header">
                 <h3>Filtros</h3>
-                <button mat-icon-button (click)="showMobileFilters.set(false)">
+                <button mat-icon-button aria-label="Cerrar filtros" (click)="showMobileFilters.set(false)">
                   <mat-icon>close</mat-icon>
                 </button>
               </div>

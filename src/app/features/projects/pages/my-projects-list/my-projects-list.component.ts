@@ -74,7 +74,7 @@ import { EmptyStateComponent } from '../../../../shared/components/ui/empty-stat
                     </div>
                   </div>
                   <div class="my-projects__item-actions">
-                    <button mat-icon-button [matMenuTriggerFor]="projectMenu">
+                    <button mat-icon-button aria-label="Opciones del proyecto" [matMenuTriggerFor]="projectMenu">
                       <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #projectMenu="matMenu">
