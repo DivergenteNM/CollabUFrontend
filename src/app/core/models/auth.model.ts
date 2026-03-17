@@ -20,6 +20,12 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface RefreshAuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
 export interface AuthUser {
   id: string;
   email: string;

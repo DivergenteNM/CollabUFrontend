@@ -237,7 +237,13 @@ export class LoginComponent {
 
     this.authService.login({ email, password }).subscribe({
       next: (res) => {
-        this.authStore.setAuth(res.data.user, res.data.accessToken, res.data.refreshToken);
+        if (!res?.user || !res?.accessToken || !res?.refreshToken) {
+          this.isSubmitting.set(false);
+          this.errorMessage.set('La respuesta de autenticación es inválida. Intenta de nuevo.');
+          return;
+        }
+
+        this.authStore.setAuth(res.user, res.accessToken, res.refreshToken);
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

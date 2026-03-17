@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { BaseApiService } from './base-api.service';
 import { TokenService } from './token.service';
 import {
   ApiResponse,
   AuthResponse,
+  RefreshAuthResponse,
   LoginRequest,
   RegisterRequest,
   ForgotPasswordRequest,
@@ -16,17 +17,25 @@ export class AuthService extends BaseApiService {
   protected readonly basePath = '/auth';
   private readonly tokenService = inject(TokenService);
 
-  login(data: LoginRequest): Observable<ApiResponse<AuthResponse>> {
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/login`, data);
+  private extractResponseData<T>(res: ApiResponse<T> | T): T {
+    return ((res as ApiResponse<T>)?.data ?? res) as T;
+  }
+
+  login(data: LoginRequest): Observable<AuthResponse> {
+    return this.http
+      .post<ApiResponse<AuthResponse> | AuthResponse>(`${this.apiUrl}/login`, data)
+      .pipe(map((res) => this.extractResponseData<AuthResponse>(res)));
   }
 
   register(data: RegisterRequest): Observable<ApiResponse<{ message: string }>> {
     return this.http.post<ApiResponse<{ message: string }>>(`${this.apiUrl}/register`, data);
   }
 
-  refreshToken(): Observable<ApiResponse<AuthResponse>> {
+  refreshToken(): Observable<RefreshAuthResponse> {
     const refreshToken = this.tokenService.getRefreshToken();
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/refresh`, { refreshToken });
+    return this.http
+      .post<ApiResponse<RefreshAuthResponse> | RefreshAuthResponse>(`${this.apiUrl}/refresh`, { refreshToken })
+      .pipe(map((res) => this.extractResponseData<RefreshAuthResponse>(res)));
   }
 
   forgotPassword(data: ForgotPasswordRequest): Observable<ApiResponse<{ message: string }>> {
