@@ -1,0 +1,54 @@
+<mat-card class="project-card__container">
+  <mat-card-header>
+    <mat-icon mat-card-avatar class="project-card__company-icon">business</mat-icon>
+    <mat-card-title>{{ project().companyName }}</mat-card-title>
+    <mat-card-subtitle>
+      <app-status-badge [status]="project().status" size="sm" />
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content class="project-card__content">
+    <h3 class="project-card__title">{{ project().title }}</h3>
+
+    <div class="project-card__meta">
+      <span><mat-icon>label</mat-icon> {{ projectTypeLabel() }}</span>
+      @if (project().location) {
+        <span><mat-icon>location_on</mat-icon> {{ project().location }}</span>
+      }
+      @if (project().isRemote) {
+        <span><mat-icon>laptop</mat-icon> Remoto</span>
+      }
+      <span><mat-icon>schedule</mat-icon> {{ project().weeklyHours }}h/sem</span>
+      <span><mat-icon>event</mat-icon> Hasta: {{ project().applicationDeadline | date:'d MMM yyyy' }}</span>
+    </div>
+
+    <mat-chip-set class="project-card__tags">
+      @for (tag of project().tags.slice(0, 3); track tag) {
+        <mat-chip>{{ tag }}</mat-chip>
+      }
+      @if (project().tags.length > 3) {
+        <mat-chip>+{{ project().tags.length - 3 }}</mat-chip>
+      }
+    </mat-chip-set>
+
+    <div class="project-card__stats">
+      <span>{{ project().positionsAvailable }} posiciones</span>
+      <span>{{ project().applicationsCount }} aplicaciones</span>
+    </div>
+
+    @if (matchScore() !== undefined) {
+      <app-match-score-bar [score]="matchScore()!" label="Match" size="sm" />
+    }
+  </mat-card-content>
+
+  @if (showActions()) {
+    <mat-card-actions align="end">
+      <button mat-button (click)="viewDetail.emit(project().id)">
+        <mat-icon>visibility</mat-icon> Ver Detalle
+      </button>
+      <button mat-flat-button (click)="apply.emit(project().id)">
+        <mat-icon>send</mat-icon> Aplicar
+      </button>
+    </mat-card-actions>
+  }
+</mat-card>

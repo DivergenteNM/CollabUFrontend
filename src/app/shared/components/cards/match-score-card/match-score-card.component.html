@@ -1,0 +1,16 @@
+<mat-card class="match-score-card__container">
+  <mat-card-content>
+    <div class="match-score-card__header">
+      <mat-icon class="match-score-card__star">star</mat-icon>
+      <span class="match-score-card__total">Match Score: {{ totalScore() }}%</span>
+    </div>
+
+    @if (!compact()) {
+      <div class="match-score-card__bars">
+        @for (item of breakdownItems(); track item.label) {
+          <app-match-score-bar [score]="item.score" [label]="item.label" size="sm" />
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
