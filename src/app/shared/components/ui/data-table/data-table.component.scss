@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.data-table__wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.data-table__row.clickable {
+  cursor: pointer;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
+  }
+}
+
+.data-table__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.875rem;
+  }
+}

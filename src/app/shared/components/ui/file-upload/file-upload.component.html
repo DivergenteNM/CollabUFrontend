@@ -1,0 +1,43 @@
+<div
+  class="file-upload__zone"
+  [class.file-upload__zone--dragging]="isDragging()"
+  [class.file-upload__zone--has-files]="selectedFiles().length > 0"
+  (click)="openFilePicker()">
+
+  <input
+    #fileInputEl
+    type="file"
+    hidden
+    [accept]="accept()"
+    [multiple]="multiple()"
+    (change)="onFileChange($event)" />
+
+  @if (selectedFiles().length === 0) {
+    <mat-icon class="file-upload__icon">cloud_upload</mat-icon>
+    <p class="file-upload__label">{{ label() }}</p>
+    <p class="file-upload__hint">
+      {{ accept() }} · Máx {{ maxSizeMB() }}MB
+    </p>
+  } @else {
+    <div class="file-upload__files">
+      @for (file of selectedFiles(); track file.name) {
+        <div class="file-upload__file">
+          <mat-icon>description</mat-icon>
+          <span class="file-upload__filename">{{ file.name }}</span>
+          <span class="file-upload__filesize">{{ formatSize(file.size) }}</span>
+          <button mat-icon-button (click)="removeFile(file, $event)" aria-label="Eliminar archivo">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (uploadProgress() !== undefined && uploadProgress()! >= 0) {
+  <mat-progress-bar mode="determinate" [value]="uploadProgress()!" />
+}
+
+@if (error()) {
+  <p class="file-upload__error">{{ error() }}</p>
+}

@@ -1,0 +1,82 @@
+:host {
+  display: block;
+}
+
+.file-upload__zone {
+  border: 2px dashed var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 200ms, background-color 200ms;
+}
+
+.file-upload__zone:hover,
+.file-upload__zone--dragging {
+  border-color: var(--mat-sys-primary);
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
+}
+
+.file-upload__zone--has-files {
+  padding: 16px;
+  text-align: left;
+}
+
+.file-upload__icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: var(--mat-sys-primary);
+  margin-bottom: 8px;
+}
+
+.file-upload__label {
+  font-size: 0.9375rem;
+  color: var(--mat-sys-on-surface);
+  margin: 4px 0;
+}
+
+.file-upload__hint {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.file-upload__files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-upload__file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-upload__file mat-icon:first-child {
+  color: var(--mat-sys-primary);
+}
+
+.file-upload__filename {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-upload__filesize {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-progress-bar {
+  margin-top: 8px;
+}
+
+.file-upload__error {
+  color: var(--mat-sys-error);
+  font-size: 0.8125rem;
+  margin: 8px 0 0;
+}
