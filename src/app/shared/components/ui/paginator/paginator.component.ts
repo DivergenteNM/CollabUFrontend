@@ -6,17 +6,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatPaginatorModule],
   host: { 'class': 'paginator' },
-  template: `
-    <mat-paginator
-      [length]="totalItems()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions()"
-      (page)="onPage($event)"
-      showFirstLastButtons />
-  `,
-  styles: `
-    :host { display: block; }
-  `,
+  templateUrl: './paginator.component.html',
+  styleUrl: './paginator.component.scss',
 })
 export class PaginatorComponent {
   readonly totalItems = input.required<number>();

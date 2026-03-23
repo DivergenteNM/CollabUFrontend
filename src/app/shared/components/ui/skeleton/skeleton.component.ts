@@ -10,30 +10,8 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
     '[style.height]': 'height()',
     'aria-hidden': 'true',
   },
-  template: ``,
-  styles: `
-    :host {
-      display: block;
-      background: linear-gradient(
-        90deg,
-        var(--mat-sys-surface-variant) 25%,
-        color-mix(in srgb, var(--mat-sys-surface-variant) 60%, transparent) 50%,
-        var(--mat-sys-surface-variant) 75%
-      );
-      background-size: 200% 100%;
-      animation: shimmer 1.5s ease-in-out infinite;
-      border-radius: 4px;
-    }
-
-    :host(.rounded) {
-      border-radius: 50%;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-  `,
+  templateUrl: './skeleton.component.html',
+  styleUrl: './skeleton.component.scss',
 })
 export class SkeletonComponent {
   readonly width = input<string>('100%');
