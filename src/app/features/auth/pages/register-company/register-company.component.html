@@ -1,0 +1,164 @@
+@if (registrationSuccess()) {
+  <div class="success-screen">
+    <mat-icon class="success-screen__icon">mark_email_read</mat-icon>
+    <h2>¡Revisa tu email!</h2>
+    <p>Hemos enviado un enlace de verificación a <strong>{{ accountForm.controls.email.value }}</strong></p>
+    <p class="success-screen__hint">Tu empresa será verificada por un administrador tras confirmar tu correo.</p>
+    <a mat-flat-button color="primary" routerLink="/auth/login">Ir a Iniciar Sesión</a>
+  </div>
+} @else {
+  <h2 class="stepper-title">Registro Empresa</h2>
+
+  <mat-stepper linear #stepper class="register-stepper">
+    <mat-step [stepControl]="accountForm" label="Cuenta">
+      <form [formGroup]="accountForm" class="step-form">
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Email corporativo</mat-label>
+          <input matInput formControlName="email" type="email" autocomplete="email" />
+          <mat-icon matPrefix>email</mat-icon>
+          @if (accountForm.controls.email.hasError('required')) {
+            <mat-error>El email es requerido</mat-error>
+          } @else if (accountForm.controls.email.hasError('email')) {
+            <mat-error>Ingresa un email válido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Contraseña</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (accountForm.controls.password.hasError('required')) {
+            <mat-error>La contraseña es requerida</mat-error>
+          } @else if (accountForm.controls.password.hasError('strongPassword')) {
+            <mat-error>Requiere mayúscula, minúscula, número y símbolo</mat-error>
+          }
+        </mat-form-field>
+
+        @let strength = passwordStrength();
+        <div class="password-strength">
+          <mat-progress-bar [value]="strength.percent" [color]="strength.color"></mat-progress-bar>
+          <span class="password-strength__label" [style.color]="strength.textColor">{{ strength.label }}</span>
+        </div>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Confirmar contraseña</mat-label>
+          <input
+            matInput
+            formControlName="confirmPassword"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <mat-icon matPrefix>lock_outline</mat-icon>
+          @if (accountForm.controls.confirmPassword.hasError('required')) {
+            <mat-error>Confirma tu contraseña</mat-error>
+          } @else if (accountForm.hasError('passwordsMismatch')) {
+            <mat-error>Las contraseñas no coinciden</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="step-form__actions">
+          <a mat-button routerLink="/auth/register">Volver</a>
+          <button mat-flat-button color="primary" matStepperNext type="button">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step [stepControl]="companyForm" label="Datos de Empresa">
+      <form [formGroup]="companyForm" (ngSubmit)="onSubmit()" class="step-form">
+        @if (errorMessage()) {
+          <div class="step-form__error-banner">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Nombre de la empresa</mat-label>
+          <input matInput formControlName="companyName" autocomplete="organization" />
+          <mat-icon matPrefix>business</mat-icon>
+          @if (companyForm.controls.companyName.hasError('required')) {
+            <mat-error>El nombre es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>NIT</mat-label>
+          <input matInput formControlName="nit" placeholder="900123456-1" />
+          @if (companyForm.controls.nit.hasError('required')) {
+            <mat-error>El NIT es requerido</mat-error>
+          } @else if (companyForm.controls.nit.hasError('nit')) {
+            <mat-error>Formato inválido (ej: 900123456-1)</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Industria</mat-label>
+          <mat-select formControlName="industry">
+            @for (ind of industries; track ind) {
+              <mat-option [value]="ind">{{ ind }}</mat-option>
+            }
+          </mat-select>
+          @if (companyForm.controls.industry.hasError('required')) {
+            <mat-error>Selecciona una industria</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Nombre del contacto</mat-label>
+          <input matInput formControlName="contactName" autocomplete="name" />
+          <mat-icon matPrefix>person</mat-icon>
+          @if (companyForm.controls.contactName.hasError('required')) {
+            <mat-error>Requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Cargo del contacto</mat-label>
+          <input matInput formControlName="contactPosition" />
+          @if (companyForm.controls.contactPosition.hasError('required')) {
+            <mat-error>Requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="contactPhone" type="tel" autocomplete="tel" />
+          <mat-icon matPrefix>phone</mat-icon>
+          @if (companyForm.controls.contactPhone.hasError('required')) {
+            <mat-error>El teléfono es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="step-form__actions">
+          <button mat-button matStepperPrevious type="button">Anterior</button>
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Crear Cuenta
+            }
+          </button>
+        </div>
+      </form>
+    </mat-step>
+  </mat-stepper>
+}

@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.verify-email {
+  text-align: center;
+  padding: 24px 0;
+
+  h2 {
+    margin: 16px 0 8px;
+    font-size: 22px;
+    color: var(--mat-sys-on-surface);
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 14px;
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+
+  mat-spinner {
+    margin: 0 auto 16px;
+  }
+}
+
+.verify-email__loading {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 14px;
+}
+
+.verify-email__icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+}
+
+.verify-email__icon--success {
+  color: var(--mat-sys-primary);
+}
+
+.verify-email__icon--error {
+  color: var(--mat-sys-error);
+}
+
+.verify-email__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}

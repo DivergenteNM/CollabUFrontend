@@ -1,0 +1,162 @@
+@if (registrationSuccess()) {
+  <div class="success-screen">
+    <mat-icon class="success-screen__icon">mark_email_read</mat-icon>
+    <h2>¡Revisa tu email!</h2>
+    <p>Hemos enviado un enlace de verificación a <strong>{{ accountForm.controls.email.value }}</strong></p>
+    <p class="success-screen__hint">Revisa tu bandeja de entrada y la carpeta de spam.</p>
+    <a mat-flat-button color="primary" routerLink="/auth/login">Ir a Iniciar Sesión</a>
+  </div>
+} @else {
+  <h2 class="stepper-title">Registro Estudiante</h2>
+
+  <mat-stepper linear #stepper class="register-stepper">
+    <mat-step [stepControl]="accountForm" label="Cuenta">
+      <form [formGroup]="accountForm" class="step-form">
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Email institucional</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="usuario@udenar.edu.co" autocomplete="email" />
+          <mat-icon matPrefix>email</mat-icon>
+          @if (accountForm.controls.email.hasError('required')) {
+            <mat-error>El email es requerido</mat-error>
+          } @else if (accountForm.controls.email.hasError('udenarEmail')) {
+            <mat-error>Debe ser un correo &#64;udenar.edu.co</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Contraseña</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (accountForm.controls.password.hasError('required')) {
+            <mat-error>La contraseña es requerida</mat-error>
+          } @else if (accountForm.controls.password.hasError('strongPassword')) {
+            <mat-error>Requiere mayúscula, minúscula, número y símbolo</mat-error>
+          }
+        </mat-form-field>
+
+        @let strength = passwordStrength();
+        <div class="password-strength">
+          <mat-progress-bar [value]="strength.percent" [color]="strength.color"></mat-progress-bar>
+          <span class="password-strength__label" [style.color]="strength.textColor">{{ strength.label }}</span>
+        </div>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Confirmar contraseña</mat-label>
+          <input
+            matInput
+            formControlName="confirmPassword"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <mat-icon matPrefix>lock_outline</mat-icon>
+          @if (accountForm.controls.confirmPassword.hasError('required')) {
+            <mat-error>Confirma tu contraseña</mat-error>
+          } @else if (accountForm.hasError('passwordsMismatch')) {
+            <mat-error>Las contraseñas no coinciden</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="step-form__actions">
+          <a mat-button routerLink="/auth/register">Volver</a>
+          <button mat-flat-button color="primary" matStepperNext type="button">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step [stepControl]="dataForm" label="Datos Personales">
+      <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="step-form">
+        @if (errorMessage()) {
+          <div class="step-form__error-banner">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <div class="step-form__row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="firstName" autocomplete="given-name" />
+            @if (dataForm.controls.firstName.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            } @else if (dataForm.controls.firstName.hasError('minlength')) {
+              <mat-error>Mínimo 2 caracteres</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Apellido</mat-label>
+            <input matInput formControlName="lastName" autocomplete="family-name" />
+            @if (dataForm.controls.lastName.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            } @else if (dataForm.controls.lastName.hasError('minlength')) {
+              <mat-error>Mínimo 2 caracteres</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Código estudiantil</mat-label>
+          <input matInput formControlName="studentCode" />
+          @if (dataForm.controls.studentCode.hasError('required')) {
+            <mat-error>El código es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Programa académico</mat-label>
+          <input matInput formControlName="program" [matAutocomplete]="programAuto" />
+          <mat-autocomplete #programAuto="matAutocomplete">
+            @for (prog of filteredPrograms(); track prog) {
+              <mat-option [value]="prog">{{ prog }}</mat-option>
+            }
+          </mat-autocomplete>
+          @if (dataForm.controls.program.hasError('required')) {
+            <mat-error>Selecciona un programa</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="step-form__field">
+          <mat-label>Semestre</mat-label>
+          <mat-select formControlName="semester">
+            @for (s of semesters; track s) {
+              <mat-option [value]="s">{{ s }}</mat-option>
+            }
+          </mat-select>
+          @if (dataForm.controls.semester.hasError('required')) {
+            <mat-error>Selecciona tu semestre</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="step-form__actions">
+          <button mat-button matStepperPrevious type="button">Anterior</button>
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Crear Cuenta
+            }
+          </button>
+        </div>
+      </form>
+    </mat-step>
+  </mat-stepper>
+}
