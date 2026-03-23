@@ -1,0 +1,79 @@
+.skills-manager {
+  max-width: 800px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 500;
+    }
+  }
+
+  &__add {
+    margin-bottom: 24px;
+  }
+}
+
+.add-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  button {
+    margin-top: 8px;
+  }
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .skill-category {
+    font-size: 0.8125rem;
+    color: var(--mat-sys-on-surface-variant);
+    flex: 1;
+  }
+
+  .skill-level {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+
+    &.level-basic { background: #e3f2fd; color: #1565c0; }
+    &.level-intermediate { background: #e8f5e9; color: #2e7d32; }
+    &.level-advanced { background: #fff3e0; color: #e65100; }
+    &.level-expert { background: #fce4ec; color: #c62828; }
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+}

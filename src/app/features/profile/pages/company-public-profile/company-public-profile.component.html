@@ -1,0 +1,97 @@
+<div class="company-profile">
+  <button mat-button (click)="history.back()">
+    <mat-icon>arrow_back</mat-icon>
+    Volver
+  </button>
+
+  @if (resource.isLoading()) {
+    <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+  }
+
+  @if (resource.value()?.data; as c) {
+    <mat-card>
+      <mat-card-content>
+        <div class="profile-header">
+          <div class="company-logo">
+            @if (c.logoUrl) {
+              <img [src]="c.logoUrl" [alt]="c.companyName" />
+            } @else {
+              <mat-icon>business</mat-icon>
+            }
+          </div>
+          <div class="company-info">
+            <h2>
+              {{ c.companyName }}
+              @if (c.isVerified) {
+                <mat-icon class="verified-badge">verified</mat-icon>
+              }
+            </h2>
+            <p>{{ c.industry }} · {{ c.city }}, {{ c.department }}</p>
+            @if (c.averageRating) {
+              <div class="rating-row">
+                <app-star-rating [value]="c.averageRating" [readonly]="true" size="sm" />
+                <span>({{ c.totalProjects }} proyectos)</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (c.description) {
+          <div class="section">
+            <h3>Descripción</h3>
+            <p>{{ c.description }}</p>
+          </div>
+        }
+
+        <div class="section">
+          <h3>Información</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Tamaño</span>
+              <span>{{ sizeLabel(c.companySize) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Proyectos activos</span>
+              <span>{{ c.activeProjects }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Total proyectos</span>
+              <span>{{ c.totalProjects }}</span>
+            </div>
+            @if (c.websiteUrl) {
+              <div class="info-item">
+                <span class="label">Sitio web</span>
+                <a [href]="c.websiteUrl" target="_blank">{{ c.websiteUrl }}</a>
+              </div>
+            }
+            @if (c.phone) {
+              <div class="info-item">
+                <span class="label">Teléfono</span>
+                <span>{{ c.phone }}</span>
+              </div>
+            }
+            @if (c.address) {
+              <div class="info-item">
+                <span class="label">Dirección</span>
+                <span>{{ c.address }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (c.contacts.length > 0) {
+          <div class="section">
+            <h3>Contactos</h3>
+            @for (contact of c.contacts; track contact.id) {
+              <div class="contact-card">
+                <strong>{{ contact.fullName }}</strong>
+                <span>{{ contact.position }}</span>
+                <span>{{ contact.email }}</span>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

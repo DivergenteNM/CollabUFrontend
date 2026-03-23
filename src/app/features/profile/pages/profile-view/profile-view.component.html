@@ -1,0 +1,178 @@
+<div class="profile-view">
+  <div class="profile-view__header">
+    <h1>Mi Perfil</h1>
+    <a mat-flat-button routerLink="/profile/edit">
+      <mat-icon>edit</mat-icon>
+      Editar Perfil
+    </a>
+  </div>
+
+  @if (authStore.isStudent()) {
+    @if (studentResource.isLoading()) {
+      <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+    }
+
+    @if (studentResource.value()?.data; as s) {
+      <mat-card class="profile-view__main">
+        <mat-card-content>
+          <div class="profile-header">
+            <div class="avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div>
+              <h2>{{ authStore.displayName() }}</h2>
+              <p>{{ s.program }} · Semestre {{ s.semester }}</p>
+              <p><mat-icon>badge</mat-icon> Código: {{ s.studentCode }}</p>
+            </div>
+          </div>
+
+          <div class="completeness">
+            <span>Perfil {{ s.profileCompleteness }}% completo</span>
+            <mat-progress-bar mode="determinate" [value]="s.profileCompleteness" />
+          </div>
+
+          @if (s.bio) {
+            <div class="section">
+              <h3>Acerca de</h3>
+              <p>{{ s.bio }}</p>
+            </div>
+          }
+
+          @if (s.skills.length > 0) {
+            <div class="section">
+              <h3>
+                Habilidades
+                <a mat-button routerLink="/profile/skills" class="section-link">Gestionar</a>
+              </h3>
+              <app-skill-chip-list [skills]="skillNames()" [maxVisible]="10" />
+            </div>
+          }
+
+          <div class="section">
+            <h3>Horas de Práctica</h3>
+            <div class="hours-info">
+              <span class="hours-value">{{ s.practiceHoursCompleted }}/{{ s.practiceHoursRequired }}h</span>
+              <mat-progress-bar mode="determinate"
+                [value]="(s.practiceHoursCompleted / s.practiceHoursRequired) * 100" />
+            </div>
+          </div>
+
+          @if (s.linkedinUrl || s.githubUrl || s.portfolioUrl) {
+            <div class="section">
+              <h3>Enlaces</h3>
+              <div class="links">
+                @if (s.linkedinUrl) {
+                  <a [href]="s.linkedinUrl" target="_blank" class="link-item">
+                    <mat-icon>link</mat-icon> LinkedIn
+                  </a>
+                }
+                @if (s.githubUrl) {
+                  <a [href]="s.githubUrl" target="_blank" class="link-item">
+                    <mat-icon>code</mat-icon> GitHub
+                  </a>
+                }
+                @if (s.portfolioUrl) {
+                  <a [href]="s.portfolioUrl" target="_blank" class="link-item">
+                    <mat-icon>language</mat-icon> Portfolio
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
+          @if (s.documents.length > 0) {
+            <div class="section">
+              <h3>
+                Documentos
+                <a mat-button routerLink="/profile/documents" class="section-link">Gestionar</a>
+              </h3>
+              <div class="doc-list">
+                @for (doc of s.documents; track doc.id) {
+                  <div class="doc-item">
+                    <mat-icon>description</mat-icon>
+                    <span>{{ doc.originalName }}</span>
+                    <span class="doc-type">{{ docTypeLabel(doc.documentType) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+
+  @if (authStore.isCompany()) {
+    @if (companyResource.isLoading()) {
+      <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+    }
+
+    @if (companyResource.value()?.data; as c) {
+      <mat-card class="profile-view__main">
+        <mat-card-content>
+          <div class="profile-header">
+            <div class="avatar company-avatar">
+              @if (c.logoUrl) {
+                <img [src]="c.logoUrl" [alt]="c.companyName" />
+              } @else {
+                <mat-icon>business</mat-icon>
+              }
+            </div>
+            <div>
+              <h2>{{ c.companyName }}</h2>
+              <p>{{ c.industry }} · {{ c.city }}, {{ c.department }}</p>
+              <p><mat-icon>badge</mat-icon> NIT: {{ c.nit }}</p>
+            </div>
+          </div>
+
+          @if (c.description) {
+            <div class="section">
+              <h3>Descripción</h3>
+              <p>{{ c.description }}</p>
+            </div>
+          }
+
+          <div class="section">
+            <h3>Información</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Tamaño</span>
+                <span>{{ c.companySize }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Proyectos activos</span>
+                <span>{{ c.activeProjects }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Rating promedio</span>
+                <span>{{ c.averageRating ?? 'N/A' }}</span>
+              </div>
+              @if (c.websiteUrl) {
+                <div class="info-item">
+                  <span class="info-label">Sitio web</span>
+                  <a [href]="c.websiteUrl" target="_blank">{{ c.websiteUrl }}</a>
+                </div>
+              }
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+
+  @if (authStore.isFaculty() || authStore.isAdmin()) {
+    <mat-card class="profile-view__main">
+      <mat-card-content>
+        <div class="profile-header">
+          <div class="avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div>
+            <h2>{{ authStore.displayName() }}</h2>
+            <p>{{ authStore.role() }}</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
