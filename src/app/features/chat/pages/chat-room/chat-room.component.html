@@ -1,0 +1,74 @@
+<div class="room">
+  <header class="room__header">
+    @if (uiStore.isMobile()) {
+      <button mat-icon-button aria-label="Volver" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    }
+
+    <div class="room__header-avatar" [class.online]="otherParticipantOnline()">
+      <mat-icon>person</mat-icon>
+    </div>
+    <div class="room__header-info">
+      <span class="room__header-name">{{ otherParticipantName() }}</span>
+      <span class="room__header-status">
+        {{ otherParticipantOnline() ? 'En línea' : 'Desconectado' }}
+      </span>
+    </div>
+  </header>
+
+  <div class="room__messages" #messagesContainer>
+    @if (messagesResource.isLoading() && allMessages().length === 0) {
+      @for (_ of [1,2,3,4]; track $index) {
+        <app-skeleton width="60%" height="48px" />
+      }
+    } @else {
+      @if (hasMorePages()) {
+        <div class="room__load-more">
+          <button mat-button (click)="loadMore()" [disabled]="loadingMore()">
+            @if (loadingMore()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              Cargar mensajes anteriores
+            }
+          </button>
+        </div>
+      }
+
+      @for (msg of allMessages(); track msg.id) {
+        <app-message-bubble
+          [message]="msg"
+          [currentUserId]="currentUserId()"
+          [sending]="isSending(msg.id)" />
+      }
+    }
+
+    @if (typingUserName()) {
+      <app-typing-indicator [userName]="typingUserName()!" />
+    }
+  </div>
+
+  <footer class="room__input">
+    <div class="room__input-row">
+      <mat-form-field appearance="outline" class="room__input-field">
+        <mat-label>Mensaje</mat-label>
+        <textarea
+          matInput
+          placeholder="Escribe un mensaje..."
+          [ngModel]="messageText()"
+          (ngModelChange)="onTextChange($event)"
+          (keydown.enter)="onEnter($event)"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="4">
+        </textarea>
+      </mat-form-field>
+
+      <button mat-icon-button class="room__send-btn" aria-label="Enviar mensaje"
+        [disabled]="!messageText().trim()"
+        (click)="sendMessage()">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+  </footer>
+</div>
