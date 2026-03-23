@@ -1,0 +1,79 @@
+<div class="my-projects">
+  <header class="my-projects__header">
+    <h1>Mis Proyectos</h1>
+    <button mat-flat-button (click)="router.navigate(['/my-projects', 'create'])">
+      <mat-icon>add</mat-icon> Crear Proyecto
+    </button>
+  </header>
+
+  <mat-chip-listbox class="my-projects__filters" (change)="statusFilter.set($event.value || '')">
+    <mat-chip-option value="">Todos</mat-chip-option>
+    <mat-chip-option value="draft">Borradores</mat-chip-option>
+    <mat-chip-option value="published">Publicados</mat-chip-option>
+    <mat-chip-option value="in_progress">En Progreso</mat-chip-option>
+    <mat-chip-option value="completed">Completados</mat-chip-option>
+  </mat-chip-listbox>
+
+  <div class="my-projects__list">
+    @if (projectsResource.isLoading()) {
+      @for (_ of [1,2,3]; track $index) {
+        <app-skeleton width="100%" height="120px" />
+      }
+    } @else if (projects().length === 0) {
+      <app-empty-state
+        icon="create_new_folder"
+        title="Sin proyectos"
+        message="Publica tu primer proyecto para empezar a recibir aplicaciones."
+        actionLabel="Crear Proyecto"
+        (actionClicked)="router.navigate(['/my-projects', 'create'])" />
+    } @else {
+      @for (project of projects(); track project.id) {
+        <mat-card class="my-projects__item">
+          <mat-card-content>
+            <div class="my-projects__item-main">
+              <div class="my-projects__item-info">
+                <h3 class="my-projects__item-title">{{ project.title }}</h3>
+                <div class="my-projects__item-meta">
+                  <app-status-badge [status]="project.status" size="sm" />
+                  <span>{{ project.positionsFilled }}/{{ project.positionsAvailable }} posiciones</span>
+                  <span>{{ project.applicationsCount }} aplicaciones</span>
+                  @if (project.applicationDeadline) {
+                    <span>Límite: {{ project.applicationDeadline | date:'d MMM yyyy' }}</span>
+                  }
+                </div>
+              </div>
+              <div class="my-projects__item-actions">
+                <button mat-icon-button aria-label="Opciones del proyecto" [matMenuTriggerFor]="projectMenu">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #projectMenu="matMenu">
+                  <button mat-menu-item (click)="router.navigate(['/projects', project.id])">
+                    <mat-icon>visibility</mat-icon> Ver Detalle
+                  </button>
+                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'edit'])">
+                    <mat-icon>edit</mat-icon> Editar
+                  </button>
+                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'applicants'])">
+                    <mat-icon>people</mat-icon> Ver Aplicantes
+                  </button>
+                  @if (project.status === projectStatusDraft) {
+                    <button mat-menu-item (click)="publishProject(project.id)">
+                      <mat-icon>publish</mat-icon> Publicar
+                    </button>
+                  }
+                </mat-menu>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    }
+  </div>
+
+  @if (totalProjects() > 0) {
+    <app-paginator
+      [totalItems]="totalProjects()"
+      [pageSize]="10"
+      (pageChanged)="onPageChanged($event)" />
+  }
+</div>

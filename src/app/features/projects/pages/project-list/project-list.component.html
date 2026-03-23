@@ -1,0 +1,72 @@
+<div class="project-list">
+  <header class="project-list__header">
+    <h1>Proyectos Disponibles</h1>
+    @if (totalProjects() > 0) {
+      <span class="project-list__count">{{ totalProjects() }} proyectos encontrados</span>
+    }
+  </header>
+
+  @if (!uiStore.isMobile()) {
+    <app-search-filter-bar
+      [filters]="filterConfigs"
+      (filtersChanged)="onFiltersChanged($event)" />
+  } @else {
+    <button mat-stroked-button (click)="showMobileFilters.set(true)">
+      <mat-icon>filter_list</mat-icon> Filtros
+    </button>
+
+    <mat-drawer-container class="project-list__drawer-container" [hasBackdrop]="true">
+      <mat-drawer #filterDrawer
+                  mode="over"
+                  position="end"
+                  [opened]="showMobileFilters()"
+                  (closed)="showMobileFilters.set(false)">
+        <div class="project-list__mobile-filters">
+          <div class="project-list__mobile-filters-header">
+            <h3>Filtros</h3>
+            <button mat-icon-button aria-label="Cerrar filtros" (click)="showMobileFilters.set(false)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <app-search-filter-bar
+            [filters]="filterConfigs"
+            (filtersChanged)="onFiltersChanged($event)" />
+        </div>
+      </mat-drawer>
+    </mat-drawer-container>
+  }
+
+  <section class="project-list__grid">
+    @if (projectsResource.isLoading()) {
+      @for (_ of skeletonArray; track $index) {
+        <app-skeleton width="100%" height="320px" />
+      }
+    } @else if (projects().length === 0) {
+      <div class="project-list__empty">
+        <app-empty-state
+          icon="search_off"
+          title="Sin resultados"
+          message="No se encontraron proyectos con los filtros seleccionados."
+          actionLabel="Limpiar filtros"
+          (actionClicked)="clearFilters()" />
+      </div>
+    } @else {
+      @for (project of projects(); track project.id) {
+        <app-project-card
+          [project]="project"
+          [matchScore]="authStore.isStudent() ? project.applicationsCount : undefined"
+          [showActions]="true"
+          (viewDetail)="router.navigate(['/projects', $event])"
+          (apply)="router.navigate(['/projects', $event])" />
+      }
+    }
+  </section>
+
+  @if (totalProjects() > 0) {
+    <app-paginator
+      [totalItems]="totalProjects()"
+      [pageSize]="12"
+      [pageSizeOptions]="[12, 24, 48]"
+      (pageChanged)="onPageChanged($event)" />
+  }
+</div>
