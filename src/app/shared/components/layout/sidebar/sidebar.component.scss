@@ -1,0 +1,73 @@
+@use '../../../../../styles/mixins' as mx;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: var(--sidebar-width);
+  background: var(--mat-sys-surface-container);
+  overflow-y: auto;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px 12px;
+}
+
+.sidebar__brand-icon {
+  font-size: 28px;
+}
+
+.sidebar__brand-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+}
+
+.sidebar__nav {
+  flex: 1;
+  padding: 8px;
+}
+
+.sidebar__item {
+  border-radius: 12px;
+  margin-bottom: 2px;
+}
+
+.sidebar__item.sidebar__item--active {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+
+  mat-icon {
+    color: var(--mat-sys-on-primary-container);
+  }
+}
+
+.sidebar__item--child {
+  padding-left: 32px;
+}
+
+.sidebar__divider {
+  margin: 8px 16px;
+}
+
+.sidebar__badge {
+  display: inline-block;
+}
+
+@include mx.mobile {
+  .sidebar {
+    width: var(--sidebar-collapsed);
+  }
+
+  .sidebar__brand-text {
+    display: none;
+  }
+}

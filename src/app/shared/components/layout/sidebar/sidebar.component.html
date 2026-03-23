@@ -1,0 +1,41 @@
+<div class="sidebar">
+  <div class="sidebar__brand">
+    <span class="sidebar__brand-icon">🎓</span>
+    <span class="sidebar__brand-text">Collab-U</span>
+  </div>
+
+  <mat-nav-list class="sidebar__nav">
+    @for (item of menuItems(); track item.label ?? $index) {
+      @if (item.divider) {
+        <mat-divider class="sidebar__divider"></mat-divider>
+      } @else {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__item--active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' || item.route === '/admin/dashboard' }"
+          class="sidebar__item"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+          @if (item.label === 'Notificaciones' && unreadCount() > 0) {
+            <span matListItemMeta class="sidebar__badge" [matBadge]="unreadCount()" matBadgeColor="warn" matBadgeSize="small" matBadgeOverlap="false"></span>
+          }
+        </a>
+        @if (item.children) {
+          @for (child of item.children; track child.label) {
+            <a
+              mat-list-item
+              [routerLink]="child.route"
+              routerLinkActive="sidebar__item--active"
+              class="sidebar__item sidebar__item--child"
+            >
+              <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+              <span matListItemTitle>{{ child.label }}</span>
+            </a>
+          }
+        }
+      }
+    }
+  </mat-nav-list>
+</div>
