@@ -1,0 +1,136 @@
+<div class="faculty-dashboard">
+  <section class="dashboard__stats">
+    @if (studentsResource.isLoading()) {
+      @for (_ of [1,2,3]; track $index) {
+        <app-skeleton width="100%" height="120px" />
+      }
+    } @else {
+      <app-stat-card
+        icon="groups"
+        [value]="assignedCount()"
+        label="Estudiantes Asignados"
+        color="primary"
+        [clickable]="true"
+        (clicked)="router.navigate(['/my-students'])" />
+      <app-stat-card
+        icon="rate_review"
+        [value]="pendingEvaluationsCount()"
+        label="Evaluaciones Pendientes"
+        color="accent"
+        [clickable]="true"
+        (clicked)="router.navigate(['/my-evaluations'])" />
+      <app-stat-card
+        icon="trending_up"
+        [value]="avgProgress() + '%'"
+        label="Avance Promedio"
+        color="primary" />
+    }
+  </section>
+
+  <section class="dashboard__students">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>school</mat-icon> Estudiantes Asignados
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (studentsResource.isLoading()) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <app-skeleton width="100%" height="56px" />
+          }
+        } @else if (students().length === 0) {
+          <app-empty-state
+            icon="people_outline"
+            title="Sin estudiantes asignados"
+            message="Aún no tienes estudiantes bajo tu supervisión." />
+        } @else {
+          <div class="students-table">
+            <div class="students-table__header">
+              <span>Estudiante</span>
+              <span>Empresa</span>
+              <span>Avance</span>
+              <span>Estado</span>
+            </div>
+            @for (s of students(); track s.applicationId) {
+              <div class="students-table__row"
+                   (click)="router.navigate(['/my-students', s.applicationId])"
+                   (keydown.enter)="router.navigate(['/my-students', s.applicationId])"
+                   tabindex="0"
+                   role="button">
+                <div class="students-table__student">
+                  <span class="students-table__name">{{ s.studentName }}</span>
+                  <span class="students-table__code">{{ s.studentCode }} · {{ s.program }}</span>
+                </div>
+                <div class="students-table__company">
+                  <span class="truncate">{{ s.companyName }}</span>
+                  <span class="students-table__project truncate">{{ s.projectTitle }}</span>
+                </div>
+                <div class="students-table__progress">
+                  <mat-progress-bar
+                    mode="determinate"
+                    [value]="s.progressPercent"
+                    [color]="s.progressPercent >= 75 ? 'primary' : s.progressPercent >= 50 ? 'accent' : 'warn'" />
+                  <span class="students-table__progress-label">
+                    {{ s.progressPercent }}% ({{ s.practiceHoursCompleted }}/{{ s.practiceHoursRequired }}h)
+                  </span>
+                </div>
+                <div class="students-table__status">
+                  <app-status-badge [status]="s.status" size="sm" />
+                  @if (s.pendingEvaluation) {
+                    <mat-icon class="students-table__eval-badge">rate_review</mat-icon>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          <button mat-button class="dashboard__view-all"
+                  (click)="router.navigate(['/my-students'])">
+            Ver todos los estudiantes
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  @defer (on viewport) {
+    <section class="dashboard__activity">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>notifications</mat-icon> Notificaciones Recientes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (notificationsStore.recentNotifications().length === 0) {
+            <app-empty-state
+              icon="notifications_none"
+              title="Sin notificaciones"
+              message="No tienes notificaciones recientes." />
+          } @else {
+            <div class="dashboard__notifications-list">
+              @for (n of notificationsStore.recentNotifications(); track n.id) {
+                <div class="notification-item" [class.unread]="!n.isRead">
+                  <mat-icon class="notification-item__icon">
+                    {{ n.isRead ? 'notifications_none' : 'notifications_active' }}
+                  </mat-icon>
+                  <div class="notification-item__content">
+                    <span class="notification-item__title">{{ n.title }}</span>
+                    <span class="notification-item__message">{{ n.message }}</span>
+                    <span class="notification-item__time">{{ n.createdAt | relativeTime }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <button mat-button class="dashboard__view-all"
+                    (click)="router.navigate(['/notifications'])">
+              Ver todas las notificaciones
+            </button>
+          }
+        </mat-card-content>
+      </mat-card>
+    </section>
+  } @placeholder {
+    <app-skeleton width="100%" height="200px" />
+  }
+</div>
