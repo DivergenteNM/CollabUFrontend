@@ -1,0 +1,50 @@
+
+    <div class="supervisors">
+      <div class="supervisors__header">
+        <h1>Asignación de Supervisores</h1>
+      </div>
+
+      <!-- Assignment Form -->
+      <mat-card class="supervisors__form">
+        <mat-card-header>
+          <mat-card-title>Nueva Asignación</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Estudiante</mat-label>
+              <mat-select (selectionChange)="selectedStudent.set($event.value)">
+                <mat-option value="">Seleccionar estudiante...</mat-option>
+                <mat-option value="placeholder-1">Estudiante sin supervisor (cargado del API)</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Docente</mat-label>
+              <mat-select (selectionChange)="selectedFaculty.set($event.value)">
+                <mat-option value="">Seleccionar docente...</mat-option>
+                <mat-option value="placeholder-1">Docente disponible (cargado del API)</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary"
+              [disabled]="!canAssign() || assigning()"
+              (click)="assign()">
+              <mat-icon>person_add</mat-icon>
+              Asignar
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-divider />
+
+      <!-- Assignments Table -->
+      <h2>Asignaciones Activas</h2>
+      <app-data-table
+        [data]="assignments()"
+        [columns]="columns"
+        [totalItems]="resource.value()?.meta?.total ?? 0"
+        [loading]="resource.isLoading()"
+        (pageChanged)="onPage($event)" />
+    </div>

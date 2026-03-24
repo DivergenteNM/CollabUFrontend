@@ -28,79 +28,8 @@ interface UserRow {
     MatFormFieldModule, MatInputModule, MatSelectModule,
     FormsModule, DataTableComponent,
   ],
-  template: `
-    <div class="user-mgmt">
-      <div class="user-mgmt__header">
-        <h1>Gestión de Usuarios</h1>
-      </div>
-
-      <div class="user-mgmt__filters">
-        <mat-form-field appearance="outline">
-          <mat-label>Buscar</mat-label>
-          <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)"
-            placeholder="Nombre o email..." />
-          <mat-icon matPrefix>search</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Rol</mat-label>
-          <mat-select [value]="roleFilter()" (selectionChange)="roleFilter.set($event.value)">
-            <mat-option value="">Todos</mat-option>
-            <mat-option value="student">Estudiante</mat-option>
-            <mat-option value="company">Empresa</mat-option>
-            <mat-option value="faculty">Docente</mat-option>
-            <mat-option value="admin">Admin</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Estado</mat-label>
-          <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value)">
-            <mat-option value="">Todos</mat-option>
-            <mat-option value="true">Activo</mat-option>
-            <mat-option value="false">Inactivo</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <app-data-table
-        [data]="users()"
-        [columns]="columns"
-        [totalItems]="resource.value()?.meta?.total ?? 0"
-        [loading]="resource.isLoading()"
-        (pageChanged)="onPage($event)" />
-    </div>
-  `,
-  styles: `
-    .user-mgmt {
-      max-width: 1200px;
-      margin: 0 auto;
-
-      &__header {
-        margin-bottom: 24px;
-
-        h1 {
-          font-size: 1.75rem;
-          font-weight: 500;
-        }
-      }
-
-      &__filters {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-
-        mat-form-field {
-          min-width: 180px;
-        }
-
-        mat-form-field:first-child {
-          flex: 1;
-        }
-      }
-    }
-  `,
+  templateUrl: './user-management.component.html',
+  styleUrl: './user-management.component.scss',
 })
 export class UserManagementComponent {
   readonly search = signal('');

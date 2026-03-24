@@ -1,0 +1,22 @@
+
+    .verifications {
+      max-width: 1200px;
+      margin: 0 auto;
+
+      &__header {
+        margin-bottom: 24px;
+
+        h1 {
+          font-size: 1.75rem;
+          font-weight: 500;
+        }
+      }
+
+      &__filters {
+        margin-bottom: 16px;
+
+        mat-form-field {
+          width: 200px;
+        }
+      }
+    }

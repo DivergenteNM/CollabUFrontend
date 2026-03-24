@@ -1,0 +1,68 @@
+
+    .periods {
+      max-width: 900px;
+      margin: 0 auto;
+
+      &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+
+        h1 {
+          font-size: 1.75rem;
+          font-weight: 500;
+        }
+      }
+
+      &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+    }
+
+    .period-card {
+      &.active {
+        border-left: 4px solid var(--mat-sys-primary);
+      }
+    }
+
+    .period-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+
+      span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9375rem;
+        color: var(--mat-sys-on-surface-variant);
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+
+    .mat-mdc-chip.chip-active {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 32px;
+      color: var(--mat-sys-on-surface-variant);
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 8px;
+      }
+    }
