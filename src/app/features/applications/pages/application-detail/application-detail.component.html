@@ -1,0 +1,187 @@
+
+    <div class="detail">
+      <button mat-button class="detail__back" (click)="router.navigate(['/my-applications'])">
+        <mat-icon>arrow_back</mat-icon> Mis Aplicaciones
+      </button>
+
+      @if (applicationResource.isLoading()) {
+        <app-skeleton width="100%" height="200px" />
+        <app-skeleton width="100%" height="400px" />
+      } @else if (application(); as app) {
+        <!-- Header -->
+        <mat-card class="detail__header">
+          <mat-card-content>
+            <h1>{{ app.project?.title || 'Proyecto' }}</h1>
+            <p class="detail__company">
+              <mat-icon>business</mat-icon>
+              {{ app.project?.companyName || 'Empresa' }}
+            </p>
+            <app-application-progress-stepper [currentStatus]="app.status" />
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Tabs -->
+        <mat-tab-group class="detail__tabs" animationDuration="200ms">
+          <!-- Resumen -->
+          <mat-tab label="Resumen">
+            <div class="detail__tab-content">
+              <div class="detail__summary-grid">
+                <mat-card>
+                  <mat-card-content>
+                    <h3>Información de la Aplicación</h3>
+                    <div class="detail__info-row">
+                      <span class="detail__label">Estado</span>
+                      <app-status-badge [status]="app.status" />
+                    </div>
+                    <div class="detail__info-row">
+                      <span class="detail__label">Fecha de aplicación</span>
+                      <span>{{ app.appliedAt | date:'d MMMM yyyy' }}</span>
+                    </div>
+                    @if (app.matchScore) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Match Score</span>
+                        <span class="detail__score">{{ app.matchScore }}%</span>
+                      </div>
+                    }
+                    @if (app.reviewedAt) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Revisado el</span>
+                        <span>{{ app.reviewedAt | date:'d MMMM yyyy' }}</span>
+                      </div>
+                    }
+                    @if (app.acceptedAt) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Aceptado el</span>
+                        <span>{{ app.acceptedAt | date:'d MMMM yyyy' }}</span>
+                      </div>
+                    }
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card>
+                  <mat-card-content>
+                    <h3>Carta de Motivación</h3>
+                    <p class="detail__cover-letter">{{ app.coverLetter || 'Sin carta de motivación' }}</p>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+
+              <!-- Actions -->
+              <div class="detail__actions">
+                @if (canWithdraw()) {
+                  <button mat-stroked-button color="warn" (click)="withdraw()">
+                    <mat-icon>undo</mat-icon> Retirar Aplicación
+                  </button>
+                }
+                <button mat-flat-button (click)="router.navigate(['/chat'])">
+                  <mat-icon>chat</mat-icon> Iniciar Chat
+                </button>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Timeline -->
+          <mat-tab label="Timeline">
+            <div class="detail__tab-content">
+              @if (timelineEvents().length > 0) {
+                <app-timeline [events]="timelineEvents()" />
+              } @else {
+                <p class="detail__empty">No hay eventos en la línea de tiempo.</p>
+              }
+            </div>
+          </mat-tab>
+
+          <!-- Entrevistas -->
+          <mat-tab label="Entrevistas">
+            <div class="detail__tab-content">
+              @if (app.interviews && app.interviews.length > 0) {
+                @for (interview of app.interviews; track interview.id) {
+                  <mat-card class="detail__interview-card">
+                    <mat-card-content>
+                      <div class="detail__interview-header">
+                        <div>
+                          <h4>{{ interview.scheduledAt | date:'EEEE d MMMM yyyy, HH:mm' }}</h4>
+                          <span class="detail__interview-duration">{{ interview.durationMinutes }} min</span>
+                        </div>
+                        <span class="detail__interview-status"
+                          [class]="'status--' + interview.status.replace('_', '-')">
+                          {{ interviewStatusLabel(interview.status) }}
+                        </span>
+                      </div>
+                      @if (interview.location) {
+                        <p><mat-icon>location_on</mat-icon> {{ interview.location }}</p>
+                      }
+                      @if (interview.meetingUrl) {
+                        <p>
+                          <mat-icon>videocam</mat-icon>
+                          <a [href]="interview.meetingUrl" target="_blank" rel="noopener">Unirse a la reunión</a>
+                        </p>
+                      }
+                      @if (interview.notes) {
+                        <p class="detail__interview-notes">{{ interview.notes }}</p>
+                      }
+                    </mat-card-content>
+                  </mat-card>
+                }
+              } @else {
+                <p class="detail__empty">No hay entrevistas programadas.</p>
+              }
+            </div>
+          </mat-tab>
+
+          <!-- Entregables (visible en in_progress) -->
+          @if (app.status === ApplicationStatus.IN_PROGRESS || app.status === ApplicationStatus.COMPLETED) {
+            <mat-tab label="Entregables">
+              <div class="detail__tab-content">
+                @if (app.deliverables && app.deliverables.length > 0) {
+                  <div class="detail__deliverables">
+                    @for (del of app.deliverables; track del.id; let i = $index) {
+                      <mat-card class="detail__deliverable">
+                        <mat-card-content>
+                          <div class="detail__deliverable-header">
+                            <div>
+                              <h4>#{{ i + 1 }} — {{ del.title }}</h4>
+                              <span class="detail__deliverable-due">
+                                Fecha límite: {{ del.dueDate | date:'d MMM yyyy' }}
+                              </span>
+                            </div>
+                            <div class="detail__deliverable-meta">
+                              <span class="detail__deliverable-status"
+                                [class]="'del-status--' + del.status.replace('_', '-')">
+                                {{ deliverableStatusLabel(del.status) }}
+                              </span>
+                              @if (del.grade != null) {
+                                <span class="detail__deliverable-grade">Nota: {{ del.grade }}/5</span>
+                              }
+                            </div>
+                          </div>
+                          @if (del.description) {
+                            <p class="detail__deliverable-desc">{{ del.description }}</p>
+                          }
+                          @if (del.feedback) {
+                            <p class="detail__deliverable-feedback">
+                              <mat-icon>comment</mat-icon> {{ del.feedback }}
+                            </p>
+                          }
+                          @if (del.status === 'pending' || del.status === 'revision_requested') {
+                            <div class="detail__deliverable-upload">
+                              <app-file-upload
+                                accept=".pdf,.doc,.docx,.zip"
+                                [maxSizeMB]="10"
+                                label="Subir entregable"
+                                (fileSelected)="submitDeliverable(app.id, del.id, $event)" />
+                            </div>
+                          }
+                        </mat-card-content>
+                      </mat-card>
+                    }
+                  </div>
+                } @else {
+                  <p class="detail__empty">No hay entregables asignados aún.</p>
+                }
+              </div>
+            </mat-tab>
+          }
+        </mat-tab-group>
+      }
+    </div>

@@ -1,0 +1,30 @@
+
+    :host { display: block; padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    .my-apps__header {
+      margin-bottom: 20px;
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        color: var(--mat-sys-on-surface);
+      }
+    }
+
+    .my-apps__filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .my-apps__filter {
+      min-width: 180px;
+    }
+
+    .my-apps__list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
