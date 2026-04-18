@@ -1,13 +1,10 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatStepperModule } from '@angular/material/stepper';
-import { MatSelectModule } from '@angular/material/select';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -23,9 +20,6 @@ import { CustomValidators } from '../../../../shared/validators';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatStepperModule,
-    MatSelectModule,
-    MatAutocompleteModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
     RouterLink,
@@ -36,27 +30,6 @@ import { CustomValidators } from '../../../../shared/validators';
 export class RegisterStudentComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
-
-  readonly semesters = Array.from({ length: 12 }, (_, i) => i + 1);
-  readonly programs = [
-    'Ingeniería de Sistemas',
-    'Ingeniería Electrónica',
-    'Ingeniería Civil',
-    'Ingeniería Agroindustrial',
-    'Ingeniería Ambiental',
-    'Licenciatura en Matemáticas',
-    'Licenciatura en Informática',
-    'Administración de Empresas',
-    'Contaduría Pública',
-    'Economía',
-    'Derecho',
-    'Medicina',
-    'Psicología',
-    'Sociología',
-    'Diseño Gráfico',
-    'Comercio Internacional',
-  ];
 
   showPassword = signal(false);
   isSubmitting = signal(false);
@@ -72,14 +45,6 @@ export class RegisterStudentComponent {
     { validators: [CustomValidators.passwordsMatch('password', 'confirmPassword')] }
   );
 
-  dataForm = this.fb.nonNullable.group({
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
-    studentCode: ['', [Validators.required]],
-    program: ['', [Validators.required]],
-    semester: [null as number | null, [Validators.required]],
-  });
-
   passwordStrength = signal<{ percent: number; label: string; color: 'primary' | 'accent' | 'warn'; textColor: string }>({
     percent: 0,
     label: '',
@@ -87,27 +52,16 @@ export class RegisterStudentComponent {
     textColor: '#999',
   });
 
-  filteredPrograms = signal<string[]>(this.programs);
-
   constructor() {
     // Watch password changes to update strength
     this.accountForm.controls.password.valueChanges.subscribe((value) => {
       this.passwordStrength.set(this.calcPasswordStrength(value));
     });
-
-    // Filter programs for autocomplete
-    this.dataForm.controls.program.valueChanges.subscribe((value) => {
-      const filter = (value ?? '').toLowerCase();
-      this.filteredPrograms.set(
-        this.programs.filter((p) => p.toLowerCase().includes(filter))
-      );
-    });
   }
 
   onSubmit(): void {
-    if (this.accountForm.invalid || this.dataForm.invalid) {
+    if (this.accountForm.invalid) {
       this.accountForm.markAllAsTouched();
-      this.dataForm.markAllAsTouched();
       return;
     }
 
@@ -115,15 +69,12 @@ export class RegisterStudentComponent {
     this.errorMessage.set(null);
 
     const account = this.accountForm.getRawValue();
-    const data = this.dataForm.getRawValue();
 
     this.authService
       .register({
         email: account.email,
         password: account.password,
         role: UserRole.STUDENT,
-        firstName: data.firstName,
-        lastName: data.lastName,
       })
       .subscribe({
         next: () => {

@@ -25,6 +25,12 @@
   width: 100%;
 }
 
+.register-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .step-form__row {
   display: flex;
   gap: 12px;

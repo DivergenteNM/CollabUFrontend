@@ -9,8 +9,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: UserRole;
-  firstName: string;
-  lastName: string;
 }
 
 export interface AuthResponse {
