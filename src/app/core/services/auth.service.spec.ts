@@ -106,11 +106,12 @@ describe('AuthService', () => {
     req.flush({ data: { message: 'OK' } });
   });
 
-  it('should GET /auth/verify-email with token param', () => {
+  it('should POST /auth/verify-email with token body', () => {
     service.verifyEmail('abc123').subscribe();
 
-    const req = httpTesting.expectOne(`${baseUrl}/verify-email?token=abc123`);
-    expect(req.request.method).toBe('GET');
+    const req = httpTesting.expectOne(`${baseUrl}/verify-email`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ token: 'abc123' });
     req.flush({ data: { message: 'OK' } });
   });
 

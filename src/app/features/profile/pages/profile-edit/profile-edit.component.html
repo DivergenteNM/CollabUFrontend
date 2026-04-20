@@ -7,9 +7,50 @@
     </a>
   </div>
 
+  <mat-card>
+    <mat-card-content>
+      <h2>Perfil base</h2>
+      <p>Estos datos se guardan junto con tu perfil de rol.</p>
+
+      <form [formGroup]="userForm">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombres</mat-label>
+            <input matInput formControlName="firstName" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Apellidos</mat-label>
+            <input matInput formControlName="lastName" />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="phone" placeholder="+57 3001234567" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>LinkedIn URL (opcional)</mat-label>
+          <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
+          @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
+            <mat-error>Ingresa una URL valida de LinkedIn o deja el campo vacio.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Biografía general</mat-label>
+          <textarea matInput formControlName="bio" rows="4"
+            placeholder="Cuéntanos sobre ti..."></textarea>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
   @if (authStore.isStudent()) {
     <mat-card>
       <mat-card-content>
+        <h2>Perfil de estudiante</h2>
         <form [formGroup]="studentForm" (ngSubmit)="saveStudent()">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Biografía</mat-label>
@@ -33,11 +74,6 @@
           </div>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>LinkedIn URL</mat-label>
-            <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
             <mat-label>GitHub URL</mat-label>
             <input matInput formControlName="githubUrl" placeholder="https://github.com/..." />
           </mat-form-field>
@@ -45,6 +81,11 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Portfolio URL</mat-label>
             <input matInput formControlName="portfolioUrl" placeholder="https://..." />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Sitio personal URL</mat-label>
+            <input matInput formControlName="personalWebsiteUrl" placeholder="https://..." />
           </mat-form-field>
 
           <div class="form-actions">
@@ -66,6 +107,7 @@
   @if (authStore.isCompany()) {
     <mat-card>
       <mat-card-content>
+        <h2>Perfil de empresa</h2>
         <form [formGroup]="companyForm" (ngSubmit)="saveCompany()">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Nombre de la empresa</mat-label>
@@ -85,10 +127,11 @@
             <mat-form-field appearance="outline">
               <mat-label>Tamaño</mat-label>
               <mat-select formControlName="companySize">
-                <mat-option value="micro">Micro</mat-option>
+                <mat-option value="startup">Startup</mat-option>
                 <mat-option value="small">Pequeña</mat-option>
                 <mat-option value="medium">Mediana</mat-option>
                 <mat-option value="large">Grande</mat-option>
+                <mat-option value="enterprise">Enterprise</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -96,27 +139,20 @@
           <div class="form-row">
             <mat-form-field appearance="outline">
               <mat-label>Ciudad</mat-label>
-              <input matInput formControlName="city" />
+              <input matInput formControlName="headquartersCity" />
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Departamento</mat-label>
-              <input matInput formControlName="department" />
+              <input matInput formControlName="headquartersState" />
             </mat-form-field>
           </div>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Dirección</mat-label>
-            <input matInput formControlName="address" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Teléfono</mat-label>
-            <input matInput formControlName="phone" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Sitio Web</mat-label>
-            <input matInput formControlName="websiteUrl" />
+            <mat-label>Sitio Web (opcional)</mat-label>
+            <input matInput formControlName="website" placeholder="https://..." />
+            @if (companyForm.controls['website'].hasError('website') && companyForm.controls['website'].touched) {
+              <mat-error>Ingresa una URL valida o deja el campo vacio.</mat-error>
+            }
           </mat-form-field>
 
           <div class="form-actions">

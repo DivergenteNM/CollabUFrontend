@@ -51,6 +51,8 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: '**',
-    renderMode: RenderMode.Prerender,
+    // Temporalmente SSR en todas las rutas restantes para evitar fetchs a API en build-time.
+    // Volver a Prerender cuando exista estrategia estable de datos para rutas publicas.
+    renderMode: RenderMode.Server,
   },
 ];

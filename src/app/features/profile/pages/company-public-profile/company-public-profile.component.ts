@@ -23,16 +23,18 @@ export class CompanyPublicProfileComponent {
   readonly history = window.history;
 
   readonly resource = httpResource<ApiResponse<CompanyProfile>>(
-    () => ({ url: `${environment.apiUrl}/companies/${this.id()}/profile` })
+    () => ({ url: `${environment.apiUrl}/companies/profile/${this.id()}` })
   );
 
-  sizeLabel(size: string): string {
+  sizeLabel(size?: string): string {
     const labels: Record<string, string> = {
+      startup: 'Startup',
       micro: 'Micro',
       small: 'Pequeña',
       medium: 'Mediana',
       large: 'Grande',
+      enterprise: 'Enterprise',
     };
-    return labels[size] ?? size;
+    return (size && labels[size]) ?? size ?? 'N/A';
   }
 }

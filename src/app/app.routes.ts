@@ -47,6 +47,13 @@ export const routes: Routes = [
       ),
     children: [
       {
+        path: 'onboarding',
+        loadComponent: () =>
+          import('./features/onboarding/pages/onboarding-flow/onboarding-flow.component').then(
+            (m) => m.OnboardingFlowComponent
+          ),
+      },
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/pages/dashboard-router/dashboard-router.component').then(

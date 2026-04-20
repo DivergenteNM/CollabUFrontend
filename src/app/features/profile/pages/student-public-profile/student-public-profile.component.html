@@ -47,14 +47,14 @@
           </div>
         }
 
-        @if (s.workExperience.length > 0) {
+        @if (((s.workExperience?.length ?? 0) + s.experiences.length) > 0) {
           <div class="section">
             <h3>Experiencia</h3>
-            @for (exp of s.workExperience; track exp.id) {
+            @for (exp of (s.workExperience?.length ? s.workExperience : s.experiences); track exp.id) {
               <div class="experience-item">
-                <strong>{{ exp.position }}</strong>
-                <span class="exp-company">{{ exp.companyName }}</span>
-                <p>{{ exp.description }}</p>
+                <strong>{{ exp.title }}</strong>
+                <span class="exp-company">{{ exp.companyName ?? 'Experiencia profesional' }}</span>
+                <p>{{ exp.description ?? '' }}</p>
               </div>
             }
           </div>

@@ -28,7 +28,8 @@ export interface AuthUser {
   id: string;
   email: string;
   role: UserRole;
-  isEmailVerified: boolean;
+  isVerified?: boolean;
+  isEmailVerified?: boolean;
   isActive: boolean;
 }
 

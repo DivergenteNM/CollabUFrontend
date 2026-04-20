@@ -22,15 +22,15 @@
           <div class="company-info">
             <h2>
               {{ c.companyName }}
-              @if (c.isVerified) {
+              @if (c.verificationStatus === 'verified' || c.isVerified) {
                 <mat-icon class="verified-badge">verified</mat-icon>
               }
             </h2>
-            <p>{{ c.industry }} · {{ c.city }}, {{ c.department }}</p>
-            @if (c.averageRating) {
+            <p>{{ c.industry ?? 'Sin industria' }} · {{ c.headquartersCity ?? c.city ?? 'Sin ciudad' }}</p>
+            @if (c.rating || c.averageRating) {
               <div class="rating-row">
-                <app-star-rating [value]="c.averageRating" [readonly]="true" size="sm" />
-                <span>({{ c.totalProjects }} proyectos)</span>
+                <app-star-rating [value]="c.rating ?? c.averageRating ?? 0" [readonly]="true" size="sm" />
+                <span>({{ c.totalProjects ?? 0 }} proyectos)</span>
               </div>
             }
           </div>
@@ -52,16 +52,16 @@
             </div>
             <div class="info-item">
               <span class="label">Proyectos activos</span>
-              <span>{{ c.activeProjects }}</span>
+              <span>{{ c.activeProjects ?? 0 }}</span>
             </div>
             <div class="info-item">
               <span class="label">Total proyectos</span>
-              <span>{{ c.totalProjects }}</span>
+              <span>{{ c.totalProjects ?? 0 }}</span>
             </div>
-            @if (c.websiteUrl) {
+            @if (c.website || c.websiteUrl) {
               <div class="info-item">
                 <span class="label">Sitio web</span>
-                <a [href]="c.websiteUrl" target="_blank">{{ c.websiteUrl }}</a>
+                <a [href]="c.website ?? c.websiteUrl" target="_blank">{{ c.website ?? c.websiteUrl }}</a>
               </div>
             }
             @if (c.phone) {
@@ -79,13 +79,13 @@
           </div>
         </div>
 
-        @if (c.contacts.length > 0) {
+        @if ((c.contacts?.length ?? 0) > 0) {
           <div class="section">
             <h3>Contactos</h3>
-            @for (contact of c.contacts; track contact.id) {
+            @for (contact of c.contacts ?? []; track contact.id) {
               <div class="contact-card">
-                <strong>{{ contact.fullName }}</strong>
-                <span>{{ contact.position }}</span>
+                <strong>{{ contact.firstName }} {{ contact.lastName }}</strong>
+                <span>{{ contact.position ?? 'Contacto' }}</span>
                 <span>{{ contact.email }}</span>
               </div>
             }

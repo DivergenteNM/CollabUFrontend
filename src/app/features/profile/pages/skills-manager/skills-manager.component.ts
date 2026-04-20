@@ -105,13 +105,14 @@ export class SkillsManagerComponent implements OnInit {
     });
   }
 
-  levelLabel(level: string): string {
+  levelLabel(level?: string): string {
     const labels: Record<string, string> = {
       basic: 'Básico',
+      beginner: 'Principiante',
       intermediate: 'Intermedio',
       advanced: 'Avanzado',
       expert: 'Experto',
     };
-    return labels[level] ?? level;
+    return (level && labels[level]) ?? level ?? 'Sin nivel';
   }
 }

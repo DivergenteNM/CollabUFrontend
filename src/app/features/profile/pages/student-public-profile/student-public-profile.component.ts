@@ -23,14 +23,16 @@ export class StudentPublicProfileComponent {
   readonly history = window.history;
 
   readonly resource = httpResource<ApiResponse<StudentProfile>>(
-    () => ({ url: `${environment.apiUrl}/students/${this.id()}/profile` })
+    () => ({ url: `${environment.apiUrl}/students/profile/${this.id()}` })
   );
 
-  levelLabel(level: string): string {
+  levelLabel(level?: string): string {
     const labels: Record<string, string> = {
-      basic: 'Básico', intermediate: 'Intermedio',
+      basic: 'Básico',
+      beginner: 'Principiante',
+      intermediate: 'Intermedio',
       advanced: 'Avanzado', expert: 'Experto',
     };
-    return labels[level] ?? level;
+    return (level && labels[level]) ?? level ?? 'Sin nivel';
   }
 }

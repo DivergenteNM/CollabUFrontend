@@ -7,12 +7,12 @@
     </a>
   </div>
 
-  @if (authStore.isStudent()) {
-    @if (studentResource.isLoading()) {
-      <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
-    }
+  @if (loading()) {
+    <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+  }
 
-    @if (studentResource.value()?.data; as s) {
+  @if (authStore.isStudent()) {
+    @if (student(); as s) {
       <mat-card class="profile-view__main">
         <mat-card-content>
           <div class="profile-header">
@@ -51,18 +51,18 @@
           <div class="section">
             <h3>Horas de Práctica</h3>
             <div class="hours-info">
-              <span class="hours-value">{{ s.practiceHoursCompleted }}/{{ s.practiceHoursRequired }}h</span>
+              <span class="hours-value">{{ s.practiceHoursCompleted ?? 0 }}/{{ s.practiceHoursRequired ?? 0 }}h</span>
               <mat-progress-bar mode="determinate"
-                [value]="(s.practiceHoursCompleted / s.practiceHoursRequired) * 100" />
+                [value]="practiceProgress()" />
             </div>
           </div>
 
-          @if (s.linkedinUrl || s.githubUrl || s.portfolioUrl) {
+          @if (authStore.profile()?.linkedinUrl || s.githubUrl || s.portfolioUrl || s.personalWebsiteUrl) {
             <div class="section">
               <h3>Enlaces</h3>
               <div class="links">
-                @if (s.linkedinUrl) {
-                  <a [href]="s.linkedinUrl" target="_blank" class="link-item">
+                @if (authStore.profile()?.linkedinUrl) {
+                  <a [href]="authStore.profile()?.linkedinUrl" target="_blank" class="link-item">
                     <mat-icon>link</mat-icon> LinkedIn
                   </a>
                 }
@@ -76,18 +76,23 @@
                     <mat-icon>language</mat-icon> Portfolio
                   </a>
                 }
+                @if (s.personalWebsiteUrl) {
+                  <a [href]="s.personalWebsiteUrl" target="_blank" class="link-item">
+                    <mat-icon>public</mat-icon> Sitio personal
+                  </a>
+                }
               </div>
             </div>
           }
 
-          @if (s.documents.length > 0) {
+          @if ((s.documents?.length ?? 0) > 0) {
             <div class="section">
               <h3>
                 Documentos
                 <a mat-button routerLink="/profile/documents" class="section-link">Gestionar</a>
               </h3>
               <div class="doc-list">
-                @for (doc of s.documents; track doc.id) {
+                @for (doc of s.documents ?? []; track doc.id) {
                   <div class="doc-item">
                     <mat-icon>description</mat-icon>
                     <span>{{ doc.originalName }}</span>
@@ -103,11 +108,7 @@
   }
 
   @if (authStore.isCompany()) {
-    @if (companyResource.isLoading()) {
-      <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
-    }
-
-    @if (companyResource.value()?.data; as c) {
+    @if (company(); as c) {
       <mat-card class="profile-view__main">
         <mat-card-content>
           <div class="profile-header">
@@ -120,8 +121,8 @@
             </div>
             <div>
               <h2>{{ c.companyName }}</h2>
-              <p>{{ c.industry }} · {{ c.city }}, {{ c.department }}</p>
-              <p><mat-icon>badge</mat-icon> NIT: {{ c.nit }}</p>
+              <p>{{ c.industry ?? 'Sin industria' }} · {{ c.headquartersCity ?? c.city ?? 'Sin ciudad' }}</p>
+              <p><mat-icon>badge</mat-icon> NIT: {{ c.nit ?? 'No registrado' }}</p>
             </div>
           </div>
 
@@ -137,20 +138,24 @@
             <div class="info-grid">
               <div class="info-item">
                 <span class="info-label">Tamaño</span>
-                <span>{{ c.companySize }}</span>
+                <span>{{ c.companySize ?? 'N/A' }}</span>
               </div>
               <div class="info-item">
-                <span class="info-label">Proyectos activos</span>
-                <span>{{ c.activeProjects }}</span>
+                <span class="info-label">Proyectos</span>
+                <span>{{ c.totalProjects ?? c.activeProjects ?? 0 }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Rating promedio</span>
-                <span>{{ c.averageRating ?? 'N/A' }}</span>
+                <span>{{ c.rating ?? c.averageRating ?? 'N/A' }}</span>
               </div>
-              @if (c.websiteUrl) {
+              <div class="info-item">
+                <span class="info-label">Contactos</span>
+                <span>{{ c.contacts?.length ?? 0 }}</span>
+              </div>
+              @if (c.website || c.websiteUrl) {
                 <div class="info-item">
                   <span class="info-label">Sitio web</span>
-                  <a [href]="c.websiteUrl" target="_blank">{{ c.websiteUrl }}</a>
+                  <a [href]="c.website ?? c.websiteUrl" target="_blank">{{ c.website ?? c.websiteUrl }}</a>
                 </div>
               }
             </div>
