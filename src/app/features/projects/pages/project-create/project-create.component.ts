@@ -18,6 +18,8 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { forkJoin, of } from 'rxjs';
+import { concatMap, catchError } from 'rxjs/operators';
 
 import { ProjectService } from '../../services/project.service';
 import { ProjectType, ProjectStatus } from '../../../../core/enums';
@@ -53,13 +55,13 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
 
   readonly projectTypes = [
     { value: ProjectType.PROFESSIONAL_PRACTICE, label: 'Práctica Profesional' },
-    { value: ProjectType.SOCIAL_SERVICE, label: 'Servicio Social' },
+    { value: ProjectType.THESIS, label: 'Tesis / Trabajo de Grado' },
     { value: ProjectType.RESEARCH, label: 'Investigación' },
     { value: ProjectType.INTERNSHIP, label: 'Pasantía' },
   ];
 
   readonly infoForm = this.fb.nonNullable.group({
-    title: ['', [Validators.required, Validators.minLength(5)]],
+    title: ['', [Validators.required, Validators.minLength(10)]],
     description: ['', [Validators.required, Validators.minLength(50)]],
     projectType: ['' as string as ProjectType, Validators.required],
     positionsAvailable: [1, [Validators.required, Validators.min(1)]],
@@ -128,25 +130,77 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     this.submitting.set(true);
 
     const formValue = this.infoForm.getRawValue();
-    const data = {
-      ...formValue,
-      status,
-      requirements: this.requirements() as any[],
+    
+    // Mapear solo los datos que espera el backend
+    const createData: any = {
+      title: formValue.title,
+      description: formValue.description,
+      projectType: formValue.projectType,
+      positionsAvailable: formValue.positionsAvailable,
+      locationType: formValue.isRemote ? 'remote' : 'onsite',
+      location: formValue.location || undefined,
+      startDate: formValue.startDate ? new Date(formValue.startDate).toISOString() : undefined,
+      applicationDeadline: formValue.applicationDeadline ? new Date(formValue.applicationDeadline).toISOString() : undefined,
       tags: this.tags(),
     };
 
-    this.projectService.create(data).subscribe({
+    // Agregar compensación o duración (opcionales) si el backend lo requiere en un futuro
+    // Por ahora omitimos endDate, weeklyHours, etc., que no existen en el CreateProjectDto
+
+    this.projectService.create(createData).pipe(
+      concatMap((res: any) => {
+        // En algunos casos el backend no envuelve la respuesta en "data"
+        const projectId = res?.data?.id || res?.id;
+        
+        if (!projectId) {
+          throw new Error('No se pudo obtener el ID del proyecto creado.');
+        }
+
+        const requirementsRequests = this.requirements().map(req => {
+          const reqDto = {
+            requirementType: req.type,
+            name: req.name,
+            isMandatory: req.isMandatory ?? false,
+            proficiencyLevel: req.proficiencyLevel 
+          };
+          return this.projectService.addRequirement(projectId, reqDto).pipe(catchError(() => of(null)));
+        });
+        
+        // Si hay requisitos, guardarlos; si no, retornar un de una arreglo vacío
+        const saveReqs$ = requirementsRequests.length > 0 ? forkJoin(requirementsRequests) : of([]);
+        
+        return saveReqs$.pipe(
+          concatMap(() => {
+            // Si se debe publicar
+            if (status === ProjectStatus.PUBLISHED) {
+              return this.projectService.updateStatus(projectId, ProjectStatus.PUBLISHED).pipe(
+                catchError(() => of(null)) // ignorar error al publicar, el proyecto ya se creó
+              );
+            }
+            return of(null);
+          })
+        );
+      })
+    ).subscribe({
       next: () => {
         localStorage.removeItem(DRAFT_KEY);
+        this.submitting.set(false);
         this.snackBar.open(
           status === ProjectStatus.PUBLISHED ? 'Proyecto publicado' : 'Borrador guardado',
           'OK', { duration: 3000 },
         );
         this.router.navigate(['/my-projects']);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Detalles del error:', err.error);
+        
+        let errorMsg = 'Error al guardar proyecto';
+        if (err.error && err.error.message) {
+          errorMsg = Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message;
+        }
+
         this.submitting.set(false);
-        this.snackBar.open('Error al guardar', 'Cerrar', { duration: 4000 });
+        this.snackBar.open(errorMsg, 'Cerrar', { duration: 6000 });
       },
     });
   }

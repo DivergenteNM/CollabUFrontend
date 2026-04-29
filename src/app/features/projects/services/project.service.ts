@@ -27,6 +27,14 @@ export class ProjectService extends BaseApiService {
     return this.http.post<ApiResponse<Project>>(this.apiUrl, data);
   }
 
+  addRequirement(id: string, data: any): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/requirements`, data);
+  }
+
+  updateStatus(id: string, status: string): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${id}/status`, { status });
+  }
+
   update(id: string, data: Partial<Project>): Observable<ApiResponse<Project>> {
     return this.http.put<ApiResponse<Project>>(`${this.apiUrl}/${id}`, data);
   }

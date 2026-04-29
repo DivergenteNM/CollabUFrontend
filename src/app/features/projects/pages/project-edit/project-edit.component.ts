@@ -51,7 +51,7 @@ export class ProjectEditComponent {
 
   readonly projectTypes = [
     { value: ProjectType.PROFESSIONAL_PRACTICE, label: 'Práctica Profesional' },
-    { value: ProjectType.SOCIAL_SERVICE, label: 'Servicio Social' },
+    { value: ProjectType.THESIS, label: 'Tesis / Trabajo de Grado' },
     { value: ProjectType.RESEARCH, label: 'Investigación' },
     { value: ProjectType.INTERNSHIP, label: 'Pasantía' },
   ];

@@ -1,6 +1,6 @@
 export enum ProjectType {
   PROFESSIONAL_PRACTICE = 'professional_practice',
-  SOCIAL_SERVICE = 'social_service',
+  THESIS = 'thesis',
   RESEARCH = 'research',
   INTERNSHIP = 'internship',
 }
