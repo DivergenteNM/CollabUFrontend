@@ -43,7 +43,7 @@ export class StudentDashboardComponent {
   );
 
   readonly applicationsResource = httpResource<PaginatedResponse<Application>>(
-    () => ({ url: `${environment.apiUrl}/applications/my-applications`, params: { limit: '5', status: 'active' } }),
+    () => ({ url: `${environment.apiUrl}/applications/my`, params: { limit: '5', status: 'active' } }),
   );
 
   // --- Computed signals from resources ---
