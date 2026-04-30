@@ -62,10 +62,15 @@ export class ApplyDialogComponent {
       projectId: this.data.projectId,
       coverLetter: coverLetter!,
     }).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.submitting.set(false);
-        this.dialogRef.close(res.data);
-        this.router.navigate(['/my-applications', res.data.id]);
+        const applicationData = res?.data ?? res;
+        this.dialogRef.close(applicationData);
+        if (applicationData?.id) {
+          this.router.navigate(['/my-applications', applicationData.id]);
+        } else {
+          this.router.navigate(['/my-applications']);
+        }
       },
       error: () => {
         this.submitting.set(false);
