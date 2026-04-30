@@ -84,6 +84,7 @@ export class OnboardingFlowComponent implements OnInit {
   });
 
   readonly studentForm = this.fb.nonNullable.group({
+    studentCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
     program: ['', [Validators.required, this.allowedProgramValidator()]],
     semester: [1, [Validators.required, Validators.min(1), Validators.max(16)]],
     bio: ['', [Validators.required, Validators.minLength(10)]],
@@ -105,6 +106,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   readonly companyForm = this.fb.nonNullable.group({
     companyName: ['', [Validators.required, Validators.minLength(2)]],
+    nit: ['', [Validators.required, Validators.minLength(5)]],
     industry: ['', Validators.required],
     description: ['', [Validators.required, Validators.minLength(20)]],
     headquartersCity: ['', Validators.required],
@@ -244,6 +246,7 @@ export class OnboardingFlowComponent implements OnInit {
         const response = await firstValueFrom(this.studentService.getProfile());
         this.roleProfileExists.set(true);
         this.studentForm.patchValue({
+          studentCode: response.data.studentCode ?? '',
           program: response.data.program ?? '',
           semester: response.data.semester ?? 1,
           bio: response.data.bio ?? '',
@@ -264,6 +267,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.roleProfileExists.set(true);
         this.companyForm.patchValue({
           companyName: response.data.companyName ?? '',
+          nit: response.data.nit ?? '',
           industry: response.data.industry ?? '',
           description: response.data.description ?? '',
           headquartersCity: response.data.headquartersCity ?? response.data.city ?? '',
@@ -380,6 +384,7 @@ export class OnboardingFlowComponent implements OnInit {
       const raw = this.companyForm.getRawValue();
       const payload = {
         companyName: raw.companyName,
+        nit: raw.nit,
         industry: raw.industry,
         description: raw.description,
         headquartersCity: raw.headquartersCity,
@@ -513,11 +518,12 @@ export class OnboardingFlowComponent implements OnInit {
     };
   }
 
-  private buildStudentCreatePayload(userId: string): Pick<StudentProfile, 'userId' | 'program' | 'semester'> & { bio?: string } {
+  private buildStudentCreatePayload(userId: string): Pick<StudentProfile, 'userId' | 'program' | 'semester' | 'studentCode'> & { bio?: string } {
     const raw = this.studentForm.getRawValue();
 
     return {
       userId,
+      studentCode: raw.studentCode,
       program: raw.program,
       semester: raw.semester,
       bio: this.normalizeOptionalText(raw.bio),
@@ -528,6 +534,7 @@ export class OnboardingFlowComponent implements OnInit {
     const raw = this.studentForm.getRawValue();
 
     return {
+      studentCode: raw.studentCode,
       program: raw.program,
       semester: raw.semester,
       bio: this.normalizeOptionalText(raw.bio),

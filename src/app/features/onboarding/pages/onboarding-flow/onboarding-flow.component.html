@@ -69,6 +69,14 @@
               <form [formGroup]="studentForm" class="onboarding-flow__form">
                 <div class="onboarding-flow__row">
                   <mat-form-field appearance="outline">
+                    <mat-label>Código estudiantil</mat-label>
+                    <input matInput formControlName="studentCode" />
+                    @if (studentForm.controls.studentCode.hasError('pattern') && studentForm.controls.studentCode.touched) {
+                      <mat-error>Solo se permiten letras, números y guiones.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
                     <mat-label>Programa</mat-label>
                     <mat-select formControlName="program">
                       @for (program of studentPrograms; track program) {
@@ -76,7 +84,9 @@
                       }
                     </mat-select>
                   </mat-form-field>
+                </div>
 
+                <div class="onboarding-flow__row">
                   <mat-form-field appearance="outline">
                     <mat-label>Semestre</mat-label>
                     <input matInput type="number" formControlName="semester" min="1" max="16" />
@@ -210,6 +220,13 @@
                     <input matInput formControlName="companyName" />
                   </mat-form-field>
 
+                  <mat-form-field appearance="outline">
+                    <mat-label>NIT</mat-label>
+                    <input matInput formControlName="nit" placeholder="Ej: 900123456-7" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
                   <mat-form-field appearance="outline">
                     <mat-label>Industria</mat-label>
                     <input matInput formControlName="industry" />
