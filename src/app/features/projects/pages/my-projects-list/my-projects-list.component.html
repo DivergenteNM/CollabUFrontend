@@ -61,6 +61,9 @@
                       <mat-icon>publish</mat-icon> Publicar
                     </button>
                   }
+                  <button mat-menu-item (click)="deleteProject(project)" class="mat-error">
+                    <mat-icon color="warn">delete</mat-icon> <span class="text-error">Eliminar</span>
+                  </button>
                 </mat-menu>
               </div>
             </div>

@@ -51,7 +51,21 @@ export class ProjectDetailComponent {
       : undefined,
   );
 
-  readonly project = computed(() => this.projectResource.value()?.data ?? null);
+  readonly project = computed(() => {
+    try {
+      return this.projectResource.value()?.data ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  readonly matchData = computed(() => {
+    try {
+      return this.matchResource.value()?.data ?? null;
+    } catch {
+      return null;
+    }
+  });
 
   readonly projectTypeLabel = computed(() => {
     const typeMap: Record<string, string> = {

@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
@@ -18,12 +19,14 @@ import { StatusBadgeComponent } from '../../../../shared/components/ui/status-ba
 import { PaginatorComponent } from '../../../../shared/components/ui/paginator/paginator.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-my-projects-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule, MatMenuModule, MatChipsModule, DatePipe,
+    MatDialogModule,
     StatusBadgeComponent, PaginatorComponent, SkeletonComponent, EmptyStateComponent,
   ],
   templateUrl: './my-projects-list.component.html',
@@ -32,6 +35,7 @@ import { EmptyStateComponent } from '../../../../shared/components/ui/empty-stat
 export class MyProjectsListComponent {
   readonly router = inject(Router);
   private readonly projectService = inject(ProjectService);
+  private readonly dialog = inject(MatDialog);
 
   readonly statusFilter = signal('');
   readonly page = signal(1);
@@ -61,6 +65,27 @@ export class MyProjectsListComponent {
   publishProject(id: string): void {
     this.projectService.publish(id).subscribe(() => {
       this.projectsResource.reload();
+    });
+  }
+
+  deleteProject(project: Project): void {
+    const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eliminar Proyecto',
+        message: `¿Estás seguro de que deseas eliminar el proyecto "${project.title}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        type: 'danger'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.projectService.delete(project.id).subscribe(() => {
+          this.projectsResource.reload();
+        });
+      }
     });
   }
 }

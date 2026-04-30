@@ -43,6 +43,10 @@ export class ProjectService extends BaseApiService {
     return this.http.patch<ApiResponse<Project>>(`${this.apiUrl}/${id}/publish`, {});
   }
 
+  delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+  }
+
   getMyProjects(params: PaginationParams): Observable<PaginatedResponse<Project>> {
     return this.http.get<PaginatedResponse<Project>>(`${this.apiUrl}/my-projects`, {
       params: this.buildParams(params)

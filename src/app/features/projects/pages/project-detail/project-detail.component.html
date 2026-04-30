@@ -123,10 +123,10 @@
 
       @if (authStore.isStudent()) {
         <aside class="detail__sidebar">
-          @if (matchResource.value(); as matchData) {
+          @if (matchData(); as mData) {
             <app-match-score-card
-              [totalScore]="matchData.data.overallScore"
-              [breakdown]="matchBreakdown(matchData.data)" />
+              [totalScore]="mData.overallScore"
+              [breakdown]="matchBreakdown(mData)" />
           }
 
           <mat-card class="detail__apply-card">

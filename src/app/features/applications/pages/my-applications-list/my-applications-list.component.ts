@@ -51,7 +51,7 @@ export class MyApplicationsListComponent {
       };
       const status = this.statusFilter();
       if (status) params['status'] = status;
-      return { url: `${environment.apiUrl}/applications/my-applications`, params };
+      return { url: `${environment.apiUrl}/applications/my`, params };
     },
   );
 
