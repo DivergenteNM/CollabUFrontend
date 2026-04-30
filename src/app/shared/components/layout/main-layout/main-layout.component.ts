@@ -24,62 +24,8 @@ import { FooterComponent } from '../footer/footer.component';
   host: {
     'class': 'app-main-layout',
   },
-  template: `
-    <mat-sidenav-container class="main-layout">
-      <mat-sidenav
-        [mode]="sidebarMode()"
-        [opened]="uiStore.sidebarOpen()"
-        (openedChange)="uiStore.setSidebarOpen($event)"
-        class="main-layout__sidenav"
-      >
-        <app-sidebar />
-      </mat-sidenav>
-
-      <mat-sidenav-content class="main-layout__content">
-        <app-header />
-        <app-breadcrumbs />
-        <main id="main-content" class="main-layout__main">
-          <router-outlet />
-        </main>
-        <app-footer />
-      </mat-sidenav-content>
-    </mat-sidenav-container>
-  `,
-  styles: `
-    :host {
-      display: block;
-      height: 100vh;
-    }
-
-    .main-layout {
-      height: 100%;
-    }
-
-    .main-layout__sidenav {
-      border-right: 1px solid var(--mat-sys-outline-variant);
-    }
-
-    .main-layout__content {
-      display: flex;
-      flex-direction: column;
-      min-height: 100%;
-    }
-
-    .main-layout__main {
-      flex: 1;
-      padding: 16px 24px 24px;
-      max-width: 1440px;
-      width: 100%;
-      margin: 0 auto;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 599px) {
-      .main-layout__main {
-        padding: 12px 16px 16px;
-      }
-    }
-  `,
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.scss',
 })
 export class MainLayoutComponent {
   readonly uiStore = inject(UiStore);

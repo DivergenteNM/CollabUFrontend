@@ -1,0 +1,205 @@
+@use '../../../../../styles/mixins' as mx;
+
+:host {
+  display: block;
+}
+
+.faculty-dashboard {
+  @include mx.page-container;
+}
+
+.dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dashboard__students {
+  margin-bottom: 24px;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.125rem;
+  }
+}
+
+.students-table {
+  width: 100%;
+}
+
+.students-table__header {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--mat-sys-on-surface-variant);
+  border-bottom: 2px solid var(--mat-sys-outline-variant);
+}
+
+.students-table__row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-variant);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: -2px;
+  }
+}
+
+.students-table__student {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.students-table__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.students-table__code {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.students-table__company {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+
+.students-table__project {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.students-table__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  mat-progress-bar {
+    border-radius: 4px;
+  }
+}
+
+.students-table__progress-label {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.students-table__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.students-table__eval-badge {
+  color: var(--mat-sys-tertiary);
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard__view-all {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.dashboard__activity {
+  margin-bottom: 24px;
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.125rem;
+  }
+}
+
+.dashboard__notifications-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.unread {
+    .notification-item__title {
+      font-weight: 600;
+    }
+
+    .notification-item__icon {
+      color: var(--mat-sys-primary);
+    }
+  }
+}
+
+.notification-item__icon {
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 2px;
+}
+
+.notification-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.notification-item__title {
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.notification-item__message {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-item__time {
+  font-size: 0.75rem;
+  color: var(--mat-sys-outline);
+}

@@ -20,81 +20,8 @@ import { MatIconModule } from '@angular/material/icon';
     '(keydown.arrowLeft)': 'decrement()',
     '(keydown.arrowDown)': 'decrement()',
   },
-  template: `
-    <div class="star-rating__stars">
-      @for (star of starsArray(); track star) {
-        <mat-icon
-          class="star-rating__star"
-          [class.filled]="star <= displayValue()"
-          [class.half]="star === Math.ceil(value()) && value() % 1 >= 0.25 && value() % 1 < 0.75 && readonly()"
-          [class.interactive]="!readonly()"
-          (mouseenter)="onHover(star)"
-          (mouseleave)="onLeave()"
-          (click)="onSelect(star)">
-          {{ getIcon(star) }}
-        </mat-icon>
-      }
-    </div>
-    @if (readonly() && value() > 0) {
-      <span class="star-rating__value">{{ value().toFixed(1) }}</span>
-    }
-  `,
-  styles: `
-    :host {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .star-rating__stars {
-      display: inline-flex;
-      gap: 2px;
-    }
-
-    .star-rating__star {
-      color: var(--mat-sys-outline-variant);
-      cursor: default;
-      transition: color 150ms, transform 150ms;
-      user-select: none;
-
-      &.filled {
-        color: #ffc107;
-      }
-
-      &.interactive {
-        cursor: pointer;
-
-        &:hover {
-          transform: scale(1.15);
-        }
-      }
-    }
-
-    :host(.star-rating--sm) .star-rating__star {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    :host(.star-rating--md) .star-rating__star {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-
-    :host(.star-rating--lg) .star-rating__star {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-    }
-
-    .star-rating__value {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--mat-sys-on-surface);
-      margin-left: 4px;
-    }
-  `,
+  templateUrl: './star-rating.component.html',
+  styleUrl: './star-rating.component.scss',
 })
 export class StarRatingComponent {
   readonly value = model<number>(0);

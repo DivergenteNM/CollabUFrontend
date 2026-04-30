@@ -26,157 +26,8 @@ import { EmptyStateComponent } from '../../../../shared/components/ui/empty-stat
     ProjectCardComponent, SearchFilterBarComponent, PaginatorComponent,
     SkeletonComponent, EmptyStateComponent,
   ],
-  template: `
-    <div class="project-list">
-      <header class="project-list__header">
-        <h1>Proyectos Disponibles</h1>
-        @if (totalProjects() > 0) {
-          <span class="project-list__count">{{ totalProjects() }} proyectos encontrados</span>
-        }
-      </header>
-
-      <!-- Filters -->
-      @if (!uiStore.isMobile()) {
-        <app-search-filter-bar
-          [filters]="filterConfigs"
-          (filtersChanged)="onFiltersChanged($event)" />
-      } @else {
-        <button mat-stroked-button (click)="showMobileFilters.set(true)">
-          <mat-icon>filter_list</mat-icon> Filtros
-        </button>
-
-        <mat-drawer-container class="project-list__drawer-container" [hasBackdrop]="true">
-          <mat-drawer #filterDrawer
-                      mode="over"
-                      position="end"
-                      [opened]="showMobileFilters()"
-                      (closed)="showMobileFilters.set(false)">
-            <div class="project-list__mobile-filters">
-              <div class="project-list__mobile-filters-header">
-                <h3>Filtros</h3>
-                <button mat-icon-button aria-label="Cerrar filtros" (click)="showMobileFilters.set(false)">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <app-search-filter-bar
-                [filters]="filterConfigs"
-                (filtersChanged)="onFiltersChanged($event)" />
-            </div>
-          </mat-drawer>
-        </mat-drawer-container>
-      }
-
-      <!-- Project Grid -->
-      <section class="project-list__grid">
-        @if (projectsResource.isLoading()) {
-          @for (_ of skeletonArray; track $index) {
-            <app-skeleton width="100%" height="320px" />
-          }
-        } @else if (projects().length === 0) {
-          <div class="project-list__empty">
-            <app-empty-state
-              icon="search_off"
-              title="Sin resultados"
-              message="No se encontraron proyectos con los filtros seleccionados."
-              actionLabel="Limpiar filtros"
-              (actionClicked)="clearFilters()" />
-          </div>
-        } @else {
-          @for (project of projects(); track project.id) {
-            <app-project-card
-              [project]="project"
-              [matchScore]="authStore.isStudent() ? project.applicationsCount : undefined"
-              [showActions]="true"
-              (viewDetail)="router.navigate(['/projects', $event])"
-              (apply)="router.navigate(['/projects', $event])" />
-          }
-        }
-      </section>
-
-      <!-- Paginator -->
-      @if (totalProjects() > 0) {
-        <app-paginator
-          [totalItems]="totalProjects()"
-          [pageSize]="12"
-          [pageSizeOptions]="[12, 24, 48]"
-          (pageChanged)="onPageChanged($event)" />
-      }
-    </div>
-  `,
-  styles: `
-    :host {
-      display: block;
-      padding: 24px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .project-list__header {
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-      margin-bottom: 24px;
-
-      h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--mat-sys-on-surface);
-        margin: 0;
-      }
-    }
-
-    .project-list__count {
-      font-size: 0.875rem;
-      color: var(--mat-sys-on-surface-variant);
-    }
-
-    app-search-filter-bar {
-      margin-bottom: 24px;
-    }
-
-    .project-list__grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .project-list__empty {
-      grid-column: 1 / -1;
-    }
-
-    .project-list__drawer-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1000;
-      pointer-events: none;
-
-      &[ng-reflect-has-backdrop="true"] {
-        pointer-events: all;
-      }
-    }
-
-    .project-list__mobile-filters {
-      padding: 16px;
-      width: 300px;
-    }
-
-    .project-list__mobile-filters-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-
-      h3 {
-        margin: 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-      }
-    }
-  `,
+  templateUrl: './project-list.component.html',
+  styleUrl: './project-list.component.scss',
 })
 export class ProjectListComponent {
   readonly router = inject(Router);
@@ -194,7 +45,7 @@ export class ProjectListComponent {
       key: 'projectType', label: 'Tipo', type: 'select',
       options: [
         { value: ProjectType.PROFESSIONAL_PRACTICE, label: 'Práctica Profesional' },
-        { value: ProjectType.SOCIAL_SERVICE, label: 'Servicio Social' },
+        { value: ProjectType.THESIS, label: 'Tesis / Trabajo de Grado' },
         { value: ProjectType.RESEARCH, label: 'Investigación' },
         { value: ProjectType.INTERNSHIP, label: 'Pasantía' },
       ],

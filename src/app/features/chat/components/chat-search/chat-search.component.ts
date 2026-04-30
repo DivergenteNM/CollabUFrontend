@@ -9,30 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatIconModule],
   host: { 'class': 'chat-search' },
-  template: `
-    <mat-form-field appearance="outline" class="chat-search__field">
-      <mat-label>Buscar conversación</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
-      <input
-        matInput
-        placeholder="Buscar conversación..."
-        [ngModel]="query()"
-        (ngModelChange)="onSearch($event)" />
-      @if (query()) {
-        <button matSuffix mat-icon-button aria-label="Limpiar búsqueda" (click)="onSearch('')">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
-    </mat-form-field>
-  `,
-  styles: `
-    :host { display: block; padding: 12px 16px; }
-
-    .chat-search__field {
-      width: 100%;
-      --mat-form-field-container-height: 40px;
-    }
-  `,
+  templateUrl: './chat-search.component.html',
+  styleUrl: './chat-search.component.scss',
 })
 export class ChatSearchComponent {
   readonly searchChange = output<string>();

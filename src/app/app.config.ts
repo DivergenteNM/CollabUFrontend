@@ -10,7 +10,7 @@ import {
 import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideClientHydration, withIncrementalHydration } from '@angular/platform-browser';
-import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -32,6 +32,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimationsAsync(),
     provideClientHydration(withIncrementalHydration()),
+    provideNativeDateAdapter(),
     { provide: MAT_DATE_LOCALE, useValue: 'es-CO' },
   ],
 };

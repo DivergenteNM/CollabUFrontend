@@ -1,0 +1,83 @@
+
+    :host { display: block; padding: 24px; max-width: 800px; margin: 0 auto; }
+
+    .detail__back { margin-bottom: 16px; }
+
+    mat-card { margin-bottom: 16px; }
+
+    .detail__rating-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .detail__rating-meta {
+      h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 4px; color: var(--mat-sys-on-surface); }
+      p { font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); margin: 0; }
+    }
+
+    .detail__criteria {
+      h3 {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 1rem; font-weight: 600; margin: 0 0 16px;
+        mat-icon { color: var(--mat-sys-primary); }
+      }
+    }
+
+    .detail__criteria-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .detail__comment {
+      h3 {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 1rem; font-weight: 600; margin: 0 0 12px;
+        mat-icon { color: var(--mat-sys-primary); }
+      }
+    }
+
+    .detail__comment-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--mat-sys-on-surface);
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    mat-divider { margin: 24px 0; }
+
+    .detail__response {
+      background: var(--mat-sys-surface-container-low);
+      h3 {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 1rem; font-weight: 600; margin: 0 0 8px;
+        mat-icon { color: var(--mat-sys-tertiary); }
+      }
+    }
+
+    .detail__response-text {
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      margin: 0 0 8px;
+      white-space: pre-wrap;
+    }
+
+    .detail__response-date {
+      font-size: 0.75rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .detail__reply-field { width: 100%; }
+
+    .detail__reply-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      :host { padding: 16px; }
+      .detail__rating-header { flex-direction: column; align-items: flex-start; }
+    }

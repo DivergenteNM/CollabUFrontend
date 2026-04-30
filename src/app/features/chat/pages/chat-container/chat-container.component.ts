@@ -18,61 +18,8 @@ import { ConversationListComponent } from '../../components/conversation-list/co
   selector: 'app-chat-container',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, ChatSearchComponent, ConversationListComponent],
-  template: `
-    <div class="chat-layout" [class.mobile]="uiStore.isMobile()">
-      <aside class="chat-layout__sidebar"
-        [class.hidden-mobile]="uiStore.isMobile() && hasActiveConversation()">
-        <app-chat-search (searchChange)="searchQuery.set($event)" />
-        <app-conversation-list
-          [conversations]="filteredConversations()"
-          [activeId]="activeConversationId()"
-          [currentUserId]="authStore.user()?.id ?? ''"
-          (select)="onSelectConversation($event)" />
-      </aside>
-
-      <section class="chat-layout__main"
-        [class.hidden-mobile]="uiStore.isMobile() && !hasActiveConversation()">
-        <router-outlet />
-      </section>
-    </div>
-  `,
-  styles: `
-    :host { display: block; height: 100%; }
-
-    .chat-layout {
-      display: flex;
-      height: calc(100vh - 64px);
-      overflow: hidden;
-    }
-
-    .chat-layout__sidebar {
-      width: 340px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--mat-sys-outline-variant);
-      background: var(--mat-sys-surface);
-    }
-
-    .chat-layout__main {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chat-layout.mobile .chat-layout__sidebar {
-      width: 100%;
-    }
-
-    .chat-layout.mobile .chat-layout__main {
-      width: 100%;
-    }
-
-    .hidden-mobile {
-      display: none !important;
-    }
-  `,
+  templateUrl: './chat-container.component.html',
+  styleUrl: './chat-container.component.scss',
 })
 export class ChatContainerComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);

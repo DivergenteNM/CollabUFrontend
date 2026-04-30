@@ -1,0 +1,100 @@
+
+    :host { display: block; padding: 24px; max-width: 960px; margin: 0 auto; }
+
+    .detail__back {
+      margin-bottom: 16px;
+    }
+
+    app-match-score-card {
+      margin-bottom: 24px;
+    }
+
+    mat-divider {
+      margin: 24px 0;
+    }
+
+    .detail__skills {
+      h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 16px;
+        mat-icon { color: var(--mat-sys-primary); }
+      }
+    }
+
+    .detail__skills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .detail__skills-col {
+      h4 {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin: 0 0 12px;
+      }
+    }
+
+    .detail__skills-col--match {
+      h4 mat-icon { color: #4caf50; }
+    }
+
+    .detail__skills-col--missing {
+      h4 mat-icon { color: #f44336; }
+    }
+
+    .chip--match {
+      --mdc-chip-elevated-container-color: #e8f5e9;
+      --mdc-chip-label-text-color: #2e7d32;
+    }
+
+    .chip--missing {
+      --mdc-chip-elevated-container-color: #ffebee;
+      --mdc-chip-label-text-color: #c62828;
+    }
+
+    .detail__no-skills {
+      font-size: 0.875rem;
+      color: var(--mat-sys-on-surface-variant);
+      font-style: italic;
+      margin: 0;
+    }
+
+    .detail__project {
+      h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 16px;
+        mat-icon { color: var(--mat-sys-primary); }
+      }
+
+      app-project-card { max-width: 600px; }
+    }
+
+    .detail__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    .detail__apply {
+      --mdc-filled-button-container-height: 44px;
+    }
+
+    @media (max-width: 600px) {
+      :host { padding: 16px; }
+      .detail__skills-grid { grid-template-columns: 1fr; }
+    }

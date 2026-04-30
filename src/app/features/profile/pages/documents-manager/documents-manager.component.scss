@@ -1,0 +1,68 @@
+.docs-manager {
+  max-width: 800px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 500;
+    }
+  }
+
+  &__upload {
+    margin-bottom: 24px;
+
+    mat-form-field {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+  }
+}
+
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .doc-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  .doc-info {
+    flex: 1;
+
+    strong {
+      display: block;
+      font-size: 0.9375rem;
+    }
+
+    .doc-meta {
+      font-size: 0.8125rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+}

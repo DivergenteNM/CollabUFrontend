@@ -12,63 +12,8 @@ import { Component, ChangeDetectionStrategy, input, computed } from '@angular/co
     '[attr.aria-valuemax]': '100',
     '[attr.aria-label]': 'label() || "Puntuación de coincidencia"',
   },
-  template: `
-    @if (label()) {
-      <span class="match-score-bar__label">{{ label() }}</span>
-    }
-    <div class="match-score-bar__track">
-      <div
-        class="match-score-bar__fill"
-        [style.width.%]="clampedScore()"
-        [style.background-color]="barColor()">
-      </div>
-    </div>
-    @if (showPercentage()) {
-      <span class="match-score-bar__percent" [style.color]="barColor()">
-        {{ clampedScore() }}%
-      </span>
-    }
-  `,
-  styles: `
-    :host {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .match-score-bar__label {
-      flex-shrink: 0;
-      min-width: 80px;
-      font-size: 0.8125rem;
-      color: var(--mat-sys-on-surface-variant);
-    }
-
-    .match-score-bar__track {
-      flex: 1;
-      background-color: var(--mat-sys-surface-variant);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    :host(.match-score-bar--sm) .match-score-bar__track { height: 6px; }
-    :host(.match-score-bar--md) .match-score-bar__track { height: 10px; }
-    :host(.match-score-bar--lg) .match-score-bar__track { height: 14px; }
-
-    .match-score-bar__fill {
-      height: 100%;
-      border-radius: 999px;
-      transition: width 400ms ease;
-    }
-
-    .match-score-bar__percent {
-      flex-shrink: 0;
-      min-width: 38px;
-      text-align: right;
-      font-weight: 600;
-      font-size: 0.8125rem;
-    }
-  `,
+  templateUrl: './match-score-bar.component.html',
+  styleUrl: './match-score-bar.component.scss',
 })
 export class MatchScoreBarComponent {
   readonly score = input.required<number>();

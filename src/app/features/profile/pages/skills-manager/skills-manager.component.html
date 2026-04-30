@@ -1,0 +1,85 @@
+<div class="skills-manager">
+  <div class="skills-manager__header">
+    <h1>Gestionar Habilidades</h1>
+    <a mat-button routerLink="/profile/view">
+      <mat-icon>arrow_back</mat-icon>
+      Volver al perfil
+    </a>
+  </div>
+
+  <mat-card class="skills-manager__add">
+    <mat-card-header>
+      <mat-card-title>Agregar Habilidad</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="add-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Habilidad</mat-label>
+          <input matInput [(ngModel)]="newSkillName"
+            [matAutocomplete]="auto"
+            placeholder="Ej: Angular, Python, SQL..." />
+          <mat-autocomplete #auto="matAutocomplete">
+            @for (s of filteredSuggestions(); track s) {
+              <mat-option [value]="s">{{ s }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Categoría</mat-label>
+          <input matInput [(ngModel)]="newSkillCategory" placeholder="Ej: Frontend, Backend..." />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nivel</mat-label>
+          <mat-select [(ngModel)]="newSkillLevel">
+            <mat-option value="basic">Básico</mat-option>
+            <mat-option value="intermediate">Intermedio</mat-option>
+            <mat-option value="advanced">Avanzado</mat-option>
+            <mat-option value="expert">Experto</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary"
+          [disabled]="!newSkillName.trim() || adding()"
+          (click)="addSkill()">
+          <mat-icon>add</mat-icon>
+          Agregar
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Mis Habilidades ({{ skills().length }})</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loading()) {
+        <p>Cargando habilidades...</p>
+      }
+
+      @for (skill of skills(); track skill.id) {
+        <div class="skill-row">
+          <mat-chip-set>
+            <mat-chip>{{ skill.name }}</mat-chip>
+          </mat-chip-set>
+          <span class="skill-category">{{ skill.category }}</span>
+          <span class="skill-level" [class]="'level-' + skill.proficiencyLevel">
+            {{ levelLabel(skill.proficiencyLevel) }}
+          </span>
+          <button mat-icon-button aria-label="Eliminar habilidad" (click)="removeSkill(skill)" [disabled]="removing()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      } @empty {
+        @if (!loading()) {
+          <div class="empty">
+            <mat-icon>psychology</mat-icon>
+            <p>No tienes habilidades registradas. ¡Agrega tu primera habilidad!</p>
+          </div>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,56 @@
+<div class="filter-bar">
+  @for (filter of filters(); track filter.key) {
+    @switch (filter.type) {
+      @case ('text') {
+        <mat-form-field appearance="outline" class="filter-bar__field">
+          <mat-label>{{ filter.label }}</mat-label>
+          <input matInput
+                 [placeholder]="filter.placeholder || ''"
+                 (input)="onFilterChange(filter.key, $any($event.target).value)" />
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+      }
+      @case ('select') {
+        <mat-form-field appearance="outline" class="filter-bar__field">
+          <mat-label>{{ filter.label }}</mat-label>
+          <mat-select (selectionChange)="onFilterChange(filter.key, $event.value)">
+            <mat-option value="">Todos</mat-option>
+            @for (opt of filter.options; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @case ('chips') {
+        <div class="filter-bar__chips">
+          <span class="filter-bar__chips-label">{{ filter.label }}:</span>
+          <mat-chip-listbox (change)="onFilterChange(filter.key, $event.value)">
+            @for (opt of filter.options; track opt.value) {
+              <mat-chip-option [value]="opt.value">{{ opt.label }}</mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </div>
+      }
+      @case ('date-range') {
+        <mat-form-field appearance="outline" class="filter-bar__field">
+          <mat-label>{{ filter.label }}</mat-label>
+          <mat-date-range-input [rangePicker]="picker">
+            <input matStartDate placeholder="Inicio"
+                   (dateChange)="onFilterChange(filter.key + '_start', $event.value)" />
+            <input matEndDate placeholder="Fin"
+                   (dateChange)="onFilterChange(filter.key + '_end', $event.value)" />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matIconSuffix [for]="picker" />
+          <mat-date-range-picker #picker />
+        </mat-form-field>
+      }
+    }
+  }
+
+  @if (hasActiveFilters()) {
+    <button mat-button class="filter-bar__clear" (click)="clearFilters()">
+      <mat-icon>filter_list_off</mat-icon>
+      Limpiar
+    </button>
+  }
+</div>

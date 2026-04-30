@@ -1,0 +1,115 @@
+@use '../../../../../styles/mixins' as mx;
+
+:host {
+  display: block;
+}
+
+.stepper-title {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 16px;
+  color: var(--mat-sys-on-surface);
+}
+
+.register-stepper {
+  background: transparent;
+}
+
+.step-form {
+  @include mx.form-layout;
+  padding-top: 16px;
+}
+
+.step-form__field {
+  width: 100%;
+}
+
+.register-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.step-form__row {
+  display: flex;
+  gap: 12px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.step-form__actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.step-form__error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  margin-bottom: 16px;
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.password-strength {
+  margin: -8px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-progress-bar {
+    flex: 1;
+  }
+}
+
+.password-strength__label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.success-screen {
+  text-align: center;
+  padding: 24px 0;
+
+  h2 {
+    margin: 16px 0 8px;
+    font-size: 22px;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 14px;
+    margin: 0 0 8px;
+  }
+}
+
+.success-screen__icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: var(--mat-sys-primary);
+}
+
+.success-screen__hint {
+  margin-bottom: 24px;
+}
+
+@include mx.xs {
+  .step-form__row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

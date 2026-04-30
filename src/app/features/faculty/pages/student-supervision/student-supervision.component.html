@@ -1,0 +1,116 @@
+
+    <div class="supervision">
+      <button mat-button routerLink="/my-students">
+        <mat-icon>arrow_back</mat-icon>
+        Volver a mis estudiantes
+      </button>
+
+      @if (resource.isLoading()) {
+        <mat-card>
+          <mat-card-content>
+            <p>Cargando información del estudiante...</p>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      @if (resource.value()?.data; as detail) {
+        <!-- Student Info Card -->
+        <mat-card class="supervision__info">
+          <mat-card-content>
+            <div class="student-header">
+              <div class="avatar">
+                @if (detail.student.avatarUrl) {
+                  <img [src]="detail.student.avatarUrl" [alt]="detail.student.name" />
+                } @else {
+                  <mat-icon>person</mat-icon>
+                }
+              </div>
+              <div class="student-details">
+                <h2>{{ detail.student.name }}</h2>
+                <p>{{ detail.student.program }} · Semestre {{ detail.student.semester }}</p>
+                <p class="project-info">
+                  <mat-icon>business</mat-icon> {{ detail.company.name }} ·
+                  <mat-icon>folder</mat-icon> {{ detail.project.title }}
+                </p>
+              </div>
+              <div class="progress-section">
+                <span class="hours">{{ detail.hoursCompleted }}/{{ detail.hoursRequired }}h</span>
+                <mat-progress-bar mode="determinate"
+                  [value]="(detail.hoursCompleted / detail.hoursRequired) * 100" />
+                <mat-chip-set>
+                  <mat-chip>{{ detail.status }}</mat-chip>
+                </mat-chip-set>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <a mat-flat-button color="primary"
+              [routerLink]="['/my-evaluations/create']"
+              [queryParams]="{ applicationId: detail.applicationId }">
+              <mat-icon>rate_review</mat-icon>
+              Evaluar Estudiante
+            </a>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Tabs -->
+        <mat-tab-group>
+          <mat-tab label="Entregables">
+            <div class="tab-content">
+              @for (d of detail.deliverables; track d.id) {
+                <mat-card class="deliverable-card">
+                  <mat-card-content>
+                    <div class="deliverable-row">
+                      <div class="deliverable-info">
+                        <strong>{{ d.title }}</strong>
+                        <span class="deliverable-due">
+                          <mat-icon>schedule</mat-icon>
+                          Vence: {{ d.dueDate | date:'d MMM yyyy' }}
+                        </span>
+                      </div>
+                      <mat-chip-set>
+                        <mat-chip [class]="'status-' + d.status">
+                          {{ deliverableStatusLabel(d.status) }}
+                        </mat-chip>
+                      </mat-chip-set>
+                      @if (d.fileUrl) {
+                        <a mat-icon-button aria-label="Descargar entregable" [href]="d.fileUrl" target="_blank">
+                          <mat-icon>download</mat-icon>
+                        </a>
+                      }
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              } @empty {
+                <div class="empty">
+                  <mat-icon>assignment</mat-icon>
+                  <p>No hay entregables registrados</p>
+                </div>
+              }
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Evaluaciones">
+            <div class="tab-content">
+              @for (ev of detail.evaluations; track ev.id) {
+                <mat-card class="eval-card">
+                  <mat-card-content>
+                    <div class="eval-header">
+                      <strong>{{ ev.evaluatorName }}</strong>
+                      <span class="eval-date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
+                    </div>
+                    <app-star-rating [value]="ev.overallRating" [readonly]="true" size="sm" />
+                    <p class="eval-comment">{{ ev.comment }}</p>
+                  </mat-card-content>
+                </mat-card>
+              } @empty {
+                <div class="empty">
+                  <mat-icon>rate_review</mat-icon>
+                  <p>No hay evaluaciones registradas</p>
+                </div>
+              }
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      }
+    </div>

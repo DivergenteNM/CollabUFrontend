@@ -1,0 +1,21 @@
+<div class="stepper">
+  @for (step of steps; track step.status; let i = $index; let last = $last) {
+    <div class="stepper__step"
+         [class.stepper__step--completed]="i < currentIndex()"
+         [class.stepper__step--active]="i === currentIndex()"
+         [class.stepper__step--inactive]="i > currentIndex()">
+      <div class="stepper__circle">
+        <mat-icon>
+          @if (i < currentIndex()) { check }
+          @else { {{ step.icon }} }
+        </mat-icon>
+      </div>
+      <span class="stepper__label">{{ step.label }}</span>
+    </div>
+    @if (!last) {
+      <div class="stepper__line"
+           [class.stepper__line--filled]="i < currentIndex()">
+      </div>
+    }
+  }
+</div>

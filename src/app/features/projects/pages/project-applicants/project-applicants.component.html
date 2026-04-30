@@ -1,0 +1,63 @@
+<div class="applicants">
+  <header class="applicants__header">
+    <button mat-icon-button aria-label="Volver" (click)="router.navigate(['/my-projects'])">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Aplicantes del Proyecto</h1>
+  </header>
+
+  <app-data-table
+    [data]="applicants()"
+    [columns]="columns"
+    [totalItems]="totalItems()"
+    [pageSize]="10"
+    [loading]="applicantsResource.isLoading()"
+    (rowClicked)="onRowClicked($event)"
+    (pageChanged)="onPageChanged($event)"
+    (sortChanged)="onSortChanged($event)" />
+
+  <ng-template #studentTpl let-row>
+    <div class="applicants__student">
+      <span class="applicants__student-name">{{ row.student?.firstName }} {{ row.student?.lastName }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template #scoreTpl let-row>
+    @if (row.matchScore != null) {
+      <span class="applicants__score"
+            [class.high]="row.matchScore >= 80"
+            [class.mid]="row.matchScore >= 50 && row.matchScore < 80"
+            [class.low]="row.matchScore < 50">
+        {{ row.matchScore }}%
+      </span>
+    } @else {
+      <span class="applicants__score">—</span>
+    }
+  </ng-template>
+
+  <ng-template #statusTpl let-row>
+    <app-status-badge [status]="row.status" size="sm" />
+  </ng-template>
+
+  <ng-template #actionsTpl let-row>
+    <button mat-icon-button aria-label="Acciones" [matMenuTriggerFor]="actionsMenu" (click)="$event.stopPropagation()">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #actionsMenu="matMenu">
+      @if (row.status === pendingStatus || row.status === underReviewStatus) {
+        <button mat-menu-item (click)="changeStatus(row.id, acceptedStatus)">
+          <mat-icon>check_circle</mat-icon> Aceptar
+        </button>
+        <button mat-menu-item (click)="changeStatus(row.id, interviewStatus)">
+          <mat-icon>event</mat-icon> Programar Entrevista
+        </button>
+        <button mat-menu-item (click)="changeStatus(row.id, rejectedStatus)">
+          <mat-icon>cancel</mat-icon> Rechazar
+        </button>
+      }
+      <button mat-menu-item (click)="router.navigate(['/received-applications', row.id])">
+        <mat-icon>visibility</mat-icon> Ver Detalle
+      </button>
+    </mat-menu>
+  </ng-template>
+</div>

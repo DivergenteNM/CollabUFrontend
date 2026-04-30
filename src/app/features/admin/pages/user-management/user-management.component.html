@@ -1,0 +1,42 @@
+
+    <div class="user-mgmt">
+      <div class="user-mgmt__header">
+        <h1>Gestión de Usuarios</h1>
+      </div>
+
+      <div class="user-mgmt__filters">
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar</mat-label>
+          <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)"
+            placeholder="Nombre o email..." />
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Rol</mat-label>
+          <mat-select [value]="roleFilter()" (selectionChange)="roleFilter.set($event.value)">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="student">Estudiante</mat-option>
+            <mat-option value="company">Empresa</mat-option>
+            <mat-option value="faculty">Docente</mat-option>
+            <mat-option value="admin">Admin</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value)">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="true">Activo</mat-option>
+            <mat-option value="false">Inactivo</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <app-data-table
+        [data]="users()"
+        [columns]="columns"
+        [totalItems]="resource.value()?.meta?.total ?? 0"
+        [loading]="resource.isLoading()"
+        (pageChanged)="onPage($event)" />
+    </div>

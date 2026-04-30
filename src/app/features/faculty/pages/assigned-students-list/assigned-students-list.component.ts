@@ -22,36 +22,8 @@ interface AssignedStudent {
   selector: 'app-assigned-students-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIconModule, MatProgressBarModule, DataTableComponent],
-  template: `
-    <div class="students-list">
-      <div class="students-list__header">
-        <h1>Mis Estudiantes</h1>
-      </div>
-
-      <app-data-table
-        [data]="students()"
-        [columns]="columns"
-        [totalItems]="resource.value()?.meta?.total ?? 0"
-        [loading]="resource.isLoading()"
-        (rowClicked)="onRowClick($event)"
-        (pageChanged)="onPage($event)" />
-    </div>
-  `,
-  styles: `
-    .students-list {
-      max-width: 1200px;
-      margin: 0 auto;
-
-      &__header {
-        margin-bottom: 24px;
-
-        h1 {
-          font-size: 1.75rem;
-          font-weight: 500;
-        }
-      }
-    }
-  `,
+  templateUrl: './assigned-students-list.component.html',
+  styleUrl: './assigned-students-list.component.scss',
 })
 export class AssignedStudentsListComponent {
   private readonly router = inject(Router);

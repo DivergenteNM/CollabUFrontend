@@ -1,0 +1,27 @@
+<div class="register-select">
+  <h2 class="register-select__heading">Crear nueva cuenta</h2>
+  <p class="register-select__sub">Selecciona tu tipo de cuenta:</p>
+
+  <div class="register-select__cards">
+    <mat-card appearance="outlined" class="register-select__card" routerLink="/auth/register/student">
+      <mat-card-content>
+        <mat-icon class="register-select__icon">school</mat-icon>
+        <h3>Estudiante</h3>
+        <p>Busca prácticas profesionales y conecta con empresas</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="register-select__card" routerLink="/auth/register/company">
+      <mat-card-content>
+        <mat-icon class="register-select__icon">business</mat-icon>
+        <h3>Empresa</h3>
+        <p>Publica proyectos y conecta con talento universitario</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <p class="register-select__login">
+    ¿Ya tienes cuenta?
+    <a routerLink="/auth/login">Inicia sesión</a>
+  </p>
+</div>

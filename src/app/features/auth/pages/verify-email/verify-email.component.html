@@ -1,0 +1,18 @@
+<div class="verify-email">
+  @if (isLoading()) {
+    <mat-spinner diameter="48"></mat-spinner>
+    <p class="verify-email__loading">Verificando tu email...</p>
+  } @else if (success()) {
+    <mat-icon class="verify-email__icon verify-email__icon--success">check_circle</mat-icon>
+    <h2>¡Email verificado!</h2>
+    <p>Tu correo electrónico ha sido verificado exitosamente. Ya puedes iniciar sesión.</p>
+    <a mat-flat-button color="primary" routerLink="/auth/login">Ir a Iniciar Sesión</a>
+  } @else {
+    <mat-icon class="verify-email__icon verify-email__icon--error">error</mat-icon>
+    <h2>Verificación fallida</h2>
+    <p>{{ errorMessage() }}</p>
+    <div class="verify-email__actions">
+      <a mat-flat-button color="primary" routerLink="/auth/login">Ir a Iniciar Sesión</a>
+    </div>
+  }
+</div>

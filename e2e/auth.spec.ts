@@ -45,6 +45,6 @@ test.describe('Auth flow', () => {
 
   test('should load register page', async ({ page }) => {
     await page.goto('/auth/register');
-    await expect(page.locator('h1, h2, mat-card-title')).toBeVisible();
+    await expect(page.locator('h1, h2, mat-card-title').first()).toBeVisible();
   });
 });

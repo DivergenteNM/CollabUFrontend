@@ -1,0 +1,53 @@
+<mat-card class="application-card__container">
+  <mat-card-header>
+    <mat-card-title>
+      @if (viewMode() === 'student') {
+        {{ application().project?.title || 'Proyecto' }}
+      } @else {
+        Estudiante #{{ application().student?.studentCode || application().studentId }}
+      }
+    </mat-card-title>
+    <mat-card-subtitle class="application-card__subtitle">
+      <app-status-badge [status]="application().status" size="sm" />
+      <span class="application-card__date">
+        <mat-icon>calendar_today</mat-icon>
+        {{ application().appliedAt | date:'d MMM yyyy' }}
+      </span>
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <app-application-progress-stepper [currentStatus]="application().status" />
+
+    @if (application().coverLetter) {
+      <p class="application-card__cover">{{ application().coverLetter }}</p>
+    }
+
+    @if (application().matchScore) {
+      <div class="application-card__score">
+        <mat-icon>star</mat-icon>
+        Match: {{ application().matchScore }}%
+      </div>
+    }
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button mat-button (click)="viewDetail.emit(application().id)">
+      <mat-icon>visibility</mat-icon> Ver Detalle
+    </button>
+
+    @if (viewMode() === 'company' && canChangeStatus()) {
+      <button mat-flat-button [matMenuTriggerFor]="statusMenu">
+        <mat-icon>edit</mat-icon> Cambiar Estado
+      </button>
+      <mat-menu #statusMenu="matMenu">
+        @for (action of availableActions(); track action.status) {
+          <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
+            <mat-icon>{{ action.icon }}</mat-icon>
+            {{ action.label }}
+          </button>
+        }
+      </mat-menu>
+    }
+  </mat-card-actions>
+</mat-card>

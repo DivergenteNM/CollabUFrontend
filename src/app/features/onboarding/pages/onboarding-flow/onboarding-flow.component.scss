@@ -1,0 +1,128 @@
+:host {
+  display: block;
+}
+
+.onboarding-flow {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.onboarding-flow__header {
+  margin-bottom: 16px;
+}
+
+.onboarding-flow__header h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+}
+
+.onboarding-flow__header p {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.onboarding-flow__eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mat-sys-primary);
+}
+
+.onboarding-flow__loading {
+  min-height: 220px;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  justify-items: center;
+}
+
+.onboarding-flow__form {
+  display: grid;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.onboarding-flow__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.onboarding-flow__full {
+  width: 100%;
+}
+
+.onboarding-flow__hint {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.onboarding-flow__block {
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 65%, transparent);
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.onboarding-flow__block h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.onboarding-flow__ok-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: color-mix(in srgb, var(--mat-sys-primary) 70%, #14532d 30%);
+  background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.onboarding-flow__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.onboarding-flow__final-step {
+  min-height: 240px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.onboarding-flow__final-step h2,
+.onboarding-flow__final-step p {
+  margin: 0;
+}
+
+.onboarding-flow__status-icon {
+  width: 56px;
+  height: 56px;
+  font-size: 56px;
+  margin: 0 auto;
+}
+
+.onboarding-flow__status-icon--ok {
+  color: color-mix(in srgb, var(--mat-sys-primary) 75%, #16a34a 25%);
+}
+
+.onboarding-flow__status-icon--pending {
+  color: color-mix(in srgb, var(--mat-sys-secondary) 70%, #f59e0b 30%);
+}
+
+@media (max-width: 840px) {
+  .onboarding-flow {
+    padding: 16px;
+  }
+
+  .onboarding-flow__row {
+    grid-template-columns: 1fr;
+  }
+}

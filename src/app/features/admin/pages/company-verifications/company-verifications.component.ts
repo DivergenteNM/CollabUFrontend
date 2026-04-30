@@ -16,56 +16,8 @@ import { DataTableComponent, ColumnDef } from '../../../../shared/components/ui/
     MatIconModule, MatButtonModule, MatChipsModule,
     MatFormFieldModule, MatSelectModule, DataTableComponent,
   ],
-  template: `
-    <div class="verifications">
-      <div class="verifications__header">
-        <h1>Verificaciones de Empresas</h1>
-      </div>
-
-      <div class="verifications__filters">
-        <mat-form-field appearance="outline">
-          <mat-label>Estado</mat-label>
-          <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value)">
-            <mat-option value="">Todos</mat-option>
-            <mat-option value="pending">Pendiente</mat-option>
-            <mat-option value="approved">Aprobada</mat-option>
-            <mat-option value="rejected">Rechazada</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <app-data-table
-        [data]="verifications()"
-        [columns]="columns"
-        [totalItems]="resource.value()?.meta?.total ?? 0"
-        [loading]="resource.isLoading()"
-        (rowClicked)="onRowClick($event)"
-        (pageChanged)="onPage($event)" />
-    </div>
-  `,
-  styles: `
-    .verifications {
-      max-width: 1200px;
-      margin: 0 auto;
-
-      &__header {
-        margin-bottom: 24px;
-
-        h1 {
-          font-size: 1.75rem;
-          font-weight: 500;
-        }
-      }
-
-      &__filters {
-        margin-bottom: 16px;
-
-        mat-form-field {
-          width: 200px;
-        }
-      }
-    }
-  `,
+  templateUrl: './company-verifications.component.html',
+  styleUrl: './company-verifications.component.scss',
 })
 export class CompanyVerificationsComponent {
   readonly statusFilter = signal('');

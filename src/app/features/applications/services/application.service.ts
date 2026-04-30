@@ -20,7 +20,7 @@ export class ApplicationService extends BaseApiService {
   }
 
   getMyApplications(params: PaginationParams): Observable<PaginatedResponse<Application>> {
-    return this.http.get<PaginatedResponse<Application>>(`${this.apiUrl}/my-applications`, {
+    return this.http.get<PaginatedResponse<Application>>(`${this.apiUrl}/my`, {
       params: this.buildParams(params)
     });
   }

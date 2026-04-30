@@ -9,8 +9,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: UserRole;
-  firstName: string;
-  lastName: string;
 }
 
 export interface AuthResponse {
@@ -30,7 +28,8 @@ export interface AuthUser {
   id: string;
   email: string;
   role: UserRole;
-  isEmailVerified: boolean;
+  isVerified?: boolean;
+  isEmailVerified?: boolean;
   isActive: boolean;
 }
 

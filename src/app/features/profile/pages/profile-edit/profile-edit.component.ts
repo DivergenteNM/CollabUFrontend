@@ -1,6 +1,16 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import { Observable, of, switchMap, tap } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,8 +18,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ApiResponse, CompanyProfile, UserProfile } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
+import { CompanyProfileService } from '../../../../core/services/company-profile.service';
+import { UserProfileService } from '../../../../core/services/user-profile.service';
 
 @Component({
   selector: 'app-profile-edit',
@@ -20,251 +33,262 @@ import { StudentService } from '../../../students/services/student.service';
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatSnackBarModule,
   ],
-  template: `
-    <div class="profile-edit">
-      <div class="profile-edit__header">
-        <h1>Editar Perfil</h1>
-        <a mat-button routerLink="/profile/view">
-          <mat-icon>arrow_back</mat-icon>
-          Cancelar
-        </a>
-      </div>
-
-      @if (authStore.isStudent()) {
-        <mat-card>
-          <mat-card-content>
-            <form [formGroup]="studentForm" (ngSubmit)="saveStudent()">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Biografía</mat-label>
-                <textarea matInput formControlName="bio" rows="4"
-                  placeholder="Cuéntanos sobre ti..."></textarea>
-              </mat-form-field>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Programa académico</mat-label>
-                  <input matInput formControlName="program" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Semestre</mat-label>
-                  <mat-select formControlName="semester">
-                    @for (s of semesters; track s) {
-                      <mat-option [value]="s">{{ s }}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-              </div>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>LinkedIn URL</mat-label>
-                <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>GitHub URL</mat-label>
-                <input matInput formControlName="githubUrl" placeholder="https://github.com/..." />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Portfolio URL</mat-label>
-                <input matInput formControlName="portfolioUrl" placeholder="https://..." />
-              </mat-form-field>
-
-              <div class="form-actions">
-                <button mat-flat-button color="primary" type="submit"
-                  [disabled]="studentForm.invalid || saving()">
-                  @if (saving()) {
-                    Guardando...
-                  } @else {
-                    <ng-container><mat-icon>save</mat-icon></ng-container>
-                    Guardar Cambios
-                  }
-                </button>
-              </div>
-            </form>
-          </mat-card-content>
-        </mat-card>
-      }
-
-      @if (authStore.isCompany()) {
-        <mat-card>
-          <mat-card-content>
-            <form [formGroup]="companyForm" (ngSubmit)="saveCompany()">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nombre de la empresa</mat-label>
-                <input matInput formControlName="companyName" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Descripción</mat-label>
-                <textarea matInput formControlName="description" rows="4"></textarea>
-              </mat-form-field>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Industria</mat-label>
-                  <input matInput formControlName="industry" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Tamaño</mat-label>
-                  <mat-select formControlName="companySize">
-                    <mat-option value="micro">Micro</mat-option>
-                    <mat-option value="small">Pequeña</mat-option>
-                    <mat-option value="medium">Mediana</mat-option>
-                    <mat-option value="large">Grande</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Ciudad</mat-label>
-                  <input matInput formControlName="city" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Departamento</mat-label>
-                  <input matInput formControlName="department" />
-                </mat-form-field>
-              </div>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Dirección</mat-label>
-                <input matInput formControlName="address" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Teléfono</mat-label>
-                <input matInput formControlName="phone" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Sitio Web</mat-label>
-                <input matInput formControlName="websiteUrl" />
-              </mat-form-field>
-
-              <div class="form-actions">
-                <button mat-flat-button color="primary" type="submit"
-                  [disabled]="companyForm.invalid || saving()">
-                  @if (saving()) {
-                    Guardando...
-                  } @else {
-                    <ng-container><mat-icon>save</mat-icon></ng-container>
-                    Guardar Cambios
-                  }
-                </button>
-              </div>
-            </form>
-          </mat-card-content>
-        </mat-card>
-      }
-    </div>
-  `,
-  styles: `
-    .profile-edit {
-      max-width: 700px;
-      margin: 0 auto;
-
-      &__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 24px;
-
-        h1 {
-          font-size: 1.75rem;
-          font-weight: 500;
-        }
-      }
-    }
-
-    .full-width {
-      width: 100%;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 16px;
-
-      mat-form-field {
-        flex: 1;
-      }
-
-      @media (max-width: 599px) {
-        flex-direction: column;
-      }
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 16px;
-    }
-  `,
+  templateUrl: './profile-edit.component.html',
+  styleUrl: './profile-edit.component.scss',
 })
 export class ProfileEditComponent implements OnInit {
   readonly authStore = inject(AuthStore);
   private readonly fb = inject(FormBuilder);
   private readonly studentService = inject(StudentService);
+  private readonly companyProfileService = inject(CompanyProfileService);
+  private readonly userProfileService = inject(UserProfileService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   readonly saving = signal(false);
+  readonly userProfileExists = signal(false);
+  readonly roleProfileExists = signal(false);
 
   readonly semesters = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  readonly userForm: FormGroup = this.fb.group({
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    phone: [''],
+    bio: [''],
+    linkedinUrl: ['', [this.optionalLinkedInValidator()]],
+  });
 
   readonly studentForm: FormGroup = this.fb.group({
     bio: [''],
     program: [''],
     semester: [null],
-    linkedinUrl: [''],
     githubUrl: [''],
     portfolioUrl: [''],
+    personalWebsiteUrl: [''],
   });
 
   readonly companyForm: FormGroup = this.fb.group({
     companyName: ['', Validators.required],
-    description: [''],
-    industry: [''],
+    description: ['', [Validators.required, Validators.minLength(20)]],
+    industry: ['', Validators.required],
     companySize: [''],
-    city: [''],
-    department: [''],
-    address: [''],
-    phone: [''],
-    websiteUrl: [''],
+    headquartersCity: ['', Validators.required],
+    headquartersState: [''],
+    website: ['', [this.optionalHttpUrlValidator('website')]],
   });
 
   ngOnInit(): void {
-    if (this.authStore.isStudent()) {
-      this.studentService.getProfile().subscribe((resp) => {
-        const s = resp.data;
-        this.studentForm.patchValue({
-          bio: s.bio ?? '',
-          program: s.program,
-          semester: s.semester,
-          linkedinUrl: s.linkedinUrl ?? '',
-          githubUrl: s.githubUrl ?? '',
-          portfolioUrl: s.portfolioUrl ?? '',
+    this.userProfileService.getMyProfile().subscribe({
+      next: (resp) => {
+        this.userProfileExists.set(true);
+        this.userForm.patchValue({
+          firstName: resp.data.firstName ?? '',
+          lastName: resp.data.lastName ?? '',
+          phone: resp.data.phone ?? '',
+          bio: resp.data.bio ?? '',
+          linkedinUrl: resp.data.linkedinUrl ?? '',
         });
+      },
+      error: (error: HttpErrorResponse) => {
+        if (error.status !== 404) {
+          this.snackBar.open('No se pudo cargar el perfil base', 'Cerrar', { duration: 3500 });
+        }
+      },
+    });
+
+    if (this.authStore.isStudent()) {
+      this.studentService.getProfile().subscribe({
+        next: (resp) => {
+          this.roleProfileExists.set(true);
+          const s = resp.data;
+          this.studentForm.patchValue({
+            bio: s.bio ?? '',
+            program: s.program,
+            semester: s.semester,
+            githubUrl: s.githubUrl ?? '',
+            portfolioUrl: s.portfolioUrl ?? '',
+            personalWebsiteUrl: s.personalWebsiteUrl ?? '',
+          });
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status !== 404) {
+            this.snackBar.open('No se pudo cargar el perfil de estudiante', 'Cerrar', { duration: 3500 });
+          }
+        },
+      });
+    }
+
+    if (this.authStore.isCompany()) {
+      this.companyProfileService.getProfile().subscribe({
+        next: (resp) => {
+          this.roleProfileExists.set(true);
+          const c = resp.data;
+          this.companyForm.patchValue({
+            companyName: c.companyName ?? '',
+            description: c.description ?? '',
+            industry: c.industry ?? '',
+            companySize: c.companySize ?? '',
+            headquartersCity: c.headquartersCity ?? c.city ?? '',
+            headquartersState: c.headquartersState ?? c.department ?? '',
+            website: c.website ?? c.websiteUrl ?? '',
+          });
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status !== 404) {
+            this.snackBar.open('No se pudo cargar el perfil de empresa', 'Cerrar', { duration: 3500 });
+          }
+        },
       });
     }
   }
 
   saveStudent(): void {
-    if (this.studentForm.invalid) return;
+    if (this.userForm.invalid || this.studentForm.invalid) {
+      this.userForm.markAllAsTouched();
+      this.studentForm.markAllAsTouched();
+      return;
+    }
+
     this.saving.set(true);
-    this.studentService.updateProfile(this.studentForm.value).subscribe({
+
+    this.upsertUserProfile().pipe(
+      switchMap(() => {
+        const payload = this.studentForm.getRawValue();
+        return this.roleProfileExists()
+          ? this.studentService.updateProfile(payload)
+          : this.studentService.createProfile(payload).pipe(
+            tap(() => this.roleProfileExists.set(true)),
+          );
+      }),
+    ).subscribe({
       next: () => {
+        this.authStore.refreshProfile();
+        this.saving.set(false);
         this.snackBar.open('Perfil actualizado exitosamente', 'Cerrar', { duration: 3000 });
         this.router.navigate(['/profile/view']);
       },
-      error: () => this.saving.set(false),
+      error: (error: unknown) => {
+        this.handleSaveError(error, 'No se pudo actualizar el perfil de estudiante');
+        this.saving.set(false);
+      },
     });
   }
 
   saveCompany(): void {
-    if (this.companyForm.invalid) return;
+    if (this.userForm.invalid || this.companyForm.invalid) {
+      this.userForm.markAllAsTouched();
+      this.companyForm.markAllAsTouched();
+      return;
+    }
+
     this.saving.set(true);
-    // CompanyService.updateProfile() - handled same as StudentService pattern
-    this.snackBar.open('Perfil actualizado exitosamente', 'Cerrar', { duration: 3000 });
-    this.router.navigate(['/profile/view']);
+
+    this.upsertUserProfile().pipe(
+      switchMap(() => {
+        const payload = this.buildCompanyPayload();
+        return this.roleProfileExists()
+          ? this.companyProfileService.updateProfile(payload)
+          : this.companyProfileService.createProfile(payload).pipe(
+            tap(() => this.roleProfileExists.set(true)),
+          );
+      }),
+    ).subscribe({
+      next: () => {
+        this.authStore.refreshProfile();
+        this.saving.set(false);
+        this.snackBar.open('Perfil actualizado exitosamente', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/profile/view']);
+      },
+      error: (error: unknown) => {
+        this.handleSaveError(error, 'No se pudo actualizar el perfil de empresa');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  private upsertUserProfile(): Observable<ApiResponse<UserProfile> | null> {
+    const role = this.authStore.role();
+    const userId = this.authStore.user()?.id;
+    if (!role || !userId) {
+      return of(null);
+    }
+
+    const payload = this.buildUserPayload();
+
+    if (this.userProfileExists()) {
+      return this.userProfileService.updateProfile(payload);
+    }
+
+    return this.userProfileService.createProfile({ userId, role, ...payload }).pipe(
+      tap(() => this.userProfileExists.set(true)),
+    );
+  }
+
+  private handleSaveError(error: unknown, defaultMessage: string): void {
+    const message = error instanceof HttpErrorResponse
+      ? (error.error?.message ?? defaultMessage)
+      : defaultMessage;
+
+    this.snackBar.open(message, 'Cerrar', { duration: 4200 });
+  }
+
+  private buildUserPayload() {
+    const raw = this.userForm.getRawValue();
+
+    return {
+      firstName: raw.firstName,
+      lastName: raw.lastName,
+      phone: this.normalizeOptionalText(raw.phone),
+      bio: this.normalizeOptionalText(raw.bio),
+      linkedinUrl: this.normalizeOptionalText(raw.linkedinUrl),
+    };
+  }
+
+  private buildCompanyPayload() {
+    const raw = this.companyForm.getRawValue();
+
+    return {
+      companyName: raw.companyName,
+      description: raw.description,
+      industry: raw.industry,
+      companySize: this.normalizeOptionalText(raw.companySize) as CompanyProfile['companySize'] | undefined,
+      headquartersCity: raw.headquartersCity,
+      headquartersState: this.normalizeOptionalText(raw.headquartersState),
+      website: this.normalizeOptionalText(raw.website),
+    };
+  }
+
+  private normalizeOptionalText(value: string | null | undefined): string | undefined {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : undefined;
+  }
+
+  private isValidHttpUrl(value: string): boolean {
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  private optionalHttpUrlValidator(errorKey: string): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = this.normalizeOptionalText(control.value as string | null | undefined);
+      if (!value) return null;
+
+      return this.isValidHttpUrl(value) ? null : { [errorKey]: true };
+    };
+  }
+
+  private optionalLinkedInValidator(): ValidatorFn {
+    const linkedInRegex = /^https?:\/\/(www\.)?linkedin\.com\/.+/i;
+
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = this.normalizeOptionalText(control.value as string | null | undefined);
+      if (!value) return null;
+
+      return linkedInRegex.test(value) ? null : { linkedinUrl: true };
+    };
   }
 }

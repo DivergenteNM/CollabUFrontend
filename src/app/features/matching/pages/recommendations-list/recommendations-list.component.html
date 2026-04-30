@@ -1,0 +1,118 @@
+
+    <div class="recs">
+      <header class="recs__header">
+        <div>
+          <h1>Recomendaciones para ti</h1>
+          <p class="recs__subtitle">Proyectos ordenados por compatibilidad con tu perfil</p>
+        </div>
+      </header>
+
+      <!-- List -->
+      <div class="recs__list">
+        @if (recommendationsResource.isLoading()) {
+          @for (_ of [1,2,3]; track $index) {
+            <app-skeleton width="100%" height="280px" />
+          }
+        } @else if (recommendations().length === 0) {
+          <app-empty-state
+            icon="auto_awesome"
+            title="Sin recomendaciones"
+            message="Completa tu perfil para recibir recomendaciones de proyectos basadas en tus habilidades."
+            actionLabel="Ver Proyectos"
+            (actionClicked)="router.navigate(['/projects'])" />
+        } @else {
+          @for (rec of recommendations(); track rec.id; let i = $index) {
+            <mat-card class="recs__card">
+              <mat-card-content>
+                <div class="recs__card-top">
+                  <span class="recs__rank">#{{ (page() - 1) * 10 + i + 1 }}</span>
+                  <div class="recs__card-info">
+                    <h3 class="recs__project-title">{{ rec.project.title }}</h3>
+                    <div class="recs__meta">
+                      <span class="recs__company">
+                        <mat-icon>business</mat-icon>
+                        {{ rec.project.companyName }}
+                      </span>
+                      @if (rec.project.location) {
+                        <span><mat-icon>location_on</mat-icon> {{ rec.project.location }}</span>
+                      }
+                      @if (rec.project.isRemote) {
+                        <span><mat-icon>laptop</mat-icon> Remoto</span>
+                      }
+                    </div>
+
+                    <mat-chip-set class="recs__tags">
+                      @for (tag of rec.project.tags.slice(0, 4); track tag) {
+                        <mat-chip>{{ tag }}</mat-chip>
+                      }
+                    </mat-chip-set>
+                  </div>
+                </div>
+
+                <!-- Overall match bar -->
+                <div class="recs__score-section">
+                  <app-match-score-bar [score]="rec.matchScore" label="Match Total" size="lg" />
+                </div>
+
+                <!-- Breakdown bars -->
+                <div class="recs__breakdown">
+                  <app-match-score-bar [score]="rec.matchBreakdown.skill" label="Skills" size="sm" />
+                  <app-match-score-bar [score]="rec.matchBreakdown.experience" label="Experiencia" size="sm" />
+                  <app-match-score-bar [score]="rec.matchBreakdown.education" label="Educación" size="sm" />
+                  <app-match-score-bar [score]="rec.matchBreakdown.availability" label="Disponibilidad" size="sm" />
+                  <app-match-score-bar [score]="rec.matchBreakdown.rating" label="Rating" size="sm" />
+                </div>
+
+                <!-- Reason -->
+                <p class="recs__reason">
+                  <mat-icon>lightbulb</mat-icon>
+                  {{ rec.reason }}
+                </p>
+              </mat-card-content>
+
+              <mat-card-actions align="end">
+                <button mat-button (click)="router.navigate(['/projects', rec.project.id])">
+                  <mat-icon>visibility</mat-icon> Ver Proyecto
+                </button>
+                <button mat-button (click)="router.navigate(['/matching/project', rec.project.id])">
+                  <mat-icon>analytics</mat-icon> Ver Match
+                </button>
+                <button mat-flat-button (click)="openApplyDialog(rec.project.id, rec.project.title)">
+                  <mat-icon>send</mat-icon> Aplicar Ahora
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          }
+        }
+      </div>
+
+      @if (totalItems() > 0) {
+        <app-paginator
+          [totalItems]="totalItems()"
+          [pageSize]="10"
+          (pageChanged)="onPageChanged($event)" />
+      }
+
+      <!-- Tips section -->
+      @if (!recommendationsResource.isLoading()) {
+        <mat-card class="recs__tips">
+          <mat-card-content>
+            <h3><mat-icon>trending_up</mat-icon> Mejora tu match score</h3>
+            <ul>
+              <li>
+                <mat-icon>add_circle</mat-icon>
+                <span><strong>Agrega más habilidades</strong> — Cuantas más habilidades relevantes agregues, mejores recomendaciones recibirás.</span>
+              </li>
+              <li>
+                <mat-icon>work</mat-icon>
+                <span><strong>Completa tu experiencia laboral</strong> — Incluye prácticas previas, proyectos y trabajos relevantes.</span>
+              </li>
+              <li>
+                <mat-icon>upload_file</mat-icon>
+                <span><strong>Sube tu hoja de vida actualizada</strong> — Un CV completo aumenta tu puntuación de compatibilidad.</span>
+              </li>
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>

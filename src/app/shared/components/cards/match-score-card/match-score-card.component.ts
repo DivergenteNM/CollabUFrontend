@@ -15,63 +15,10 @@ interface BreakdownItem {
   imports: [MatCardModule, MatIconModule, MatchScoreBarComponent],
   host: {
     'class': 'match-score-card',
-    '[class.compact]': 'compact()',
+    '[class.match-score-card--compact]': 'compact()',
   },
-  template: `
-    <mat-card>
-      <mat-card-content>
-        <div class="match-score-card__header">
-          <mat-icon class="match-score-card__star">star</mat-icon>
-          <span class="match-score-card__total">Match Score: {{ totalScore() }}%</span>
-        </div>
-
-        @if (!compact()) {
-          <div class="match-score-card__bars">
-            @for (item of breakdownItems(); track item.label) {
-              <app-match-score-bar [score]="item.score" [label]="item.label" size="sm" />
-            }
-          </div>
-        }
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: `
-    :host {
-      display: block;
-    }
-
-    .match-score-card__header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .match-score-card__star {
-      color: #ffc107;
-      font-size: 24px;
-    }
-
-    .match-score-card__total {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: var(--mat-sys-on-surface);
-    }
-
-    .match-score-card__bars {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    :host(.compact) .match-score-card__header {
-      margin-bottom: 0;
-    }
-
-    :host(.compact) .match-score-card__total {
-      font-size: 0.9375rem;
-    }
-  `,
+  templateUrl: './match-score-card.component.html',
+  styleUrl: './match-score-card.component.scss',
 })
 export class MatchScoreCardComponent {
   readonly totalScore = input.required<number>();

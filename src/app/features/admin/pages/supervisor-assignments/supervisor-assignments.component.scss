@@ -1,0 +1,44 @@
+
+    .supervisors {
+      max-width: 1200px;
+      margin: 0 auto;
+
+      &__header {
+        margin-bottom: 24px;
+
+        h1 {
+          font-size: 1.75rem;
+          font-weight: 500;
+        }
+      }
+
+      &__form {
+        margin-bottom: 24px;
+      }
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      button {
+        margin-top: 8px;
+      }
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 24px 0 16px;
+    }
+
+    mat-divider {
+      margin: 16px 0;
+    }

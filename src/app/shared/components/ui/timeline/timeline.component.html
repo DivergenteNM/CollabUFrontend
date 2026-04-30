@@ -1,0 +1,21 @@
+<div class="timeline__container">
+  @for (event of events(); track $index; let last = $last; let first = $first) {
+    <div class="timeline__item" [class.timeline__item--first]="first" [class.timeline__item--last]="last">
+      <div class="timeline__connector">
+        <div class="timeline__dot" [class.timeline__dot--first]="first">
+          <mat-icon>{{ event.icon || (first ? 'radio_button_checked' : 'circle') }}</mat-icon>
+        </div>
+        @if (!last) {
+          <div class="timeline__line"></div>
+        }
+      </div>
+      <div class="timeline__content">
+        <span class="timeline__date">{{ event.date | date:'d MMM yyyy' }}</span>
+        <p class="timeline__title">{{ event.title }}</p>
+        @if (event.description) {
+          <p class="timeline__description">{{ event.description }}</p>
+        }
+      </div>
+    </div>
+  }
+</div>

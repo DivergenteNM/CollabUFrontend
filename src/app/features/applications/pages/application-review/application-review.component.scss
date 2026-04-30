@@ -1,0 +1,225 @@
+
+    :host { display: block; padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    .review__back { margin-bottom: 16px; }
+
+    .review__header-card {
+      margin-bottom: 24px;
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: var(--mat-sys-on-surface);
+      }
+    }
+
+    .review__header {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .review__content {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+
+      @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .review__student-card {
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 16px;
+      }
+
+      h3 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin: 12px 0 8px;
+      }
+
+      mat-divider { margin: 16px 0; }
+    }
+
+    .review__student-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .review__info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.875rem;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      &:last-child { border-bottom: none; }
+    }
+
+    .review__label {
+      color: var(--mat-sys-on-surface-variant);
+      font-weight: 500;
+    }
+
+    .review__bio {
+      font-size: 0.8125rem;
+      color: var(--mat-sys-on-surface-variant);
+      line-height: 1.5;
+    }
+
+    .review__student-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .review__right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 12px;
+      }
+    }
+
+    .review__cover-letter {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--mat-sys-on-surface-variant);
+      white-space: pre-line;
+    }
+
+    .review__applied-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8125rem;
+      color: var(--mat-sys-on-surface-variant);
+      margin-top: 12px;
+
+      mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    }
+
+    .review__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .action--accept.mat-mdc-unelevated-button {
+      background-color: #2e7d32;
+      color: #fff;
+    }
+
+    .action--reject.mat-mdc-outlined-button {
+      color: #c62828;
+      border-color: #c62828;
+    }
+
+    .action--reject.mat-mdc-unelevated-button {
+      background-color: #c62828;
+      color: #fff;
+    }
+
+    .review__inline-form {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      h4 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin: 8px 0 0;
+      }
+
+      mat-divider { margin: 4px 0; }
+    }
+
+    .review__form-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+
+      mat-form-field { flex: 1; min-width: 160px; }
+    }
+
+    .review__form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .full-width { width: 100%; }
+
+    .review__deliverable {
+      margin-bottom: 16px;
+    }
+
+    .review__deliverable-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .review__deliverable-title {
+      font-weight: 600;
+      font-size: 0.9375rem;
+    }
+
+    .review__deliverable-status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+
+      &.del-status--pending { background: #fff3e0; color: #e65100; }
+      &.del-status--submitted { background: #e3f2fd; color: #1565c0; }
+      &.del-status--approved { background: #e8f5e9; color: #2e7d32; }
+      &.del-status--rejected { background: #fce4ec; color: #c62828; }
+      &.del-status--revision-requested { background: #fff8e1; color: #f57f17; }
+    }
+
+    .review__deliverable-due,
+    .review__deliverable-grade {
+      font-size: 0.8125rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .review__deliverable-grade {
+      font-weight: 600;
+      color: var(--mat-sys-primary);
+      margin-left: 12px;
+    }
+
+    .review__deliverable-review {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--mat-sys-surface-variant);
+      border-radius: 8px;
+
+      h5 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0 0 8px;
+      }
+    }
+
+    .review__empty {
+      text-align: center;
+      color: var(--mat-sys-on-surface-variant);
+      padding: 16px;
+    }

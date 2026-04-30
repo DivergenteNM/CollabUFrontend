@@ -1,0 +1,19 @@
+<mat-sidenav-container class="main-layout">
+  <mat-sidenav
+    [mode]="sidebarMode()"
+    [opened]="uiStore.sidebarOpen()"
+    (openedChange)="uiStore.setSidebarOpen($event)"
+    class="main-layout__sidenav"
+  >
+    <app-sidebar />
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-layout__content">
+    <app-header />
+    <app-breadcrumbs />
+    <main id="main-content" class="main-layout__main">
+      <router-outlet />
+    </main>
+    <app-footer />
+  </mat-sidenav-content>
+</mat-sidenav-container>

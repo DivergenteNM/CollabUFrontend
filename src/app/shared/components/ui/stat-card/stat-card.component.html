@@ -1,0 +1,23 @@
+<mat-card [matRippleDisabled]="!clickable()" matRipple>
+  <mat-card-content>
+    <div class="stat-card__header">
+      <div class="stat-card__icon" [class]="'stat-card__icon--' + color()">
+        <mat-icon>{{ icon() }}</mat-icon>
+      </div>
+      @if (trend(); as t) {
+        <span
+          class="stat-card__trend"
+          [class.stat-card__trend--positive]="t > 0"
+          [class.stat-card__trend--negative]="t < 0">
+          <mat-icon>{{ t > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+          {{ t > 0 ? '+' : '' }}{{ t }}%
+          @if (trendLabel()) {
+            <span class="stat-card__trend-label">{{ trendLabel() }}</span>
+          }
+        </span>
+      }
+    </div>
+    <div class="stat-card__value">{{ value() }}</div>
+    <div class="stat-card__label">{{ label() }}</div>
+  </mat-card-content>
+</mat-card>

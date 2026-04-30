@@ -1,0 +1,43 @@
+.apply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 400px;
+  max-width: 560px;
+}
+
+.apply-form__field--full {
+  width: 100%;
+}
+
+.apply-form__row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+}
+
+.apply-form__field {
+  flex: 1;
+}
+
+.apply-form__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 8px;
+}
+
+mat-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.apply-form__upload {
+  margin-top: 8px;
+}

@@ -1,0 +1,17 @@
+<mat-chip-set>
+  @for (skill of visibleSkills(); track skill) {
+    <mat-chip [removable]="removable()" (removed)="removed.emit(skill)">
+      {{ skill }}
+      @if (removable()) {
+        <mat-icon matChipRemove>cancel</mat-icon>
+      }
+    </mat-chip>
+  }
+  @if (hiddenCount() > 0) {
+    <mat-chip
+      class="skill-chip-list__more-chip"
+      [matTooltip]="hiddenSkills().join(', ')">
+      +{{ hiddenCount() }} más
+    </mat-chip>
+  }
+</mat-chip-set>

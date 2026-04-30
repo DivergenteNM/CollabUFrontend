@@ -21,58 +21,8 @@ const TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
   selector: 'app-confirm-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
-  template: `
-    <h2 mat-dialog-title class="confirm-dialog__title">
-      <mat-icon [style.color]="typeConfig.color">{{ typeConfig.icon }}</mat-icon>
-      {{ data.title }}
-    </h2>
-    <mat-dialog-content>
-      <p>{{ data.message }}</p>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close(false)">
-        {{ data.cancelText || 'Cancelar' }}
-      </button>
-      <button
-        mat-flat-button
-        [class]="'confirm-btn--' + (data.type || 'info')"
-        (click)="dialogRef.close(true)">
-        {{ data.confirmText || 'Confirmar' }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: `
-    .confirm-dialog__title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      mat-icon {
-        font-size: 24px;
-      }
-    }
-
-    mat-dialog-content p {
-      color: var(--mat-sys-on-surface-variant);
-      font-size: 0.9375rem;
-      line-height: 1.5;
-    }
-
-    .confirm-btn--info {
-      background-color: var(--mat-sys-primary) !important;
-      color: var(--mat-sys-on-primary) !important;
-    }
-
-    .confirm-btn--warning {
-      background-color: #f57c00 !important;
-      color: white !important;
-    }
-
-    .confirm-btn--danger {
-      background-color: #c62828 !important;
-      color: white !important;
-    }
-  `,
+  templateUrl: './confirm-dialog.component.html',
+  styleUrl: './confirm-dialog.component.scss',
 })
 export class ConfirmDialogComponent {
   readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);

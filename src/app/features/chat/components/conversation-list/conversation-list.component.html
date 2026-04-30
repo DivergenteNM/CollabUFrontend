@@ -1,0 +1,42 @@
+<mat-nav-list>
+  @for (conv of conversations(); track conv.id) {
+    <a mat-list-item
+      [class.active]="conv.id === activeId()"
+      [class.unread]="conv.unreadCount > 0"
+      (click)="select.emit(conv.id)">
+
+      <div class="conv-item">
+        <div class="conv-item__avatar"
+          [class.online]="getOtherParticipant(conv).isOnline">
+          <mat-icon>person</mat-icon>
+        </div>
+
+        <div class="conv-item__info">
+          <div class="conv-item__top">
+            <span class="conv-item__name">{{ getOtherParticipant(conv).displayName }}</span>
+            @if (conv.lastMessage) {
+              <span class="conv-item__time">{{ conv.lastMessage.createdAt | relativeTime }}</span>
+            }
+          </div>
+          <div class="conv-item__bottom">
+            <span class="conv-item__preview">
+              @if (conv.lastMessage) {
+                {{ conv.lastMessage.content | slice:0:50 }}{{ conv.lastMessage.content.length > 50 ? '...' : '' }}
+              } @else {
+                Sin mensajes aún
+              }
+            </span>
+            @if (conv.unreadCount > 0) {
+              <span class="conv-item__badge" [matBadge]="conv.unreadCount" matBadgeSize="small" matBadgeColor="primary"></span>
+            }
+          </div>
+        </div>
+      </div>
+    </a>
+  } @empty {
+    <div class="conv-empty">
+      <mat-icon>forum</mat-icon>
+      <p>No hay conversaciones</p>
+    </div>
+  }
+</mat-nav-list>

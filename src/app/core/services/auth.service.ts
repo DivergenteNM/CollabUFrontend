@@ -4,12 +4,14 @@ import { BaseApiService } from './base-api.service';
 import { TokenService } from './token.service';
 import {
   ApiResponse,
+  AuthUser,
   AuthResponse,
   RefreshAuthResponse,
   LoginRequest,
   RegisterRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  unwrapApiResponse,
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -17,14 +19,29 @@ export class AuthService extends BaseApiService {
   protected readonly basePath = '/auth';
   private readonly tokenService = inject(TokenService);
 
-  private extractResponseData<T>(res: ApiResponse<T> | T): T {
-    return ((res as ApiResponse<T>)?.data ?? res) as T;
+  private normalizeAuthUser(user: AuthUser): AuthUser {
+    const verified = user.isVerified ?? user.isEmailVerified ?? false;
+    return {
+      ...user,
+      isVerified: verified,
+      isEmailVerified: verified,
+    };
+  }
+
+  private normalizeAuthResponse(response: AuthResponse): AuthResponse {
+    return {
+      ...response,
+      user: this.normalizeAuthUser(response.user),
+    };
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {
     return this.http
       .post<ApiResponse<AuthResponse> | AuthResponse>(`${this.apiUrl}/login`, data)
-      .pipe(map((res) => this.extractResponseData<AuthResponse>(res)));
+      .pipe(
+        map((res) => unwrapApiResponse<AuthResponse>(res)),
+        map((res) => this.normalizeAuthResponse(res)),
+      );
   }
 
   register(data: RegisterRequest): Observable<ApiResponse<{ message: string }>> {
@@ -35,7 +52,7 @@ export class AuthService extends BaseApiService {
     const refreshToken = this.tokenService.getRefreshToken();
     return this.http
       .post<ApiResponse<RefreshAuthResponse> | RefreshAuthResponse>(`${this.apiUrl}/refresh`, { refreshToken })
-      .pipe(map((res) => this.extractResponseData<RefreshAuthResponse>(res)));
+      .pipe(map((res) => unwrapApiResponse<RefreshAuthResponse>(res)));
   }
 
   forgotPassword(data: ForgotPasswordRequest): Observable<ApiResponse<{ message: string }>> {
@@ -47,7 +64,7 @@ export class AuthService extends BaseApiService {
   }
 
   verifyEmail(token: string): Observable<ApiResponse<{ message: string }>> {
-    return this.http.get<ApiResponse<{ message: string }>>(`${this.apiUrl}/verify-email?token=${token}`);
+    return this.http.post<ApiResponse<{ message: string }>>(`${this.apiUrl}/verify-email`, { token });
   }
 
   logout(): Observable<void> {

@@ -1,0 +1,71 @@
+@use '../../../../../styles/mixins' as mx;
+
+:host {
+  display: block;
+}
+
+.project-card__container {
+  @include mx.card-base;
+  @include mx.hover-elevation;
+
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card__content {
+  flex: 1;
+}
+
+.project-card__company-icon {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 20px;
+}
+
+.project-card__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 8px 0 12px;
+  color: var(--mat-sys-on-surface);
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8125rem;
+    color: var(--mat-sys-on-surface-variant);
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.project-card__tags {
+  margin-bottom: 12px;
+}
+
+.project-card__stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 8px;
+}
