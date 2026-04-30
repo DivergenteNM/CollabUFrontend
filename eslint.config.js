@@ -1,4 +1,5 @@
 const tsParser = require('@typescript-eslint/parser');
+const angularEslintPlugin = require('@angular-eslint/eslint-plugin');
 
 module.exports = [
   {
@@ -18,7 +19,18 @@ module.exports = [
       sourceType: 'module',
       ecmaVersion: 'latest',
     },
-    rules: {},
+    plugins: {
+      '@angular-eslint': angularEslintPlugin,
+    },
+    rules: {
+      '@angular-eslint/component-max-inline-declarations': [
+        'error',
+        {
+          template: 10,
+          styles: 10,
+        },
+      ],
+    },
   },
   {
     files: ['src/**/*.html'],
