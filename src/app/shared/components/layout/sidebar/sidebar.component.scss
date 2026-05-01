@@ -64,10 +64,14 @@
 
 @include mx.mobile {
   .sidebar {
-    width: var(--sidebar-collapsed);
+    width: 100%; // Fill the sidenav width
+  }
+
+  .sidebar__item-label {
+    display: inline; // Ensure labels are visible
   }
 
   .sidebar__brand-text {
-    display: none;
+    display: block; // Ensure brand text is visible
   }
 }

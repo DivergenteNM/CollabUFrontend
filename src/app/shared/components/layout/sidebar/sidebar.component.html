@@ -13,11 +13,11 @@
           mat-list-item
           [routerLink]="item.route"
           routerLinkActive="sidebar__item--active"
-          [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' || item.route === '/admin/dashboard' }"
+          [routerLinkActiveOptions]="{ exact: true }"
           class="sidebar__item"
         >
           <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
+          <span matListItemTitle class="sidebar__item-label">{{ item.label }}</span>
           @if (item.label === 'Notificaciones' && unreadCount() > 0) {
             <span matListItemMeta class="sidebar__badge" [matBadge]="unreadCount()" matBadgeColor="warn" matBadgeSize="small" matBadgeOverlap="false"></span>
           }
@@ -28,10 +28,11 @@
               mat-list-item
               [routerLink]="child.route"
               routerLinkActive="sidebar__item--active"
+              [routerLinkActiveOptions]="{ exact: true }"
               class="sidebar__item sidebar__item--child"
             >
               <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
-              <span matListItemTitle>{{ child.label }}</span>
+              <span matListItemTitle class="sidebar__item-label">{{ child.label }}</span>
             </a>
           }
         }
