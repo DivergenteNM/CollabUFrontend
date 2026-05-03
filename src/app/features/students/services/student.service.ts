@@ -27,6 +27,12 @@ export class StudentService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<StudentProfile>(res, 'Perfil obtenido')));
   }
 
+  getProfileById(userId: string): Observable<ApiResponse<StudentProfile>> {
+    return this.http
+      .get<ApiResponse<StudentProfile> | StudentProfile>(`${this.apiUrl}/profile/${userId}`)
+      .pipe(map((res) => normalizeApiResponse<StudentProfile>(res, 'Perfil obtenido')));
+  }
+
   updateProfile(data: Partial<StudentProfile>): Observable<ApiResponse<StudentProfile>> {
     return this.http
       .patch<ApiResponse<StudentProfile> | StudentProfile>(`${this.apiUrl}/profile`, data)

@@ -35,6 +35,12 @@ export class UserProfileService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<UserProfile>(res, 'Perfil obtenido')));
   }
 
+  getProfileById(userId: string): Observable<ApiResponse<UserProfile>> {
+    return this.http
+      .get<ApiResponse<UserProfile> | UserProfile>(`${this.apiUrl}/profile/${userId}`)
+      .pipe(map((res) => normalizeApiResponse<UserProfile>(res, 'Perfil obtenido')));
+  }
+
   createProfile(data: CreateUserProfilePayload): Observable<ApiResponse<UserProfile>> {
     return this.http
       .post<ApiResponse<UserProfile> | UserProfile>(`${this.apiUrl}/profile`, data)

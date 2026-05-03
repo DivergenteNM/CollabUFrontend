@@ -1,7 +1,10 @@
 import {
   Component, ChangeDetectionStrategy, inject, input, computed, signal,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { httpResource } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -71,16 +74,22 @@ export class ApplicationReviewComponent {
     reason: ['', Validators.required],
   });
 
-  readonly applicationResource = httpResource<Application>(
-    () => ({ url: `${environment.apiUrl}/applications/${this.id()}` }),
-  );
+  readonly applicationResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getById(id).pipe(
+      switchMap(app => {
+        if (!app) return of(app);
+        return this.applicationService.enrichApplication(app);
+      })
+    )
+  });
 
   readonly application = computed(() =>
-    this.applicationResource.value(),
+    this.applicationResource.value() as Application | undefined,
   );
 
   readonly studentSkillNames = computed(() =>
-    this.application()?.student?.skills.map((s) => s.name) ?? [],
+    this.application()?.student?.skills?.map((s: any) => s.name) ?? [],
   );
 
   readonly canScheduleInterview = computed(() => {

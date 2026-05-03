@@ -1,7 +1,10 @@
 import {
   Component, ChangeDetectionStrategy, inject, signal, computed,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { of, forkJoin } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 import { httpResource } from '@angular/common/http';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,27 +42,35 @@ export class ReceivedApplicationsListComponent {
   readonly sortBy = signal('appliedAt');
   readonly page = signal(1);
 
-  readonly applicationsResource = httpResource<PaginatedResponse<Application>>(
-    () => {
-      const params: Record<string, string | number> = {
+  readonly applicationsResource = rxResource({
+    params: () => {
+      const p: Record<string, string | number> = {
         page: this.page(),
         limit: 10,
         sortBy: this.sortBy(),
       };
       const status = this.statusFilter();
-      if (status) params['status'] = status;
+      if (status) p['status'] = status;
       const mm = this.minMatch();
-      if (mm) params['minMatchScore'] = mm;
-      return { url: `${environment.apiUrl}/applications/received`, params };
+      if (mm) p['minMatchScore'] = mm;
+      return p;
     },
-  );
+    stream: ({ params }) => this.applicationService.getReceivedApplications(params as any).pipe(
+      switchMap(res => {
+        if (!res.data || res.data.length === 0) return of(res);
+        return forkJoin(res.data.map(app => this.applicationService.enrichApplication(app))).pipe(
+          map(enrichedApps => ({ ...res, data: enrichedApps }))
+        );
+      })
+    )
+  });
 
   readonly applications = computed(() =>
-    this.applicationsResource.value()?.data ?? [],
+    (this.applicationsResource.value() as any)?.data ?? [],
   );
 
   readonly totalItems = computed(() =>
-    this.applicationsResource.value()?.meta?.total ?? 0,
+    (this.applicationsResource.value() as any)?.total ?? 0,
   );
 
   onPageChanged(event: { page: number; limit: number }): void {

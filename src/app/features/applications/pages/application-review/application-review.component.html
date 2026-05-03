@@ -28,7 +28,11 @@
             <mat-card-content>
               <h2>
                 <mat-icon>person</mat-icon>
-                {{ app.student?.userId ? 'Estudiante' : 'Estudiante #' + app.studentId }}
+                @if (app.student?.user) {
+                  {{ app.student!.user!.firstName }} {{ app.student!.user!.lastName }}
+                } @else {
+                  {{ app.student?.userId ? 'Estudiante' : 'Estudiante #' + app.studentId }}
+                }
               </h2>
               @if (app.student; as student) {
                 <div class="review__student-info">
@@ -44,6 +48,16 @@
                     <span class="review__label">Semestre</span>
                     <span>{{ student.semester }}</span>
                   </div>
+                  @if (student.languages && student.languages.length > 0) {
+                    <div class="review__info-row">
+                      <span class="review__label">Idioma(s)</span>
+                      <span>
+                        @for (lang of student.languages; track lang.id) {
+                          {{ lang.language }} ({{ lang.proficiencyLevel }}){{ $last ? '' : ', ' }}
+                        }
+                      </span>
+                    </div>
+                  }
                   @if (student.gpa) {
                     <div class="review__info-row">
                       <span class="review__label">Promedio</span>
