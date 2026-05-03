@@ -71,12 +71,12 @@ export class ApplicationReviewComponent {
     reason: ['', Validators.required],
   });
 
-  readonly applicationResource = httpResource<ApiResponse<Application>>(
+  readonly applicationResource = httpResource<Application>(
     () => ({ url: `${environment.apiUrl}/applications/${this.id()}` }),
   );
 
   readonly application = computed(() =>
-    this.applicationResource.value()?.data,
+    this.applicationResource.value(),
   );
 
   readonly studentSkillNames = computed(() =>
