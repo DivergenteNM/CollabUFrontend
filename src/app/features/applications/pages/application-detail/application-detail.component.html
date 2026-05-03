@@ -7,6 +7,13 @@
       @if (applicationResource.isLoading()) {
         <app-skeleton width="100%" height="200px" />
         <app-skeleton width="100%" height="400px" />
+      } @else if (applicationResource.error()) {
+        <app-empty-state
+          icon="error_outline"
+          title="Error al cargar la aplicación"
+          message="No se pudo cargar la información de la aplicación. Por favor, intenta de nuevo."
+          actionLabel="Reintentar"
+          (actionClicked)="applicationResource.reload()" />
       } @else if (application(); as app) {
         <!-- Header -->
         <mat-card class="detail__header">
@@ -57,6 +64,39 @@
                     }
                   </mat-card-content>
                 </mat-card>
+
+                @if (nextInterview(); as interview) {
+                  <mat-card class="detail__interview-summary">
+                    <mat-card-content>
+                      <div class="detail__interview-summary-header">
+                        <mat-icon color="primary">event</mat-icon>
+                        <h3>Próxima Entrevista</h3>
+                      </div>
+                      <div class="detail__info-row">
+                        <span class="detail__label">Fecha y Hora</span>
+                        <span class="detail__value--highlight">
+                          {{ interview.scheduledAt | date:'EEEE d MMMM, HH:mm' }}
+                        </span>
+                      </div>
+                      @if (interview.meetingLink) {
+                        <div class="detail__info-row">
+                          <span class="detail__label">Enlace</span>
+                          <a [href]="interview.meetingLink" target="_blank" rel="noopener" class="detail__link">
+                            Unirse a la reunión <mat-icon>open_in_new</mat-icon>
+                          </a>
+                        </div>
+                      } @else if (interview.location) {
+                        <div class="detail__info-row">
+                          <span class="detail__label">Ubicación</span>
+                          <span>{{ interview.location }}</span>
+                        </div>
+                      }
+                      <p class="detail__interview-hint">
+                        <mat-icon>info</mat-icon> Puedes ver más detalles en la pestaña "Entrevistas".
+                      </p>
+                    </mat-card-content>
+                  </mat-card>
+                }
 
                 <mat-card>
                   <mat-card-content>
@@ -183,5 +223,12 @@
             </mat-tab>
           }
         </mat-tab-group>
+      } @else {
+        <app-empty-state
+          icon="search_off"
+          title="Aplicación no encontrada"
+          message="La aplicación que buscas no existe o no tienes permiso para verla."
+          actionLabel="Volver a mis aplicaciones"
+          (actionClicked)="router.navigate(['/my-applications'])" />
       }
     </div>

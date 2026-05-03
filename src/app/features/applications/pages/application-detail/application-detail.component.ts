@@ -2,7 +2,9 @@ import {
   Component, ChangeDetectionStrategy, inject, input, computed, signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { httpResource } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,6 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
+import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application } from '../../../../core/models';
@@ -30,7 +33,7 @@ import { FileUploadComponent } from '../../../../shared/components/ui/file-uploa
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
     MatDialogModule, MatSnackBarModule, DatePipe,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
-    SkeletonComponent, FileUploadComponent,
+    SkeletonComponent, FileUploadComponent, EmptyStateComponent,
   ],
   templateUrl: './application-detail.component.html',
   styleUrl: './application-detail.component.scss',
@@ -45,17 +48,34 @@ export class ApplicationDetailComponent {
   readonly ApplicationStatus = ApplicationStatus;
   readonly submitting = signal(false);
 
-  readonly applicationResource = httpResource<ApiResponse<Application>>(
-    () => ({ url: `${environment.apiUrl}/applications/${this.id()}` }),
-  );
+  readonly applicationResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getById(id).pipe(
+      switchMap(app => {
+        if (!app) return of(app);
+        return this.applicationService.enrichApplication(app);
+      })
+    )
+  });
 
   readonly application = computed(() =>
-    this.applicationResource.value()?.data,
+    this.applicationResource.value() as Application | undefined,
   );
 
   readonly canWithdraw = computed(() => {
     const s = this.application()?.status;
     return s === ApplicationStatus.PENDING || s === ApplicationStatus.UNDER_REVIEW;
+  });
+  
+  readonly nextInterview = computed(() => {
+    const interviews = this.application()?.interviews ?? [];
+    const scheduled = interviews.filter(i => i.status === 'scheduled');
+    if (scheduled.length === 0) return null;
+    
+    // Sort by date and take the first one
+    return [...scheduled].sort((a, b) => 
+      new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    )[0];
   });
 
   readonly timelineEvents = computed<TimelineEvent[]>(() => {
