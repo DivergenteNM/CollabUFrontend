@@ -111,10 +111,10 @@
                       @if (interview.location) {
                         <p><mat-icon>location_on</mat-icon> {{ interview.location }}</p>
                       }
-                      @if (interview.meetingUrl) {
+                      @if (interview.meetingLink) {
                         <p>
                           <mat-icon>videocam</mat-icon>
-                          <a [href]="interview.meetingUrl" target="_blank" rel="noopener">Unirse a la reunión</a>
+                          <a [href]="interview.meetingLink" target="_blank" rel="noopener">Unirse a la reunión</a>
                         </p>
                       }
                       @if (interview.notes) {

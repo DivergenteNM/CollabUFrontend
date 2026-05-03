@@ -38,8 +38,9 @@ export interface Interview {
   id: string;
   scheduledAt: string;
   durationMinutes: number;
+  interviewType: 'phone' | 'video' | 'in_person' | 'technical';
   location?: string;
-  meetingUrl?: string;
+  meetingLink?: string;
   notes?: string;
   status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
   feedback?: string;
