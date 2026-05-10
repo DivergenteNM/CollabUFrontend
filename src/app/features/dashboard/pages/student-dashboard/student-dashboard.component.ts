@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, PaginatedResponse, StudentProfile, Recommendation, Application } from '../../../../core/models';
+import { ApiResponse, PaginatedResponse, StudentProfile, Recommendation, Application, normalizeApiResponse } from '../../../../core/models';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
 import { ProjectCardComponent } from '../../../../shared/components/cards/project-card/project-card.component';
@@ -34,8 +34,8 @@ export class StudentDashboardComponent {
   readonly notificationsStore = inject(NotificationsStore);
 
   // --- httpResource data loading ---
-  readonly profileResource = httpResource<ApiResponse<StudentProfile>>(
-    () => ({ url: `${environment.apiUrl}/students/profile` }),
+  readonly profileResource = httpResource<any>(
+    () => ({ url: `${environment.apiUrl}/students/profile` })
   );
 
   readonly recommendationsResource = httpResource<PaginatedResponse<Recommendation>>(
@@ -47,14 +47,19 @@ export class StudentDashboardComponent {
   );
 
   // --- Computed signals from resources ---
-  readonly profile = computed(() => this.profileResource.value()?.data ?? null);
+  readonly profile = computed(() => {
+    const val = this.profileResource.value();
+    return val ? normalizeApiResponse<StudentProfile>(val).data : null;
+  });
 
   readonly profileCompleteness = computed(() => this.profile()?.profileCompleteness ?? 0);
 
   readonly practiceHoursLabel = computed(() => {
     const p = this.profile();
-    if (!p) return '0/0';
-    return `${p.practiceHoursCompleted}/${p.practiceHoursRequired}`;
+    if (!p) return '0/0h';
+    const completed = p.practiceHoursCompleted ?? 0;
+    const required = p.practiceHoursRequired ?? 0;
+    return `${completed}/${required}h`;
   });
 
   readonly recommendations = computed(() =>

@@ -19,6 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { ApiResponse, CompanyProfile, UserProfile } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
@@ -32,7 +33,7 @@ import { UserProfileService } from '../../../../core/services/user-profile.servi
     RouterLink, ReactiveFormsModule, FormsModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatSnackBarModule,
+    MatSnackBarModule, MatTabsModule,
   ],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.scss',
@@ -195,6 +196,27 @@ export class ProfileEditComponent implements OnInit {
     }
   }
 
+  saveBaseProfile(): void {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
+
+    this.saving.set(true);
+    this.upsertUserProfile().subscribe({
+      next: () => {
+        this.authStore.refreshProfile();
+        this.saving.set(false);
+        this.snackBar.open('Perfil base actualizado', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/profile/view']);
+      },
+      error: (error: unknown) => {
+        this.handleSaveError(error, 'No se pudo actualizar el perfil base');
+        this.saving.set(false);
+      },
+    });
+  }
+
   saveStudent(): void {
     if (this.userForm.invalid || this.studentForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -315,7 +337,7 @@ export class ProfileEditComponent implements OnInit {
   // Nested entities handlers
   addLanguage() {
     if(!this.newLangName) return;
-    this.studentService.addLanguage({ language: this.newLangName, proficiencyLevel: this.newLangLevel }).subscribe(res => {
+    this.studentService.addLanguage({ language: this.newLangName, proficiency: this.newLangLevel }).subscribe(res => {
       this.languages.update(l => [...l, res.data]);
       this.newLangName = '';
       this.newLangLevel = 'basic';
