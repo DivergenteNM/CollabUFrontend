@@ -28,9 +28,12 @@ export interface Application {
 
 export interface ApplicationTimelineEntry {
   id: string;
-  eventType: string;
-  description: string;
-  performedBy: string;
+  applicationId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  changedByUserId: string;
+  comment: string | null;
+  metadata: Record<string, any> | null;
   createdAt: string;
 }
 

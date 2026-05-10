@@ -79,13 +79,30 @@ export class ApplicationDetailComponent {
   });
 
   readonly timelineEvents = computed<TimelineEvent[]>(() => {
-    const timeline = this.application()?.timeline ?? [];
-    return timeline.map((t) => ({
-      date: t.createdAt,
-      title: t.description,
-      description: `Por: ${t.performedBy}`,
-      icon: this.getTimelineIcon(t.eventType),
-    }));
+    const app = this.application();
+    if (!app) return [];
+
+    return (app.timeline ?? []).map((t) => {
+      let actorName = t.changedByUserId;
+      // Replace UUID-like IDs with readable labels
+      if (!actorName || actorName === app.studentId) {
+        // @ts-ignore
+        const user = app.student?.user;
+        actorName = user?.firstName ? `${user.firstName} ${user.lastName}` : 'Estudiante';
+      } else if (actorName === 'system') {
+        actorName = 'Sistema';
+      } else {
+        // Company user — use supervisor or company name from enriched project
+        actorName = app.project?.supervisorName || app.project?.companyName || 'Empresa';
+      }
+
+      return {
+        date: t.createdAt,
+        title: this.getTimelineTitle(t.toStatus),
+        description: `Por: ${actorName}`,
+        icon: this.getTimelineIcon(t.toStatus),
+      };
+    });
   });
 
   interviewStatusLabel(status: string): string {
@@ -152,17 +169,35 @@ export class ApplicationDetailComponent {
     });
   }
 
-  private getTimelineIcon(eventType: string): string {
+  private getTimelineIcon(toStatus: string): string {
     const icons: Record<string, string> = {
-      applied: 'send',
-      reviewed: 'visibility',
-      interview_scheduled: 'event',
+      pending: 'send',
+      under_review: 'visibility',
+      shortlisted: 'star',
+      interview: 'event',
       accepted: 'check_circle',
       rejected: 'cancel',
-      started: 'play_circle',
-      completed: 'task_alt',
       withdrawn: 'undo',
+      in_progress: 'play_circle',
+      completed: 'task_alt',
+      cancelled: 'block',
     };
-    return icons[eventType] ?? 'circle';
+    return icons[toStatus] ?? 'circle';
+  }
+
+  private getTimelineTitle(toStatus: string): string {
+    const titles: Record<string, string> = {
+      pending: 'Aplicación enviada',
+      under_review: 'Aplicación en revisión',
+      shortlisted: 'Preseleccionado',
+      interview: 'Entrevista programada',
+      accepted: 'Aplicación aceptada',
+      rejected: 'Aplicación rechazada',
+      withdrawn: 'Aplicación retirada',
+      in_progress: 'Proyecto en progreso',
+      completed: 'Proyecto completado',
+      cancelled: 'Aplicación cancelada',
+    };
+    return titles[toStatus] ?? toStatus;
   }
 }
