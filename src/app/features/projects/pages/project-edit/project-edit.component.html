@@ -1,9 +1,11 @@
 <div class="project-edit">
   <h1>Editar Proyecto</h1>
 
-  @if (projectResource.isLoading()) {
+  @if (isLoading()) {
     <mat-progress-bar mode="indeterminate" />
-  } @else if (projectResource.value(); as response) {
+  } @else if (hasError()) {
+    <p style="color: var(--mat-sys-error)">No se pudo cargar el proyecto. <button mat-button (click)="router.navigate(['/my-projects'])">Volver</button></p>
+  } @else if (project()) {
     <mat-stepper linear #stepper>
       <mat-step [stepControl]="infoForm" label="Información General">
         <form [formGroup]="infoForm" class="project-edit__form">
@@ -65,22 +67,6 @@
               <mat-datepicker #dp />
             </mat-form-field>
           </div>
-
-          <div class="project-edit__row">
-            <mat-form-field appearance="outline">
-              <mat-label>Horas/Semana</mat-label>
-              <input matInput type="number" formControlName="weeklyHours" min="1" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Total Horas</mat-label>
-              <input matInput type="number" formControlName="totalHoursRequired" min="1" />
-            </mat-form-field>
-          </div>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Supervisor</mat-label>
-            <input matInput formControlName="supervisorName" />
-          </mat-form-field>
 
           <div class="project-edit__actions">
             <button mat-flat-button matStepperNext [disabled]="infoForm.invalid">Siguiente</button>
@@ -170,9 +156,8 @@
               <h2>{{ infoForm.value.title }}</h2>
               <p class="meta">
                 {{ getTypeLabel(infoForm.value.projectType) }} •
-                {{ infoForm.value.isRemote ? 'Remoto' : infoForm.value.location }} •
-                {{ infoForm.value.positionsAvailable }} pos. •
-                {{ infoForm.value.weeklyHours }}h/sem
+                {{ infoForm.value.isRemote ? 'Remoto' : infoForm.value.location }}
+                • {{ infoForm.value.positionsAvailable }} pos.
               </p>
               <p style="white-space: pre-line; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant)">
                 {{ infoForm.value.description }}

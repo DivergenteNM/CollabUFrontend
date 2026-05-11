@@ -78,6 +78,53 @@
       margin-top: 24px;
     }
 
+    .detail__interview-summary {
+      border: 1px solid var(--mat-sys-primary-container);
+      background: var(--mat-sys-surface-container-low);
+
+      h3 { margin: 0 !important; }
+    }
+
+    .detail__interview-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+
+      mat-icon { font-size: 24px; width: 24px; height: 24px; }
+    }
+
+    .detail__value--highlight {
+      font-weight: 600;
+      color: var(--mat-sys-primary);
+      text-transform: capitalize;
+    }
+
+    .detail__link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--mat-sys-primary);
+      text-decoration: none;
+      font-weight: 500;
+
+      mat-icon { font-size: 16px; width: 16px; height: 16px; }
+      &:hover { text-decoration: underline; }
+    }
+
+    .detail__interview-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--mat-sys-on-surface-variant);
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--mat-sys-outline-variant);
+
+      mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    }
+
     .detail__empty {
       text-align: center;
       color: var(--mat-sys-on-surface-variant);

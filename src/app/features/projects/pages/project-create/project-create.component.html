@@ -72,25 +72,6 @@
           </mat-form-field>
         </div>
 
-        <div class="project-create__row">
-          <mat-form-field appearance="outline">
-            <mat-label>Horas/Semana</mat-label>
-            <input matInput type="number" formControlName="weeklyHours" min="1" />
-            <mat-error>Requerido</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Total Horas Requeridas</mat-label>
-            <input matInput type="number" formControlName="totalHoursRequired" min="1" />
-            <mat-error>Requerido</mat-error>
-          </mat-form-field>
-        </div>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nombre del Supervisor</mat-label>
-          <input matInput formControlName="supervisorName" />
-        </mat-form-field>
-
         <div class="project-create__step-actions">
           <button mat-flat-button matStepperNext [disabled]="infoForm.invalid">Siguiente</button>
         </div>
@@ -188,7 +169,6 @@
               <span>{{ getProjectTypeLabel(infoForm.value.projectType) }}</span>
               <span>{{ infoForm.value.isRemote ? 'Remoto' : infoForm.value.location }}</span>
               <span>{{ infoForm.value.positionsAvailable }} posiciones</span>
-              <span>{{ infoForm.value.weeklyHours }}h/semana</span>
             </p>
 
             <h4>Descripción</h4>

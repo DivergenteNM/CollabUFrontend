@@ -1,6 +1,9 @@
+import { UserProfile } from './user.model';
+
 export interface StudentProfile {
   id: string;
   userId: string;
+  user?: UserProfile;
   program: string;
   faculty?: string;
   semester: number;

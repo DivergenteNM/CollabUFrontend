@@ -1,4 +1,8 @@
 <div class="project-list">
+  <button mat-button class="project-list__back" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon> Volver
+  </button>
+
   <header class="project-list__header">
     <h1>Proyectos Disponibles</h1>
     @if (totalProjects() > 0) {
@@ -56,6 +60,7 @@
           [project]="project"
           [matchScore]="authStore.isStudent() ? project.applicationsCount : undefined"
           [showActions]="true"
+          [canApply]="authStore.isStudent()"
           (viewDetail)="router.navigate(['/projects', $event])"
           (apply)="router.navigate(['/projects', $event])" />
       }

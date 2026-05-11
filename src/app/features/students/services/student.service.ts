@@ -27,6 +27,12 @@ export class StudentService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<StudentProfile>(res, 'Perfil obtenido')));
   }
 
+  getProfileById(userId: string): Observable<ApiResponse<StudentProfile>> {
+    return this.http
+      .get<ApiResponse<StudentProfile> | StudentProfile>(`${this.apiUrl}/profile/${userId}`)
+      .pipe(map((res) => normalizeApiResponse<StudentProfile>(res, 'Perfil obtenido')));
+  }
+
   updateProfile(data: Partial<StudentProfile>): Observable<ApiResponse<StudentProfile>> {
     return this.http
       .patch<ApiResponse<StudentProfile> | StudentProfile>(`${this.apiUrl}/profile`, data)
@@ -67,6 +73,10 @@ export class StudentService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<StudentExperience>(res, 'Experiencia agregada')));
   }
 
+  removeExperience(expId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/experiences/${expId}`);
+  }
+
   getEducation(): Observable<ApiResponse<StudentEducation[]>> {
     return this.http
       .get<ApiResponse<StudentEducation[]> | StudentEducation[]>(`${this.apiUrl}/education`)
@@ -77,6 +87,58 @@ export class StudentService extends BaseApiService {
     return this.http
       .post<ApiResponse<StudentEducation> | StudentEducation>(`${this.apiUrl}/education`, data)
       .pipe(map((res) => normalizeApiResponse<StudentEducation>(res, 'Formación agregada')));
+  }
+
+  removeEducation(eduId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/education/${eduId}`);
+  }
+
+  getLanguages(): Observable<ApiResponse<any[]>> {
+    return this.http
+      .get<ApiResponse<any[]> | any[]>(`${this.apiUrl}/languages`)
+      .pipe(map((res) => normalizeApiResponse<any[]>(res, 'Idiomas obtenidos')));
+  }
+
+  addLanguage(data: any): Observable<ApiResponse<any>> {
+    return this.http
+      .post<ApiResponse<any> | any>(`${this.apiUrl}/languages`, data)
+      .pipe(map((res) => normalizeApiResponse<any>(res, 'Idioma agregado')));
+  }
+
+  removeLanguage(langId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/languages/${langId}`);
+  }
+
+  getInterests(): Observable<ApiResponse<any[]>> {
+    return this.http
+      .get<ApiResponse<any[]> | any[]>(`${this.apiUrl}/interests`)
+      .pipe(map((res) => normalizeApiResponse<any[]>(res, 'Intereses obtenidos')));
+  }
+
+  addInterest(data: any): Observable<ApiResponse<any>> {
+    return this.http
+      .post<ApiResponse<any> | any>(`${this.apiUrl}/interests`, data)
+      .pipe(map((res) => normalizeApiResponse<any>(res, 'Interés agregado')));
+  }
+
+  removeInterest(intId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/interests/${intId}`);
+  }
+
+  getCertifications(): Observable<ApiResponse<any[]>> {
+    return this.http
+      .get<ApiResponse<any[]> | any[]>(`${this.apiUrl}/certifications`)
+      .pipe(map((res) => normalizeApiResponse<any[]>(res, 'Certificaciones obtenidas')));
+  }
+
+  addCertification(data: any): Observable<ApiResponse<any>> {
+    return this.http
+      .post<ApiResponse<any> | any>(`${this.apiUrl}/certifications`, data)
+      .pipe(map((res) => normalizeApiResponse<any>(res, 'Certificación agregada')));
+  }
+
+  removeCertification(certId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/certifications/${certId}`);
   }
 
   getDocuments(): Observable<ApiResponse<StudentDocument[]>> {

@@ -1,9 +1,13 @@
 import {
   Component, ChangeDetectionStrategy, inject, input, computed, signal,
 } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { httpResource } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -43,6 +47,10 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/co
   ],
   templateUrl: './application-review.component.html',
   styleUrl: './application-review.component.scss',
+  providers: [
+    provideNativeDateAdapter(),
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+  ],
 })
 export class ApplicationReviewComponent {
   readonly router = inject(Router);
@@ -60,27 +68,34 @@ export class ApplicationReviewComponent {
   reviewFeedback = '';
 
   readonly interviewForm = this.fb.nonNullable.group({
-    scheduledAt: ['', Validators.required],
+    scheduledDate: [null as Date | null, Validators.required],
+    scheduledTime: ['09:00', [Validators.required, Validators.pattern(/^(0[1-9]|1[0-2]):[0-5][0-9]$/)]],
+    scheduledPeriod: ['AM' as 'AM' | 'PM', Validators.required],
     durationMinutes: [60, [Validators.required, Validators.min(15)]],
     modality: ['virtual', Validators.required],
     meetingUrl: [''],
-    notes: [''],
   });
 
   readonly rejectForm = this.fb.nonNullable.group({
     reason: ['', Validators.required],
   });
 
-  readonly applicationResource = httpResource<ApiResponse<Application>>(
-    () => ({ url: `${environment.apiUrl}/applications/${this.id()}` }),
-  );
+  readonly applicationResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getById(id).pipe(
+      switchMap(app => {
+        if (!app) return of(app);
+        return this.applicationService.enrichApplication(app);
+      })
+    )
+  });
 
   readonly application = computed(() =>
-    this.applicationResource.value()?.data,
+    this.applicationResource.value() as Application | undefined,
   );
 
   readonly studentSkillNames = computed(() =>
-    this.application()?.student?.skills.map((s) => s.name) ?? [],
+    this.application()?.student?.skills?.map((s: any) => s.name) ?? [],
   );
 
   readonly canScheduleInterview = computed(() => {
@@ -141,16 +156,49 @@ export class ApplicationReviewComponent {
     });
   }
 
+  onTimePicked(event: Event): void {
+    const time = (event.target as HTMLInputElement).value; // HH:mm (24h)
+    if (!time) return;
+    let [h, m] = time.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    if (h > 12) h -= 12;
+    if (h === 0) h = 12;
+    const hh = h.toString().padStart(2, '0');
+    const mm = m.toString().padStart(2, '0');
+    this.interviewForm.patchValue({
+      scheduledTime: `${hh}:${mm}`,
+      scheduledPeriod: period
+    });
+  }
+
   scheduleInterview(): void {
     if (this.interviewForm.invalid) return;
     const data = this.interviewForm.getRawValue();
 
-    this.applicationService.scheduleInterview(this.id(), {
-      scheduledAt: data.scheduledAt,
-      durationMinutes: data.durationMinutes,
-      meetingUrl: data.meetingUrl || undefined,
-      notes: data.notes || undefined,
-    }).subscribe({
+    // Combine date and time
+    const date = new Date(data.scheduledDate!);
+    let [hours, minutes] = data.scheduledTime.split(':').map(Number);
+    
+    if (data.scheduledPeriod === 'PM' && hours < 12) hours += 12;
+    if (data.scheduledPeriod === 'AM' && hours === 12) hours = 0;
+    
+    date.setHours(hours, minutes, 0, 0);
+
+    const interviewData: any = {
+      scheduledAt: date.toISOString(),
+      durationMinutes: Number(data.durationMinutes),
+      interviewType: data.modality === 'virtual' ? 'video' : 'in_person',
+    };
+
+    if (data.modality === 'virtual' && data.meetingUrl) {
+      let url = data.meetingUrl;
+      if (!url.startsWith('http')) url = 'https://' + url;
+      interviewData.meetingLink = url;
+    } else if (data.modality === 'presencial' && data.meetingUrl) {
+      interviewData.location = data.meetingUrl;
+    }
+
+    this.applicationService.scheduleInterview(this.id(), interviewData).subscribe({
       next: () => {
         this.snackBar.open('Entrevista programada', 'OK', { duration: 3000 });
         this.showInterviewForm.set(false);

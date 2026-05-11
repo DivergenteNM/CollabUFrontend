@@ -1,6 +1,5 @@
-import {
-  Component, ChangeDetectionStrategy, inject, signal, computed,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
@@ -20,6 +19,7 @@ import { PaginatorComponent } from '../../../../shared/components/ui/paginator/p
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
+import { from } from 'rxjs';
 
 @Component({
   selector: 'app-my-projects-list',
@@ -36,6 +36,8 @@ export class MyProjectsListComponent {
   readonly router = inject(Router);
   private readonly projectService = inject(ProjectService);
   private readonly dialog = inject(MatDialog);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   readonly statusFilter = signal('');
   readonly page = signal(1);
@@ -43,6 +45,7 @@ export class MyProjectsListComponent {
 
   readonly projectsResource = httpResource<PaginatedResponse<Project>>(
     () => {
+      if (!this.isBrowser) return undefined;
       const params: Record<string, string | number> = { page: this.page(), limit: 10 };
       const status = this.statusFilter();
       if (status) params['status'] = status;

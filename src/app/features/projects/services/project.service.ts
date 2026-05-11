@@ -36,7 +36,7 @@ export class ProjectService extends BaseApiService {
   }
 
   update(id: string, data: Partial<Project>): Observable<ApiResponse<Project>> {
-    return this.http.put<ApiResponse<Project>>(`${this.apiUrl}/${id}`, data);
+    return this.http.patch<ApiResponse<Project>>(`${this.apiUrl}/${id}`, data);
   }
 
   publish(id: string): Observable<ApiResponse<Project>> {

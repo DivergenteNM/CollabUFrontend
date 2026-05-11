@@ -1,6 +1,7 @@
 import {
-  Component, ChangeDetectionStrategy, inject, input, computed, signal,
+  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, input,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
@@ -10,7 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Project, MatchBreakdown } from '../../../../core/models';
@@ -38,22 +39,32 @@ export class ProjectDetailComponent {
   readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
   private readonly dialog = inject(MatDialog);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  readonly location = inject(Location);
 
   readonly id = input.required<string>();
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
-    () => ({ url: `${environment.apiUrl}/projects/${this.id()}` }),
+    () => {
+      const id = this.id();
+      if (!this.isBrowser || !id) return undefined;
+      return { url: `${environment.apiUrl}/projects/${id}` };
+    },
   );
 
   readonly matchResource = httpResource<ApiResponse<MatchResult>>(
-    () => this.authStore.isStudent()
-      ? { url: `${environment.apiUrl}/matching/projects/${this.id()}/my-match` }
-      : undefined,
+    () => {
+      const id = this.id();
+      if (!this.isBrowser || !id || !this.authStore.isStudent()) return undefined;
+      return { url: `${environment.apiUrl}/matching/projects/${id}/my-match` };
+    },
   );
 
   readonly project = computed(() => {
     try {
-      return this.projectResource.value()?.data ?? null;
+      const res = this.projectResource.value() as any;
+      return res?.data ?? res ?? null;
     } catch {
       return null;
     }
@@ -61,10 +72,17 @@ export class ProjectDetailComponent {
 
   readonly matchData = computed(() => {
     try {
-      return this.matchResource.value()?.data ?? null;
+      const res = this.matchResource.value() as any;
+      return res?.data ?? res ?? null;
     } catch {
       return null;
     }
+  });
+
+  readonly hasError = computed(() => !!this.projectResource.error());
+  readonly errorMessage = computed(() => {
+    const err = this.projectResource.error() as any;
+    return err?.message ?? 'No se pudo cargar el proyecto.';
   });
 
   readonly projectTypeLabel = computed(() => {
@@ -115,5 +133,17 @@ export class ProjectDetailComponent {
       width: '600px',
       disableClose: true,
     });
+  }
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      if (this.authStore.isCompany()) {
+        this.router.navigate(['/my-projects']);
+      } else {
+        this.router.navigate(['/projects']);
+      }
+    }
   }
 }

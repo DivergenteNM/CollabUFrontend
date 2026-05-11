@@ -16,6 +16,7 @@ interface AuthState {
   profileLoaded: boolean;
   profileLoading: boolean;
   isLoading: boolean;
+  authReady: boolean;
 }
 
 const initialState: AuthState = {
@@ -25,6 +26,7 @@ const initialState: AuthState = {
   profileLoaded: false,
   profileLoading: false,
   isLoading: false,
+  authReady: false,
 };
 
 export const AuthStore = signalStore(
@@ -106,16 +108,16 @@ export const AuthStore = signalStore(
             profile: res.data,
             profileLoaded: true,
             profileLoading: false,
+            authReady: true,
           });
-            enforceOnboardingNavigation();
         },
         error: (error: HttpErrorResponse) => {
           patchState(store, {
             profile: null,
             profileLoaded: true,
             profileLoading: false,
+            authReady: true,
           });
-            enforceOnboardingNavigation();
 
           // 404 significa que el perfil base aún no existe y debe completarse en onboarding.
           if (error.status !== 404) {
@@ -136,6 +138,7 @@ export const AuthStore = signalStore(
           profileLoaded: false,
           profileLoading: false,
           isLoading: false,
+          authReady: false,
         });
 
         loadUserProfile();
@@ -184,6 +187,8 @@ export const AuthStore = signalStore(
       if (token && user) {
         patchState(store, { user, token });
         store.loadUserProfile();
+      } else {
+        patchState(store, { authReady: true });
       }
     },
   })

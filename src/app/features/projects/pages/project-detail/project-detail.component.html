@@ -1,11 +1,20 @@
 <div class="detail">
-  <button mat-button class="detail__back" (click)="router.navigate(['/projects'])">
-    <mat-icon>arrow_back</mat-icon> Volver a proyectos
+  <button mat-button class="detail__back" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon> Volver
   </button>
 
-  @if (projectResource.isLoading()) {
+  @if (projectResource.isLoading() || (!project() && !hasError())) {
     <app-skeleton width="100%" height="200px" />
     <app-skeleton width="100%" height="400px" />
+  } @else if (hasError()) {
+    <div class="detail__error">
+      <mat-icon class="detail__error-icon">error_outline</mat-icon>
+      <h2>No se pudo cargar el proyecto</h2>
+      <p>{{ errorMessage() }}</p>
+      <button mat-flat-button (click)="goBack()">
+        Volver
+      </button>
+    </div>
   } @else if (project(); as p) {
     <mat-card class="detail__header">
       <mat-card-content>

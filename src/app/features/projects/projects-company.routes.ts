@@ -18,6 +18,14 @@ export const PROJECTS_COMPANY_ROUTES: Routes = [
     data: { title: 'Crear Proyecto' },
   },
   {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/project-detail/project-detail.component').then(
+        (m) => m.ProjectDetailComponent
+      ),
+    data: { title: 'Detalle del Proyecto' },
+  },
+  {
     path: ':id/edit',
     loadComponent: () =>
       import('./pages/project-edit/project-edit.component').then(

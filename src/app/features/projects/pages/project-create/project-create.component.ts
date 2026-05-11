@@ -70,9 +70,6 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
     applicationDeadline: ['', Validators.required],
-    weeklyHours: [20, [Validators.required, Validators.min(1)]],
-    totalHoursRequired: [480, [Validators.required, Validators.min(1)]],
-    supervisorName: [''],
   });
 
   ngOnInit(): void {

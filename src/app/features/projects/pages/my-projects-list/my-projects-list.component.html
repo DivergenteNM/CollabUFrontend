@@ -47,7 +47,7 @@
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #projectMenu="matMenu">
-                  <button mat-menu-item (click)="router.navigate(['/projects', project.id])">
+                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id])">
                     <mat-icon>visibility</mat-icon> Ver Detalle
                   </button>
                   <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'edit'])">

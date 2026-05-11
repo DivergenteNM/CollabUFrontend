@@ -28,9 +28,12 @@ export interface Application {
 
 export interface ApplicationTimelineEntry {
   id: string;
-  eventType: string;
-  description: string;
-  performedBy: string;
+  applicationId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  changedByUserId: string;
+  comment: string | null;
+  metadata: Record<string, any> | null;
   createdAt: string;
 }
 
@@ -38,8 +41,9 @@ export interface Interview {
   id: string;
   scheduledAt: string;
   durationMinutes: number;
+  interviewType: 'phone' | 'video' | 'in_person' | 'technical';
   location?: string;
-  meetingUrl?: string;
+  meetingLink?: string;
   notes?: string;
   status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
   feedback?: string;

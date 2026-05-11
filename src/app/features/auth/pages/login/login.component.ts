@@ -9,7 +9,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AuthStore } from '../../../../state/auth.store';
-import { UserRole } from '../../../../core/enums';
 
 @Component({
   selector: 'app-login',
@@ -64,11 +63,8 @@ export class LoginComponent {
 
         this.authStore.setAuth(res.user, res.accessToken, res.refreshToken);
 
-        if (res.user.role === UserRole.STUDENT || res.user.role === UserRole.COMPANY) {
-          this.router.navigate(['/onboarding']);
-          return;
-        }
-
+        // Always navigate to dashboard — the authGuard will redirect to
+        // /onboarding if needed once the user profile finishes loading.
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

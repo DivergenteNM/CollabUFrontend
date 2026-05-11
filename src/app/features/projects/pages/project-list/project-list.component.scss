@@ -5,6 +5,15 @@
   margin: 0 auto;
 }
 
+.project-list__back {
+  margin-bottom: 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
 .project-list__header {
   display: flex;
   align-items: baseline;

@@ -10,6 +10,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Observable, of, switchMap, tap } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { ApiResponse, CompanyProfile, UserProfile } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
@@ -28,10 +30,10 @@ import { UserProfileService } from '../../../../core/services/user-profile.servi
   selector: 'app-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    RouterLink, ReactiveFormsModule,
+    RouterLink, ReactiveFormsModule, FormsModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatSnackBarModule,
+    MatSnackBarModule, MatTabsModule,
   ],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.scss',
@@ -59,16 +61,48 @@ export class ProfileEditComponent implements OnInit {
   });
 
   readonly studentForm: FormGroup = this.fb.group({
+    studentCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
     bio: [''],
     program: [''],
     semester: [null],
+    faculty: [''],
+    enrollmentYear: [null],
+    expectedGraduationYear: [null],
+    gpa: [null],
+    totalCreditsCompleted: [null],
+    totalCreditsRequired: [null],
+    headline: [''],
+    cvUrl: [''],
+    availability: [''],
+    preferredWorkMode: [''],
+    availableHoursPerWeek: [null],
+    willingToRelocate: [false],
     githubUrl: [''],
     portfolioUrl: [''],
     personalWebsiteUrl: [''],
   });
 
+  // Nested entities
+  readonly languages = signal<any[]>([]);
+  newLangName = '';
+  newLangLevel = 'basic';
+
+  readonly interests = signal<any[]>([]);
+  newInterestName = '';
+
+  readonly educationList = signal<any[]>([]);
+  newEduInstitution = '';
+  newEduDegree = '';
+  newEduStartDate = '';
+
+  readonly experiences = signal<any[]>([]);
+  newExpTitle = '';
+  newExpType = 'work';
+  newExpStartDate = '';
+
   readonly companyForm: FormGroup = this.fb.group({
     companyName: ['', Validators.required],
+    nit: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(20)]],
     industry: ['', Validators.required],
     companySize: [''],
@@ -102,13 +136,32 @@ export class ProfileEditComponent implements OnInit {
           this.roleProfileExists.set(true);
           const s = resp.data;
           this.studentForm.patchValue({
+            studentCode: s.studentCode ?? '',
             bio: s.bio ?? '',
-            program: s.program,
+            program: s.program ?? '',
             semester: s.semester,
+            faculty: s.faculty ?? '',
+            enrollmentYear: s.enrollmentYear,
+            expectedGraduationYear: s.expectedGraduationYear,
+            gpa: s.gpa,
+            totalCreditsCompleted: s.totalCreditsCompleted,
+            totalCreditsRequired: s.totalCreditsRequired,
+            headline: s.headline ?? '',
+            cvUrl: s.cvUrl ?? '',
+            availability: s.availability ?? '',
+            preferredWorkMode: s.preferredWorkMode ?? '',
+            availableHoursPerWeek: s.availableHoursPerWeek,
+            willingToRelocate: s.willingToRelocate ?? false,
             githubUrl: s.githubUrl ?? '',
             portfolioUrl: s.portfolioUrl ?? '',
             personalWebsiteUrl: s.personalWebsiteUrl ?? '',
           });
+
+          // Load nested entities
+          this.studentService.getLanguages().subscribe(res => this.languages.set(res.data));
+          this.studentService.getInterests().subscribe(res => this.interests.set(res.data));
+          this.studentService.getEducation().subscribe(res => this.educationList.set(res.data));
+          this.studentService.getExperiences().subscribe(res => this.experiences.set(res.data));
         },
         error: (error: HttpErrorResponse) => {
           if (error.status !== 404) {
@@ -125,6 +178,7 @@ export class ProfileEditComponent implements OnInit {
           const c = resp.data;
           this.companyForm.patchValue({
             companyName: c.companyName ?? '',
+            nit: c.nit ?? '',
             description: c.description ?? '',
             industry: c.industry ?? '',
             companySize: c.companySize ?? '',
@@ -140,6 +194,27 @@ export class ProfileEditComponent implements OnInit {
         },
       });
     }
+  }
+
+  saveBaseProfile(): void {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
+
+    this.saving.set(true);
+    this.upsertUserProfile().subscribe({
+      next: () => {
+        this.authStore.refreshProfile();
+        this.saving.set(false);
+        this.snackBar.open('Perfil base actualizado', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/profile/view']);
+      },
+      error: (error: unknown) => {
+        this.handleSaveError(error, 'No se pudo actualizar el perfil base');
+        this.saving.set(false);
+      },
+    });
   }
 
   saveStudent(): void {
@@ -249,6 +324,7 @@ export class ProfileEditComponent implements OnInit {
 
     return {
       companyName: raw.companyName,
+      nit: raw.nit,
       description: raw.description,
       industry: raw.industry,
       companySize: this.normalizeOptionalText(raw.companySize) as CompanyProfile['companySize'] | undefined,
@@ -256,6 +332,77 @@ export class ProfileEditComponent implements OnInit {
       headquartersState: this.normalizeOptionalText(raw.headquartersState),
       website: this.normalizeOptionalText(raw.website),
     };
+  }
+
+  // Nested entities handlers
+  addLanguage() {
+    if(!this.newLangName) return;
+    this.studentService.addLanguage({ language: this.newLangName, proficiency: this.newLangLevel }).subscribe(res => {
+      this.languages.update(l => [...l, res.data]);
+      this.newLangName = '';
+      this.newLangLevel = 'basic';
+    });
+  }
+
+  removeLanguage(id: string) {
+    this.studentService.removeLanguage(id).subscribe(() => {
+      this.languages.update(l => l.filter(x => x.id !== id));
+    });
+  }
+
+  addInterest() {
+    if(!this.newInterestName) return;
+    this.studentService.addInterest({ area: this.newInterestName }).subscribe(res => {
+      this.interests.update(l => [...l, res.data]);
+      this.newInterestName = '';
+    });
+  }
+
+  removeInterest(id: string) {
+    this.studentService.removeInterest(id).subscribe(() => {
+      this.interests.update(l => l.filter(x => x.id !== id));
+    });
+  }
+
+  addEducation() {
+    if(!this.newEduInstitution || !this.newEduDegree || !this.newEduStartDate) return;
+    this.studentService.addEducation({
+      institution: this.newEduInstitution,
+      degree: this.newEduDegree,
+      startDate: this.newEduStartDate,
+      isCurrent: true
+    }).subscribe(res => {
+      this.educationList.update(l => [...l, res.data]);
+      this.newEduInstitution = '';
+      this.newEduDegree = '';
+      this.newEduStartDate = '';
+    });
+  }
+
+  removeEducation(id: string) {
+    this.studentService.removeEducation(id).subscribe(() => {
+      this.educationList.update(l => l.filter(x => x.id !== id));
+    });
+  }
+
+  addExperience() {
+    if(!this.newExpTitle || !this.newExpStartDate) return;
+    this.studentService.addExperience({
+      title: this.newExpTitle,
+      type: this.newExpType as any,
+      startDate: this.newExpStartDate,
+      isCurrent: true
+    }).subscribe(res => {
+      this.experiences.update(l => [...l, res.data]);
+      this.newExpTitle = '';
+      this.newExpStartDate = '';
+    });
+  }
+
+  removeExperience(id: string) {
+    this.studentService.removeExperience(id).subscribe(() => {
+      this.experiences.update(l => l.filter(x => x.id !== id));
+    });
   }
 
   private normalizeOptionalText(value: string | null | undefined): string | undefined {

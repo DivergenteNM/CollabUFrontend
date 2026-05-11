@@ -2,7 +2,9 @@ import {
   Component, ChangeDetectionStrategy, inject, input, computed, signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { httpResource } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,6 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
+import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application } from '../../../../core/models';
@@ -30,7 +33,7 @@ import { FileUploadComponent } from '../../../../shared/components/ui/file-uploa
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
     MatDialogModule, MatSnackBarModule, DatePipe,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
-    SkeletonComponent, FileUploadComponent,
+    SkeletonComponent, FileUploadComponent, EmptyStateComponent,
   ],
   templateUrl: './application-detail.component.html',
   styleUrl: './application-detail.component.scss',
@@ -45,27 +48,61 @@ export class ApplicationDetailComponent {
   readonly ApplicationStatus = ApplicationStatus;
   readonly submitting = signal(false);
 
-  readonly applicationResource = httpResource<ApiResponse<Application>>(
-    () => ({ url: `${environment.apiUrl}/applications/${this.id()}` }),
-  );
+  readonly applicationResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getById(id).pipe(
+      switchMap(app => {
+        if (!app) return of(app);
+        return this.applicationService.enrichApplication(app);
+      })
+    )
+  });
 
   readonly application = computed(() =>
-    this.applicationResource.value()?.data,
+    this.applicationResource.value() as Application | undefined,
   );
 
   readonly canWithdraw = computed(() => {
     const s = this.application()?.status;
     return s === ApplicationStatus.PENDING || s === ApplicationStatus.UNDER_REVIEW;
   });
+  
+  readonly nextInterview = computed(() => {
+    const interviews = this.application()?.interviews ?? [];
+    const scheduled = interviews.filter(i => i.status === 'scheduled');
+    if (scheduled.length === 0) return null;
+    
+    // Sort by date and take the first one
+    return [...scheduled].sort((a, b) => 
+      new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    )[0];
+  });
 
   readonly timelineEvents = computed<TimelineEvent[]>(() => {
-    const timeline = this.application()?.timeline ?? [];
-    return timeline.map((t) => ({
-      date: t.createdAt,
-      title: t.description,
-      description: `Por: ${t.performedBy}`,
-      icon: this.getTimelineIcon(t.eventType),
-    }));
+    const app = this.application();
+    if (!app) return [];
+
+    return (app.timeline ?? []).map((t) => {
+      let actorName = t.changedByUserId;
+      // Replace UUID-like IDs with readable labels
+      if (!actorName || actorName === app.studentId) {
+        // @ts-ignore
+        const user = app.student?.user;
+        actorName = user?.firstName ? `${user.firstName} ${user.lastName}` : 'Estudiante';
+      } else if (actorName === 'system') {
+        actorName = 'Sistema';
+      } else {
+        // Company user — use supervisor or company name from enriched project
+        actorName = app.project?.supervisorName || app.project?.companyName || 'Empresa';
+      }
+
+      return {
+        date: t.createdAt,
+        title: this.getTimelineTitle(t.toStatus),
+        description: `Por: ${actorName}`,
+        icon: this.getTimelineIcon(t.toStatus),
+      };
+    });
   });
 
   interviewStatusLabel(status: string): string {
@@ -132,17 +169,35 @@ export class ApplicationDetailComponent {
     });
   }
 
-  private getTimelineIcon(eventType: string): string {
+  private getTimelineIcon(toStatus: string): string {
     const icons: Record<string, string> = {
-      applied: 'send',
-      reviewed: 'visibility',
-      interview_scheduled: 'event',
+      pending: 'send',
+      under_review: 'visibility',
+      shortlisted: 'star',
+      interview: 'event',
       accepted: 'check_circle',
       rejected: 'cancel',
-      started: 'play_circle',
-      completed: 'task_alt',
       withdrawn: 'undo',
+      in_progress: 'play_circle',
+      completed: 'task_alt',
+      cancelled: 'block',
     };
-    return icons[eventType] ?? 'circle';
+    return icons[toStatus] ?? 'circle';
+  }
+
+  private getTimelineTitle(toStatus: string): string {
+    const titles: Record<string, string> = {
+      pending: 'Aplicación enviada',
+      under_review: 'Aplicación en revisión',
+      shortlisted: 'Preseleccionado',
+      interview: 'Entrevista programada',
+      accepted: 'Aplicación aceptada',
+      rejected: 'Aplicación rechazada',
+      withdrawn: 'Aplicación retirada',
+      in_progress: 'Proyecto en progreso',
+      completed: 'Proyecto completado',
+      cancelled: 'Aplicación cancelada',
+    };
+    return titles[toStatus] ?? toStatus;
   }
 }

@@ -47,7 +47,7 @@ export class MyApplicationsListComponent {
       const params: Record<string, string | number> = {
         page: this.page(),
         limit: 10,
-        sortBy: this.sortBy(),
+        // El backend no soporta sortBy actualmente, lo omitimos para evitar 400 Bad Request
       };
       const status = this.statusFilter();
       if (status) params['status'] = status;

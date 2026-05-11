@@ -9,6 +9,34 @@
   margin-bottom: 16px;
 }
 
+.detail__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--mat-sys-on-surface);
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0;
+  }
+}
+
+.detail__error-icon {
+  font-size: 56px;
+  width: 56px;
+  height: 56px;
+  color: var(--mat-sys-error);
+}
+
 .detail__header {
   margin-bottom: 24px;
 }

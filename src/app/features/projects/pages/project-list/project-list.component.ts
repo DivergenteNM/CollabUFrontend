@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
+import { Location } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -31,6 +32,7 @@ import { EmptyStateComponent } from '../../../../shared/components/ui/empty-stat
 })
 export class ProjectListComponent {
   readonly router = inject(Router);
+  readonly location = inject(Location);
   readonly authStore = inject(AuthStore);
   readonly uiStore = inject(UiStore);
 
@@ -94,6 +96,14 @@ export class ProjectListComponent {
   clearFilters(): void {
     this.filters.set({});
     this.page.set(1);
+  }
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   private buildParams(): Record<string, string | number | boolean> {

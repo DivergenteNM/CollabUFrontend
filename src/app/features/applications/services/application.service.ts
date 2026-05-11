@@ -1,7 +1,11 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { BaseApiService } from '../../../core/services/base-api.service';
 import { ApplicationStatus } from '../../../core/enums';
+import { StudentService } from '../../students/services/student.service';
+import { UserProfileService } from '../../../core/services/user-profile.service';
+import { ProjectService } from '../../projects/services/project.service';
 import {
   ApiResponse,
   PaginatedResponse,
@@ -14,6 +18,9 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ApplicationService extends BaseApiService {
   protected readonly basePath = '/applications';
+  private readonly studentService = inject(StudentService);
+  private readonly userService = inject(UserProfileService);
+  private readonly projectService = inject(ProjectService);
 
   create(data: { projectId: string; coverLetter: string }): Observable<ApiResponse<Application>> {
     return this.http.post<ApiResponse<Application>>(this.apiUrl, data);
@@ -31,8 +38,31 @@ export class ApplicationService extends BaseApiService {
     });
   }
 
-  getById(id: string): Observable<ApiResponse<Application>> {
-    return this.http.get<ApiResponse<Application>>(`${this.apiUrl}/${id}`);
+  getById(id: string): Observable<Application> {
+    return this.http.get<Application>(`${this.apiUrl}/${id}`);
+  }
+
+  enrichApplication(app: Application): Observable<Application> {
+    return forkJoin({
+      studentData: this.studentService.getProfileById(app.studentId).pipe(catchError(() => of(null))),
+      userData: this.userService.getProfileById(app.studentId).pipe(catchError(() => of(null))),
+      projectData: this.projectService.getById(app.projectId).pipe(catchError(() => of(null)))
+    }).pipe(
+      map(({ studentData, userData, projectData }) => {
+        const enriched = { ...app };
+        if (studentData?.data) {
+          enriched.student = studentData.data;
+          if (userData?.data) {
+            // @ts-ignore
+            enriched.student.user = userData.data;
+          }
+        }
+        if (projectData?.data) {
+          enriched.project = projectData.data;
+        }
+        return enriched;
+      })
+    );
   }
 
   changeStatus(id: string, status: ApplicationStatus, notes?: string): Observable<ApiResponse<Application>> {

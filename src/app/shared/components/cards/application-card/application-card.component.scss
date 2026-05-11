@@ -9,6 +9,26 @@
   @include mx.hover-elevation;
 }
 
+.application-card__title-company {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .student-name {
+    font-weight: 600;
+  }
+
+  .project-tag {
+    font-size: 0.75rem;
+    background: var(--mat-sys-surface-variant);
+    color: var(--mat-sys-on-surface-variant);
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    width: fit-content;
+  }
+}
+
 .application-card__subtitle {
   display: flex;
   align-items: center;
