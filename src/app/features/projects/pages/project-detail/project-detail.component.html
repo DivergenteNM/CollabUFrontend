@@ -1,6 +1,6 @@
 <div class="detail">
-  <button mat-button class="detail__back" (click)="router.navigate(['/my-projects'])">
-    <mat-icon>arrow_back</mat-icon> Volver a mis proyectos
+  <button mat-button class="detail__back" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon> Volver
   </button>
 
   @if (projectResource.isLoading() || (!project() && !hasError())) {
@@ -11,8 +11,8 @@
       <mat-icon class="detail__error-icon">error_outline</mat-icon>
       <h2>No se pudo cargar el proyecto</h2>
       <p>{{ errorMessage() }}</p>
-      <button mat-flat-button (click)="router.navigate(['/my-projects'])">
-        Volver a mis proyectos
+      <button mat-flat-button (click)="goBack()">
+        Volver
       </button>
     </div>
   } @else if (project(); as p) {

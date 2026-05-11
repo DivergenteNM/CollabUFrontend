@@ -11,7 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Project, MatchBreakdown } from '../../../../core/models';
@@ -41,6 +41,7 @@ export class ProjectDetailComponent {
   private readonly dialog = inject(MatDialog);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
+  readonly location = inject(Location);
 
   readonly id = input.required<string>();
 
@@ -132,5 +133,17 @@ export class ProjectDetailComponent {
       width: '600px',
       disableClose: true,
     });
+  }
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      if (this.authStore.isCompany()) {
+        this.router.navigate(['/my-projects']);
+      } else {
+        this.router.navigate(['/projects']);
+      }
+    }
   }
 }
