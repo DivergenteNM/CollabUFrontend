@@ -46,9 +46,11 @@
       <button mat-button (click)="viewDetail.emit(project().id)">
         <mat-icon>visibility</mat-icon> Ver Detalle
       </button>
-      <button mat-flat-button (click)="apply.emit(project().id)">
-        <mat-icon>send</mat-icon> Aplicar
-      </button>
+      @if (canApply()) {
+        <button mat-flat-button (click)="apply.emit(project().id)">
+          <mat-icon>send</mat-icon> Aplicar
+        </button>
+      }
     </mat-card-actions>
   }
 </mat-card>

@@ -56,6 +56,7 @@
           [project]="project"
           [matchScore]="authStore.isStudent() ? project.applicationsCount : undefined"
           [showActions]="true"
+          [canApply]="authStore.isStudent()"
           (viewDetail)="router.navigate(['/projects', $event])"
           (apply)="router.navigate(['/projects', $event])" />
       }

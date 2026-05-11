@@ -20,6 +20,7 @@ export class ProjectCardComponent {
   readonly project = input.required<Project>();
   readonly matchScore = input<number>();
   readonly showActions = input<boolean>(true);
+  readonly canApply = input<boolean>(true);
   readonly viewDetail = output<string>();
   readonly apply = output<string>();
 
