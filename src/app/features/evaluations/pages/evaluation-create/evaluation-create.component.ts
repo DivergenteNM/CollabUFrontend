@@ -53,7 +53,7 @@ export class EvaluationCreateComponent {
   // Eligible applications (completed / in_progress)
   readonly eligibleResource = httpResource<PaginatedResponse<Application>>(
     () => ({
-      url: `${environment.apiUrl}/applications/my-applications`,
+      url: `${environment.apiUrl}/applications/my`,
       params: { status: 'completed,in_progress', limit: 100 },
     }),
   );

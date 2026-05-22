@@ -19,14 +19,15 @@ export class EvaluationService extends BaseApiService {
   }
 
   getMyEvaluations(type: 'given' | 'received', params: PaginationParams): Observable<PaginatedResponse<Evaluation>> {
-    return this.http.get<PaginatedResponse<Evaluation>>(`${this.apiUrl}/my-evaluations`, {
-      params: this.buildParams({ ...params, type })
+    const endpoint = type === 'given' ? 'my/as-evaluator' : 'my/as-evaluated';
+    return this.http.get<PaginatedResponse<Evaluation>>(`${this.apiUrl}/${endpoint}`, {
+      params: this.buildParams(params)
     });
   }
 
   getCriteria(evaluationType: string): Observable<ApiResponse<EvaluationCriteriaScore[]>> {
     return this.http.get<ApiResponse<EvaluationCriteriaScore[]>>(`${this.apiUrl}/criteria`, {
-      params: { type: evaluationType }
+      params: { evaluationType }
     });
   }
 

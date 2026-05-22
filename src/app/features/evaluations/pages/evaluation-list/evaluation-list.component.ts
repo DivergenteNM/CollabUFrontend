@@ -35,15 +35,15 @@ export class EvaluationListComponent {
 
   readonly receivedResource = httpResource<PaginatedResponse<Evaluation>>(
     () => ({
-      url: `${environment.apiUrl}/evaluations/my-evaluations`,
-      params: { type: 'received', page: this.receivedPage(), limit: 10 },
+      url: `${environment.apiUrl}/evaluations/my/as-evaluated`,
+      params: { page: this.receivedPage(), limit: 10 },
     }),
   );
 
   readonly givenResource = httpResource<PaginatedResponse<Evaluation>>(
     () => ({
-      url: `${environment.apiUrl}/evaluations/my-evaluations`,
-      params: { type: 'given', page: this.givenPage(), limit: 10 },
+      url: `${environment.apiUrl}/evaluations/my/as-evaluator`,
+      params: { page: this.givenPage(), limit: 10 },
     }),
   );
 
