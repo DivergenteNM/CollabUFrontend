@@ -69,7 +69,10 @@ export class ApplicationDetailComponent {
   
   readonly nextInterview = computed(() => {
     const interviews = this.application()?.interviews ?? [];
-    const scheduled = interviews.filter(i => i.status === 'scheduled');
+    const now = new Date();
+    const scheduled = interviews.filter(i => 
+      i.status === 'scheduled' && new Date(i.scheduledAt) > now
+    );
     if (scheduled.length === 0) return null;
     
     // Sort by date and take the first one
