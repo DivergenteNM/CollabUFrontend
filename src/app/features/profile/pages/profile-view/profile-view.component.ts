@@ -46,6 +46,39 @@ export class ProfileViewComponent {
     return Math.min(100, Math.round((completed / required) * 100));
   });
 
+  levelLabel(level?: string): string {
+    const labels: Record<string, string> = {
+      basic: 'Básico',
+      beginner: 'Principiante',
+      intermediate: 'Intermedio',
+      advanced: 'Avanzado',
+      expert: 'Experto',
+      native: 'Nativo',
+    };
+    return (level && labels[level]) ?? level ?? 'Sin nivel';
+  }
+
+  getLanguageProficiency(lang: any): string {
+    return lang?.proficiencyLevel ?? lang?.proficiency ?? '';
+  }
+
+  getInterestName(interest: any): string {
+    return interest?.interestName ?? interest?.area ?? '';
+  }
+
+  expTypeLabel(type?: string): string {
+    const labels: Record<string, string> = {
+      work: 'Profesional',
+      professional: 'Profesional',
+      internship: 'Práctica / Pasantía',
+      volunteer: 'Voluntariado',
+      academic: 'Académica',
+      freelance: 'Freelance',
+      personal_project: 'Proyecto Personal',
+    };
+    return (type && labels[type]) ?? type ?? 'Experiencia';
+  }
+
   docTypeLabel(type: string): string {
     const labels: Record<string, string> = {
       resume: 'CV',
@@ -67,7 +100,22 @@ export class ProfileViewComponent {
             ...res.data,
             education: res.data.education ?? res.data.academicInfo ?? [],
             experiences: res.data.experiences ?? res.data.workExperience ?? [],
+            languages: res.data.languages ?? [],
+            interests: res.data.interests ?? [],
           });
+
+          // Fetch nested lists in background to guarantee accuracy
+          this.studentService.getLanguages().subscribe({
+            next: (langRes) => {
+              this.student.update(s => s ? { ...s, languages: langRes.data } : null);
+            }
+          });
+          this.studentService.getInterests().subscribe({
+            next: (intRes) => {
+              this.student.update(s => s ? { ...s, interests: intRes.data } : null);
+            }
+          });
+
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
