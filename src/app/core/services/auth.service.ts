@@ -11,6 +11,7 @@ import {
   RegisterRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  ChangePasswordRequest,
   unwrapApiResponse,
 } from '../models';
 
@@ -61,6 +62,10 @@ export class AuthService extends BaseApiService {
 
   resetPassword(data: ResetPasswordRequest): Observable<ApiResponse<{ message: string }>> {
     return this.http.post<ApiResponse<{ message: string }>>(`${this.apiUrl}/reset-password`, data);
+  }
+
+  changePassword(data: ChangePasswordRequest): Observable<ApiResponse<{ message: string }>> {
+    return this.http.post<ApiResponse<{ message: string }>>(`${this.apiUrl}/change-password`, data);
   }
 
   verifyEmail(token: string): Observable<ApiResponse<{ message: string }>> {

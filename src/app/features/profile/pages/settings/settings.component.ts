@@ -17,6 +17,7 @@ import { AuthStore } from '../../../../state/auth.store';
 import { NotificationService } from '../../../notifications/services/notification.service';
 import { NotificationPreferences } from '../../../../core/models';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
+import { ChangePasswordDialogComponent } from '../../components/change-password-dialog/change-password-dialog.component';
 
 @Component({
   selector: 'app-settings',
@@ -61,7 +62,20 @@ export class SettingsComponent implements OnInit {
   }
 
   changePassword(): void {
-    this.snackBar.open('Funcionalidad de cambio de contraseña próximamente', 'Cerrar', { duration: 3000 });
+    const ref = this.dialog.open(ChangePasswordDialogComponent, {
+      width: '450px',
+      disableClose: true,
+    });
+
+    ref.afterClosed().subscribe((success) => {
+      if (success) {
+        this.snackBar.open('Contraseña cambiada exitosamente', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+        });
+      }
+    });
   }
 
   deactivateAccount(): void {
