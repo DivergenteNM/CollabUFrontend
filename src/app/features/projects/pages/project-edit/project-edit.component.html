@@ -47,6 +47,24 @@
             }
           </div>
 
+          <h3>Perfil Académico Ideal (Opcional)</h3>
+          <div class="project-edit__row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Carreras Relacionadas</mat-label>
+              <mat-select formControlName="academicPrograms" multiple>
+                @for (program of programs; track program) {
+                  <mat-option [value]="program">{{ program }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Semestre Mínimo</mat-label>
+              <input matInput type="number" formControlName="minimumSemester" min="1" max="12" />
+              <mat-error>Entre 1 y 12</mat-error>
+            </mat-form-field>
+          </div>
+
           <div class="project-edit__row">
             <mat-form-field appearance="outline">
               <mat-label>Inicio</mat-label>
@@ -92,11 +110,6 @@
             <mat-card class="project-edit__req-card">
               <mat-card-content>
                 <div class="project-edit__row">
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Nombre</mat-label>
-                    <input matInput [value]="req.name"
-                           (input)="updateReq($index, 'name', $any($event.target).value)" />
-                  </mat-form-field>
                   <mat-form-field appearance="outline">
                     <mat-label>Tipo</mat-label>
                     <mat-select [value]="req.type"
@@ -107,6 +120,11 @@
                       <mat-option value="language">Idioma</mat-option>
                       <mat-option value="other">Otro</mat-option>
                     </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="flex-1">
+                    <mat-label>Nombre</mat-label>
+                    <input matInput [value]="req.name"
+                           (input)="updateReq($index, 'name', $any($event.target).value)" />
                   </mat-form-field>
                   <mat-form-field appearance="outline">
                     <mat-label>Nivel</mat-label>

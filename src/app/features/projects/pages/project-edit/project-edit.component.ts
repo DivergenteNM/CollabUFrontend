@@ -94,6 +94,12 @@ export class ProjectEditComponent {
     { value: ProjectType.OTHER, label: 'Otro' },
   ];
 
+  readonly programs = [
+    'Ingeniería de Sistemas',
+    'Ingeniería Electrónica',
+    'Ingeniería Civil',
+  ];
+
   // Date controls typed as Date|null — NativeDateAdapter requires Date objects, not ISO strings.
   readonly infoForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
@@ -105,6 +111,8 @@ export class ProjectEditComponent {
     startDate: [null as Date | null, Validators.required],
     endDate: [null as Date | null, Validators.required],
     applicationDeadline: [null as Date | null, Validators.required],
+    academicPrograms: [[] as string[]],
+    minimumSemester: [null as number | null, [Validators.min(1), Validators.max(12)]],
   }, { validators: [dateRangeValidator] });
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
@@ -143,6 +151,8 @@ export class ProjectEditComponent {
         startDate: p.startDate ? new Date(p.startDate) : null,
         endDate: p.endDate ? new Date(p.endDate) : null,
         applicationDeadline: p.applicationDeadline ? new Date(p.applicationDeadline) : null,
+        academicPrograms: p.academicPrograms ?? [],
+        minimumSemester: p.minimumSemester ?? null,
       });
       this.requirements.set(p.requirements ?? []);
       // Tags come as ProjectTag[] objects from backend — extract the tag string
@@ -192,6 +202,8 @@ export class ProjectEditComponent {
       startDate: toIso(raw.startDate),
       endDate: toIso(raw.endDate),
       applicationDeadline: toIso(raw.applicationDeadline),
+      academicPrograms: raw.academicPrograms,
+      minimumSemester: raw.minimumSemester || undefined,
       tags: this.tags(),
     };
 

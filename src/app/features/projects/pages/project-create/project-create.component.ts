@@ -97,6 +97,12 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     { value: ProjectType.OTHER, label: 'Otro' },
   ];
 
+  readonly programs = [
+    'Ingeniería de Sistemas',
+    'Ingeniería Electrónica',
+    'Ingeniería Civil',
+  ];
+
   readonly infoForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(10)]],
     description: ['', [Validators.required, Validators.minLength(50)]],
@@ -107,6 +113,8 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
     applicationDeadline: ['', Validators.required],
+    academicPrograms: [[] as string[]],
+    minimumSemester: [null as number | null, [Validators.min(1), Validators.max(12)]],
   }, { validators: [dateRangeValidator] });
 
   ngOnInit(): void {
@@ -175,6 +183,8 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
       location: formValue.location || undefined,
       startDate: formValue.startDate ? new Date(formValue.startDate).toISOString() : undefined,
       applicationDeadline: formValue.applicationDeadline ? new Date(formValue.applicationDeadline).toISOString() : undefined,
+      academicPrograms: formValue.academicPrograms,
+      minimumSemester: formValue.minimumSemester || undefined,
       tags: this.tags(),
     };
 
