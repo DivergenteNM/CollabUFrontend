@@ -58,6 +58,7 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     { value: ProjectType.THESIS, label: 'Tesis / Trabajo de Grado' },
     { value: ProjectType.RESEARCH, label: 'Investigación' },
     { value: ProjectType.INTERNSHIP, label: 'Pasantía' },
+    { value: ProjectType.OTHER, label: 'Otro' },
   ];
 
   readonly infoForm = this.fb.nonNullable.group({
