@@ -60,7 +60,11 @@
             <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
             <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
             <mat-datepicker #endPicker />
-            <mat-error>Fecha requerida</mat-error>
+            @if (infoForm.get('endDate')?.hasError('endBeforeStart')) {
+              <mat-error>Debe ser posterior al inicio</mat-error>
+            } @else {
+              <mat-error>Fecha requerida</mat-error>
+            }
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -68,7 +72,11 @@
             <input matInput [matDatepicker]="deadlinePicker" formControlName="applicationDeadline" />
             <mat-datepicker-toggle matIconSuffix [for]="deadlinePicker" />
             <mat-datepicker #deadlinePicker />
-            <mat-error>Fecha requerida</mat-error>
+            @if (infoForm.get('applicationDeadline')?.hasError('deadlineAfterStart')) {
+              <mat-error>Debe ser anterior al inicio</mat-error>
+            } @else {
+              <mat-error>Fecha requerida</mat-error>
+            }
           </mat-form-field>
         </div>
 

@@ -4,6 +4,7 @@ import {
 import { Router } from '@angular/router';
 import {
   FormBuilder, FormArray, ReactiveFormsModule, Validators,
+  AbstractControl, ValidationErrors, ValidatorFn,
 } from '@angular/forms';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -26,6 +27,41 @@ import { ProjectType, ProjectStatus } from '../../../../core/enums';
 import { ProjectRequirement } from '../../../../core/models';
 
 const DRAFT_KEY = 'collabu_project_draft';
+
+const dateRangeValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const start = group.get('startDate');
+  const end = group.get('endDate');
+  const deadline = group.get('applicationDeadline');
+
+  if (!start?.value) return null;
+
+  const errors: ValidationErrors = {};
+  const startDt = new Date(start.value);
+
+  // Validar fecha de fin
+  if (end?.value && startDt >= new Date(end.value)) {
+    errors['endBeforeStart'] = true;
+    if (!end.errors?.['endBeforeStart']) {
+      end.setErrors({ ...end.errors, endBeforeStart: true });
+    }
+  } else if (end?.errors?.['endBeforeStart']) {
+    const { endBeforeStart, ...rest } = end.errors;
+    end.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  // Validar límite de aplicaciones
+  if (deadline?.value && new Date(deadline.value) >= startDt) {
+    errors['deadlineAfterStart'] = true;
+    if (!deadline.errors?.['deadlineAfterStart']) {
+      deadline.setErrors({ ...deadline.errors, deadlineAfterStart: true });
+    }
+  } else if (deadline?.errors?.['deadlineAfterStart']) {
+    const { deadlineAfterStart, ...rest } = deadline.errors;
+    deadline.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  return Object.keys(errors).length ? errors : null;
+};
 
 @Component({
   selector: 'app-project-create',
@@ -71,7 +107,7 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
     applicationDeadline: ['', Validators.required],
-  });
+  }, { validators: [dateRangeValidator] });
 
   ngOnInit(): void {
     this.loadDraft();
