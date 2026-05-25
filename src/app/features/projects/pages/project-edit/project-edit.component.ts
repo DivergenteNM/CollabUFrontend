@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import {
   FormBuilder, ReactiveFormsModule, Validators,
+  AbstractControl, ValidationErrors, ValidatorFn,
 } from '@angular/forms';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,6 +26,39 @@ import { environment } from '../../../../../environments/environment';
 import { ProjectService } from '../../services/project.service';
 import { ProjectType } from '../../../../core/enums';
 import { ApiResponse, Project, ProjectRequirement } from '../../../../core/models';
+
+const dateRangeValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const start = group.get('startDate');
+  const end = group.get('endDate');
+  const deadline = group.get('applicationDeadline');
+
+  if (!start?.value) return null;
+
+  const errors: ValidationErrors = {};
+  const startDt = new Date(start.value);
+
+  if (end?.value && startDt >= new Date(end.value)) {
+    errors['endBeforeStart'] = true;
+    if (!end.errors?.['endBeforeStart']) {
+      end.setErrors({ ...end.errors, endBeforeStart: true });
+    }
+  } else if (end?.errors?.['endBeforeStart']) {
+    const { endBeforeStart, ...rest } = end.errors;
+    end.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  if (deadline?.value && new Date(deadline.value) >= startDt) {
+    errors['deadlineAfterStart'] = true;
+    if (!deadline.errors?.['deadlineAfterStart']) {
+      deadline.setErrors({ ...deadline.errors, deadlineAfterStart: true });
+    }
+  } else if (deadline?.errors?.['deadlineAfterStart']) {
+    const { deadlineAfterStart, ...rest } = deadline.errors;
+    deadline.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  return Object.keys(errors).length ? errors : null;
+};
 
 @Component({
   selector: 'app-project-edit',
@@ -57,6 +91,13 @@ export class ProjectEditComponent {
     { value: ProjectType.THESIS, label: 'Tesis / Trabajo de Grado' },
     { value: ProjectType.RESEARCH, label: 'Investigación' },
     { value: ProjectType.INTERNSHIP, label: 'Pasantía' },
+    { value: ProjectType.OTHER, label: 'Otro' },
+  ];
+
+  readonly programs = [
+    'Ingeniería de Sistemas',
+    'Ingeniería Electrónica',
+    'Ingeniería Civil',
   ];
 
   // Date controls typed as Date|null — NativeDateAdapter requires Date objects, not ISO strings.
@@ -70,7 +111,9 @@ export class ProjectEditComponent {
     startDate: [null as Date | null, Validators.required],
     endDate: [null as Date | null, Validators.required],
     applicationDeadline: [null as Date | null, Validators.required],
-  });
+    academicPrograms: [[] as string[]],
+    minimumSemester: [null as number | null, [Validators.min(1), Validators.max(12)]],
+  }, { validators: [dateRangeValidator] });
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
     () => {
@@ -108,6 +151,8 @@ export class ProjectEditComponent {
         startDate: p.startDate ? new Date(p.startDate) : null,
         endDate: p.endDate ? new Date(p.endDate) : null,
         applicationDeadline: p.applicationDeadline ? new Date(p.applicationDeadline) : null,
+        academicPrograms: p.academicPrograms ?? [],
+        minimumSemester: p.minimumSemester ?? null,
       });
       this.requirements.set(p.requirements ?? []);
       // Tags come as ProjectTag[] objects from backend — extract the tag string
@@ -157,6 +202,8 @@ export class ProjectEditComponent {
       startDate: toIso(raw.startDate),
       endDate: toIso(raw.endDate),
       applicationDeadline: toIso(raw.applicationDeadline),
+      academicPrograms: raw.academicPrograms,
+      minimumSemester: raw.minimumSemester || undefined,
       tags: this.tags(),
     };
 

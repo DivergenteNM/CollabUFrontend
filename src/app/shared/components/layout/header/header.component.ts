@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { UiStore } from '../../../../state/ui.store';
 import { AuthStore } from '../../../../state/auth.store';
 import { NotificationsStore } from '../../../../state/notifications.store';
+import { UserRole } from '../../../../core/enums';
 
 @Component({
   selector: 'app-header',
@@ -37,6 +38,23 @@ export class HeaderComponent {
   readonly displayName = this.authStore.displayName;
   readonly unreadCount = this.notificationsStore.unreadCount;
   readonly recentNotifications = this.notificationsStore.recentNotifications;
+
+  readonly welcomeMessage = computed(() => {
+    const role = this.authStore.role();
+    if (!role) return '';
+    switch (role) {
+      case UserRole.STUDENT:
+        return '🎓 ¡Bienvenido Estudiante!';
+      case UserRole.COMPANY:
+        return '💼 ¡Bienvenida Empresa!';
+      case UserRole.FACULTY:
+        return '🏫 ¡Bienvenido Docente!';
+      case UserRole.ADMIN:
+        return '🛡️ ¡Bienvenido Admin!';
+      default:
+        return '';
+    }
+  });
 
   logout(): void {
     this.authStore.clearAuth();

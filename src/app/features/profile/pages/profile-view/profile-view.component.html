@@ -48,6 +48,98 @@
             </div>
           }
 
+          @if (s.education.length > 0) {
+            <div class="section">
+              <h3>
+                <mat-icon>school</mat-icon>
+                Educación
+                <a mat-button routerLink="/profile/edit" class="section-link">Gestionar</a>
+              </h3>
+              <div class="education-list">
+                @for (edu of s.education; track edu.id) {
+                  <div class="education-item">
+                    <div class="education-item__bullet"></div>
+                    <div class="education-item__content">
+                      <div class="education-item__header">
+                        <h4>{{ edu.degree }}</h4>
+                        <span class="education-item__date">{{ edu.startDate }} - {{ edu.isCurrent ? 'Actualidad' : (edu.endDate ?? 'Actualidad') }}</span>
+                      </div>
+                      <p class="education-item__inst">{{ edu.institution }}</p>
+                      @if (edu.description) {
+                        <p class="education-item__desc">{{ edu.description }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (s.experiences.length > 0) {
+            <div class="section">
+              <h3>
+                <mat-icon>work_history</mat-icon>
+                Experiencia
+                <a mat-button routerLink="/profile/edit" class="section-link">Gestionar</a>
+              </h3>
+              <div class="experience-list">
+                @for (exp of s.experiences; track exp.id) {
+                  <div class="experience-item">
+                    <div class="experience-item__bullet"></div>
+                    <div class="experience-item__content">
+                      <div class="experience-item__header">
+                        <h4>{{ exp.title }}</h4>
+                        <span class="experience-item__date">{{ exp.startDate }} - {{ exp.isCurrent ? 'Actualidad' : (exp.endDate ?? 'Actualidad') }}</span>
+                      </div>
+                      <div class="experience-item__sub">
+                        <span class="experience-item__company">{{ exp.companyName ?? 'Trabajo independiente' }}</span>
+                        <span class="experience-item__badge">{{ expTypeLabel(exp.type) }}</span>
+                      </div>
+                      @if (exp.description) {
+                        <p class="experience-item__desc">{{ exp.description }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (s.languages.length > 0) {
+            <div class="section">
+              <h3>
+                <mat-icon>translate</mat-icon>
+                Idiomas
+                <a mat-button routerLink="/profile/edit" class="section-link">Gestionar</a>
+              </h3>
+              <div class="languages-grid">
+                @for (lang of s.languages; track lang.id) {
+                  <div class="language-card">
+                    <span class="language-card__name">{{ lang.language }}</span>
+                    <span class="language-card__level">{{ levelLabel(getLanguageProficiency(lang)) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (s.interests.length > 0) {
+            <div class="section">
+              <h3>
+                <mat-icon>interests</mat-icon>
+                Intereses
+                <a mat-button routerLink="/profile/edit" class="section-link">Gestionar</a>
+              </h3>
+              <mat-chip-set class="interests-chips">
+                @for (int of s.interests; track int.id) {
+                  <mat-chip class="interest-chip">
+                    {{ getInterestName(int) }}
+                  </mat-chip>
+                }
+              </mat-chip-set>
+            </div>
+          }
+
           <div class="section">
             <h3>Horas de Práctica</h3>
             <div class="hours-info">

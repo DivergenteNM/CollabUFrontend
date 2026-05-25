@@ -27,9 +27,10 @@ export class ProjectCardComponent {
   readonly projectTypeLabel = computed(() => {
     const map: Record<string, string> = {
       professional_practice: 'Práctica Profesional',
-      social_service: 'Servicio Social',
+      thesis: 'Tesis / Trabajo de Grado',
       research: 'Investigación',
       internship: 'Pasantía',
+      other: 'Otro',
     };
     return map[this.project().projectType] || this.project().projectType;
   });

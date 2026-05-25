@@ -15,6 +15,8 @@ export interface Project {
   startDate: string;
   endDate: string;
   applicationDeadline: string;
+  academicPrograms?: string[];
+  minimumSemester?: number;
   weeklyHours: number;
   totalHoursRequired: number;
   isRemote: boolean;

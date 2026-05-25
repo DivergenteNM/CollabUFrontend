@@ -3,4 +3,5 @@ export enum ProjectType {
   THESIS = 'thesis',
   RESEARCH = 'research',
   INTERNSHIP = 'internship',
+  OTHER = 'other',
 }

@@ -50,6 +50,7 @@ export class ProjectListComponent {
         { value: ProjectType.THESIS, label: 'Tesis / Trabajo de Grado' },
         { value: ProjectType.RESEARCH, label: 'Investigación' },
         { value: ProjectType.INTERNSHIP, label: 'Pasantía' },
+        { value: ProjectType.OTHER, label: 'Otro' },
       ],
     },
     {

@@ -88,9 +88,10 @@ export class ProjectDetailComponent {
   readonly projectTypeLabel = computed(() => {
     const typeMap: Record<string, string> = {
       professional_practice: 'Práctica Profesional',
-      social_service: 'Servicio Social',
+      thesis: 'Tesis / Trabajo de Grado',
       research: 'Investigación',
       internship: 'Pasantía',
+      other: 'Otro',
     };
     return typeMap[this.project()?.projectType ?? ''] ?? '';
   });
