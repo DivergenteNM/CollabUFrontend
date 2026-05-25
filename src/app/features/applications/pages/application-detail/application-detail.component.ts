@@ -19,6 +19,7 @@ import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
+import { ChatService } from '../../../chat/services/chat.service';
 import { ApplicationProgressStepperComponent } from '../../../../shared/components/ui/application-progress-stepper/application-progress-stepper.component';
 import { TimelineComponent, TimelineEvent } from '../../../../shared/components/ui/timeline/timeline.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
@@ -43,6 +44,7 @@ export class ApplicationDetailComponent {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly applicationService = inject(ApplicationService);
+  private readonly chatService = inject(ChatService);
 
   readonly id = input.required<string>();
   readonly ApplicationStatus = ApplicationStatus;
@@ -127,6 +129,20 @@ export class ApplicationDetailComponent {
       revision_requested: 'Revisión solicitada',
     };
     return labels[status] ?? status;
+  }
+
+  startChat(): void {
+    const app = this.application();
+    if (!app || !app.companyId) return;
+
+    this.chatService.createConversation([app.companyId], 'direct', app.projectId).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.router.navigate(['/chat', res.data.id]);
+        }
+      },
+      error: () => this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 }),
+    });
   }
 
   withdraw(): void {

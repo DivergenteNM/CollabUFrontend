@@ -27,6 +27,7 @@ import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application, MatchBreakdown } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
+import { ChatService } from '../../../chat/services/chat.service';
 import { ApplicationProgressStepperComponent } from '../../../../shared/components/ui/application-progress-stepper/application-progress-stepper.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreCardComponent } from '../../../../shared/components/cards/match-score-card/match-score-card.component';
@@ -58,6 +59,7 @@ export class ApplicationReviewComponent {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly applicationService = inject(ApplicationService);
+  private readonly chatService = inject(ChatService);
 
   readonly id = input.required<string>();
   readonly ApplicationStatus = ApplicationStatus;
@@ -118,6 +120,20 @@ export class ApplicationReviewComponent {
            s !== ApplicationStatus.CANCELLED &&
            s !== ApplicationStatus.WITHDRAWN;
   });
+
+  startChat(): void {
+    const app = this.application();
+    if (!app || !app.studentId) return;
+
+    this.chatService.createConversation([app.studentId], 'direct', app.projectId).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.router.navigate(['/chat', res.data.id]);
+        }
+      },
+      error: () => this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 }),
+    });
+  }
 
   accept(): void {
     const ref = this.dialog.open(ConfirmDialogComponent, {
