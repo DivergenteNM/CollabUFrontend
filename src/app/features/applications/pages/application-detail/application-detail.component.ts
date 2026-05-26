@@ -26,13 +26,14 @@ import { StatusBadgeComponent } from '../../../../shared/components/ui/status-ba
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-application-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
-    MatDialogModule, MatSnackBarModule, DatePipe,
+    MatDialogModule, MatSnackBarModule, DatePipe, MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
     SkeletonComponent, FileUploadComponent, EmptyStateComponent,
   ],
@@ -49,6 +50,7 @@ export class ApplicationDetailComponent {
   readonly id = input.required<string>();
   readonly ApplicationStatus = ApplicationStatus;
   readonly submitting = signal(false);
+  readonly loadingChat = signal(false);
 
   readonly applicationResource = rxResource({
     params: () => this.id(),
@@ -133,15 +135,22 @@ export class ApplicationDetailComponent {
 
   startChat(): void {
     const app = this.application();
-    if (!app || !app.companyId) return;
+    const companyUserId = (app?.project as any)?.createdByUserId;
+    if (!app || !companyUserId || this.loadingChat()) return;
 
-    this.chatService.createConversation([app.companyId], 'direct', app.projectId).subscribe({
-      next: (res) => {
-        if (res.data) {
-          this.router.navigate(['/chat', res.data.id]);
+    this.loadingChat.set(true);
+    this.chatService.createConversation([companyUserId], 'direct', app.projectId).subscribe({
+      next: (res: any) => {
+        this.loadingChat.set(false);
+        const conv = res?.data || res;
+        if (conv?.id) {
+          this.router.navigate(['/chat', conv.id]);
         }
       },
-      error: () => this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 }),
+      error: () => {
+        this.loadingChat.set(false);
+        this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 });
+      },
     });
   }
 

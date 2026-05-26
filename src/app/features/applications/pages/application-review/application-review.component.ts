@@ -21,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
@@ -43,6 +44,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/co
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatChipsModule,
     MatDividerModule, MatDialogModule, MatSnackBarModule, MatFormFieldModule,
     MatInputModule, MatSelectModule, MatDatepickerModule, MatSliderModule, DatePipe, DecimalPipe,
+    MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, StatusBadgeComponent, MatchScoreCardComponent,
     SkillChipListComponent, SkeletonComponent,
   ],
@@ -67,6 +69,7 @@ export class ApplicationReviewComponent {
   readonly showInterviewForm = signal(false);
   readonly showRejectForm = signal(false);
   readonly reviewGrade = signal(3);
+  readonly loadingChat = signal(false);
   reviewFeedback = '';
 
   readonly interviewForm = this.fb.nonNullable.group({
@@ -123,15 +126,21 @@ export class ApplicationReviewComponent {
 
   startChat(): void {
     const app = this.application();
-    if (!app || !app.studentId) return;
+    if (!app || !app.student?.userId || this.loadingChat()) return;
 
-    this.chatService.createConversation([app.studentId], 'direct', app.projectId).subscribe({
-      next: (res) => {
-        if (res.data) {
-          this.router.navigate(['/chat', res.data.id]);
+    this.loadingChat.set(true);
+    this.chatService.createConversation([app.student.userId], 'direct', app.projectId).subscribe({
+      next: (res: any) => {
+        this.loadingChat.set(false);
+        const conv = res?.data || res;
+        if (conv?.id) {
+          this.router.navigate(['/chat', conv.id]);
         }
       },
-      error: () => this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 }),
+      error: () => {
+        this.loadingChat.set(false);
+        this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 });
+      },
     });
   }
 
