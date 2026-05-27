@@ -57,8 +57,9 @@ export class ApplicationService extends BaseApiService {
             enriched.student.user = userData.data;
           }
         }
-        if (projectData?.data) {
-          enriched.project = projectData.data;
+        const proj = (projectData as any)?.data || projectData;
+        if (proj) {
+          enriched.project = proj;
         }
         return enriched;
       })

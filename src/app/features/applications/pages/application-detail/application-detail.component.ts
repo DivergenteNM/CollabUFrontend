@@ -19,19 +19,21 @@ import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
+import { ChatService } from '../../../chat/services/chat.service';
 import { ApplicationProgressStepperComponent } from '../../../../shared/components/ui/application-progress-stepper/application-progress-stepper.component';
 import { TimelineComponent, TimelineEvent } from '../../../../shared/components/ui/timeline/timeline.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-application-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
-    MatDialogModule, MatSnackBarModule, DatePipe,
+    MatDialogModule, MatSnackBarModule, DatePipe, MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
     SkeletonComponent, FileUploadComponent, EmptyStateComponent,
   ],
@@ -43,10 +45,12 @@ export class ApplicationDetailComponent {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly applicationService = inject(ApplicationService);
+  private readonly chatService = inject(ChatService);
 
   readonly id = input.required<string>();
   readonly ApplicationStatus = ApplicationStatus;
   readonly submitting = signal(false);
+  readonly loadingChat = signal(false);
 
   readonly applicationResource = rxResource({
     params: () => this.id(),
@@ -127,6 +131,27 @@ export class ApplicationDetailComponent {
       revision_requested: 'Revisión solicitada',
     };
     return labels[status] ?? status;
+  }
+
+  startChat(): void {
+    const app = this.application();
+    const companyUserId = (app?.project as any)?.createdByUserId;
+    if (!app || !companyUserId || this.loadingChat()) return;
+
+    this.loadingChat.set(true);
+    this.chatService.createConversation([companyUserId], 'direct', app.projectId).subscribe({
+      next: (res: any) => {
+        this.loadingChat.set(false);
+        const conv = res?.data || res;
+        if (conv?.id) {
+          this.router.navigate(['/chat', conv.id]);
+        }
+      },
+      error: () => {
+        this.loadingChat.set(false);
+        this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 });
+      },
+    });
   }
 
   withdraw(): void {

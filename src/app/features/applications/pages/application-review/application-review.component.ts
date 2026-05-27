@@ -21,12 +21,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application, MatchBreakdown } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
+import { ChatService } from '../../../chat/services/chat.service';
 import { ApplicationProgressStepperComponent } from '../../../../shared/components/ui/application-progress-stepper/application-progress-stepper.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreCardComponent } from '../../../../shared/components/cards/match-score-card/match-score-card.component';
@@ -42,6 +44,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/co
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatChipsModule,
     MatDividerModule, MatDialogModule, MatSnackBarModule, MatFormFieldModule,
     MatInputModule, MatSelectModule, MatDatepickerModule, MatSliderModule, DatePipe, DecimalPipe,
+    MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, StatusBadgeComponent, MatchScoreCardComponent,
     SkillChipListComponent, SkeletonComponent,
   ],
@@ -58,6 +61,7 @@ export class ApplicationReviewComponent {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly applicationService = inject(ApplicationService);
+  private readonly chatService = inject(ChatService);
 
   readonly id = input.required<string>();
   readonly ApplicationStatus = ApplicationStatus;
@@ -65,6 +69,7 @@ export class ApplicationReviewComponent {
   readonly showInterviewForm = signal(false);
   readonly showRejectForm = signal(false);
   readonly reviewGrade = signal(3);
+  readonly loadingChat = signal(false);
   reviewFeedback = '';
 
   readonly interviewForm = this.fb.nonNullable.group({
@@ -118,6 +123,26 @@ export class ApplicationReviewComponent {
            s !== ApplicationStatus.CANCELLED &&
            s !== ApplicationStatus.WITHDRAWN;
   });
+
+  startChat(): void {
+    const app = this.application();
+    if (!app || !app.student?.userId || this.loadingChat()) return;
+
+    this.loadingChat.set(true);
+    this.chatService.createConversation([app.student.userId], 'direct', app.projectId).subscribe({
+      next: (res: any) => {
+        this.loadingChat.set(false);
+        const conv = res?.data || res;
+        if (conv?.id) {
+          this.router.navigate(['/chat', conv.id]);
+        }
+      },
+      error: () => {
+        this.loadingChat.set(false);
+        this.snackBar.open('Error al iniciar el chat', 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
 
   accept(): void {
     const ref = this.dialog.open(ConfirmDialogComponent, {

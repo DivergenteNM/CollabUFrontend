@@ -24,9 +24,17 @@ export class ChatService extends BaseApiService {
     );
   }
 
-  createConversation(participantId: string, applicationId?: string): Observable<ApiResponse<Conversation>> {
+  createConversation(
+    participantIds: string[],
+    type: 'direct' | 'group' | 'project' = 'direct',
+    projectId?: string,
+    initialMessage?: string
+  ): Observable<ApiResponse<Conversation>> {
     return this.http.post<ApiResponse<Conversation>>(`${this.apiUrl}/conversations`, {
-      participantId, applicationId
+      participantIds,
+      type,
+      projectId,
+      initialMessage,
     });
   }
 

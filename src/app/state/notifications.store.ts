@@ -70,6 +70,10 @@ export const NotificationsStore = signalStore(
       realtimeService.onNotification().subscribe(notification => {
         store.addNotification(notification);
       });
+
+      realtimeService.onUnreadCount().subscribe(count => {
+        patchState(store, { unreadCount: count });
+      });
     },
   })
 );

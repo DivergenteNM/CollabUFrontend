@@ -113,8 +113,16 @@
                     <mat-icon>undo</mat-icon> Retirar Aplicación
                   </button>
                 }
-                <button mat-flat-button (click)="router.navigate(['/chat'])">
-                  <mat-icon>chat</mat-icon> Iniciar Chat
+                <button mat-flat-button color="primary" (click)="startChat()" [disabled]="loadingChat()">
+                  <span style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                    @if (loadingChat()) {
+                      <mat-spinner diameter="18"></mat-spinner>
+                      <span>Iniciando...</span>
+                    } @else {
+                      <mat-icon>chat</mat-icon>
+                      <span>Iniciar Chat</span>
+                    }
+                  </span>
                 </button>
               </div>
             </div>
