@@ -63,6 +63,27 @@ const dateRangeValidator: ValidatorFn = (group: AbstractControl): ValidationErro
   return Object.keys(errors).length ? errors : null;
 };
 
+const hoursValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const weekly = group.get('weeklyHours');
+  const total = group.get('totalHours');
+
+  if (!weekly?.value || !total?.value) return null;
+
+  const errors: ValidationErrors = {};
+
+  if (Number(total.value) < Number(weekly.value)) {
+    errors['totalLessThanWeekly'] = true;
+    if (!total.errors?.['totalLessThanWeekly']) {
+      total.setErrors({ ...total.errors, totalLessThanWeekly: true });
+    }
+  } else if (total?.errors?.['totalLessThanWeekly']) {
+    const { totalLessThanWeekly, ...rest } = total.errors;
+    total.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  return Object.keys(errors).length ? errors : null;
+};
+
 @Component({
   selector: 'app-project-create',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -115,7 +136,9 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     applicationDeadline: ['', Validators.required],
     academicPrograms: [[] as string[]],
     minimumSemester: [null as number | null, [Validators.min(1), Validators.max(12)]],
-  }, { validators: [dateRangeValidator] });
+    weeklyHours: [null as number | null, [Validators.min(1)]],
+    totalHours: [null as number | null, [Validators.min(1)]],
+  }, { validators: [dateRangeValidator, hoursValidator] });
 
   ngOnInit(): void {
     this.loadDraft();
@@ -171,9 +194,8 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     if (this.submitting()) return;
     this.submitting.set(true);
 
+    // Mapear los datos que espera el backend
     const formValue = this.infoForm.getRawValue();
-    
-    // Mapear solo los datos que espera el backend
     const createData: any = {
       title: formValue.title,
       description: formValue.description,
@@ -182,14 +204,14 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
       locationType: formValue.isRemote ? 'remote' : 'onsite',
       location: formValue.location || undefined,
       startDate: formValue.startDate ? new Date(formValue.startDate).toISOString() : undefined,
+      endDate: formValue.endDate ? new Date(formValue.endDate).toISOString() : undefined,
       applicationDeadline: formValue.applicationDeadline ? new Date(formValue.applicationDeadline).toISOString() : undefined,
       academicPrograms: formValue.academicPrograms,
       minimumSemester: formValue.minimumSemester || undefined,
       tags: this.tags(),
+      weeklyHours: formValue.weeklyHours || undefined,
+      totalHours: formValue.totalHours || undefined,
     };
-
-    // Agregar compensación o duración (opcionales) si el backend lo requiere en un futuro
-    // Por ahora omitimos endDate, weeklyHours, etc., que no existen en el CreateProjectDto
 
     this.projectService.create(createData).pipe(
       concatMap((res: any) => {

@@ -47,12 +47,16 @@
               <mat-icon>laptop</mat-icon> Remoto
             </span>
           }
-          <span class="detail__meta-item">
-            <mat-icon>schedule</mat-icon> {{ p.weeklyHours }}h/semana
-          </span>
-          <span class="detail__meta-item">
-            <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHoursRequired }}h total
-          </span>
+          @if (p.weeklyHours) {
+            <span class="detail__meta-item">
+              <mat-icon>schedule</mat-icon> {{ p.weeklyHours }}h/semana
+            </span>
+          }
+          @if (p.totalHours) {
+            <span class="detail__meta-item">
+              <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHours }}h total
+            </span>
+          }
           <span class="detail__meta-item">
             <mat-icon>event</mat-icon> {{ p.startDate | date:'d MMM yyyy' }} — {{ p.endDate | date:'d MMM yyyy' }}
           </span>

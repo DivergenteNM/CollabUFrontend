@@ -60,6 +60,27 @@ const dateRangeValidator: ValidatorFn = (group: AbstractControl): ValidationErro
   return Object.keys(errors).length ? errors : null;
 };
 
+const hoursValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const weekly = group.get('weeklyHours');
+  const total = group.get('totalHours');
+
+  if (!weekly?.value || !total?.value) return null;
+
+  const errors: ValidationErrors = {};
+
+  if (Number(total.value) < Number(weekly.value)) {
+    errors['totalLessThanWeekly'] = true;
+    if (!total.errors?.['totalLessThanWeekly']) {
+      total.setErrors({ ...total.errors, totalLessThanWeekly: true });
+    }
+  } else if (total?.errors?.['totalLessThanWeekly']) {
+    const { totalLessThanWeekly, ...rest } = total.errors;
+    total.setErrors(Object.keys(rest).length ? rest : null);
+  }
+
+  return Object.keys(errors).length ? errors : null;
+};
+
 @Component({
   selector: 'app-project-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -113,7 +134,9 @@ export class ProjectEditComponent {
     applicationDeadline: [null as Date | null, Validators.required],
     academicPrograms: [[] as string[]],
     minimumSemester: [null as number | null, [Validators.min(1), Validators.max(12)]],
-  }, { validators: [dateRangeValidator] });
+    weeklyHours: [null as number | null, [Validators.min(1)]],
+    totalHours: [null as number | null, [Validators.min(1)]],
+  }, { validators: [dateRangeValidator, hoursValidator] });
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
     () => {
@@ -153,6 +176,8 @@ export class ProjectEditComponent {
         applicationDeadline: p.applicationDeadline ? new Date(p.applicationDeadline) : null,
         academicPrograms: p.academicPrograms ?? [],
         minimumSemester: p.minimumSemester ?? null,
+        weeklyHours: p.weeklyHours ?? null,
+        totalHours: p.totalHours ?? null,
       });
       this.requirements.set(p.requirements ?? []);
       // Tags come as ProjectTag[] objects from backend — extract the tag string
@@ -205,6 +230,8 @@ export class ProjectEditComponent {
       academicPrograms: raw.academicPrograms,
       minimumSemester: raw.minimumSemester || undefined,
       tags: this.tags(),
+      weeklyHours: raw.weeklyHours || undefined,
+      totalHours: raw.totalHours || undefined,
     };
 
     this.projectService.update(this.id(), data as Partial<Project>).subscribe({
