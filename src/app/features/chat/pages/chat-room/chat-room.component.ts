@@ -100,11 +100,11 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     effect(() => {
       const data = this.messagesResource.value()?.data;
       if (data) {
-        const reversed = [...data].reverse();
+        const sorted = [...data];
         if (this.page() === 1) {
-          this.historicalMessages.set(reversed);
+          this.historicalMessages.set(sorted);
         } else {
-          this.historicalMessages.update(prev => [...reversed, ...prev]);
+          this.historicalMessages.update(prev => [...sorted, ...prev]);
         }
         this.loadingMore.set(false);
       }

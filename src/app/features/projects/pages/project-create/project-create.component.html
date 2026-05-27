@@ -47,6 +47,24 @@
         </div>
 
         <div class="project-create__row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Horas Semanales (Opcional)</mat-label>
+            <input matInput type="number" formControlName="weeklyHours" min="1" placeholder="Ej: 10" />
+            <mat-error>Mínimo 1 hora semanal</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Horas Totales (Opcional)</mat-label>
+            <input matInput type="number" formControlName="totalHours" min="1" placeholder="Ej: 120" />
+            @if (infoForm.get('totalHours')?.hasError('totalLessThanWeekly')) {
+              <mat-error>Las horas totales no pueden ser menores a las semanales</mat-error>
+            } @else {
+              <mat-error>Mínimo 1 hora total</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="project-create__row">
           <mat-form-field appearance="outline">
             <mat-label>Fecha de Inicio</mat-label>
             <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
@@ -195,6 +213,12 @@
               <span>{{ getProjectTypeLabel(infoForm.value.projectType) }}</span>
               <span>{{ infoForm.value.isRemote ? 'Remoto' : infoForm.value.location }}</span>
               <span>{{ infoForm.value.positionsAvailable }} posiciones</span>
+              @if (infoForm.value.weeklyHours) {
+                <span>• {{ infoForm.value.weeklyHours }}h/sem</span>
+              }
+              @if (infoForm.value.totalHours) {
+                <span>• {{ infoForm.value.totalHours }}h tot</span>
+              }
             </p>
 
             <h4>Descripción</h4>

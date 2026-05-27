@@ -18,7 +18,9 @@
       @if (project().isRemote) {
         <span><mat-icon>laptop</mat-icon> Remoto</span>
       }
-      <span><mat-icon>schedule</mat-icon> {{ project().weeklyHours }}h/sem</span>
+      @if (project().weeklyHours) {
+        <span><mat-icon>schedule</mat-icon> {{ project().weeklyHours }}h/sem</span>
+      }
       <span><mat-icon>event</mat-icon> Hasta: {{ project().applicationDeadline | date:'d MMM yyyy' }}</span>
     </div>
 
