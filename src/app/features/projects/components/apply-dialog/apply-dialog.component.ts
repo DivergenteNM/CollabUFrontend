@@ -66,7 +66,7 @@ export class ApplyDialogComponent {
     };
 
     if (this.selectedFile) {
-      this.storageService.upload(this.selectedFile, 'cv').subscribe({
+      this.storageService.upload(this.selectedFile, 'cv', true).subscribe({
         next: (uploadRes: any) => {
           console.log('[ApplyDialog] Upload success:', uploadRes);
           const fileData = uploadRes.data || uploadRes;
