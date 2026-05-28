@@ -22,7 +22,7 @@ export class ApplicationService extends BaseApiService {
   private readonly userService = inject(UserProfileService);
   private readonly projectService = inject(ProjectService);
 
-  create(data: { projectId: string; coverLetter: string }): Observable<ApiResponse<Application>> {
+  create(data: { projectId: string; coverLetter: string; resumeUrl?: string }): Observable<ApiResponse<Application>> {
     return this.http.post<ApiResponse<Application>>(this.apiUrl, data);
   }
 
