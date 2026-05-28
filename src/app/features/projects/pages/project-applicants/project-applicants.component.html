@@ -18,7 +18,9 @@
 
   <ng-template #studentTpl let-row>
     <div class="applicants__student">
-      <span class="applicants__student-name">{{ row.student?.firstName }} {{ row.student?.lastName }}</span>
+      <span class="applicants__student-name">
+        {{ row.student?.user ? (row.student.user.firstName + ' ' + row.student.user.lastName) : ('Estudiante #' + row.studentId) }}
+      </span>
     </div>
   </ng-template>
 
