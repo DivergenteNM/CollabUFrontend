@@ -111,7 +111,11 @@ export class AdminService extends BaseApiService {
     return this.http.get<ApiResponse<AcademicPeriod[]>>(`${this.apiUrl}/periods`);
   }
 
-  createPeriod(data: Partial<AcademicPeriod>): Observable<ApiResponse<AcademicPeriod>> {
-    return this.http.post<ApiResponse<AcademicPeriod>>(`${this.apiUrl}/periods`, data);
+  createPeriod(data: Partial<AcademicPeriod>): Observable<AcademicPeriod> {
+    return this.http.post<AcademicPeriod>(`${this.apiUrl}/periods`, data);
+  }
+
+  updatePeriod(id: string, data: Partial<AcademicPeriod>): Observable<AcademicPeriod> {
+    return this.http.put<AcademicPeriod>(`${this.apiUrl}/periods/${id}`, data);
   }
 }

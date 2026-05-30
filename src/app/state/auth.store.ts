@@ -176,6 +176,11 @@ export const AuthStore = signalStore(
       refreshProfile(): void {
         loadUserProfile();
       },
+
+      updateTokens(accessToken: string, refreshToken: string): void {
+        tokenService.saveTokens(accessToken, refreshToken);
+        patchState(store, { token: accessToken });
+      },
     };
   }),
 

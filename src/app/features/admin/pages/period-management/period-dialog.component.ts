@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 import { AcademicPeriod } from '../../../../core/models';
 
 @Component({
@@ -12,7 +13,7 @@ import { AcademicPeriod } from '../../../../core/models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule, MatDialogModule, MatFormFieldModule,
-    MatInputModule, MatButtonModule, MatCheckboxModule,
+    MatInputModule, MatButtonModule, MatCheckboxModule, MatSelectModule,
   ],
   templateUrl: './period-dialog.component.html',
   styleUrl: './period-dialog.component.scss',
@@ -23,5 +24,15 @@ export class PeriodDialogComponent {
 
   form: Partial<AcademicPeriod> = this.data
     ? { ...this.data }
-    : { periodCode: '', name: '', startDate: '', endDate: '', applicationDeadline: '', isActive: false };
+    : {
+        name: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        enrollmentStart: '',
+        enrollmentEnd: '',
+        isCurrent: false,
+        maxProjectsPerCompany: 10,
+        maxApplicationsPerStudent: 5,
+      };
 }

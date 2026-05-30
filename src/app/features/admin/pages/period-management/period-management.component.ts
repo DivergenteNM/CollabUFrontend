@@ -36,9 +36,10 @@ export class PeriodManagementComponent {
 
     ref.afterClosed().subscribe((result) => {
       if (!result) return;
-      this.adminService.createPeriod(result).subscribe({
-        next: () => this.resource.reload(),
-      });
+      const op$ = period
+        ? this.adminService.updatePeriod(period.id, result)
+        : this.adminService.createPeriod(result);
+      op$.subscribe({ next: () => this.resource.reload() });
     });
   }
 }
