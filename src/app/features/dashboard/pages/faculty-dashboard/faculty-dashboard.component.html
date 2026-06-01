@@ -1,28 +1,26 @@
 <div class="faculty-dashboard">
   <section class="dashboard__stats">
-    @if (studentsResource.isLoading()) {
+    @if (isLoading()) {
       @for (_ of [1,2,3]; track $index) {
         <app-skeleton width="100%" height="120px" />
       }
     } @else {
       <app-stat-card
         icon="groups"
-        [value]="assignedCount()"
+        [value]="totalCount()"
         label="Estudiantes Asignados"
         color="primary"
         [clickable]="true"
         (clicked)="router.navigate(['/my-students'])" />
       <app-stat-card
-        icon="rate_review"
-        [value]="pendingEvaluationsCount()"
-        label="Evaluaciones Pendientes"
-        color="accent"
-        [clickable]="true"
-        (clicked)="router.navigate(['/my-evaluations'])" />
+        icon="check_circle"
+        [value]="activeCount()"
+        label="Asignaciones Activas"
+        color="accent" />
       <app-stat-card
-        icon="trending_up"
-        [value]="avgProgress() + '%'"
-        label="Avance Promedio"
+        icon="verified"
+        [value]="completedCount()"
+        label="Completadas"
         color="primary" />
     }
   </section>
@@ -31,15 +29,15 @@
     <mat-card>
       <mat-card-header>
         <mat-card-title>
-          <mat-icon>school</mat-icon> Estudiantes Asignados
+          <mat-icon>school</mat-icon> Mis Estudiantes
         </mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        @if (studentsResource.isLoading()) {
+        @if (isLoading()) {
           @for (_ of [1,2,3,4]; track $index) {
             <app-skeleton width="100%" height="56px" />
           }
-        } @else if (students().length === 0) {
+        } @else if (assignments().length === 0) {
           <app-empty-state
             icon="people_outline"
             title="Sin estudiantes asignados"
@@ -48,38 +46,27 @@
           <div class="students-table">
             <div class="students-table__header">
               <span>Estudiante</span>
-              <span>Empresa</span>
-              <span>Avance</span>
+              <span>Período</span>
               <span>Estado</span>
+              <span>Inicio</span>
             </div>
-            @for (s of students(); track s.applicationId) {
+            @for (a of assignments(); track a.id) {
               <div class="students-table__row"
-                   (click)="router.navigate(['/my-students', s.applicationId])"
-                   (keydown.enter)="router.navigate(['/my-students', s.applicationId])"
+                   (click)="navigateToStudent(a.applicationId)"
+                   (keydown.enter)="navigateToStudent(a.applicationId)"
                    tabindex="0"
                    role="button">
                 <div class="students-table__student">
-                  <span class="students-table__name">{{ s.studentName }}</span>
-                  <span class="students-table__code">{{ s.studentCode }} · {{ s.program }}</span>
+                  <span class="students-table__name">{{ getStudentName(a.studentId) }}</span>
                 </div>
-                <div class="students-table__company">
-                  <span class="truncate">{{ s.companyName }}</span>
-                  <span class="students-table__project truncate">{{ s.projectTitle }}</span>
-                </div>
-                <div class="students-table__progress">
-                  <mat-progress-bar
-                    mode="determinate"
-                    [value]="s.progressPercent"
-                    [color]="s.progressPercent >= 75 ? 'primary' : s.progressPercent >= 50 ? 'accent' : 'warn'" />
-                  <span class="students-table__progress-label">
-                    {{ s.progressPercent }}% ({{ s.practiceHoursCompleted }}/{{ s.practiceHoursRequired }}h)
-                  </span>
+                <div class="students-table__period">
+                  <span>{{ a.period?.name ?? '—' }}</span>
                 </div>
                 <div class="students-table__status">
-                  <app-status-badge [status]="s.status" size="sm" />
-                  @if (s.pendingEvaluation) {
-                    <mat-icon class="students-table__eval-badge">rate_review</mat-icon>
-                  }
+                  <app-status-badge [status]="a.status" size="sm" />
+                </div>
+                <div class="students-table__date">
+                  <span>{{ a.startDate | date:'d MMM yyyy' }}</span>
                 </div>
               </div>
             }

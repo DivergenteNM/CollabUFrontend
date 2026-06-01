@@ -1,116 +1,93 @@
+<div class="supervision">
+  <button mat-button routerLink="/my-students">
+    <mat-icon>arrow_back</mat-icon>
+    Volver a mis estudiantes
+  </button>
 
-    <div class="supervision">
-      <button mat-button routerLink="/my-students">
-        <mat-icon>arrow_back</mat-icon>
-        Volver a mis estudiantes
-      </button>
+  @if (isLoading()) {
+    <mat-card>
+      <mat-card-content>
+        <app-skeleton width="100%" height="200px" />
+      </mat-card-content>
+    </mat-card>
+  }
 
-      @if (resource.isLoading()) {
-        <mat-card>
-          <mat-card-content>
-            <p>Cargando información del estudiante...</p>
-          </mat-card-content>
-        </mat-card>
-      }
+  @if (error()) {
+    <mat-card>
+      <mat-card-content>
+        <p class="supervision__error">{{ error() }}</p>
+        <button mat-button (click)="loadAssignment()">
+          <mat-icon>refresh</mat-icon> Reintentar
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
 
-      @if (resource.value()?.data; as detail) {
-        <!-- Student Info Card -->
-        <mat-card class="supervision__info">
-          <mat-card-content>
-            <div class="student-header">
-              <div class="avatar">
-                @if (detail.student.avatarUrl) {
-                  <img [src]="detail.student.avatarUrl" [alt]="detail.student.name" />
-                } @else {
-                  <mat-icon>person</mat-icon>
-                }
-              </div>
-              <div class="student-details">
-                <h2>{{ detail.student.name }}</h2>
-                <p>{{ detail.student.program }} · Semestre {{ detail.student.semester }}</p>
-                <p class="project-info">
-                  <mat-icon>business</mat-icon> {{ detail.company.name }} ·
-                  <mat-icon>folder</mat-icon> {{ detail.project.title }}
-                </p>
-              </div>
-              <div class="progress-section">
-                <span class="hours">{{ detail.hoursCompleted }}/{{ detail.hoursRequired }}h</span>
-                <mat-progress-bar mode="determinate"
-                  [value]="(detail.hoursCompleted / detail.hoursRequired) * 100" />
-                <mat-chip-set>
-                  <mat-chip>{{ detail.status }}</mat-chip>
-                </mat-chip-set>
-              </div>
+  @if (detail(); as d) {
+    <!-- Student Info Card -->
+    <mat-card class="supervision__info">
+      <mat-card-content>
+        <div class="student-header">
+          <div class="avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="student-details">
+            <h2>{{ d.studentName }}</h2>
+            @if (d.studentProgram) {
+              <p>{{ d.studentProgram }}@if (d.studentSemester) { &middot; Semestre {{ d.studentSemester }}}</p>
+            }
+            <p class="project-info">
+              <mat-icon>school</mat-icon> {{ d.assignment.period.name ?? 'Sin período' }}
+            </p>
+          </div>
+          <div class="progress-section">
+            <mat-chip-set>
+              <mat-chip>{{ statusLabel(d.assignment.status) }}</mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-flat-button color="primary"
+          [routerLink]="['/my-evaluations']"
+          [queryParams]="{ applicationId: d.assignment.applicationId }">
+          <mat-icon>rate_review</mat-icon>
+          Ver Evaluaciones
+        </a>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Assignment Details -->
+    <mat-card class="supervision__details">
+      <mat-card-header>
+        <mat-card-title>Detalles de la Asignación</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Período</span>
+            <span class="detail-value">{{ d.assignment.period.name ?? '—' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Fecha Inicio</span>
+            <span class="detail-value">{{ d.assignment.startDate | date:'d MMM yyyy' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Fecha Fin</span>
+            <span class="detail-value">{{ d.assignment.endDate ? (d.assignment.endDate | date:'d MMM yyyy') : 'En curso' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Estado</span>
+            <span class="detail-value"><app-status-badge [status]="d.assignment.status" size="sm" /></span>
+          </div>
+          @if (d.assignment.notes) {
+            <div class="detail-item detail-item--full">
+              <span class="detail-label">Notas</span>
+              <span class="detail-value">{{ d.assignment.notes }}</span>
             </div>
-          </mat-card-content>
-          <mat-card-actions align="end">
-            <a mat-flat-button color="primary"
-              [routerLink]="['/my-evaluations/create']"
-              [queryParams]="{ applicationId: detail.applicationId }">
-              <mat-icon>rate_review</mat-icon>
-              Evaluar Estudiante
-            </a>
-          </mat-card-actions>
-        </mat-card>
-
-        <!-- Tabs -->
-        <mat-tab-group>
-          <mat-tab label="Entregables">
-            <div class="tab-content">
-              @for (d of detail.deliverables; track d.id) {
-                <mat-card class="deliverable-card">
-                  <mat-card-content>
-                    <div class="deliverable-row">
-                      <div class="deliverable-info">
-                        <strong>{{ d.title }}</strong>
-                        <span class="deliverable-due">
-                          <mat-icon>schedule</mat-icon>
-                          Vence: {{ d.dueDate | date:'d MMM yyyy' }}
-                        </span>
-                      </div>
-                      <mat-chip-set>
-                        <mat-chip [class]="'status-' + d.status">
-                          {{ deliverableStatusLabel(d.status) }}
-                        </mat-chip>
-                      </mat-chip-set>
-                      @if (d.fileUrl) {
-                        <a mat-icon-button aria-label="Descargar entregable" [href]="d.fileUrl" target="_blank">
-                          <mat-icon>download</mat-icon>
-                        </a>
-                      }
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              } @empty {
-                <div class="empty">
-                  <mat-icon>assignment</mat-icon>
-                  <p>No hay entregables registrados</p>
-                </div>
-              }
-            </div>
-          </mat-tab>
-
-          <mat-tab label="Evaluaciones">
-            <div class="tab-content">
-              @for (ev of detail.evaluations; track ev.id) {
-                <mat-card class="eval-card">
-                  <mat-card-content>
-                    <div class="eval-header">
-                      <strong>{{ ev.evaluatorName }}</strong>
-                      <span class="eval-date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
-                    </div>
-                    <app-star-rating [value]="ev.overallRating" [readonly]="true" size="sm" />
-                    <p class="eval-comment">{{ ev.comment }}</p>
-                  </mat-card-content>
-                </mat-card>
-              } @empty {
-                <div class="empty">
-                  <mat-icon>rate_review</mat-icon>
-                  <p>No hay evaluaciones registradas</p>
-                </div>
-              }
-            </div>
-          </mat-tab>
-        </mat-tab-group>
-      }
-    </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

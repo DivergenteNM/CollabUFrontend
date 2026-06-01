@@ -1,56 +1,22 @@
-import { Component, ChangeDetectionStrategy, input, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, inject, signal, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { DatePipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
-import { ApiResponse } from '../../../../core/models';
-import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
+import { Subject, forkJoin, of } from 'rxjs';
+import { catchError, takeUntil } from 'rxjs/operators';
 
-interface SupervisionDetail {
-  applicationId: string;
-  student: {
-    id: string;
-    name: string;
-    program: string;
-    semester: number;
-    avatarUrl?: string;
-  };
-  company: {
-    name: string;
-    logoUrl?: string;
-  };
-  project: {
-    title: string;
-    type: string;
-  };
-  hoursCompleted: number;
-  hoursRequired: number;
-  status: string;
-  deliverables: Deliverable[];
-  evaluations: EvaluationSummary[];
-}
+import { SupervisorAssignmentItem, FacultyService, UserProfile, StudentProfile } from '../../services/faculty.service';
+import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
+import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 
-interface Deliverable {
-  id: string;
-  title: string;
-  dueDate: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected';
-  submittedAt?: string;
-  fileUrl?: string;
-}
-
-interface EvaluationSummary {
-  id: string;
-  evaluatorName: string;
-  overallRating: number;
-  comment: string;
-  createdAt: string;
+interface AssignmentDetail {
+  assignment: SupervisorAssignmentItem;
+  studentName: string;
+  studentProgram: string | null;
+  studentSemester: number | null;
 }
 
 @Component({
@@ -58,26 +24,91 @@ interface EvaluationSummary {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink, MatIconModule, MatButtonModule, MatCardModule,
-    MatTabsModule, MatProgressBarModule, MatChipsModule,
-    DatePipe, StarRatingComponent,
+    MatChipsModule, DatePipe,
+    StatusBadgeComponent, SkeletonComponent,
   ],
   templateUrl: './student-supervision.component.html',
   styleUrl: './student-supervision.component.scss',
 })
-export class StudentSupervisionComponent {
+export class StudentSupervisionComponent implements OnDestroy {
   readonly applicationId = input.required<string>();
-  private readonly router = inject(Router);
+  readonly router = inject(Router);
+  private readonly facultyService = inject(FacultyService);
+  private readonly destroy$ = new Subject<void>();
 
-  readonly resource = httpResource<ApiResponse<SupervisionDetail>>(
-    () => ({ url: `${environment.apiUrl}/faculty/students/${this.applicationId()}` })
-  );
+  readonly isLoading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly detail = signal<AssignmentDetail | null>(null);
 
-  deliverableStatusLabel(status: string): string {
+  constructor() {
+    this.loadAssignment();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadAssignment(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    this.facultyService.getMyStudents({ limit: 100 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const assignment = response.data.find(a => a.applicationId === this.applicationId());
+          if (!assignment) {
+            this.error.set('No se encontró la asignación para este estudiante.');
+            this.isLoading.set(false);
+            return;
+          }
+          this.enrichStudentData(assignment);
+        },
+        error: () => {
+          this.error.set('Error al cargar la información del estudiante.');
+          this.isLoading.set(false);
+        },
+      });
+  }
+
+  private enrichStudentData(assignment: SupervisorAssignmentItem): void {
+    forkJoin({
+      user: this.facultyService.getUserProfile(assignment.studentId).pipe(catchError(() => of(null))),
+      student: this.facultyService.getStudentProfile(assignment.studentId).pipe(catchError(() => of(null))),
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (result) => {
+        const userProfile = result.user as UserProfile | null;
+        const studentProfile = result.student as StudentProfile | null;
+        const studentName = userProfile
+          ? (userProfile.displayName ?? (`${userProfile.firstName ?? ''} ${userProfile.lastName ?? ''}`.trim() || 'Estudiante'))
+          : 'Estudiante';
+
+        this.detail.set({
+          assignment,
+          studentName,
+          studentProgram: studentProfile?.program ?? null,
+          studentSemester: studentProfile?.semester ?? null,
+        });
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.detail.set({
+          assignment,
+          studentName: 'Estudiante',
+          studentProgram: null,
+          studentSemester: null,
+        });
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  statusLabel(status: string): string {
     const labels: Record<string, string> = {
-      pending: 'Pendiente',
-      submitted: 'Entregado',
-      approved: 'Aprobado',
-      rejected: 'Rechazado',
+      active: 'Activo',
+      completed: 'Completado',
+      transferred: 'Transferido',
     };
     return labels[status] ?? status;
   }
