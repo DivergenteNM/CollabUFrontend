@@ -66,6 +66,63 @@
     </div>
 
     <!-- Bottom Grid: 3 columnas -->
+    <div class="admin-analytics__charts">
+
+      <!-- Evolución histórica de la plataforma -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--primary">
+              <mat-icon>show_chart</mat-icon>
+            </div>
+            <div>
+              <mat-card-title>Evolución de la plataforma</mat-card-title>
+              <mat-card-subtitle>Últimos 30 snapshots</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content class="chart-content">
+          @if (platformHistory.isLoading()) {
+            <div class="chart-skeleton"></div>
+          } @else if ((platformHistory.value()?.length ?? 0) > 0) {
+            <app-line-chart [chartData]="platformChartData()" />
+          } @else {
+            <div class="empty-state">
+              <mat-icon>timeline</mat-icon>
+              <p>Sin datos históricos aún</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Demanda vs Oferta de skills -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--accent">
+              <mat-icon>equalizer</mat-icon>
+            </div>
+            <div>
+              <mat-card-title>Demanda vs. Oferta de Skills</mat-card-title>
+              <mat-card-subtitle>Top 10 habilidades</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content class="chart-content chart-content--tall">
+          @if (topSkillsForChart().length > 0) {
+            <app-skill-gap-chart [skills]="topSkillsForChart()" />
+          } @else {
+            <div class="empty-state">
+              <mat-icon>bar_chart</mat-icon>
+              <p>Sin datos de skills aún</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- Bottom Grid: 3 columnas -->
     <div class="admin-analytics__bottom">
 
       <!-- Acciones Pendientes -->
