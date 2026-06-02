@@ -1,16 +1,20 @@
 import {
-  Component, ChangeDetectionStrategy, inject, computed,
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+  OnDestroy,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { httpResource } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { DatePipe } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
-import { environment } from '../../../../../environments/environment';
-import { PaginatedResponse } from '../../../../core/models';
-import { ApplicationStatus } from '../../../../core/enums';
+import { FacultyService, EnrichedAssignment } from '../../../faculty/services/faculty.service';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
@@ -18,58 +22,59 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 import { RelativeTimePipe } from '../../../../shared/pipes';
 
-/** Represents a supervised student as returned by the faculty endpoint */
-export interface AssignedStudentSummary {
-  applicationId: string;
-  studentName: string;
-  studentCode: string;
-  program: string;
-  companyName: string;
-  projectTitle: string;
-  status: ApplicationStatus;
-  progressPercent: number;
-  practiceHoursCompleted: number;
-  practiceHoursRequired: number;
-  pendingEvaluation: boolean;
-}
-
 @Component({
   selector: 'app-faculty-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatCardModule, MatIconModule, MatButtonModule, MatProgressBarModule,
-    StatCardComponent, StatusBadgeComponent, SkeletonComponent,
+    MatCardModule, MatIconModule, MatButtonModule,
+    DatePipe, StatCardComponent, StatusBadgeComponent, SkeletonComponent,
     EmptyStateComponent, RelativeTimePipe,
   ],
   templateUrl: './faculty-dashboard.component.html',
   styleUrl: './faculty-dashboard.component.scss',
 })
-export class FacultyDashboardComponent {
+export class FacultyDashboardComponent implements OnDestroy {
   readonly router = inject(Router);
+  private readonly facultyService = inject(FacultyService);
   readonly notificationsStore = inject(NotificationsStore);
+  private readonly destroy$ = new Subject<void>();
 
-  // --- httpResource data loading ---
-  readonly studentsResource = httpResource<PaginatedResponse<AssignedStudentSummary>>(
-    () => ({ url: `${environment.apiUrl}/faculty/assigned-students` }),
+  readonly isLoading = signal(true);
+  readonly assignments = signal<EnrichedAssignment[]>([]);
+  readonly totalCount = signal(0);
+
+  readonly activeCount = computed(() =>
+    this.assignments().filter(a => a.status === 'active').length
   );
 
-  // --- Computed signals from resources ---
-  readonly students = computed(() =>
-    this.studentsResource.value()?.data ?? []
+  readonly completedCount = computed(() =>
+    this.assignments().filter(a => a.status === 'completed').length
   );
 
-  readonly assignedCount = computed(() =>
-    this.studentsResource.value()?.meta?.total ?? 0
-  );
+  constructor() {
+    this.loadAssignments();
+  }
 
-  readonly pendingEvaluationsCount = computed(() =>
-    this.students().filter(s => s.pendingEvaluation).length
-  );
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-  readonly avgProgress = computed(() => {
-    const list = this.students();
-    if (list.length === 0) return 0;
-    const total = list.reduce((sum, s) => sum + s.progressPercent, 0);
-    return Math.round(total / list.length);
-  });
+  private loadAssignments(): void {
+    this.isLoading.set(true);
+    this.facultyService.getMyStudentsEnriched({ limit: 100 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.assignments.set(response.data);
+          this.totalCount.set(response.total);
+          this.isLoading.set(false);
+        },
+        error: () => this.isLoading.set(false),
+      });
+  }
+
+  navigateToStudent(applicationId: string): void {
+    this.router.navigate(['/my-students', applicationId]);
+  }
 }

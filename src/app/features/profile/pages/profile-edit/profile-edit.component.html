@@ -497,4 +497,113 @@
 
     </mat-tab-group>
   }
+
+  @if (authStore.isFaculty()) {
+    <mat-tab-group animationDuration="200ms" class="profile-tabs">
+
+      <!-- ─── TAB 1: Perfil Base ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">person</mat-icon>
+          Perfil Base
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Información personal visible en tu cuenta.</p>
+          <form [formGroup]="userForm">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombres</mat-label>
+                <input matInput formControlName="firstName" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Apellidos</mat-label>
+                <input matInput formControlName="lastName" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="phone" placeholder="+57 3001234567" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>LinkedIn URL (opcional)</mat-label>
+              <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
+              @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
+                <mat-error>Ingresa una URL valida de LinkedIn o deja el campo vacio.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Biografía general</mat-label>
+              <textarea matInput formControlName="bio" rows="4"
+                placeholder="Cuéntanos sobre ti..."></textarea>
+            </mat-form-field>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 2: Perfil Docente ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">school</mat-icon>
+          Perfil Docente
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Datos institucionales y de cargo académico.</p>
+          <form [formGroup]="facultyForm" (ngSubmit)="saveFaculty()">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Código de empleado</mat-label>
+                <input matInput formControlName="employeeCode" />
+                @if (facultyForm.controls['employeeCode'].hasError('pattern') && facultyForm.controls['employeeCode'].touched) {
+                  <mat-error>Solo letras, números y guiones.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Departamento</mat-label>
+                <input matInput formControlName="department" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Cargo</mat-label>
+                <mat-select formControlName="role">
+                  @for (r of supervisorRoles; track r.value) {
+                    <mat-option [value]="r.value">{{ r.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Especialización</mat-label>
+                <input matInput formControlName="specialization" placeholder="Ej: Ingeniería de Software" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="submit"
+                [disabled]="facultyForm.invalid || saving()">
+                @if (saving()) {
+                  Guardando...
+                } @else {
+                  <ng-container><mat-icon>save</mat-icon></ng-container>
+                  Guardar Cambios
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+
+  @if (authStore.isAdmin()) {
+    <mat-card>
+      <mat-card-content>
+        <p>La edición de perfil para administradores está limitada. Contacta al superadmin para cambios.</p>
+      </mat-card-content>
+    </mat-card>
+  }
 </div>

@@ -1,14 +1,13 @@
+<div class="students-list">
+  <div class="students-list__header">
+    <h1>Mis Estudiantes</h1>
+  </div>
 
-    <div class="students-list">
-      <div class="students-list__header">
-        <h1>Mis Estudiantes</h1>
-      </div>
-
-      <app-data-table
-        [data]="students()"
-        [columns]="columns"
-        [totalItems]="resource.value()?.meta?.total ?? 0"
-        [loading]="resource.isLoading()"
-        (rowClicked)="onRowClick($event)"
-        (pageChanged)="onPage($event)" />
-    </div>
+  <app-data-table
+    [data]="students()"
+    [columns]="columns"
+    [totalItems]="totalCount()"
+    [loading]="isLoading()"
+    (rowClicked)="onRowClick($event)"
+    (pageChanged)="onPage($event)" />
+</div>

@@ -25,6 +25,7 @@ import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
 import { UserProfileService } from '../../../../core/services/user-profile.service';
+import { FacultyService } from '../../../faculty/services/faculty.service';
 
 @Component({
   selector: 'app-profile-edit',
@@ -44,6 +45,7 @@ export class ProfileEditComponent implements OnInit {
   private readonly studentService = inject(StudentService);
   private readonly companyProfileService = inject(CompanyProfileService);
   private readonly userProfileService = inject(UserProfileService);
+  private readonly facultyService = inject(FacultyService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   readonly saving = signal(false);
@@ -109,6 +111,20 @@ export class ProfileEditComponent implements OnInit {
     headquartersCity: ['', Validators.required],
     headquartersState: [''],
     website: ['', [this.optionalHttpUrlValidator('website')]],
+  });
+
+  readonly supervisorRoles = [
+    { value: 'faculty_supervisor', label: 'Supervisor de Facultad' },
+    { value: 'internship_coordinator', label: 'Coordinador de Pasantías' },
+    { value: 'thesis_advisor', label: 'Asesor de Tesis' },
+    { value: 'academic_director', label: 'Director Académico' },
+  ] as const;
+
+  readonly facultyForm: FormGroup = this.fb.group({
+    employeeCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
+    department: ['', [Validators.required, Validators.minLength(2)]],
+    role: ['', Validators.required],
+    specialization: [''],
   });
 
   ngOnInit(): void {
@@ -190,6 +206,25 @@ export class ProfileEditComponent implements OnInit {
         error: (error: HttpErrorResponse) => {
           if (error.status !== 404) {
             this.snackBar.open('No se pudo cargar el perfil de empresa', 'Cerrar', { duration: 3500 });
+          }
+        },
+      });
+    }
+
+    if (this.authStore.isFaculty()) {
+      this.facultyService.getMyProfile().subscribe({
+        next: (res) => {
+          this.roleProfileExists.set(true);
+          this.facultyForm.patchValue({
+            employeeCode: res.employeeCode ?? '',
+            department: res.department ?? '',
+            role: res.role ?? '',
+            specialization: res.specialization ?? '',
+          });
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status !== 404) {
+            this.snackBar.open('No se pudo cargar el perfil de docente', 'Cerrar', { duration: 3500 });
           }
         },
       });
@@ -276,6 +311,40 @@ export class ProfileEditComponent implements OnInit {
       },
       error: (error: unknown) => {
         this.handleSaveError(error, 'No se pudo actualizar el perfil de empresa');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  saveFaculty(): void {
+    if (this.userForm.invalid || this.facultyForm.invalid) {
+      this.userForm.markAllAsTouched();
+      this.facultyForm.markAllAsTouched();
+      return;
+    }
+
+    this.saving.set(true);
+
+    this.upsertUserProfile().pipe(
+      switchMap(() => {
+        const raw = this.facultyForm.getRawValue();
+        const payload = {
+          employeeCode: raw.employeeCode,
+          department: raw.department,
+          role: raw.role as any,
+          specialization: raw.specialization || undefined,
+        };
+        return this.facultyService.updateMyProfile(payload);
+      }),
+    ).subscribe({
+      next: () => {
+        this.authStore.refreshProfile();
+        this.saving.set(false);
+        this.snackBar.open('Perfil de docente actualizado', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/profile/view']);
+      },
+      error: (error: unknown) => {
+        this.handleSaveError(error, 'No se pudo actualizar el perfil de docente');
         this.saving.set(false);
       },
     });

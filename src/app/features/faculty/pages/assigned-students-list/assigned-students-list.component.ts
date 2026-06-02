@@ -1,56 +1,65 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { httpResource } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
-import { PaginatedResponse } from '../../../../core/models';
-import { DataTableComponent, ColumnDef } from '../../../../shared/components/ui/data-table/data-table.component';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
-interface AssignedStudent {
-  applicationId: string;
-  studentName: string;
-  companyName: string;
-  projectTitle: string;
-  hoursCompleted: number;
-  hoursRequired: number;
-  progressPercent: number;
-  status: string;
-}
+import { FacultyService, EnrichedAssignment } from '../../services/faculty.service';
+import { DataTableComponent, ColumnDef } from '../../../../shared/components/ui/data-table/data-table.component';
 
 @Component({
   selector: 'app-assigned-students-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIconModule, MatProgressBarModule, DataTableComponent],
+  imports: [MatIconModule, DataTableComponent],
   templateUrl: './assigned-students-list.component.html',
   styleUrl: './assigned-students-list.component.scss',
 })
-export class AssignedStudentsListComponent {
+export class AssignedStudentsListComponent implements OnDestroy {
   private readonly router = inject(Router);
-  readonly page = signal(1);
+  private readonly facultyService = inject(FacultyService);
+  private readonly destroy$ = new Subject<void>();
 
-  readonly columns: ColumnDef<AssignedStudent>[] = [
+  readonly page = signal(1);
+  readonly isLoading = signal(true);
+  readonly totalCount = signal(0);
+  readonly students = signal<EnrichedAssignment[]>([]);
+
+  readonly columns: ColumnDef<EnrichedAssignment>[] = [
     { key: 'studentName', header: 'Estudiante', sortable: true },
-    { key: 'companyName', header: 'Empresa' },
     { key: 'projectTitle', header: 'Proyecto' },
-    { key: 'progressPercent', header: 'Avance', sortable: true },
+    { key: 'companyName', header: 'Empresa' },
     { key: 'status', header: 'Estado', sortable: true },
   ];
 
-  readonly resource = httpResource<PaginatedResponse<AssignedStudent>>(
-    () => ({
-      url: `${environment.apiUrl}/faculty/students`,
-      params: { page: this.page().toString(), limit: '10' },
-    })
-  );
+  constructor() {
+    this.loadAssignments();
+  }
 
-  readonly students = computed(() => this.resource.value()?.data ?? []);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-  onRowClick(row: AssignedStudent): void {
+  private loadAssignments(): void {
+    this.isLoading.set(true);
+    this.facultyService.getMyStudentsEnriched({ page: this.page(), limit: 10 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.students.set(response.data);
+          this.totalCount.set(response.total);
+          this.isLoading.set(false);
+        },
+        error: () => this.isLoading.set(false),
+      });
+  }
+
+  onRowClick(row: EnrichedAssignment): void {
     this.router.navigate(['/my-students', row.applicationId]);
   }
 
   onPage(event: { page?: number; limit?: number }): void {
     this.page.set(event.page ?? 1);
+    this.loadAssignments();
   }
 }

@@ -187,7 +187,7 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
   }
 
   publish(): void {
-    this.submit(ProjectStatus.PUBLISHED);
+    this.submit(ProjectStatus.PENDING_APPROVAL);
   }
 
   private submit(status: ProjectStatus): void {
@@ -238,8 +238,8 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
         return saveReqs$.pipe(
           concatMap(() => {
             // Si se debe publicar
-            if (status === ProjectStatus.PUBLISHED) {
-              return this.projectService.updateStatus(projectId, ProjectStatus.PUBLISHED).pipe(
+            if (status === ProjectStatus.PENDING_APPROVAL) {
+              return this.projectService.updateStatus(projectId, ProjectStatus.PENDING_APPROVAL).pipe(
                 catchError(() => of(null)) // ignorar error al publicar, el proyecto ya se creó
               );
             }
@@ -252,7 +252,7 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
         localStorage.removeItem(DRAFT_KEY);
         this.submitting.set(false);
         this.snackBar.open(
-          status === ProjectStatus.PUBLISHED ? 'Proyecto publicado' : 'Borrador guardado',
+          status === ProjectStatus.PENDING_APPROVAL ? 'Proyecto enviado a revisión' : 'Borrador guardado',
           'OK', { duration: 3000 },
         );
         this.router.navigate(['/my-projects']);

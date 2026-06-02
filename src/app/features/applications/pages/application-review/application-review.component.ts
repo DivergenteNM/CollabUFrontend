@@ -1,6 +1,7 @@
 import {
-  Component, ChangeDetectionStrategy, inject, input, computed, signal,
+  Component, ChangeDetectionStrategy, inject, input, computed, signal, PLATFORM_ID
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -62,6 +63,7 @@ export class ApplicationReviewComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly applicationService = inject(ApplicationService);
   private readonly chatService = inject(ChatService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly id = input.required<string>();
   readonly ApplicationStatus = ApplicationStatus;
@@ -87,12 +89,17 @@ export class ApplicationReviewComponent {
 
   readonly applicationResource = rxResource({
     params: () => this.id(),
-    stream: ({ params: id }) => this.applicationService.getById(id).pipe(
-      switchMap(app => {
-        if (!app) return of(app);
-        return this.applicationService.enrichApplication(app);
-      })
-    )
+    stream: ({ params: id }) => {
+      if (!isPlatformBrowser(this.platformId)) {
+        return of(undefined);
+      }
+      return this.applicationService.getById(id).pipe(
+        switchMap(app => {
+          if (!app) return of(app);
+          return this.applicationService.enrichApplication(app);
+        })
+      );
+    }
   });
 
   readonly application = computed(() =>

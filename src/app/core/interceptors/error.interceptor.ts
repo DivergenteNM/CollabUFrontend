@@ -1,10 +1,14 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { AuthStore } from '../../state/auth.store';
 import { MatSnackBar } from '@angular/material/snack-bar';
+
+// Module-level state to deduplicate concurrent refresh attempts
+let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
@@ -15,32 +19,48 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const authStore = inject(AuthStore);
   const snackBar = inject(MatSnackBar);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       switch (error.status) {
         case 401:
-          // Intentar refresh token
+          // Don't try to refresh if it's the refresh or login call itself
           if (!req.url.includes('/auth/refresh') && !req.url.includes('/auth/login')) {
-            return authService.refreshToken().pipe(
-              switchMap(() => {
-                const token = authService.getAccessToken();
-                const cloned = req.clone({
-                  setHeaders: { Authorization: `Bearer ${token}` }
-                });
-                return next(cloned);
-              }),
-              catchError(() => {
-                authService.logout();
-                router.navigate(['/auth/login']);
-                return throwError(() => error);
-              })
-            );
+            if (!isRefreshing) {
+              isRefreshing = true;
+              refreshTokenSubject.next(null);
+
+              return authService.refreshToken().pipe(
+                switchMap((res) => {
+                  isRefreshing = false;
+                  // Save new tokens in store + localStorage
+                  authStore.updateTokens(res.accessToken, res.refreshToken);
+                  refreshTokenSubject.next(res.accessToken);
+                  return next(req.clone({ setHeaders: { Authorization: `Bearer ${res.accessToken}` } }));
+                }),
+                catchError((refreshError) => {
+                  isRefreshing = false;
+                  refreshTokenSubject.next(null);
+                  // clearAuth clears localStorage tokens, in-memory state, and navigates to /auth/login
+                  authStore.clearAuth();
+                  return throwError(() => refreshError);
+                })
+              );
+            } else {
+              // Another request already triggered a refresh — wait for it to finish
+              return refreshTokenSubject.pipe(
+                filter((token) => token !== null),
+                take(1),
+                switchMap((token) =>
+                  next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }))
+                )
+              );
+            }
           }
-          authService.logout();
-          router.navigate(['/auth/login']);
+          // Refresh or login endpoint returned 401 — session is dead
+          authStore.clearAuth();
           break;
 
         case 403:

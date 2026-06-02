@@ -9,6 +9,8 @@ export interface Application {
   companyId: string;
   status: ApplicationStatus;
   coverLetter?: string;
+  resumeUrl?: string;
+  portfolioUrl?: string;
   matchScore?: number;
   matchBreakdown?: MatchBreakdown;
   appliedAt: string;

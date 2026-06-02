@@ -89,6 +89,11 @@
                 }
 
                 <div class="review__student-links">
+                  @if (student.cvUrl) {
+                    <a [href]="student.cvUrl" target="_blank" rel="noopener" mat-stroked-button color="primary">
+                      <mat-icon>description</mat-icon> CV de Perfil
+                    </a>
+                  }
                   @if (student.linkedinUrl) {
                     <a [href]="student.linkedinUrl" target="_blank" rel="noopener" mat-stroked-button>
                       <mat-icon>link</mat-icon> LinkedIn
@@ -121,6 +126,19 @@
               <mat-card-content>
                 <h3>Carta de Motivación</h3>
                 <p class="review__cover-letter">{{ app.coverLetter || 'Sin carta de motivación' }}</p>
+
+                @if (app.resumeUrl) {
+                  <div class="review__resume-attachment" style="margin: 16px 0; padding: 12px; border: 1px dashed var(--mat-sys-outline, #ccc); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background-color: var(--mat-sys-surface-container-low, #fafafa);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <mat-icon color="primary">description</mat-icon>
+                      <span style="font-weight: 500;">Curriculum Vitae (CV) adjunto</span>
+                    </div>
+                    <a [href]="app.resumeUrl" target="_blank" rel="noopener" mat-flat-button color="primary">
+                      <mat-icon>download</mat-icon> Ver / Descargar
+                    </a>
+                  </div>
+                }
+
                 <p class="review__applied-date">
                   <mat-icon>calendar_today</mat-icon>
                   Aplicó el {{ app.appliedAt | date:'d MMMM yyyy' }}

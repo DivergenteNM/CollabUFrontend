@@ -26,10 +26,16 @@ export interface SupervisorAssignment {
 
 export interface AcademicPeriod {
   id: string;
-  periodCode: string;
   name: string;
+  description?: string;
   startDate: string;
   endDate: string;
-  applicationDeadline: string;
-  isActive: boolean;
+  enrollmentStart?: string;
+  enrollmentEnd?: string;
+  status: 'planning' | 'active' | 'closed' | 'archived';
+  isCurrent: boolean;
+  maxProjectsPerCompany: number;
+  maxApplicationsPerStudent: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

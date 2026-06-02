@@ -126,6 +126,36 @@ export const routes: Routes = [
             (m) => m.APPLICATIONS_COMPANY_ROUTES
           ),
       },
+      {
+        path: 'company-analytics',
+        canActivate: [roleGuard(UserRole.COMPANY)],
+        loadComponent: () =>
+          import('./features/dashboard/pages/company-analytics/company-analytics.component').then(
+            (m) => m.CompanyAnalyticsComponent
+          ),
+        data: { title: 'Métricas de mi Empresa' },
+      },
+
+      // ---- Tendencias de skills (todos los roles) ----
+      {
+        path: 'skills',
+        loadComponent: () =>
+          import('./features/skills/pages/skill-trends/skill-trends.component').then(
+            (m) => m.SkillTrendsComponent
+          ),
+        data: { title: 'Tendencias de Skills' },
+      },
+
+      // ---- Analytics estudiante ----
+      {
+        path: 'my-analytics',
+        canActivate: [roleGuard(UserRole.STUDENT)],
+        loadComponent: () =>
+          import('./features/students/pages/my-analytics/my-analytics.component').then(
+            (m) => m.MyAnalyticsComponent
+          ),
+        data: { title: 'Mis Métricas' },
+      },
 
       // ---- Rutas de DOCENTE ----
       {
