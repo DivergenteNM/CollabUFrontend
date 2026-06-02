@@ -2,8 +2,11 @@ import {
   Component, ChangeDetectionStrategy, inject, input, signal, effect, computed, PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
+import { of, forkJoin } from 'rxjs';
+import { concatMap, catchError } from 'rxjs/operators';
 import {
   FormBuilder, ReactiveFormsModule, Validators,
   AbstractControl, ValidationErrors, ValidatorFn,
@@ -85,7 +88,7 @@ const hoursValidator: ValidatorFn = (group: AbstractControl): ValidationErrors |
   selector: 'app-project-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    ReactiveFormsModule,
+    ReactiveFormsModule, DatePipe,
     MatStepperModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatDatepickerModule, MatIconModule, MatButtonModule,
     MatChipsModule, MatSlideToggleModule, MatCardModule, MatSnackBarModule, MatProgressBarModule,
@@ -106,6 +109,7 @@ export class ProjectEditComponent {
   readonly submitting = signal(false);
   readonly tags = signal<string[]>([]);
   readonly requirements = signal<Partial<ProjectRequirement>[]>([]);
+  readonly deliverables = signal<any[]>([]);
 
   readonly projectTypes = [
     { value: ProjectType.PROFESSIONAL_PRACTICE, label: 'Práctica Profesional' },
@@ -180,10 +184,31 @@ export class ProjectEditComponent {
         totalHours: p.totalHours ?? null,
       });
       this.requirements.set(p.requirements ?? []);
+      this.loadDeliverables();
       // Tags come as ProjectTag[] objects from backend — extract the tag string
       const rawTags = (p as any).tags ?? [];
       this.tags.set(rawTags.map((t: any) => (typeof t === 'string' ? t : t.tag ?? '')).filter(Boolean));
     });
+  }
+
+  private loadDeliverables(): void {
+    const projectId = this.id();
+    if (!projectId) return;
+    this.projectService.getDeliverables(projectId).subscribe({
+      next: (dels) => this.deliverables.set(dels),
+      error: () => this.deliverables.set([]),
+    });
+  }
+
+  addDel(): void {
+    this.deliverables.update((d) => [
+      ...d,
+      { title: '', description: '', dueDate: '', weightPercentage: 10, isMandatory: true, displayOrder: d.length },
+    ]);
+  }
+  removeDel(i: number): void { this.deliverables.update((d) => d.filter((_, idx) => idx !== i)); }
+  updateDel(i: number, field: string, val: any): void {
+    this.deliverables.update((d) => d.map((item, idx) => idx === i ? { ...item, [field]: val } : item));
   }
 
   getTypeLabel(v?: string | null): string {
@@ -234,8 +259,36 @@ export class ProjectEditComponent {
       totalHours: raw.totalHours || undefined,
     };
 
-    this.projectService.update(this.id(), data as Partial<Project>).subscribe({
+    this.projectService.update(this.id(), data as Partial<Project>).pipe(
+      concatMap(() => {
+        const reqs$ = this.requirements().map((r) =>
+          this.projectService.addRequirement(this.id(), {
+            requirementType: r.type,
+            name: r.name,
+            isMandatory: r.isMandatory ?? false,
+            proficiencyLevel: r.proficiencyLevel,
+          }).pipe(catchError(() => of(null))),
+        );
+        return reqs$.length > 0 ? forkJoin(reqs$) : of([]);
+      }),
+      concatMap(() => {
+        const dels$ = this.deliverables()
+          .filter((d) => d.id)
+          .map((d) =>
+            this.projectService.updateDeliverable(this.id(), d.id, {
+              title: d.title,
+              description: d.description || undefined,
+              dueDate: d.dueDate || undefined,
+              weightPercentage: d.weightPercentage,
+              isMandatory: d.isMandatory,
+              displayOrder: d.displayOrder,
+            }).pipe(catchError(() => of(null))),
+          );
+        return dels$.length > 0 ? forkJoin(dels$) : of([]);
+      }),
+    ).subscribe({
       next: () => {
+        this.submitting.set(false);
         this.snackBar.open('Proyecto actualizado', 'OK', { duration: 3000 });
         this.router.navigate(['/my-projects']);
       },

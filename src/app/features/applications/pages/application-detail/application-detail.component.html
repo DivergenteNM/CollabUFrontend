@@ -211,7 +211,7 @@
                               <mat-icon>comment</mat-icon> {{ del.feedback }}
                             </p>
                           }
-                          @if (del.status === 'pending' || del.status === 'revision_requested') {
+                          @if (del.status === 'pending' || del.status === 'needs_revision') {
                             <div class="detail__deliverable-upload">
                               <app-file-upload
                                 accept=".pdf,.doc,.docx,.zip"

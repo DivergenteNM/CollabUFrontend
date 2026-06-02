@@ -59,7 +59,7 @@ export interface Deliverable {
   dueDate: string;
   submittedAt?: string;
   fileUrl?: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'revision_requested';
+  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'needs_revision';
   grade?: number;
   feedback?: string;
 }

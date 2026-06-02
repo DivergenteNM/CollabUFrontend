@@ -129,6 +129,7 @@ export class ApplicationDetailComponent {
       approved: 'Aprobado',
       rejected: 'Rechazado',
       revision_requested: 'Revisión solicitada',
+      needs_revision: 'Revisión solicitada',
     };
     return labels[status] ?? status;
   }
@@ -180,11 +181,14 @@ export class ApplicationDetailComponent {
   submitDeliverable(applicationId: string, deliverableId: string, files: File[]): void {
     if (!files.length || this.submitting()) return;
     this.submitting.set(true);
-    const formData = new FormData();
-    formData.append('file', files[0]);
-    formData.append('deliverableId', deliverableId);
+    const file = files[0];
+    const title = file.name;
 
-    this.applicationService.submitDeliverable(applicationId, formData).subscribe({
+    this.applicationService.submitDeliverable(applicationId, {
+      file,
+      title,
+      projectDeliverableId: deliverableId,
+    }).subscribe({
       next: () => {
         this.submitting.set(false);
         this.snackBar.open('Entregable subido correctamente', 'OK', { duration: 3000 });

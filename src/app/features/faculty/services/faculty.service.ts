@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BaseApiService } from '../../../core/services/base-api.service';
 import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../../core/models';
 
 export interface SupervisorAssignmentItem {
   id: string;
@@ -200,6 +201,19 @@ export class FacultyService extends BaseApiService {
 
   getDeliverables(applicationId: string): Observable<Deliverable[]> {
     return this.http.get<Deliverable[]>(`${environment.apiUrl}/applications/${applicationId}/deliverables`);
+  }
+
+  reviewDeliverable(
+    applicationId: string,
+    deliverableId: string,
+    status: 'approved' | 'rejected' | 'needs_revision',
+    data: { grade?: number; feedback?: string }
+  ): Observable<ApiResponse<Deliverable>> {
+    const action = status === 'approved' ? 'approve' : status === 'rejected' ? 'reject' : 'request-revision';
+    return this.http.patch<ApiResponse<Deliverable>>(
+      `${environment.apiUrl}/applications/${applicationId}/deliverables/${deliverableId}/${action}`,
+      data
+    );
   }
 
   getEvaluationsByApplication(applicationId: string): Observable<EvaluationItem[]> {

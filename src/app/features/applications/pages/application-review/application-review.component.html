@@ -78,7 +78,7 @@
 
                 @if (student.skills.length > 0) {
                   <mat-divider />
-                  <h3>Habilidades</h3>
+                  <h3>Habilidades / Competencias </h3>
                   <app-skill-chip-list [skills]="studentSkillNames()" />
                 }
 
@@ -262,7 +262,13 @@
             @if (app.status === ApplicationStatus.IN_PROGRESS || app.status === ApplicationStatus.COMPLETED) {
               <mat-card>
                 <mat-card-content>
-                  <h3>Entregables</h3>
+                  <h3>
+                    Entregables
+                    <button mat-stroked-button color="primary" class="review__create-deliverable-btn"
+                            (click)="openCreateDeliverableDialog()">
+                      <mat-icon>add</mat-icon> Crear Entregable
+                    </button>
+                  </h3>
                   @if (app.deliverables && app.deliverables.length > 0) {
                     @for (del of app.deliverables; track del.id; let i = $index) {
                       <div class="review__deliverable">
@@ -297,6 +303,10 @@
                               <button mat-stroked-button
                                       (click)="reviewDeliverable(app.id, del.id, 'rejected')">
                                 Rechazar
+                              </button>
+                              <button mat-stroked-button
+                                      (click)="reviewDeliverable(app.id, del.id, 'needs_revision')">
+                                Solicitar revisión
                               </button>
                               <button mat-flat-button
                                       (click)="reviewDeliverable(app.id, del.id, 'approved')">
