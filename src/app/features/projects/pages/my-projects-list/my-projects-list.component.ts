@@ -66,7 +66,7 @@ export class MyProjectsListComponent {
   }
 
   publishProject(id: string): void {
-    this.projectService.updateStatus(id, ProjectStatus.PENDING_APPROVAL).subscribe(() => {
+    this.projectService.publish(id).subscribe(() => {
       this.projectsResource.reload();
     });
   }

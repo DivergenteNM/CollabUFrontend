@@ -10,7 +10,6 @@ import { CompanyProfileService } from '../../../../core/services/company-profile
 import { StudentService } from '../../../students/services/student.service';
 import { AuthStore } from '../../../../state/auth.store';
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
-import { FacultyService } from '../../../faculty/services/faculty.service';
 
 @Component({
   selector: 'app-profile-view',
@@ -26,12 +25,10 @@ export class ProfileViewComponent {
   readonly authStore = inject(AuthStore);
   private readonly studentService = inject(StudentService);
   private readonly companyProfileService = inject(CompanyProfileService);
-  private readonly facultyService = inject(FacultyService);
 
   readonly loading = signal(true);
   readonly student = signal<StudentProfile | null>(null);
   readonly company = signal<CompanyProfile | null>(null);
-  readonly supervisor = signal<any | null>(null);
 
   constructor() {
     this.loadProfile();
@@ -67,16 +64,6 @@ export class ProfileViewComponent {
 
   getInterestName(interest: any): string {
     return interest?.interestName ?? interest?.area ?? '';
-  }
-
-  supervisorRoleLabel(role?: string): string {
-    const labels: Record<string, string> = {
-      academic_director: 'Director Académico',
-      internship_coordinator: 'Coordinador de Pasantías',
-      thesis_advisor: 'Asesor de Tesis',
-      faculty_supervisor: 'Supervisor de Facultad',
-    };
-    return (role && labels[role]) ?? role ?? 'Docente';
   }
 
   expTypeLabel(type?: string): string {
@@ -140,17 +127,6 @@ export class ProfileViewComponent {
       this.companyProfileService.getProfile().subscribe({
         next: (res) => {
           this.company.set(res.data);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-      return;
-    }
-
-    if (this.authStore.isFaculty()) {
-      this.facultyService.getMyProfile().subscribe({
-        next: (res) => {
-          this.supervisor.set(res);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),

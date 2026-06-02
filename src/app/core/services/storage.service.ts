@@ -7,13 +7,10 @@ import { ApiResponse } from '../models';
 export class StorageService extends BaseApiService {
   protected readonly basePath = '/storage';
 
-  upload(file: File, category: string, isPublic = false): Observable<ApiResponse<{ fileId: string; url: string }>> {
+  upload(file: File, category: string): Observable<ApiResponse<{ fileId: string; url: string }>> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('category', category);
-    if (isPublic) {
-      formData.append('isPublic', 'true');
-    }
     return this.http.post<ApiResponse<{ fileId: string; url: string }>>(`${this.apiUrl}/upload`, formData);
   }
 

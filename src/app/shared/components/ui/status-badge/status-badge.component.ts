@@ -19,20 +19,15 @@ function buildStatusMap(): Map<string, StatusConfig> {
   map.set(ApplicationStatus.REJECTED,     { label: 'Rechazada',     icon: 'cancel',          color: '#c62828', bg: '#ffebee' });
   map.set(ApplicationStatus.IN_PROGRESS,  { label: 'En progreso',   icon: 'play_circle',     color: '#0277bd', bg: '#e1f5fe' });
   map.set(ApplicationStatus.COMPLETED,    { label: 'Completada',    icon: 'task_alt',        color: '#1b5e20', bg: '#e8f5e9' });
-  map.set(ApplicationStatus.CANCELLED,    { label: 'Cancelada',    icon: 'block',           color: '#616161', bg: '#f5f5f5' });
+  map.set(ApplicationStatus.CANCELLED,    { label: 'Cancelada',     icon: 'block',           color: '#616161', bg: '#f5f5f5' });
   map.set(ApplicationStatus.WITHDRAWN,    { label: 'Retirada',      icon: 'undo',            color: '#78909c', bg: '#eceff1' });
   // Project statuses (overrides shared enum values intentionally — project labels)
-  map.set('project_' + ProjectStatus.DRAFT,               { label: 'Borrador',         icon: 'edit',            color: '#78909c', bg: '#eceff1' });
-  map.set('project_' + ProjectStatus.PENDING_APPROVAL,    { label: 'En revisión',      icon: 'pending',         color: '#e65100', bg: '#fff3e0' });
-  map.set('project_' + ProjectStatus.PUBLISHED,           { label: 'Publicado',        icon: 'public',          color: '#2e7d32', bg: '#e8f5e9' });
+  map.set('project_' + ProjectStatus.DRAFT,               { label: 'Borrador',     icon: 'edit',            color: '#78909c', bg: '#eceff1' });
+  map.set('project_' + ProjectStatus.PUBLISHED,           { label: 'Publicado',    icon: 'public',          color: '#2e7d32', bg: '#e8f5e9' });
   map.set('project_' + ProjectStatus.APPLICATIONS_CLOSED, { label: 'Cerrado',      icon: 'lock',            color: '#f57c00', bg: '#fff3e0' });
   map.set('project_' + ProjectStatus.IN_PROGRESS,         { label: 'En progreso',  icon: 'play_circle',     color: '#0277bd', bg: '#e1f5fe' });
   map.set('project_' + ProjectStatus.COMPLETED,           { label: 'Completado',   icon: 'task_alt',        color: '#1b5e20', bg: '#e8f5e9' });
   map.set('project_' + ProjectStatus.CANCELLED,           { label: 'Cancelado',    icon: 'block',           color: '#616161', bg: '#f5f5f5' });
-  // Supervisor assignment statuses
-  map.set('active',      { label: 'Activo',       icon: 'check_circle',    color: '#2e7d32', bg: '#e8f5e9' });
-  map.set('completed',   { label: 'Completado',   icon: 'task_alt',        color: '#1b5e20', bg: '#e8f5e9' });
-  map.set('transferred', { label: 'Transferido',  icon: 'swap_horiz',      color: '#1565c0', bg: '#e3f2fd' });
   return map;
 }
 
@@ -53,7 +48,7 @@ const STATUS_MAP = buildStatusMap();
   styleUrl: './status-badge.component.scss',
 })
 export class StatusBadgeComponent {
-  readonly status = input.required<string>();
+  readonly status = input.required<ApplicationStatus | ProjectStatus>();
   readonly size = input<'sm' | 'md'>('md');
 
   readonly statusConfig = computed<StatusConfig>(() => {

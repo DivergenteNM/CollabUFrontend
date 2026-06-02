@@ -1,16 +1,8 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { inject } from '@angular/core';
 import { TokenService } from '../services/token.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const platformId = inject(PLATFORM_ID);
-
-  // On the server localStorage doesn't exist — skip token injection
-  if (!isPlatformBrowser(platformId)) {
-    return next(req);
-  }
-
   const tokenService = inject(TokenService);
   const token = tokenService.getAccessToken();
 

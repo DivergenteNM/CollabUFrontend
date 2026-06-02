@@ -12,11 +12,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { environment } from '../../../../../environments/environment';
 
 import { ApplicationService } from '../../../applications/services/application.service';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
-import { StorageService } from '../../../../core/services/storage.service';
 
 export interface ApplyDialogData {
   projectId: string;
@@ -38,7 +36,6 @@ export class ApplyDialogComponent {
   readonly data = inject<ApplyDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<ApplyDialogComponent>);
   private readonly applicationService = inject(ApplicationService);
-  private readonly storageService = inject(StorageService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
@@ -60,37 +57,11 @@ export class ApplyDialogComponent {
     this.submitting.set(true);
 
     const { coverLetter } = this.form.getRawValue();
-    const payload: any = {
+
+    this.applicationService.create({
       projectId: this.data.projectId,
       coverLetter: coverLetter!,
-    };
-
-    if (this.selectedFile) {
-      this.storageService.upload(this.selectedFile, 'cv', true).subscribe({
-        next: (uploadRes: any) => {
-          console.log('[ApplyDialog] Upload success:', uploadRes);
-          const fileData = uploadRes.data || uploadRes;
-          const fileId = fileData.id || fileData.fileId;
-          const resumeUrl = fileData.url || fileData.publicUrl || `${environment.apiUrl}/storage/files/${fileId}/download`;
-          
-          payload.resumeUrl = resumeUrl;
-          this.submitApplication(payload);
-        },
-        error: (err) => {
-          console.error('[ApplyDialog] Upload error details:', err);
-          if (err.error) {
-            console.error('[ApplyDialog] Server error response body:', err.error);
-          }
-          this.submitting.set(false);
-        }
-      });
-    } else {
-      this.submitApplication(payload);
-    }
-  }
-
-  private submitApplication(payload: any): void {
-    this.applicationService.create(payload).subscribe({
+    }).subscribe({
       next: (res: any) => {
         this.submitting.set(false);
         const applicationData = res?.data ?? res;
@@ -101,11 +72,7 @@ export class ApplyDialogComponent {
           this.router.navigate(['/my-applications']);
         }
       },
-      error: (err) => {
-        console.error('[ApplyDialog] Create application error details:', err);
-        if (err.error) {
-          console.error('[ApplyDialog] Server error response body:', err.error);
-        }
+      error: () => {
         this.submitting.set(false);
       },
     });

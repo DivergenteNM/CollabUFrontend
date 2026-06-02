@@ -1,9 +1,6 @@
 import {
   Component, ChangeDetectionStrategy, inject, input, signal, computed, TemplateRef, viewChild,
 } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
-import { forkJoin, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
@@ -61,22 +58,17 @@ export class ProjectApplicantsComponent {
     ];
   }
 
-  readonly applicantsResource = rxResource({
-    params: () => ({
-      projectId: this.id(),
-      page: this.page(),
-      limit: 10,
-      ...(this.sortBy() ? { sortBy: this.sortBy(), sortOrder: this.sortDir().toUpperCase() } : {}),
+  readonly applicantsResource = httpResource<PaginatedResponse<Application>>(
+    () => ({
+      url: `${environment.apiUrl}/applications/received`,
+      params: {
+        projectId: this.id(),
+        page: this.page(),
+        limit: 10,
+        ...(this.sortBy() ? { sortBy: this.sortBy(), sortOrder: this.sortDir().toUpperCase() } : {}),
+      },
     }),
-    stream: ({ params }) => this.applicationService.getReceivedApplications(params as any).pipe(
-      switchMap(res => {
-        if (!res.data || res.data.length === 0) return of(res);
-        return forkJoin(res.data.map(app => this.applicationService.enrichApplication(app))).pipe(
-          map(enrichedApps => ({ ...res, data: enrichedApps }))
-        );
-      })
-    )
-  });
+  );
 
   readonly applicants = computed(() =>
     this.applicantsResource.value()?.data ?? [],

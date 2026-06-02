@@ -257,48 +257,7 @@
     }
   }
 
-  @if (authStore.isFaculty()) {
-    @if (supervisor(); as sup) {
-      <mat-card class="profile-view__main">
-        <mat-card-content>
-          <div class="profile-header">
-            <div class="avatar">
-              <mat-icon>person</mat-icon>
-            </div>
-            <div>
-              <h2>{{ authStore.displayName() }}</h2>
-              <p>{{ sup.department ?? 'Sin departamento' }}</p>
-              <p><mat-icon>badge</mat-icon> Código: {{ sup.employeeCode ?? 'No registrado' }}</p>
-            </div>
-          </div>
-
-          <div class="section">
-            <h3>Rol</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Cargo</span>
-                <span>{{ supervisorRoleLabel(sup.role) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Especialización</span>
-                <span>{{ sup.specialization ?? 'No especificada' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estudiantes asignados</span>
-                <span>{{ sup.currentStudents }} / {{ sup.maxStudents }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estado</span>
-                <span>{{ sup.isActive ? 'Activo' : 'Inactivo' }}</span>
-              </div>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    }
-  }
-
-  @if (authStore.isAdmin()) {
+  @if (authStore.isFaculty() || authStore.isAdmin()) {
     <mat-card class="profile-view__main">
       <mat-card-content>
         <div class="profile-header">
@@ -307,7 +266,7 @@
           </div>
           <div>
             <h2>{{ authStore.displayName() }}</h2>
-            <p>Administrador</p>
+            <p>{{ authStore.role() }}</p>
           </div>
         </div>
       </mat-card-content>

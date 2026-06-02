@@ -44,11 +44,4 @@ export const ADMIN_ROUTES: Routes = [
         (m) => m.UserManagementComponent
       ),
   },
-  {
-    path: 'reports',
-    loadComponent: () =>
-      import('./pages/reports/reports.component').then(
-        (m) => m.ReportsComponent
-      ),
-  },
 ];

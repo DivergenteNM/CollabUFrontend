@@ -2,20 +2,20 @@
   <mat-card-header>
     <mat-card-title>
       @if (viewMode() === 'student') {
-      {{ application().project?.title || 'Proyecto' }}
+        {{ application().project?.title || 'Proyecto' }}
       } @else {
-      <div class="application-card__title-company">
-        <div class="student-name">
-          @if (application().student?.user) {
-          Estudiante: {{ application().student!.user!.firstName }} {{ application().student!.user!.lastName }}
-          } @else {
-          Estudiante #{{ application().student?.studentCode || application().studentId }}
+        <div class="application-card__title-company">
+          <div class="student-name">
+            @if (application().student?.user) {
+              {{ application().student!.user!.firstName }} {{ application().student!.user!.lastName }}
+            } @else {
+              Estudiante #{{ application().student?.studentCode || application().studentId }}
+            }
+          </div>
+          @if (application().project) {
+            <span class="project-tag">{{ application().project!.title }}</span>
           }
         </div>
-        @if (application().project) {
-        <span class="project-tag">{{ application().project!.title }}</span>
-        }
-      </div>
       }
     </mat-card-title>
     <mat-card-subtitle class="application-card__subtitle">
@@ -31,14 +31,14 @@
     <app-application-progress-stepper [currentStatus]="application().status" />
 
     @if (application().coverLetter) {
-    <p class="application-card__cover">{{ application().coverLetter }}</p>
+      <p class="application-card__cover">{{ application().coverLetter }}</p>
     }
 
     @if (application().matchScore) {
-    <div class="application-card__score">
-      <mat-icon>star</mat-icon>
-      Match: {{ application().matchScore }}%
-    </div>
+      <div class="application-card__score">
+        <mat-icon>star</mat-icon>
+        Match: {{ application().matchScore }}%
+      </div>
     }
   </mat-card-content>
 
@@ -48,17 +48,17 @@
     </button>
 
     @if (viewMode() === 'company' && canChangeStatus()) {
-    <button mat-flat-button [matMenuTriggerFor]="statusMenu">
-      <mat-icon>edit</mat-icon> Cambiar Estado
-    </button>
-    <mat-menu #statusMenu="matMenu">
-      @for (action of availableActions(); track action.status) {
-      <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
-        <mat-icon>{{ action.icon }}</mat-icon>
-        {{ action.label }}
+      <button mat-flat-button [matMenuTriggerFor]="statusMenu">
+        <mat-icon>edit</mat-icon> Cambiar Estado
       </button>
-      }
-    </mat-menu>
+      <mat-menu #statusMenu="matMenu">
+        @for (action of availableActions(); track action.status) {
+          <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
+            <mat-icon>{{ action.icon }}</mat-icon>
+            {{ action.label }}
+          </button>
+        }
+      </mat-menu>
     }
   </mat-card-actions>
 </mat-card>

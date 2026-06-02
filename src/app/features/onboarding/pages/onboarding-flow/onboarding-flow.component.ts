@@ -25,7 +25,6 @@ import { CompanyProfileService } from '../../../../core/services/company-profile
 import { UserProfileService } from '../../../../core/services/user-profile.service';
 import { StudentService } from '../../../students/services/student.service';
 import { AuthStore } from '../../../../state/auth.store';
-import { FacultyService } from '../../../faculty/services/faculty.service';
 
 @Component({
   selector: 'app-onboarding-flow',
@@ -51,7 +50,6 @@ export class OnboardingFlowComponent implements OnInit {
   private readonly userProfileService = inject(UserProfileService);
   private readonly studentService = inject(StudentService);
   private readonly companyProfileService = inject(CompanyProfileService);
-  private readonly facultyService = inject(FacultyService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
 
@@ -62,13 +60,6 @@ export class OnboardingFlowComponent implements OnInit {
     'Ingeniería de Sistemas',
     'Ingeniería Civil',
     'Ingeniería Electrónica',
-  ] as const;
-
-  readonly supervisorRoles = [
-    { value: 'faculty_supervisor', label: 'Supervisor de Facultad' },
-    { value: 'internship_coordinator', label: 'Coordinador de Pasantías' },
-    { value: 'thesis_advisor', label: 'Asesor de Tesis' },
-    { value: 'academic_director', label: 'Director Académico' },
   ] as const;
 
   readonly userProfileExists = signal(false);
@@ -136,13 +127,6 @@ export class OnboardingFlowComponent implements OnInit {
     description: [''],
   });
 
-  readonly facultyForm = this.fb.nonNullable.group({
-    employeeCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
-    department: ['', [Validators.required, Validators.minLength(2)]],
-    role: ['', Validators.required],
-    specialization: [''],
-  });
-
   ngOnInit(): void {
     this.bootstrap();
   }
@@ -153,10 +137,6 @@ export class OnboardingFlowComponent implements OnInit {
 
   get isCompany(): boolean {
     return this.authStore.role() === UserRole.COMPANY;
-  }
-
-  get isFaculty(): boolean {
-    return this.authStore.role() === UserRole.FACULTY;
   }
 
   async saveUserStep(stepper: MatStepper): Promise<void> {
@@ -203,11 +183,6 @@ export class OnboardingFlowComponent implements OnInit {
 
     if (this.isCompany) {
       await this.saveCompanyProfile(stepper);
-      return;
-    }
-
-    if (this.isFaculty) {
-      await this.saveFacultyProfile(stepper);
     }
   }
 
@@ -302,24 +277,6 @@ export class OnboardingFlowComponent implements OnInit {
       } catch (error) {
         if (!this.isNotFound(error)) {
           console.warn('Error cargando perfil de empresa', error);
-        }
-      }
-      return;
-    }
-
-    if (this.isFaculty) {
-      try {
-        const response = await firstValueFrom(this.facultyService.getMyProfile());
-        this.roleProfileExists.set(true);
-        this.facultyForm.patchValue({
-          employeeCode: response.employeeCode ?? '',
-          department: response.department ?? '',
-          role: response.role ?? '',
-          specialization: response.specialization ?? '',
-        });
-      } catch (error) {
-        if (!this.isNotFound(error)) {
-          console.warn('Error cargando perfil de supervisor', error);
         }
       }
     }
@@ -448,35 +405,6 @@ export class OnboardingFlowComponent implements OnInit {
       stepper.next();
     } catch (error) {
       this.handleSaveError(error, 'No se pudo guardar el perfil de empresa');
-    } finally {
-      this.submitting.set(false);
-    }
-  }
-
-  private async saveFacultyProfile(stepper: MatStepper): Promise<void> {
-    if (this.facultyForm.invalid) {
-      this.facultyForm.markAllAsTouched();
-      return;
-    }
-
-    this.submitting.set(true);
-
-    try {
-      const raw = this.facultyForm.getRawValue();
-      const payload = {
-        employeeCode: raw.employeeCode,
-        department: raw.department,
-        role: raw.role as 'academic_director' | 'internship_coordinator' | 'thesis_advisor' | 'faculty_supervisor',
-        specialization: this.normalizeOptionalText(raw.specialization),
-      };
-
-      await firstValueFrom(this.facultyService.updateMyProfile(payload));
-      this.roleProfileExists.set(true);
-      this.authStore.refreshProfile();
-      this.snackBar.open('Perfil de docente actualizado', 'Cerrar', { duration: 2400 });
-      stepper.next();
-    } catch (error) {
-      this.handleSaveError(error, 'No se pudo guardar el perfil de docente');
     } finally {
       this.submitting.set(false);
     }
