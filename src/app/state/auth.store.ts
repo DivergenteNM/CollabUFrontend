@@ -42,7 +42,7 @@ export const AuthStore = signalStore(
     isAdmin: computed(() => store.user()?.role === UserRole.ADMIN),
     onboardingRequired: computed(() => {
       const role = store.user()?.role;
-      const requiresOnboarding = role === UserRole.STUDENT || role === UserRole.COMPANY;
+      const requiresOnboarding = role === UserRole.STUDENT || role === UserRole.COMPANY || role === UserRole.FACULTY;
 
       if (!requiresOnboarding || !store.token() || !store.user() || !store.profileLoaded()) {
         return false;
@@ -72,7 +72,7 @@ export const AuthStore = signalStore(
 
     const enforceOnboardingNavigation = (): void => {
       const role = store.user()?.role;
-      const requiresOnboardingRole = role === UserRole.STUDENT || role === UserRole.COMPANY;
+      const requiresOnboardingRole = role === UserRole.STUDENT || role === UserRole.COMPANY || role === UserRole.FACULTY;
 
       if (!requiresOnboardingRole || !store.profileLoaded()) {
         return;
@@ -110,6 +110,7 @@ export const AuthStore = signalStore(
             profileLoading: false,
             authReady: true,
           });
+          enforceOnboardingNavigation();
         },
         error: (error: HttpErrorResponse) => {
           patchState(store, {
@@ -118,6 +119,7 @@ export const AuthStore = signalStore(
             profileLoading: false,
             authReady: true,
           });
+          enforceOnboardingNavigation();
 
           // 404 significa que el perfil base aún no existe y debe completarse en onboarding.
           if (error.status !== 404) {

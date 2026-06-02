@@ -46,9 +46,9 @@
           <div class="students-table">
             <div class="students-table__header">
               <span>Estudiante</span>
-              <span>Período</span>
+              <span>Proyecto</span>
+              <span>Empresa</span>
               <span>Estado</span>
-              <span>Inicio</span>
             </div>
             @for (a of assignments(); track a.id) {
               <div class="students-table__row"
@@ -57,16 +57,16 @@
                    tabindex="0"
                    role="button">
                 <div class="students-table__student">
-                  <span class="students-table__name">{{ getStudentName(a.studentId) }}</span>
+                  <span class="students-table__name">{{ a.studentName }}</span>
                 </div>
-                <div class="students-table__period">
-                  <span>{{ a.period?.name ?? '—' }}</span>
+                <div class="students-table__project">
+                  <span class="truncate">{{ a.projectTitle }}</span>
+                </div>
+                <div class="students-table__company">
+                  <span class="truncate">{{ a.companyName }}</span>
                 </div>
                 <div class="students-table__status">
                   <app-status-badge [status]="a.status" size="sm" />
-                </div>
-                <div class="students-table__date">
-                  <span>{{ a.startDate | date:'d MMM yyyy' }}</span>
                 </div>
               </div>
             }

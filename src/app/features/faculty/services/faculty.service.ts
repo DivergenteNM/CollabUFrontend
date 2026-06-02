@@ -38,12 +38,58 @@ export interface SupervisorAssignmentItem {
   };
 }
 
+export interface EnrichedAssignment {
+  id: string;
+  applicationId: string;
+  studentId: string;
+  projectId: string;
+  periodId: string;
+  assignedBy: string;
+  startDate: string;
+  endDate: string | null;
+  status: string;
+  notes: string | null;
+  createdAt: string;
+  studentName: string;
+  studentCode: string | null;
+  projectTitle: string;
+  companyName: string;
+}
+
 export interface MyStudentsResponse {
   data: SupervisorAssignmentItem[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface EnrichedStudentsResponse {
+  data: EnrichedAssignment[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AssignmentDetail {
+  id: string;
+  applicationId: string;
+  studentId: string;
+  projectId: string;
+  periodId: string;
+  assignedBy: string;
+  startDate: string;
+  endDate: string | null;
+  status: string;
+  notes: string | null;
+  createdAt: string;
+  studentName: string;
+  studentCode: string | null;
+  studentProgram: string | null;
+  studentSemester: number | null;
+  projectTitle: string;
+  companyName: string;
 }
 
 export interface UserProfile {
@@ -65,6 +111,68 @@ export interface StudentProfile {
   faculty: string | null;
 }
 
+export interface Deliverable {
+  id: string;
+  applicationId: string;
+  projectDeliverableId: string | null;
+  title: string;
+  description: string | null;
+  fileUrl: string | null;
+  fileSizeBytes: number | null;
+  fileType: string | null;
+  submittedAt: string | null;
+  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'needs_revision';
+  feedback: string | null;
+  grade: number | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  revisionNumber: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EvaluationItem {
+  id: string;
+  evaluatorId: string;
+  evaluatorType: 'student' | 'company' | 'faculty';
+  evaluatedId: string;
+  evaluatedType: 'student' | 'company';
+  applicationId: string;
+  projectId: string;
+  evaluationType: string;
+  status: string;
+  overallRating: number;
+  comment: string;
+  isAnonymous: boolean;
+  ratings: Array<{ criteriaId: string; rating: number; comment?: string }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SupervisorRole = 'academic_director' | 'internship_coordinator' | 'thesis_advisor' | 'faculty_supervisor';
+
+export interface SupervisorProfile {
+  id: string;
+  userId: string;
+  employeeCode: string | null;
+  department: string | null;
+  role: SupervisorRole;
+  specialization: string | null;
+  maxStudents: number;
+  currentStudents: number;
+  isActive: boolean;
+  isOnboardingComplete: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateSupervisorProfile {
+  employeeCode?: string;
+  department?: string;
+  role?: SupervisorRole;
+  specialization?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FacultyService extends BaseApiService {
   protected readonly basePath = '/admin';
@@ -77,11 +185,40 @@ export class FacultyService extends BaseApiService {
     return this.http.get<MyStudentsResponse>(`${this.apiUrl}/supervisors/my-students`, { params: httpParams });
   }
 
+  getMyStudentsEnriched(params?: { status?: string; page?: number; limit?: number }): Observable<EnrichedStudentsResponse> {
+    let httpParams = new HttpParams();
+    httpParams = httpParams.set('enriched', 'true');
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    return this.http.get<EnrichedStudentsResponse>(`${this.apiUrl}/supervisors/my-students`, { params: httpParams });
+  }
+
+  getAssignmentDetail(assignmentId: string): Observable<AssignmentDetail> {
+    return this.http.get<AssignmentDetail>(`${this.apiUrl}/supervisors/assignments/${assignmentId}`);
+  }
+
+  getDeliverables(applicationId: string): Observable<Deliverable[]> {
+    return this.http.get<Deliverable[]>(`${environment.apiUrl}/applications/${applicationId}/deliverables`);
+  }
+
+  getEvaluationsByApplication(applicationId: string): Observable<EvaluationItem[]> {
+    return this.http.get<EvaluationItem[]>(`${environment.apiUrl}/evaluations/application/${applicationId}`);
+  }
+
   getUserProfile(userId: string): Observable<UserProfile> {
     return this.http.get<UserProfile>(`${environment.apiUrl}/users/profile/${userId}`);
   }
 
   getStudentProfile(userId: string): Observable<StudentProfile> {
     return this.http.get<StudentProfile>(`${environment.apiUrl}/students/profile/${userId}`);
+  }
+
+  getMyProfile(): Observable<SupervisorProfile> {
+    return this.http.get<SupervisorProfile>(`${this.apiUrl}/supervisors/me`);
+  }
+
+  updateMyProfile(data: UpdateSupervisorProfile): Observable<SupervisorProfile> {
+    return this.http.patch<SupervisorProfile>(`${this.apiUrl}/supervisors/me`, data);
   }
 }

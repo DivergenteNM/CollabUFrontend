@@ -37,12 +37,13 @@
               <p>{{ d.studentProgram }}@if (d.studentSemester) { &middot; Semestre {{ d.studentSemester }}}</p>
             }
             <p class="project-info">
-              <mat-icon>school</mat-icon> {{ d.assignment.period.name ?? 'Sin período' }}
+              <mat-icon>business</mat-icon> {{ d.companyName }} &middot;
+              <mat-icon>folder</mat-icon> {{ d.projectTitle }}
             </p>
           </div>
           <div class="progress-section">
             <mat-chip-set>
-              <mat-chip>{{ statusLabel(d.assignment.status) }}</mat-chip>
+              <mat-chip>{{ statusLabel(d.status) }}</mat-chip>
             </mat-chip-set>
           </div>
         </div>
@@ -50,7 +51,7 @@
       <mat-card-actions align="end">
         <a mat-flat-button color="primary"
           [routerLink]="['/my-evaluations']"
-          [queryParams]="{ applicationId: d.assignment.applicationId }">
+          [queryParams]="{ applicationId: d.applicationId }">
           <mat-icon>rate_review</mat-icon>
           Ver Evaluaciones
         </a>
@@ -66,28 +67,109 @@
         <div class="detail-grid">
           <div class="detail-item">
             <span class="detail-label">Período</span>
-            <span class="detail-value">{{ d.assignment.period.name ?? '—' }}</span>
+            <span class="detail-value">{{ d.periodId ? d.periodId : '—' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Fecha Inicio</span>
-            <span class="detail-value">{{ d.assignment.startDate | date:'d MMM yyyy' }}</span>
+            <span class="detail-value">{{ d.startDate | date:'d MMM yyyy' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Fecha Fin</span>
-            <span class="detail-value">{{ d.assignment.endDate ? (d.assignment.endDate | date:'d MMM yyyy') : 'En curso' }}</span>
+            <span class="detail-value">{{ d.endDate ? (d.endDate | date:'d MMM yyyy') : 'En curso' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Estado</span>
-            <span class="detail-value"><app-status-badge [status]="d.assignment.status" size="sm" /></span>
+            <span class="detail-value"><app-status-badge [status]="d.status" size="sm" /></span>
           </div>
-          @if (d.assignment.notes) {
+          @if (d.notes) {
             <div class="detail-item detail-item--full">
               <span class="detail-label">Notas</span>
-              <span class="detail-value">{{ d.assignment.notes }}</span>
+              <span class="detail-value">{{ d.notes }}</span>
             </div>
           }
         </div>
       </mat-card-content>
     </mat-card>
+
+    <!-- Tabs -->
+    <mat-tab-group>
+      <mat-tab label="Entregables">
+        <div class="tab-content">
+          @if (deliverables().length === 0) {
+            <div class="empty">
+              <mat-icon>assignment</mat-icon>
+              <p>No hay entregables registrados</p>
+            </div>
+          } @else {
+            @for (d of deliverables(); track d.id) {
+              <mat-card class="deliverable-card">
+                <mat-card-content>
+                  <div class="deliverable-row">
+                    <div class="deliverable-info">
+                      <strong>{{ d.title }}</strong>
+                      @if (d.description) {
+                        <span class="deliverable-desc">{{ d.description }}</span>
+                      }
+                      <span class="deliverable-due">
+                        <mat-icon>schedule</mat-icon>
+                        @if (d.submittedAt) {
+                          Entregado: {{ d.submittedAt | date:'d MMM yyyy' }}
+                        } @else {
+                          Pendiente
+                        }
+                      </span>
+                    </div>
+                    <mat-chip-set>
+                      <mat-chip [class]="'status-' + d.status">
+                        {{ deliverableStatusLabel(d.status) }}
+                      </mat-chip>
+                    </mat-chip-set>
+                    @if (d.feedback) {
+                      <span class="deliverable-feedback">{{ d.feedback }}</span>
+                    }
+                    @if (d.fileUrl) {
+                      <a mat-icon-button aria-label="Descargar entregable" [href]="d.fileUrl" target="_blank">
+                        <mat-icon>download</mat-icon>
+                      </a>
+                    }
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Evaluaciones">
+        <div class="tab-content">
+          @if (evaluations().length === 0) {
+            <div class="empty">
+              <mat-icon>rate_review</mat-icon>
+              <p>No hay evaluaciones registradas</p>
+            </div>
+          } @else {
+            @for (ev of evaluations(); track ev.id) {
+              <mat-card class="eval-card">
+                <mat-card-content>
+                  <div class="eval-header">
+                    <strong>{{ ev.evaluatorType === 'faculty' ? 'Docente' : ev.evaluatorType === 'company' ? 'Empresa' : 'Estudiante' }}</strong>
+                    <span class="eval-date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
+                  </div>
+                  <app-star-rating [value]="ev.overallRating" [readonly]="true" size="sm" />
+                  <p class="eval-comment">{{ ev.comment }}</p>
+                  @if (ev.ratings && ev.ratings.length > 0) {
+                    <div class="eval-criteria">
+                      @for (r of ev.ratings; track r.criteriaId) {
+                        <span class="eval-criteria-item">{{ r.criteriaId }}: {{ r.rating }}/5</span>
+                      }
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+            }
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   }
 </div>

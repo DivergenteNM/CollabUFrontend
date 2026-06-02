@@ -346,6 +346,52 @@
             </mat-step>
           }
 
+          @if (isFaculty) {
+            <mat-step label="Rol docente">
+              <form [formGroup]="facultyForm" class="onboarding-flow__form">
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Código de empleado</mat-label>
+                    <input matInput formControlName="employeeCode" placeholder="Ej: EMP-2024-001" />
+                    @if (facultyForm.controls.employeeCode.hasError('pattern') && facultyForm.controls.employeeCode.touched) {
+                      <mat-error>Solo se permiten letras, números y guiones.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Departamento</mat-label>
+                    <input matInput formControlName="department" placeholder="Ej: Facultad de Ingeniería" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Rol</mat-label>
+                    <mat-select formControlName="role">
+                      @for (role of supervisorRoles; track role.value) {
+                        <mat-option [value]="role.value">{{ role.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Especialización (opcional)</mat-label>
+                    <input matInput formControlName="specialization" placeholder="Ej: Desarrollo de Software" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__actions">
+                  <button mat-stroked-button type="button" (click)="stepper.previous()">Anterior</button>
+                  <button mat-flat-button color="primary" type="button"
+                          (click)="saveRoleProfileStep(stepper)"
+                          [disabled]="submitting()">
+                    Guardar y continuar
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+          }
+
           <mat-step label="Finalizar">
             <div class="onboarding-flow__final-step">
               @if (onboardingCompleted()) {

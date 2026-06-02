@@ -36,7 +36,7 @@
 
 .students-table__header {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1.5fr 1fr;
   gap: 12px;
   padding: 8px 12px;
   font-size: 0.75rem;
@@ -49,7 +49,7 @@
 
 .students-table__row {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1.5fr 1fr;
   gap: 12px;
   padding: 12px;
   align-items: center;
@@ -80,14 +80,12 @@
   color: var(--mat-sys-on-surface);
 }
 
-.students-table__period {
+.students-table__project,
+.students-table__company {
+  display: flex;
+  flex-direction: column;
   font-size: 0.875rem;
   color: var(--mat-sys-on-surface);
-}
-
-.students-table__date {
-  font-size: 0.875rem;
-  color: var(--mat-sys-on-surface-variant);
 }
 
 .students-table__status {

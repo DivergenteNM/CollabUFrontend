@@ -1,22 +1,11 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, forkJoin, of } from 'rxjs';
-import { catchError, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
-import { SupervisorAssignmentItem, FacultyService, UserProfile } from '../../services/faculty.service';
+import { FacultyService, EnrichedAssignment } from '../../services/faculty.service';
 import { DataTableComponent, ColumnDef } from '../../../../shared/components/ui/data-table/data-table.component';
-
-interface EnrichedAssignment {
-  id: string;
-  applicationId: string;
-  studentId: string;
-  studentName: string;
-  periodName: string;
-  status: string;
-  startDate: string;
-  endDate: string | null;
-}
 
 @Component({
   selector: 'app-assigned-students-list',
@@ -33,13 +22,13 @@ export class AssignedStudentsListComponent implements OnDestroy {
   readonly page = signal(1);
   readonly isLoading = signal(true);
   readonly totalCount = signal(0);
-  readonly enrichedData = signal<EnrichedAssignment[]>([]);
+  readonly students = signal<EnrichedAssignment[]>([]);
 
   readonly columns: ColumnDef<EnrichedAssignment>[] = [
     { key: 'studentName', header: 'Estudiante', sortable: true },
-    { key: 'periodName', header: 'Período', sortable: false },
+    { key: 'projectTitle', header: 'Proyecto' },
+    { key: 'companyName', header: 'Empresa' },
     { key: 'status', header: 'Estado', sortable: true },
-    { key: 'startDate', header: 'Inicio', sortable: true },
   ];
 
   constructor() {
@@ -53,72 +42,16 @@ export class AssignedStudentsListComponent implements OnDestroy {
 
   private loadAssignments(): void {
     this.isLoading.set(true);
-    this.facultyService.getMyStudents({ page: this.page(), limit: 10 })
+    this.facultyService.getMyStudentsEnriched({ page: this.page(), limit: 10 })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.students.set(response.data);
           this.totalCount.set(response.total);
-          this.enrichStudentNames(response.data);
+          this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false),
       });
-  }
-
-  private enrichStudentNames(items: SupervisorAssignmentItem[]): void {
-    if (items.length === 0) {
-      this.enrichedData.set([]);
-      this.isLoading.set(false);
-      return;
-    }
-
-    const uniqueIds = [...new Set(items.map(a => a.studentId))];
-    forkJoin(
-      uniqueIds.map(id =>
-        this.facultyService.getUserProfile(id).pipe(
-          catchError(() => of(null)),
-        )
-      )
-    ).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (profiles) => {
-        const nameMap = new Map<string, string>();
-        uniqueIds.forEach((id, i) => {
-          const p = profiles[i] as UserProfile | null;
-          if (p) {
-            nameMap.set(id, p.displayName ?? (`${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || 'Estudiante'));
-          } else {
-            nameMap.set(id, 'Estudiante');
-          }
-        });
-
-        const enriched: EnrichedAssignment[] = items.map(item => ({
-          id: item.id,
-          applicationId: item.applicationId,
-          studentId: item.studentId,
-          studentName: nameMap.get(item.studentId) ?? 'Estudiante',
-          periodName: item.period?.name ?? '—',
-          status: item.status,
-          startDate: item.startDate,
-          endDate: item.endDate,
-        }));
-
-        this.enrichedData.set(enriched);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        const enriched: EnrichedAssignment[] = items.map(item => ({
-          id: item.id,
-          applicationId: item.applicationId,
-          studentId: item.studentId,
-          studentName: 'Estudiante',
-          periodName: item.period?.name ?? '—',
-          status: item.status,
-          startDate: item.startDate,
-          endDate: item.endDate,
-        }));
-        this.enrichedData.set(enriched);
-        this.isLoading.set(false);
-      },
-    });
   }
 
   onRowClick(row: EnrichedAssignment): void {
