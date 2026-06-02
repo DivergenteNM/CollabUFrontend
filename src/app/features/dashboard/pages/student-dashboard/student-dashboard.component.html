@@ -29,6 +29,13 @@
         [value]="practiceHoursLabel()"
         label="Horas de Práctica"
         color="warn" />
+      <app-stat-card
+        icon="insights"
+        value="Ver métricas"
+        label="Mis Analytics"
+        color="primary"
+        [clickable]="true"
+        (clicked)="router.navigate(['/my-analytics'])" />
     }
   </section>
 

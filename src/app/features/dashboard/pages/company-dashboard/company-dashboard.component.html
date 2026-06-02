@@ -29,6 +29,13 @@
         [value]="avgRating()"
         label="Rating Promedio"
         color="warn" />
+      <app-stat-card
+        icon="insights"
+        value="Ver métricas"
+        label="Mis Analytics"
+        color="primary"
+        [clickable]="true"
+        (clicked)="router.navigate(['/company-analytics'])" />
     }
   </section>
 
