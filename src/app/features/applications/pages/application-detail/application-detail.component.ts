@@ -27,6 +27,7 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CreateDeliverableDialogComponent } from '../../components/create-deliverable-dialog/create-deliverable-dialog.component';
 
 @Component({
   selector: 'app-application-detail',
@@ -35,7 +36,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
     MatDialogModule, MatSnackBarModule, DatePipe, MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
-    SkeletonComponent, FileUploadComponent, EmptyStateComponent,
+    SkeletonComponent, FileUploadComponent, EmptyStateComponent, CreateDeliverableDialogComponent,
   ],
   templateUrl: './application-detail.component.html',
   styleUrl: './application-detail.component.scss',
@@ -231,5 +232,25 @@ export class ApplicationDetailComponent {
       cancelled: 'Aplicación cancelada',
     };
     return titles[toStatus] ?? toStatus;
+  }
+
+  openCreateDeliverableDialog(): void {
+    const app = this.application();
+    if (!app) return;
+    const dialogRef = this.dialog.open(CreateDeliverableDialogComponent, {
+      width: '500px',
+      data: { applicationId: app.id },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.applicationService.createDeliverable(app.id, result).subscribe({
+          next: () => {
+            this.snackBar.open('Entregable creado', 'OK', { duration: 3000 });
+            this.applicationResource.reload();
+          },
+          error: () => this.snackBar.open('Error al crear entregable', 'Cerrar', { duration: 4000 }),
+        });
+      }
+    });
   }
 }
