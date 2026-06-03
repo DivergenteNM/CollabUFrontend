@@ -1,5 +1,4 @@
-
-    <div class="detail">
+<div class="detail">
       <button mat-button class="detail__back" (click)="router.navigate(['/my-evaluations'])">
         <mat-icon>arrow_back</mat-icon> Volver a evaluaciones
       </button>
@@ -8,15 +7,14 @@
         <app-skeleton width="100%" height="200px" />
         <app-skeleton width="100%" height="300px" />
       } @else if (evaluation(); as ev) {
-        <!-- Rating Header -->
         <mat-card class="detail__rating-card">
           <mat-card-content>
             <div class="detail__rating-header">
-              <app-star-rating [value]="ev.overallRating" [readonly]="true" size="lg" />
+              <app-star-rating [value]="ev.overallScore ?? 0" [readonly]="true" size="lg" />
               <div class="detail__rating-meta">
-                <h2>{{ ev.projectTitle }}</h2>
+                <h2>{{ ev.projectId }}</h2>
                 <p>
-                  {{ ev.isAnonymous ? 'Evaluador anónimo' : ev.evaluatorType }}
+                  {{ ev.isAnonymous ? 'Evaluador anónimo' : ev.evaluationType }}
                   · {{ ev.createdAt | date:'d MMMM yyyy' }}
                 </p>
               </div>
@@ -24,16 +22,15 @@
           </mat-card-content>
         </mat-card>
 
-        <!-- Criteria Breakdown -->
-        @if (ev.criteria.length > 0) {
+        @if (ev.ratings && ev.ratings.length > 0) {
           <mat-card class="detail__criteria">
             <mat-card-content>
               <h3><mat-icon>assessment</mat-icon> Desglose de criterios</h3>
               <div class="detail__criteria-bars">
-                @for (c of ev.criteria; track c.criteriaId) {
+                @for (r of ev.ratings; track r.id) {
                   <app-match-score-bar
-                    [score]="c.rating * 20"
-                    [label]="c.criteriaName"
+                    [score]="(r.score ?? 0) * 20"
+                    [label]="r.criterion?.name ?? 'Criterio'"
                     size="md" />
                 }
               </div>
@@ -41,48 +38,29 @@
           </mat-card>
         }
 
-        <!-- Comment -->
-        <mat-card class="detail__comment">
-          <mat-card-content>
-            <h3><mat-icon>comment</mat-icon> Comentario</h3>
-            <p class="detail__comment-text">{{ ev.comment }}</p>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-divider />
-
-        <!-- Response -->
-        @if (ev.response) {
-          <mat-card class="detail__response">
+        @if (ev.overallComment) {
+          <mat-card class="detail__comment">
             <mat-card-content>
-              <h3><mat-icon>reply</mat-icon> Respuesta</h3>
-              <p class="detail__response-text">{{ ev.response.content }}</p>
-              <span class="detail__response-date">{{ ev.response.respondedAt | date:'d MMM yyyy, HH:mm' }}</span>
+              <h3><mat-icon>comment</mat-icon> Comentario</h3>
+              <p class="detail__comment-text">{{ ev.overallComment }}</p>
             </mat-card-content>
           </mat-card>
-        } @else if (isReceivedEvaluation()) {
-          <!-- Reply form for received evaluations -->
-          <mat-card class="detail__reply">
+        }
+
+        @if (ev.strengths) {
+          <mat-card class="detail__strengths">
             <mat-card-content>
-              @if (!showReplyForm()) {
-                <button mat-stroked-button (click)="showReplyForm.set(true)">
-                  <mat-icon>reply</mat-icon> Responder a esta evaluación
-                </button>
-              } @else {
-                <h3>Tu respuesta</h3>
-                <mat-form-field appearance="outline" class="detail__reply-field">
-                  <mat-label>Escribe tu respuesta</mat-label>
-                  <textarea matInput rows="3" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"></textarea>
-                </mat-form-field>
-                <div class="detail__reply-actions">
-                  <button mat-button (click)="showReplyForm.set(false)">Cancelar</button>
-                  <button mat-flat-button
-                    [disabled]="!replyText().trim() || replying()"
-                    (click)="submitReply()">
-                    Enviar respuesta
-                  </button>
-                </div>
-              }
+              <h3><mat-icon>thumb_up</mat-icon> Fortalezas</h3>
+              <p>{{ ev.strengths }}</p>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        @if (ev.areasForImprovement) {
+          <mat-card class="detail__improvement">
+            <mat-card-content>
+              <h3><mat-icon>trending_up</mat-icon> Áreas de mejora</h3>
+              <p>{{ ev.areasForImprovement }}</p>
             </mat-card-content>
           </mat-card>
         }

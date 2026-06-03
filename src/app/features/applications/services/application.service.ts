@@ -28,9 +28,9 @@ export class ApplicationService extends BaseApiService {
     return this.http.post<ApiResponse<Application>>(this.apiUrl, data);
   }
 
-  getMyApplications(params: PaginationParams): Observable<PaginatedResponse<Application>> {
+  getMyApplications(params?: PaginationParams): Observable<PaginatedResponse<Application>> {
     return this.http.get<PaginatedResponse<Application>>(`${this.apiUrl}/my`, {
-      params: this.buildParams(params)
+      params: this.buildParams(params ?? {})
     });
   }
 
@@ -44,6 +44,12 @@ export class ApplicationService extends BaseApiService {
     return this.http.get<Application>(`${this.apiUrl}/${id}`);
   }
 
+  getEligibleForEvaluation(): Observable<PaginatedResponse<Application>> {
+    return this.http.get<PaginatedResponse<Application>>(`${this.apiUrl}/my`, {
+      params: this.buildParams({ status: [ApplicationStatus.COMPLETED, ApplicationStatus.IN_PROGRESS], limit: 100 })
+    });
+  }
+
   enrichApplication(app: Application): Observable<Application> {
     return forkJoin({
       studentData: this.studentService.getProfileById(app.studentId).pipe(catchError(() => of(null))),
@@ -55,7 +61,6 @@ export class ApplicationService extends BaseApiService {
         if (studentData?.data) {
           enriched.student = studentData.data;
           if (userData?.data) {
-            // @ts-ignore
             enriched.student.user = userData.data;
           }
         }

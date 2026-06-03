@@ -1,87 +1,133 @@
-
-    <div class="eval-create">
+<div class="eval-create">
       <header class="eval-create__header">
-        <button mat-icon-button aria-label="Volver" (click)="router.navigate(['/my-evaluations'])">
+        <button mat-icon-button aria-label="Volver" (click)="step() === 2 ? onBackToStep1() : router.navigate(['/my-evaluations'])">
           <mat-icon>arrow_back</mat-icon>
         </button>
-        <h1>Crear Evaluación</h1>
+        <h1>{{ step() === 1 ? 'Crear Evaluación' : 'Evaluar: ' + (selectedApp()?.project?.title ?? '') }}</h1>
       </header>
 
-      <mat-card>
-        <mat-card-content>
-          <!-- Step 1: Select application -->
-          <div class="eval-create__section">
-            <h3>Selecciona el proyecto a evaluar</h3>
-            <mat-form-field appearance="outline" class="eval-create__full-width">
-              <mat-label>Proyecto / Aplicación</mat-label>
-              <mat-select [value]="selectedApplicationId()" (selectionChange)="onSelectApplication($event.value)">
-                @for (app of eligibleApps(); track app.id) {
-                  <mat-option [value]="app.id">{{ app.project?.title ?? 'Proyecto' }} — {{ app.status }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+      @if (eligibleResource.isLoading()) {
+        <mat-card>
+          <mat-card-content>
+            <app-skeleton width="100%" height="60px" />
+            <app-skeleton width="100%" height="120px" />
+          </mat-card-content>
+        </mat-card>
+      } @else {
 
-          @if (selectedApplicationId()) {
-            <!-- Step 2: Overall rating -->
-            <div class="eval-create__section">
-              <h3>Calificación general</h3>
-              <div class="eval-create__rating">
-                <app-star-rating [(value)]="overallRating" size="lg" />
-                <span class="eval-create__rating-text">{{ overallRating() }} / 5</span>
-              </div>
-            </div>
+        @if (step() === 1) {
+          <mat-card>
+            <mat-card-content>
+              <h3>Selecciona la aplicación a evaluar</h3>
+              @if (eligibleApps().length === 0) {
+                <p class="eval-create__empty">No tienes aplicaciones completadas o en progreso para evaluar.</p>
+              } @else {
+                <div class="eval-create__app-list">
+                  @for (app of eligibleApps(); track app.id) {
+                    <div class="eval-create__app-item" (click)="onSelectApplication(app)">
+                      <div class="eval-create__app-info">
+                        <strong>{{ app.project?.title ?? 'Proyecto' }}</strong>
+                        <span>{{ app.status }}</span>
+                        <small>{{ app.student?.user?.firstName }} {{ app.student?.user?.lastName }}</small>
+                      </div>
+                      <mat-icon>chevron_right</mat-icon>
+                    </div>
+                  }
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
 
-            <!-- Step 3: Criteria -->
-            <div class="eval-create__section">
-              <h3>Criterios específicos</h3>
-              <div class="eval-create__criteria">
-                @for (criterion of criteria(); track criterion.id; let i = $index) {
-                  <div class="eval-create__criterion">
-                    <label>{{ criterion.name }}</label>
-                    <div class="eval-create__slider-row">
-                      <mat-slider min="1" max="5" step="1" discrete>
-                        <input matSliderThumb [value]="criterion.rating" (valueChange)="onCriterionChange(i, $event)" />
-                      </mat-slider>
-                      <span class="eval-create__slider-val">{{ criterion.rating }}</span>
+        @if (step() === 2) {
+          <mat-card>
+            <mat-card-content>
+              @if (criteriaResource.isLoading()) {
+                <app-skeleton width="100%" height="60px" />
+              } @else {
+                <div class="eval-create__section">
+                  <h3>Puntuación general</h3>
+                  <div class="eval-create__rating">
+                    <app-star-rating [value]="overallScore()" [readonly]="false" size="lg"
+                      (valueChange)="onOverallScoreChange($event)" />
+                    <span class="eval-create__rating-text">{{ overallScore() }} / 5</span>
+                  </div>
+                </div>
+
+                @if (criteria().length > 0) {
+                  <div class="eval-create__section">
+                    <h3>Criterios específicos</h3>
+                    <div class="eval-create__criteria">
+                      @for (c of criteria(); track c.id) {
+                        <div class="eval-create__criterion">
+                          <div class="eval-create__criterion-header">
+                            <span>{{ c.name }}</span>
+                            @if (c.description) {
+                              <small>{{ c.description }}</small>
+                            }
+                          </div>
+                          <app-star-rating
+                            [value]="ratings().find(r => r.criterionId === c.id)?.score ?? 0"
+                            [readonly]="false"
+                            size="sm"
+                            (valueChange)="onCriterionScoreChange(c.id, $event)" />
+                        </div>
+                      }
                     </div>
                   </div>
                 }
-              </div>
-            </div>
 
-            <!-- Step 4: Comment -->
-            <div class="eval-create__section">
-              <h3>Comentario</h3>
-              <mat-form-field appearance="outline" class="eval-create__full-width">
-                <mat-label>Escribe tu evaluación (mínimo 50 caracteres)</mat-label>
-                <textarea
-                  matInput
-                  rows="4"
-                  [ngModel]="comment()"
-                  (ngModelChange)="comment.set($event)">
-                </textarea>
-                <mat-hint>{{ comment().length }} / 50 mínimo</mat-hint>
-              </mat-form-field>
-            </div>
+                <div class="eval-create__section">
+                  <h3>Comentario general</h3>
+                  <mat-form-field appearance="outline" class="eval-create__full-width">
+                    <mat-label>Escribe tu evaluación</mat-label>
+                    <textarea matInput rows="3"
+                      [ngModel]="overallComment()"
+                      (ngModelChange)="overallComment.set($event)">
+                    </textarea>
+                  </mat-form-field>
+                </div>
 
-            <!-- Step 5: Anonymous toggle -->
-            <div class="eval-create__section">
-              <mat-slide-toggle [checked]="isAnonymous()" (change)="isAnonymous.set($event.checked)">
-                Evaluación anónima
-              </mat-slide-toggle>
-              <p class="eval-create__anon-hint">Si activas esta opción, tu nombre no será visible para el evaluado.</p>
-            </div>
+                <div class="eval-create__section">
+                  <h3>Fortalezas</h3>
+                  <mat-form-field appearance="outline" class="eval-create__full-width">
+                    <mat-label>¿Qué hizo bien?</mat-label>
+                    <textarea matInput rows="2"
+                      [ngModel]="strengths()"
+                      (ngModelChange)="strengths.set($event)">
+                    </textarea>
+                  </mat-form-field>
+                </div>
 
-            <!-- Submit -->
-            <div class="eval-create__actions">
-              <button mat-flat-button
-                [disabled]="!canSubmit() || submitting()"
-                (click)="submit()">
-                <mat-icon>send</mat-icon> Enviar Evaluación
-              </button>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
+                <div class="eval-create__section">
+                  <h3>Áreas de mejora</h3>
+                  <mat-form-field appearance="outline" class="eval-create__full-width">
+                    <mat-label>¿Qué puede mejorar?</mat-label>
+                    <textarea matInput rows="2"
+                      [ngModel]="areasForImprovement()"
+                      (ngModelChange)="areasForImprovement.set($event)">
+                    </textarea>
+                  </mat-form-field>
+                </div>
+
+                <div class="eval-create__section">
+                  <mat-slide-toggle [checked]="isAnonymous()"
+                    (change)="isAnonymous.set($event.checked)">
+                    Evaluación anónima
+                  </mat-slide-toggle>
+                </div>
+
+                <div class="eval-create__actions">
+                  <button mat-flat-button
+                    [disabled]="!canSubmit() || submitting()"
+                    (click)="createAndSubmit()">
+                    <mat-icon>send</mat-icon> {{ submitting() ? 'Enviando...' : 'Enviar Evaluación' }}
+                  </button>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+      }
     </div>
