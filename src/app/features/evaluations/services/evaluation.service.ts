@@ -54,4 +54,12 @@ export class EvaluationService extends BaseApiService {
   getAggregateScores(userId: string): Observable<ApiResponse<AggregateScores>> {
     return this.http.get<ApiResponse<AggregateScores>>(`${this.apiUrl}/aggregate/${userId}`);
   }
+
+  getByApplication(applicationId: string): Observable<ApiResponse<Evaluation[]>> {
+    return this.http.get<ApiResponse<Evaluation[]>>(`${this.apiUrl}/application/${applicationId}`);
+  }
+
+  getById(id: string): Observable<ApiResponse<Evaluation>> {
+    return this.http.get<ApiResponse<Evaluation>>(`${this.apiUrl}/${id}`);
+  }
 }

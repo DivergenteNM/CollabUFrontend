@@ -77,6 +77,7 @@ export interface CreateEvaluationDto {
 
 export interface SubmitEvaluationDto {
   ratings: EvaluationRatingDto[];
+  overallScore?: number;
   overallComment?: string;
   strengths?: string;
   areasForImprovement?: string;
