@@ -48,7 +48,7 @@ import { CreateDeliverableDialogComponent } from '../../components/create-delive
     MatInputModule, MatSelectModule, MatDatepickerModule, MatSliderModule, DatePipe, DecimalPipe,
     MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, StatusBadgeComponent, MatchScoreCardComponent,
-    SkillChipListComponent, SkeletonComponent, CreateDeliverableDialogComponent,
+    SkillChipListComponent, SkeletonComponent,
   ],
   templateUrl: './application-review.component.html',
   styleUrl: './application-review.component.scss',

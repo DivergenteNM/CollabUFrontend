@@ -25,7 +25,6 @@ import { StatusBadgeComponent } from '../../../../shared/components/ui/status-ba
   selector: 'app-evaluation-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    DecimalPipe, DatePipe,
     MatButtonModule, MatIconModule, MatCardModule, MatDividerModule,
     MatSnackBarModule,
     StarRatingComponent, SkeletonComponent, StatusBadgeComponent,

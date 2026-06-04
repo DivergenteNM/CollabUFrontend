@@ -27,7 +27,7 @@ import { RelativeTimePipe } from '../../../../shared/pipes';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule,
-    DatePipe, StatCardComponent, StatusBadgeComponent, SkeletonComponent,
+    StatCardComponent, StatusBadgeComponent, SkeletonComponent,
     EmptyStateComponent, RelativeTimePipe,
   ],
   templateUrl: './faculty-dashboard.component.html',
