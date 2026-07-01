@@ -394,7 +394,6 @@ export class AssignSupervisorDialogComponent {
     MatTooltipModule, MatProgressBarModule, MatChipsModule,
     MatDividerModule, MatDialogModule, MatSnackBarModule,
     FormsModule, DatePipe, DecimalPipe, SlicePipe,
-    ProjectDetailDialogComponent,
   ],
   templateUrl: './supervisor-assignments.component.html',
   styleUrl: './supervisor-assignments.component.scss',

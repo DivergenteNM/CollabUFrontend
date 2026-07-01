@@ -36,6 +36,7 @@ import { MatchScoreCardComponent } from '../../../../shared/components/cards/mat
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
+import { CreateDeliverableDialogComponent } from '../../components/create-deliverable-dialog/create-deliverable-dialog.component';
 
 @Component({
   selector: 'app-application-review',
@@ -240,9 +241,8 @@ export class ApplicationReviewComponent {
     });
   }
 
-  reviewDeliverable(applicationId: string, deliverableId: string, status: string): void {
-    this.applicationService.reviewDeliverable(applicationId, deliverableId, {
-      status,
+  reviewDeliverable(applicationId: string, deliverableId: string, status: 'approved' | 'rejected' | 'needs_revision'): void {
+    this.applicationService.reviewDeliverable(applicationId, deliverableId, status, {
       grade: this.reviewGrade(),
       feedback: this.reviewFeedback,
     }).subscribe({
@@ -263,7 +263,30 @@ export class ApplicationReviewComponent {
       approved: 'Aprobado',
       rejected: 'Rechazado',
       revision_requested: 'Revisión solicitada',
+      needs_revision: 'Revisión solicitada',
     };
     return labels[status] ?? status;
+  }
+
+  openCreateDeliverableDialog(): void {
+    const app = this.application();
+    if (!app) return;
+
+    const dialogRef = this.dialog.open(CreateDeliverableDialogComponent, {
+      width: '500px',
+      data: { applicationId: app.id },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.applicationService.createDeliverable(app.id, result).subscribe({
+          next: () => {
+            this.snackBar.open('Entregable creado', 'OK', { duration: 3000 });
+            this.applicationResource.reload();
+          },
+          error: () => this.snackBar.open('Error al crear entregable', 'Cerrar', { duration: 4000 }),
+        });
+      }
+    });
   }
 }

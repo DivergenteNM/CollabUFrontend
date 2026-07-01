@@ -54,14 +54,19 @@ export interface Interview {
 
 export interface Deliverable {
   id: string;
+  applicationId: string;
   title: string;
   description: string;
-  dueDate: string;
+  dueDate?: string;
   submittedAt?: string;
   fileUrl?: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'revision_requested';
+  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'needs_revision';
   grade?: number;
   feedback?: string;
+  createdByUserId?: string;
+  assignedAt?: string;
+  isOverdue?: boolean;
+  attachments?: any[];
 }
 
 export interface MatchBreakdown {

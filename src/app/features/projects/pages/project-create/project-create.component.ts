@@ -107,6 +107,7 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
   readonly tags = signal<string[]>([]);
   readonly requirements = signal<Partial<ProjectRequirement>[]>([]);
   readonly requirementsControls = this.requirements;
+  readonly deliverables = signal<any[]>([]);
 
   private autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -167,6 +168,23 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
   updateRequirement(index: number, field: string, value: any): void {
     this.requirements.update((reqs) =>
       reqs.map((r, i) => (i === index ? { ...r, [field]: value } : r)),
+    );
+  }
+
+  addDeliverable(): void {
+    this.deliverables.update((del) => [
+      ...del,
+      { title: '', description: '', dueDate: '', weightPercentage: 10, isMandatory: true, displayOrder: del.length },
+    ]);
+  }
+
+  removeDeliverable(index: number): void {
+    this.deliverables.update((del) => del.filter((_, i) => i !== index));
+  }
+
+  updateDeliverable(index: number, field: string, value: any): void {
+    this.deliverables.update((del) =>
+      del.map((d, i) => (i === index ? { ...d, [field]: value } : d)),
     );
   }
 
@@ -237,13 +255,29 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
         
         return saveReqs$.pipe(
           concatMap(() => {
-            // Si se debe publicar
-            if (status === ProjectStatus.PENDING_APPROVAL) {
-              return this.projectService.updateStatus(projectId, ProjectStatus.PENDING_APPROVAL).pipe(
-                catchError(() => of(null)) // ignorar error al publicar, el proyecto ya se creó
-              );
-            }
-            return of(null);
+            const deliverableRequests = this.deliverables().map(del => {
+              const delDto = {
+                title: del.title,
+                description: del.description || undefined,
+                dueDate: del.dueDate || undefined,
+                weightPercentage: del.weightPercentage || 10,
+                isMandatory: del.isMandatory ?? true,
+                displayOrder: del.displayOrder ?? 0,
+              };
+              return this.projectService.addDeliverable(projectId, delDto).pipe(catchError(() => of(null)));
+            });
+            const saveDels$ = deliverableRequests.length > 0 ? forkJoin(deliverableRequests) : of([]);
+
+            return saveDels$.pipe(
+              concatMap(() => {
+                if (status === ProjectStatus.PENDING_APPROVAL) {
+                  return this.projectService.updateStatus(projectId, ProjectStatus.PENDING_APPROVAL).pipe(
+                    catchError(() => of(null)),
+                  );
+                }
+                return of(null);
+              })
+            );
           })
         );
       })

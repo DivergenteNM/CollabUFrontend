@@ -33,6 +33,10 @@ function buildStatusMap(): Map<string, StatusConfig> {
   map.set('active',      { label: 'Activo',       icon: 'check_circle',    color: '#2e7d32', bg: '#e8f5e9' });
   map.set('completed',   { label: 'Completado',   icon: 'task_alt',        color: '#1b5e20', bg: '#e8f5e9' });
   map.set('transferred', { label: 'Transferido',  icon: 'swap_horiz',      color: '#1565c0', bg: '#e3f2fd' });
+  // Evaluation statuses
+  map.set('pending',       { label: 'Pendiente',     icon: 'schedule',        color: '#f57c00', bg: '#fff3e0' });
+  map.set('in_progress',   { label: 'En progreso',   icon: 'play_circle',      color: '#0277bd', bg: '#e1f5fe' });
+  map.set('expired',       { label: 'Expirada',      icon: 'history',          color: '#616161', bg: '#f5f5f5' });
   return map;
 }
 

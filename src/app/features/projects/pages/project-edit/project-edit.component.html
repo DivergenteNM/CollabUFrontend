@@ -132,7 +132,7 @@
                     <mat-label>Tipo</mat-label>
                     <mat-select [value]="req.type"
                                 (selectionChange)="updateReq($index, 'type', $event.value)">
-                      <mat-option value="skill">Habilidad</mat-option>
+                      <mat-option value="skill">Habilidad / Competencia </mat-option>
                       <mat-option value="education">Educación</mat-option>
                       <mat-option value="experience">Experiencia</mat-option>
                       <mat-option value="language">Idioma</mat-option>
@@ -187,6 +187,67 @@
                    [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
                    (matChipInputTokenEnd)="addTag($event)" />
           </mat-form-field>
+
+          <div class="project-edit__actions">
+            <button mat-stroked-button matStepperPrevious>Anterior</button>
+            <button mat-flat-button matStepperNext>Siguiente</button>
+          </div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Entregables">
+        <div class="project-edit__form">
+          <h3>Entregables del Proyecto</h3>
+
+          @for (del of deliverables(); track $index) {
+            <mat-card class="project-edit__req-card">
+              <mat-card-content>
+                <div class="project-edit__row">
+                  <mat-form-field appearance="outline" class="flex-1">
+                    <mat-label>Título</mat-label>
+                    <input matInput [value]="del.title"
+                           (input)="updateDel($index, 'title', $any($event.target).value)" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Peso (%)</mat-label>
+                    <input matInput type="number" [value]="del.weightPercentage" min="1" max="100"
+                           (input)="updateDel($index, 'weightPercentage', +$any($event.target).value)" />
+                  </mat-form-field>
+                </div>
+
+                <div class="project-edit__row">
+                  <mat-form-field appearance="outline" class="flex-1">
+                    <mat-label>Descripción</mat-label>
+                    <input matInput [value]="del.description"
+                           (input)="updateDel($index, 'description', $any($event.target).value)" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Fecha límite</mat-label>
+                    <input matInput [value]="del.dueDate | date:'yyyy-MM-dd'"
+                           type="date"
+                           (input)="updateDel($index, 'dueDate', $any($event.target).value)" />
+                  </mat-form-field>
+                </div>
+
+                <div class="project-edit__row">
+                  <mat-slide-toggle
+                    [checked]="del.isMandatory"
+                    (change)="updateDel($index, 'isMandatory', $event.checked)">
+                    Obligatorio
+                  </mat-slide-toggle>
+                  <button mat-icon-button color="warn" aria-label="Eliminar" (click)="removeDel($index)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          <button mat-stroked-button (click)="addDel()">
+            <mat-icon>add</mat-icon> Agregar Entregable
+          </button>
 
           <div class="project-edit__actions">
             <button mat-stroked-button matStepperPrevious>Anterior</button>

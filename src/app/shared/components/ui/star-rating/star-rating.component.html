@@ -12,6 +12,6 @@
     </mat-icon>
   }
 </div>
-@if (readonly() && value() > 0) {
-  <span class="star-rating__value">{{ value().toFixed(1) }}</span>
+@if (readonly() && value() !== null && value() !== undefined) {
+  <span class="star-rating__value">{{ (+value()).toFixed(1) }}</span>
 }

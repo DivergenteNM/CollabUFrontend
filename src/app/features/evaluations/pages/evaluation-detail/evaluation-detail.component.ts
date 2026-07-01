@@ -1,82 +1,144 @@
 import {
-  Component, ChangeDetectionStrategy, inject, input, computed, signal,
+  Component, ChangeDetectionStrategy, inject, signal, computed, OnInit,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { httpResource } from '@angular/common/http';
-import { DatePipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DecimalPipe, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, Evaluation } from '../../../../core/models';
-import { AuthStore } from '../../../../state/auth.store';
+import {
+  Evaluation,
+  ApiResponse,
+  EvaluationType,
+  EvaluationStatus,
+} from '../../../../core/models';
 import { EvaluationService } from '../../services/evaluation.service';
 import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
-import { MatchScoreBarComponent } from '../../../../shared/components/ui/match-score-bar/match-score-bar.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
+import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-evaluation-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FormsModule, DatePipe,
     MatButtonModule, MatIconModule, MatCardModule, MatDividerModule,
-    MatFormFieldModule, MatInputModule, MatSnackBarModule,
-    StarRatingComponent, MatchScoreBarComponent, SkeletonComponent,
+    MatSnackBarModule,
+    StarRatingComponent, SkeletonComponent, StatusBadgeComponent,
   ],
   templateUrl: './evaluation-detail.component.html',
   styleUrl: './evaluation-detail.component.scss',
 })
-export class EvaluationDetailComponent {
+export class EvaluationDetailComponent implements OnInit {
   readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly evaluationService = inject(EvaluationService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly authStore = inject(AuthStore);
 
-  readonly id = input.required<string>();
+  readonly isLoading = signal(true);
+  readonly evaluation = signal<Evaluation | null>(null);
+  readonly projectName = signal('');
+  readonly companyName = signal('');
+  readonly studentName = signal('');
+  readonly evaluatorRole = signal('');
 
-  readonly showReplyForm = signal(false);
-  readonly replyText = signal('');
-  readonly replying = signal(false);
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadEvaluation(id);
+    } else {
+      this.router.navigate(['/my-evaluations']);
+    }
+  }
 
-  readonly evalResource = httpResource<ApiResponse<Evaluation>>(
-    () => ({
-      url: `${environment.apiUrl}/evaluations/${this.id()}`,
-    }),
-  );
-
-  readonly evaluation = computed(() =>
-    this.evalResource.value()?.data ?? null,
-  );
-
-  readonly isReceivedEvaluation = computed(() => {
-    const ev = this.evaluation();
-    if (!ev) return false;
-    return ev.evaluatedId === this.authStore.user()?.id;
-  });
-
-  submitReply(): void {
-    const text = this.replyText().trim();
-    if (!text) return;
-    this.replying.set(true);
-
-    this.evaluationService.respondToEvaluation(this.id(), text).subscribe({
-      next: () => {
-        this.snackBar.open('Respuesta enviada', 'OK', { duration: 3000 });
-        this.evalResource.reload();
-        this.showReplyForm.set(false);
-        this.replying.set(false);
+  private loadEvaluation(id: string): void {
+    this.isLoading.set(true);
+    this.evaluationService.getById(id).subscribe({
+      next: (response) => {
+        console.log('Evaluation response:', response);
+        // Backend returns raw Evaluation object, not wrapped in {data:}
+        const evalData = response?.data ?? response;
+        if (!evalData || typeof evalData !== 'object') {
+          this.snackBar.open('Evaluación no encontrada', 'OK', { duration: 3000 });
+          this.router.navigate(['/my-evaluations']);
+          return;
+        }
+        this.evaluation.set(evalData as Evaluation);
+        this.loadRelatedData(evalData as Evaluation);
       },
-      error: () => {
-        this.snackBar.open('Error al enviar la respuesta', 'Cerrar', { duration: 4000 });
-        this.replying.set(false);
+      error: (err) => {
+        console.error('Error loading evaluation:', err);
+        const message = err?.error?.message || 'Error al cargar la evaluación';
+        this.snackBar.open(message, 'OK', { duration: 3000 });
+        this.router.navigate(['/my-evaluations']);
       },
     });
+  }
+
+  private loadRelatedData(evaluation: Evaluation): void {
+    this.projectName.set('Proyecto #' + evaluation.projectId.substring(0, 8));
+    this.companyName.set('Empresa #' + evaluation.evaluatedId.substring(0, 8));
+    this.studentName.set('Estudiante #' + evaluation.evaluatorId.substring(0, 8));
+
+    if (evaluation.evaluationType === EvaluationType.STUDENT_EVALUATES_COMPANY) {
+      this.evaluatorRole.set('Estudiante');
+    } else if (evaluation.evaluationType === EvaluationType.COMPANY_EVALUATES_STUDENT) {
+      this.evaluatorRole.set('Empresa');
+    } else {
+      this.evaluatorRole.set('Supervisor');
+    }
+
+    this.isLoading.set(false);
+  }
+
+  readonly statusLabel = computed(() => {
+    const status = this.evaluation()?.status;
+    if (!status) return '';
+    const labels: Record<EvaluationStatus, string> = {
+      [EvaluationStatus.PENDING]: 'Pendiente',
+      [EvaluationStatus.IN_PROGRESS]: 'En progreso',
+      [EvaluationStatus.COMPLETED]: 'Completada',
+      [EvaluationStatus.EXPIRED]: 'Expirada',
+    };
+    return labels[status] ?? status;
+  });
+
+  readonly typeLabel = computed(() => {
+    const type = this.evaluation()?.evaluationType;
+    if (!type) return '';
+    const labels: Record<EvaluationType, string> = {
+      [EvaluationType.COMPANY_EVALUATES_STUDENT]: 'Empresa evalúa estudiante',
+      [EvaluationType.STUDENT_EVALUATES_COMPANY]: 'Estudiante evalúa empresa',
+      [EvaluationType.SUPERVISOR_EVALUATES_STUDENT]: 'Supervisor evalúa estudiante',
+      [EvaluationType.SELF_EVALUATION]: 'Auto-evaluación',
+    };
+    return labels[type] ?? type;
+  });
+
+  readonly overallScoreDisplay = computed(() => {
+    const score = this.evaluation()?.overallScore;
+    return score != null ? score : 0;
+  });
+
+  readonly hasRatings = computed(() => {
+    const ratings = this.evaluation()?.ratings;
+    return ratings && ratings.length > 0;
+  });
+
+  readonly formattedDate = computed(() => {
+    const date = this.evaluation()?.createdAt;
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('es-CO', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  });
+
+  onBack(): void {
+    this.router.navigate(['/my-evaluations']);
   }
 }
