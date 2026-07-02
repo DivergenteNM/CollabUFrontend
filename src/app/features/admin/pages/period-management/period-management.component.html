@@ -1,0 +1,72 @@
+
+    <div class="periods">
+      <div class="periods__header">
+        <h1>Periodos Académicos</h1>
+        <button mat-flat-button color="primary" (click)="openDialog()">
+          <mat-icon>add</mat-icon>
+          Crear Periodo
+        </button>
+      </div>
+
+      @if (resource.isLoading()) {
+        <p>Cargando periodos...</p>
+      }
+
+      <div class="periods__list">
+        @for (period of periods(); track period.id) {
+          <mat-card class="period-card" [class.active]="period.isCurrent">
+            <mat-card-header>
+              <mat-card-title>{{ period.name }}</mat-card-title>
+              <mat-card-subtitle>{{
+                period.status === 'active' ? 'Activo' :
+                period.status === 'planning' ? 'Planificación' :
+                period.status === 'closed' ? 'Cerrado' : 'Archivado'
+              }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="period-info">
+                <div class="period-dates">
+                  <span><mat-icon>event</mat-icon> {{ period.startDate | date:'d MMM yyyy' }} — {{ period.endDate | date:'d MMM yyyy' }}</span>
+                </div>
+                @if (period.enrollmentStart) {
+                  <div class="period-deadline">
+                    <span><mat-icon>schedule</mat-icon> Inscripciones: {{ period.enrollmentStart | date:'d MMM yyyy' }} — {{ period.enrollmentEnd | date:'d MMM yyyy' }}</span>
+                  </div>
+                }
+              </div>
+              <mat-chip-set>
+                @if (period.status === 'active') {
+                  <mat-chip class="chip-active">Activo</mat-chip>
+                } @else if (period.status === 'planning') {
+                  <mat-chip>Planificación</mat-chip>
+                } @else if (period.status === 'closed') {
+                  <mat-chip>Cerrado</mat-chip>
+                } @else {
+                  <mat-chip>Archivado</mat-chip>
+                }
+                @if (period.isCurrent) {
+                  <mat-chip class="chip-active">Periodo actual</mat-chip>
+                }
+              </mat-chip-set>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button (click)="openDialog(period)">
+                <mat-icon>edit</mat-icon>
+                Editar
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        } @empty {
+          @if (!resource.isLoading()) {
+            <mat-card>
+              <mat-card-content>
+                <div class="empty">
+                  <mat-icon>calendar_month</mat-icon>
+                  <p>No hay periodos académicos registrados</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        }
+      </div>
+    </div>

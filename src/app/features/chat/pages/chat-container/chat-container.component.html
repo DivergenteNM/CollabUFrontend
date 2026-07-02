@@ -1,0 +1,16 @@
+<div class="chat-layout" [class.mobile]="uiStore.isMobile()">
+  <aside class="chat-layout__sidebar"
+    [class.hidden-mobile]="uiStore.isMobile() && hasActiveConversation()">
+    <app-chat-search (searchChange)="searchQuery.set($event)" />
+    <app-conversation-list
+      [conversations]="filteredConversations()"
+      [activeId]="activeConversationId()"
+      [currentUserId]="authStore.user()?.id ?? ''"
+      (select)="onSelectConversation($event)" />
+  </aside>
+
+  <section class="chat-layout__main"
+    [class.hidden-mobile]="uiStore.isMobile() && !hasActiveConversation()">
+    <router-outlet />
+  </section>
+</div>

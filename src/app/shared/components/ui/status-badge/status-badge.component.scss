@@ -1,0 +1,32 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+  color: var(--badge-color);
+  background-color: var(--badge-bg);
+  white-space: nowrap;
+}
+
+:host(.status-badge--sm) {
+  font-size: 0.75rem;
+  padding: 1px 8px;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+:host(.status-badge--md) {
+  font-size: 0.8125rem;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}

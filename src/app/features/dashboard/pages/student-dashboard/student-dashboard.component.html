@@ -1,0 +1,173 @@
+<div class="student-dashboard">
+  <section class="dashboard__stats">
+    @if (profileResource.isLoading()) {
+      @for (_ of [1,2,3,4]; track $index) {
+        <app-skeleton width="100%" height="120px" />
+      }
+    } @else {
+      <app-stat-card
+        icon="person"
+        [value]="profileCompleteness() + '%'"
+        label="Perfil Completo"
+        color="primary"
+        [clickable]="true"
+        (clicked)="router.navigate(['/profile'])" />
+      <app-stat-card
+        icon="description"
+        [value]="activeApplicationsCount()"
+        label="Aplicaciones Activas"
+        color="accent"
+        [clickable]="true"
+        (clicked)="router.navigate(['/my-applications'])" />
+      <app-stat-card
+        icon="recommend"
+        [value]="recommendationsCount()"
+        label="Recomendaciones"
+        color="primary" />
+      <app-stat-card
+        icon="schedule"
+        [value]="practiceHoursLabel()"
+        label="Horas de Práctica"
+        color="warn" />
+      <app-stat-card
+        icon="insights"
+        value="Ver métricas"
+        label="Mis Analytics"
+        color="primary"
+        [clickable]="true"
+        (clicked)="router.navigate(['/my-analytics'])" />
+    }
+  </section>
+
+  <section class="dashboard__grid">
+    <mat-card class="dashboard__section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>auto_awesome</mat-icon> Proyectos Recomendados
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (recommendationsResource.isLoading()) {
+          @for (_ of [1,2,3]; track $index) {
+            <app-skeleton width="100%" height="180px" />
+          }
+        } @else if (recommendations().length === 0) {
+          <app-empty-state
+            icon="search"
+            title="Sin recomendaciones"
+            message="Completa tu perfil para recibir proyectos recomendados."
+            actionLabel="Completar Perfil"
+            (actionClicked)="router.navigate(['/profile'])" />
+        } @else {
+          <div class="dashboard__recommendations">
+            @for (rec of recommendations(); track rec.id) {
+              <app-project-card
+                [project]="rec.project"
+                [matchScore]="rec.matchScore"
+                (viewDetail)="router.navigate(['/projects', $event])"
+                (apply)="router.navigate(['/projects', $event])" />
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    @defer (on viewport) {
+      <mat-card class="dashboard__section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>notifications</mat-icon> Notificaciones Recientes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (notificationsStore.recentNotifications().length === 0) {
+            <app-empty-state
+              icon="notifications_none"
+              title="Sin notificaciones"
+              message="No tienes notificaciones recientes." />
+          } @else {
+            <div class="dashboard__notifications-list">
+              @for (n of notificationsStore.recentNotifications(); track n.id) {
+                <div class="notification-item" [class.unread]="!n.isRead">
+                  <mat-icon class="notification-item__icon">
+                    {{ n.isRead ? 'notifications_none' : 'notifications_active' }}
+                  </mat-icon>
+                  <div class="notification-item__content">
+                    <span class="notification-item__title">{{ n.title }}</span>
+                    <span class="notification-item__message">{{ n.message }}</span>
+                    <span class="notification-item__time">{{ n.createdAt | relativeTime }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <button mat-button class="dashboard__view-all"
+                    (click)="router.navigate(['/notifications'])">
+              Ver todas las notificaciones
+            </button>
+          }
+        </mat-card-content>
+      </mat-card>
+    } @placeholder {
+      <app-skeleton width="100%" height="300px" />
+    }
+  </section>
+
+  @defer (on viewport) {
+    <section class="dashboard__applications">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>assignment</mat-icon> Mis Aplicaciones Activas
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (applicationsResource.isLoading()) {
+            @for (_ of [1,2,3]; track $index) {
+              <app-skeleton width="100%" height="48px" />
+            }
+          } @else if (applications().length === 0) {
+            <app-empty-state
+              icon="assignment"
+              title="Sin aplicaciones activas"
+              message="Explora proyectos y envía tu primera aplicación."
+              actionLabel="Ver Proyectos"
+              (actionClicked)="router.navigate(['/projects'])" />
+          } @else {
+            <div class="dashboard__table">
+              <div class="dashboard__table-header">
+                <span>Proyecto</span>
+                <span>Empresa</span>
+                <span>Estado</span>
+                <span>Match</span>
+              </div>
+              @for (app of applications(); track app.id) {
+                <div class="dashboard__table-row"
+                     (click)="router.navigate(['/my-applications', app.id])"
+                     (keydown.enter)="router.navigate(['/my-applications', app.id])"
+                     tabindex="0"
+                     role="button">
+                  <span class="truncate">{{ app.project?.title || 'Proyecto' }}</span>
+                  <span class="truncate">{{ app.project?.companyName || '—' }}</span>
+                  <span><app-status-badge [status]="app.status" size="sm" /></span>
+                  <span>
+                    @if (app.matchScore) {
+                      <app-match-score-bar [score]="app.matchScore" size="sm" />
+                    } @else {
+                      —
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+            <button mat-button class="dashboard__view-all"
+                    (click)="router.navigate(['/my-applications'])">
+              Ver todas las aplicaciones
+            </button>
+          }
+        </mat-card-content>
+      </mat-card>
+    </section>
+  } @placeholder {
+    <app-skeleton width="100%" height="250px" />
+  }
+</div>

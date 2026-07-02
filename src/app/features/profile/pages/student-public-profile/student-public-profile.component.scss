@@ -1,0 +1,104 @@
+.public-profile {
+  max-width: 800px;
+  margin: 0 auto;
+
+  > button:first-child {
+    margin-bottom: 16px;
+  }
+}
+
+.profile-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--mat-sys-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.profile-info h2 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
+
+.profile-info p {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.section {
+  margin-bottom: 24px;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+}
+
+.skills-detailed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .skill-level {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-left: 4px;
+  }
+}
+
+.experience-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  strong {
+    display: block;
+  }
+
+  .exp-company {
+    font-size: 0.875rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  p {
+    margin-top: 8px;
+    font-size: 0.9375rem;
+  }
+}
+
+.links {
+  display: flex;
+  gap: 16px;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--mat-sys-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

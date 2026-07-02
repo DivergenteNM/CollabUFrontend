@@ -1,0 +1,80 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+  @if (errorMessage()) {
+    <div class="login-form__error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <mat-form-field appearance="outline" class="login-form__field">
+    <mat-label>Email</mat-label>
+    <input matInput formControlName="email" type="email" autocomplete="email" />
+    <mat-icon matPrefix>email</mat-icon>
+    @if (form.controls.email.hasError('required')) {
+      <mat-error>El email es requerido</mat-error>
+    } @else if (form.controls.email.hasError('email')) {
+      <mat-error>Ingresa un email válido</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="login-form__field">
+    <mat-label>Contraseña</mat-label>
+    <input
+      matInput
+      formControlName="password"
+      [type]="showPassword() ? 'text' : 'password'"
+      autocomplete="current-password"
+    />
+    <mat-icon matPrefix>lock</mat-icon>
+    <button
+      mat-icon-button
+      matSuffix
+      type="button"
+      (click)="showPassword.set(!showPassword())"
+      [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+    >
+      <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+    </button>
+    @if (form.controls.password.hasError('required')) {
+      <mat-error>La contraseña es requerida</mat-error>
+    } @else if (form.controls.password.hasError('minlength')) {
+      <mat-error>Mínimo 8 caracteres</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-checkbox formControlName="rememberMe" class="login-form__remember">
+    Recordarme
+  </mat-checkbox>
+
+  <button
+    mat-flat-button
+    color="primary"
+    type="submit"
+    class="login-form__submit"
+    [disabled]="isSubmitting()"
+  >
+    @if (isSubmitting()) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      Iniciar Sesión
+    }
+  </button>
+
+  <div class="login-form__link">
+    <a routerLink="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
+  </div>
+
+  <div class="login-form__divider">
+    <span>o continuar con</span>
+  </div>
+
+  <button mat-stroked-button type="button" class="login-form__oauth">
+    <mat-icon>school</mat-icon>
+    Iniciar con correo UDENAR
+  </button>
+
+  <p class="login-form__register">
+    ¿No tienes cuenta?
+    <a routerLink="/auth/register">Regístrate</a>
+  </p>
+</form>

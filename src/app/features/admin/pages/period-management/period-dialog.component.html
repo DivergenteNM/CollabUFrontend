@@ -1,0 +1,48 @@
+
+    <h2 mat-dialog-title>{{ data ? 'Editar Periodo' : 'Crear Periodo' }}</h2>
+    <mat-dialog-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre del periodo</mat-label>
+        <input matInput [(ngModel)]="form.name" placeholder="2026-A" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <input matInput [(ngModel)]="form.description" placeholder="Primer semestre 2026" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha inicio</mat-label>
+        <input matInput type="date" [(ngModel)]="form.startDate" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha fin</mat-label>
+        <input matInput type="date" [(ngModel)]="form.endDate" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Inicio inscripciones</mat-label>
+        <input matInput type="date" [(ngModel)]="form.enrollmentStart" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Cierre inscripciones</mat-label>
+        <input matInput type="date" [(ngModel)]="form.enrollmentEnd" />
+      </mat-form-field>
+      @if (data) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Estado</mat-label>
+          <mat-select [(ngModel)]="form.status">
+            <mat-option value="planning">Planificación</mat-option>
+            <mat-option value="active">Activo</mat-option>
+            <mat-option value="closed">Cerrado</mat-option>
+            <mat-option value="archived">Archivado</mat-option>
+          </mat-select>
+        </mat-form-field>
+      }
+      <mat-checkbox [(ngModel)]="form.isCurrent">Periodo actual</mat-checkbox>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="dialogRef.close(null)">Cancelar</button>
+      <button mat-flat-button color="primary"
+        [disabled]="!form.name || !form.startDate || !form.endDate"
+        (click)="dialogRef.close(form)">
+        {{ data ? 'Guardar' : 'Crear' }}
+      </button>
+    </mat-dialog-actions>

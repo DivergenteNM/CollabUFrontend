@@ -1,0 +1,38 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.chat-layout {
+  display: flex;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.chat-layout__sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface);
+}
+
+.chat-layout__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-layout.mobile .chat-layout__sidebar {
+  width: 100%;
+}
+
+.chat-layout.mobile .chat-layout__main {
+  width: 100%;
+}
+
+.chat-layout.mobile .hidden-mobile {
+  display: none;
+}

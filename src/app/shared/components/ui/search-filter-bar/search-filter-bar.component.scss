@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-bar__field {
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.filter-bar__chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-bar__chips-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+}
+
+.filter-bar__clear {
+  color: var(--mat-sys-error);
+}

@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.applicants__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.applicants__student {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.applicants__student-name {
+  font-weight: 500;
+}
+
+.applicants__score {
+  font-weight: 600;
+  font-size: 0.875rem;
+
+  &.high { color: var(--mat-sys-primary); }
+  &.mid { color: #f59e0b; }
+  &.low { color: var(--mat-sys-error); }
+}

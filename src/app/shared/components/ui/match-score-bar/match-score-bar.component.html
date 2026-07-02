@@ -1,0 +1,15 @@
+@if (label()) {
+  <span class="match-score-bar__label">{{ label() }}</span>
+}
+<div class="match-score-bar__track">
+  <div
+    class="match-score-bar__fill"
+    [style.width.%]="clampedScore()"
+    [style.background-color]="barColor()">
+  </div>
+</div>
+@if (showPercentage()) {
+  <span class="match-score-bar__percent" [style.color]="barColor()">
+    {{ clampedScore() }}%
+  </span>
+}

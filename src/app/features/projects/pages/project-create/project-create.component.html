@@ -1,0 +1,323 @@
+<div class="project-create">
+  <h1>Crear Proyecto</h1>
+
+  <mat-stepper linear #stepper>
+    <mat-step [stepControl]="infoForm" label="Información General">
+      <form [formGroup]="infoForm" class="project-create__form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Título del Proyecto</mat-label>
+          <input matInput formControlName="title" placeholder="Ej: Desarrollo de App Móvil" />
+          <mat-error>Título requerido (mín. 5 caracteres)</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="description" rows="6"
+                    placeholder="Describe las actividades, objetivos y alcance del proyecto..."></textarea>
+          <mat-error>Descripción requerida (mín. 50 caracteres)</mat-error>
+        </mat-form-field>
+
+        <div class="project-create__row">
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de Proyecto</mat-label>
+            <mat-select formControlName="projectType">
+              @for (type of projectTypes; track type.value) {
+                <mat-option [value]="type.value">{{ type.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-error>Selecciona un tipo</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Posiciones Disponibles</mat-label>
+            <input matInput type="number" formControlName="positionsAvailable" min="1" />
+            <mat-error>Mín. 1 posición</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="project-create__row">
+          <mat-slide-toggle formControlName="isRemote">Remoto</mat-slide-toggle>
+
+          @if (!infoForm.value.isRemote) {
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Ubicación</mat-label>
+              <input matInput formControlName="location" />
+            </mat-form-field>
+          }
+        </div>
+
+        <div class="project-create__row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Horas Semanales (Opcional)</mat-label>
+            <input matInput type="number" formControlName="weeklyHours" min="1" placeholder="Ej: 10" />
+            <mat-error>Mínimo 1 hora semanal</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Horas Totales (Opcional)</mat-label>
+            <input matInput type="number" formControlName="totalHours" min="1" placeholder="Ej: 120" />
+            @if (infoForm.get('totalHours')?.hasError('totalLessThanWeekly')) {
+              <mat-error>Las horas totales no pueden ser menores a las semanales</mat-error>
+            } @else {
+              <mat-error>Mínimo 1 hora total</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="project-create__row">
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de Inicio</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+            <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+            <mat-datepicker #startPicker />
+            <mat-error>Fecha requerida</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de Fin</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+            <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+            <mat-datepicker #endPicker />
+            @if (infoForm.get('endDate')?.hasError('endBeforeStart')) {
+              <mat-error>Debe ser posterior al inicio</mat-error>
+            } @else {
+              <mat-error>Fecha requerida</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Límite de Aplicaciones</mat-label>
+            <input matInput [matDatepicker]="deadlinePicker" formControlName="applicationDeadline" />
+            <mat-datepicker-toggle matIconSuffix [for]="deadlinePicker" />
+            <mat-datepicker #deadlinePicker />
+            @if (infoForm.get('applicationDeadline')?.hasError('deadlineAfterStart')) {
+              <mat-error>Debe ser anterior al inicio</mat-error>
+            } @else {
+              <mat-error>Fecha requerida</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <h3>Perfil Académico Ideal (Opcional)</h3>
+        <div class="project-create__row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Carreras Relacionadas</mat-label>
+            <mat-select formControlName="academicPrograms" multiple>
+              @for (program of programs; track program) {
+                <mat-option [value]="program">{{ program }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Semestre Mínimo</mat-label>
+            <input matInput type="number" formControlName="minimumSemester" min="1" max="12" />
+            <mat-error>Entre 1 y 12</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="project-create__step-actions">
+          <button mat-flat-button matStepperNext [disabled]="infoForm.invalid">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step label="Requisitos">
+      <div class="project-create__form">
+        <h3>Requisitos del Proyecto</h3>
+
+        @for (req of requirementsControls(); track $index) {
+          <mat-card class="project-create__req-card">
+            <mat-card-content>
+              <div class="project-create__row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tipo</mat-label>
+                  <mat-select [value]="req.type"
+                              (selectionChange)="updateRequirement($index, 'type', $event.value)">
+                    <mat-option value="skill">Habilidad / Competencia </mat-option>
+                    <mat-option value="education">Educación</mat-option>
+                    <mat-option value="experience">Experiencia</mat-option>
+                    <mat-option value="language">Idioma</mat-option>
+                    <mat-option value="other">Otro</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput [value]="req.name"
+                         (input)="updateRequirement($index, 'name', $any($event.target).value)" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Nivel</mat-label>
+                  <mat-select [value]="req.proficiencyLevel"
+                              (selectionChange)="updateRequirement($index, 'proficiencyLevel', $event.value)">
+                    <mat-option value="basic">Básico</mat-option>
+                    <mat-option value="intermediate">Intermedio</mat-option>
+                    <mat-option value="advanced">Avanzado</mat-option>
+                    <mat-option value="expert">Experto</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="project-create__row">
+                <mat-slide-toggle
+                  [checked]="req.isMandatory"
+                  (change)="updateRequirement($index, 'isMandatory', $event.checked)">
+                  Obligatorio
+                </mat-slide-toggle>
+                <button mat-icon-button color="warn" aria-label="Eliminar requisito" (click)="removeRequirement($index)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <button mat-stroked-button (click)="addRequirement()">
+          <mat-icon>add</mat-icon> Agregar Requisito
+        </button>
+
+        <h3 style="margin-top: 24px">Tags</h3>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Tags del Proyecto</mat-label>
+          <mat-chip-grid #chipGrid>
+            @for (tag of tags(); track tag) {
+              <mat-chip-row (removed)="removeTag(tag)">
+                {{ tag }}
+                <button matChipRemove><mat-icon>cancel</mat-icon></button>
+              </mat-chip-row>
+            }
+          </mat-chip-grid>
+          <input matInput placeholder="Agregar tag..."
+                 [matChipInputFor]="chipGrid"
+                 [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
+                 (matChipInputTokenEnd)="addTag($event)" />
+        </mat-form-field>
+
+        <div class="project-create__step-actions">
+          <button mat-stroked-button matStepperPrevious>Anterior</button>
+          <button mat-flat-button matStepperNext>Siguiente</button>
+        </div>
+      </div>
+    </mat-step>
+
+    <mat-step label="Entregables">
+      <div class="project-create__form">
+        <h3>Entregables del Proyecto</h3>
+
+        @for (del of deliverables(); track $index) {
+          <mat-card class="project-create__req-card">
+            <mat-card-content>
+              <div class="project-create__row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Título</mat-label>
+                  <input matInput [value]="del.title"
+                         (input)="updateDeliverable($index, 'title', $any($event.target).value)" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Peso (%)</mat-label>
+                  <input matInput type="number" [value]="del.weightPercentage" min="1" max="100"
+                         (input)="updateDeliverable($index, 'weightPercentage', +$any($event.target).value)" />
+                </mat-form-field>
+              </div>
+
+              <div class="project-create__row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Descripción</mat-label>
+                  <input matInput [value]="del.description"
+                         (input)="updateDeliverable($index, 'description', $any($event.target).value)" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha límite</mat-label>
+                  <input matInput [value]="del.dueDate" type="date"
+                         (input)="updateDeliverable($index, 'dueDate', $any($event.target).value)" />
+                </mat-form-field>
+              </div>
+
+              <div class="project-create__row">
+                <mat-slide-toggle
+                  [checked]="del.isMandatory"
+                  (change)="updateDeliverable($index, 'isMandatory', $event.checked)">
+                  Obligatorio
+                </mat-slide-toggle>
+                <button mat-icon-button color="warn" aria-label="Eliminar entregable" (click)="removeDeliverable($index)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <button mat-stroked-button (click)="addDeliverable()">
+          <mat-icon>add</mat-icon> Agregar Entregable
+        </button>
+
+        <div class="project-create__step-actions">
+          <button mat-stroked-button matStepperPrevious>Anterior</button>
+          <button mat-flat-button matStepperNext>Siguiente</button>
+        </div>
+      </div>
+    </mat-step>
+
+    <mat-step label="Revisión">
+      <div class="project-create__form">
+        <h3>Vista Previa</h3>
+
+        <mat-card class="project-create__preview">
+          <mat-card-content>
+            <h2>{{ infoForm.value.title || 'Sin título' }}</h2>
+            <p class="project-create__preview-meta">
+              <span>{{ getProjectTypeLabel(infoForm.value.projectType) }}</span>
+              <span>{{ infoForm.value.isRemote ? 'Remoto' : infoForm.value.location }}</span>
+              <span>{{ infoForm.value.positionsAvailable }} posiciones</span>
+              @if (infoForm.value.weeklyHours) {
+                <span>• {{ infoForm.value.weeklyHours }}h/sem</span>
+              }
+              @if (infoForm.value.totalHours) {
+                <span>• {{ infoForm.value.totalHours }}h tot</span>
+              }
+            </p>
+
+            <h4>Descripción</h4>
+            <p class="project-create__preview-desc">{{ infoForm.value.description }}</p>
+
+            @if (requirementsControls().length > 0) {
+              <h4>Requisitos ({{ requirementsControls().length }})</h4>
+              <ul>
+                @for (req of requirementsControls(); track $index) {
+                  <li>
+                    <strong>{{ req.name }}</strong> — {{ req.type }}
+                    @if (req.proficiencyLevel) { ({{ req.proficiencyLevel }}) }
+                    @if (req.isMandatory) { <em>*obligatorio</em> }
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (tags().length > 0) {
+              <h4>Tags</h4>
+              <div class="project-create__preview-tags">
+                @for (tag of tags(); track tag) {
+                  <span class="tag-chip">{{ tag }}</span>
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <div class="project-create__step-actions">
+          <button mat-stroked-button matStepperPrevious>Anterior</button>
+          <button mat-stroked-button (click)="saveDraft()" [disabled]="submitting()">
+            Guardar Borrador
+          </button>
+          <button mat-flat-button (click)="publish()" [disabled]="infoForm.invalid || submitting()">
+            Publicar
+          </button>
+        </div>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

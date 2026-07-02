@@ -1,0 +1,36 @@
+@use '../../../../../styles/mixins' as mx;
+
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.main-layout {
+  height: 100%;
+}
+
+.main-layout__sidenav {
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  width: var(--sidebar-width);
+}
+
+.main-layout__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.main-layout__main {
+  flex: 1;
+  padding: 16px 24px 24px;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@include mx.xs {
+  .main-layout__main {
+    padding: 12px 16px 16px;
+  }
+}

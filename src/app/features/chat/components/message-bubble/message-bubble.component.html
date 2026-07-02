@@ -1,0 +1,41 @@
+@if (message().messageType === 'system') {
+  <div class="bubble__system">{{ message().content }}</div>
+} @else {
+  <div class="bubble__wrapper">
+    @if (!isMine()) {
+      <div class="bubble__avatar">
+        <mat-icon>person</mat-icon>
+      </div>
+    }
+
+    <div class="bubble__content">
+      @if (!isMine()) {
+        <span class="bubble__sender">{{ message().senderName }}</span>
+      }
+
+      <div class="bubble__body">
+        @if (message().messageType === 'file') {
+          <a class="bubble__file" [href]="message().fileUrl" target="_blank" rel="noopener">
+            <mat-icon>attach_file</mat-icon>
+            {{ message().fileName ?? 'Archivo adjunto' }}
+          </a>
+        }
+        @if (message().content) {
+          <p class="bubble__text">{{ message().content }}</p>
+        }
+      </div>
+
+      <div class="bubble__footer">
+        <span class="bubble__time">{{ message().createdAt | date:'HH:mm' }}</span>
+        @if (isMine()) {
+          <mat-icon class="bubble__status" [class.read]="message().isRead">
+            {{ message().isRead ? 'done_all' : 'done' }}
+          </mat-icon>
+        }
+        @if (sending()) {
+          <mat-icon class="bubble__sending">schedule</mat-icon>
+        }
+      </div>
+    </div>
+  </div>
+}

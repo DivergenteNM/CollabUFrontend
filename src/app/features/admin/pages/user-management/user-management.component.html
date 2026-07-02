@@ -1,0 +1,155 @@
+
+<div class="user-mgmt">
+
+  <div class="user-mgmt__header">
+    <div class="header-left">
+      <h1>Gestión de Usuarios</h1>
+      @if (total() > 0) {
+        <span class="total-badge">{{ total() }} usuarios</span>
+      }
+    </div>
+    <button mat-flat-button color="primary" (click)="createUser()">
+      <mat-icon>person_add</mat-icon> Nuevo usuario
+    </button>
+  </div>
+
+  <div class="user-mgmt__filters">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)"
+        placeholder="Buscar por email..." />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Rol</mat-label>
+      <mat-select [value]="roleFilter()" (selectionChange)="roleFilter.set($event.value)">
+        <mat-option value="">Todos los roles</mat-option>
+        <mat-option value="student">Estudiante</mat-option>
+        <mat-option value="company">Empresa</mat-option>
+        <mat-option value="faculty">Docente</mat-option>
+        <mat-option value="admin">Administrador</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado</mat-label>
+      <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value)">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="true">Activo</mat-option>
+        <mat-option value="false">Inactivo</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (resource.isLoading()) {
+    <mat-progress-bar mode="indeterminate" class="loading-bar" />
+  }
+
+  <div class="table-card">
+    <table mat-table [dataSource]="users()">
+
+      <!-- Email / Avatar -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Usuario</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="user-cell">
+            <div class="user-avatar" [attr.data-role]="row.role">
+              {{ row.email[0].toUpperCase() }}
+            </div>
+            <span class="user-email-text">{{ row.email }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Rol -->
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef>Rol</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="role-badge role-badge--{{ row.role }}">
+            {{ getRoleLabel(row.role) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-pill" [class.status-pill--on]="row.isActive" [class.status-pill--off]="!row.isActive">
+            <span class="status-dot"></span>
+            {{ row.isActive ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Verificado -->
+      <ng-container matColumnDef="verified">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let row">
+          @if (row.isVerified) {
+            <span class="verified-chip verified-chip--yes">
+              <mat-icon>verified</mat-icon> Verificado
+            </span>
+          } @else {
+            <span class="verified-chip verified-chip--no">
+              <mat-icon>pending</mat-icon> Pendiente
+            </span>
+          }
+        </td>
+      </ng-container>
+
+      <!-- Último acceso -->
+      <ng-container matColumnDef="lastLogin">
+        <th mat-header-cell *matHeaderCellDef>Último acceso</th>
+        <td mat-cell *matCellDef="let row" class="date-cell">
+          {{ row.lastLogin ? (row.lastLogin | date:'d MMM y, HH:mm') : '—' }}
+        </td>
+      </ng-container>
+
+      <!-- Registro -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Registro</th>
+        <td mat-cell *matCellDef="let row" class="date-cell">
+          {{ row.createdAt | date:'d MMM y' }}
+        </td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row">
+          <div class="row-actions">
+            <button mat-icon-button matTooltip="Editar usuario"
+              (click)="editUser(row); $event.stopPropagation()">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Eliminar usuario" class="delete-btn"
+              (click)="deleteUser(row); $event.stopPropagation()">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
+    </table>
+
+    @if (users().length === 0 && !resource.isLoading()) {
+      <div class="empty-state">
+        <mat-icon>manage_accounts</mat-icon>
+        <p>No se encontraron usuarios</p>
+      </div>
+    }
+  </div>
+
+  <mat-paginator
+    [length]="total()"
+    [pageSize]="10"
+    [pageIndex]="page() - 1"
+    [pageSizeOptions]="[10, 25, 50]"
+    (page)="onPage($event)"
+    showFirstLastButtons />
+
+</div>

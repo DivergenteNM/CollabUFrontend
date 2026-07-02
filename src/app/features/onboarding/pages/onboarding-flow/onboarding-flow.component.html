@@ -1,0 +1,425 @@
+<div class="onboarding-flow">
+  <header class="onboarding-flow__header">
+    <div>
+      <p class="onboarding-flow__eyebrow">Primer acceso</p>
+      <h1>Completa tu onboarding</h1>
+      <p>
+        Para continuar al dashboard debes completar tu perfil base y los requisitos mínimos del rol.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <mat-card>
+      <mat-card-content class="onboarding-flow__loading">
+        <mat-spinner diameter="42" />
+        <p>Cargando tu información actual...</p>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card>
+      <mat-card-content>
+        <mat-stepper #stepper>
+          <mat-step label="Perfil base">
+            <form [formGroup]="userForm" class="onboarding-flow__form">
+              <div class="onboarding-flow__row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombres</mat-label>
+                  <input matInput formControlName="firstName" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Apellidos</mat-label>
+                  <input matInput formControlName="lastName" />
+                </mat-form-field>
+              </div>
+
+              <div class="onboarding-flow__row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Teléfono</mat-label>
+                  <input matInput formControlName="phone" placeholder="+57 3001234567" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>LinkedIn (opcional)</mat-label>
+                  <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
+                  @if (userForm.controls.linkedinUrl.hasError('linkedinUrl') && userForm.controls.linkedinUrl.touched) {
+                    <mat-error>Ingresa una URL válida de LinkedIn o deja el campo vacío.</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="onboarding-flow__full">
+                <mat-label>Bio corta</mat-label>
+                <textarea matInput rows="4" formControlName="bio"></textarea>
+              </mat-form-field>
+
+              <div class="onboarding-flow__actions">
+                <button mat-flat-button color="primary" type="button"
+                        (click)="saveUserStep(stepper)"
+                        [disabled]="submitting()">
+                  Guardar y continuar
+                </button>
+              </div>
+            </form>
+          </mat-step>
+
+          @if (isStudent) {
+            <mat-step label="Perfil académico">
+              <form [formGroup]="studentForm" class="onboarding-flow__form">
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Código estudiantil</mat-label>
+                    <input matInput formControlName="studentCode" />
+                    @if (studentForm.controls.studentCode.hasError('pattern') && studentForm.controls.studentCode.touched) {
+                      <mat-error>Solo se permiten letras, números y guiones.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Programa</mat-label>
+                    <mat-select formControlName="program">
+                      @for (program of studentPrograms; track program) {
+                        <mat-option [value]="program">{{ program }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Semestre</mat-label>
+                    <input matInput type="number" formControlName="semester" min="1" max="16" />
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="outline" class="onboarding-flow__full">
+                  <mat-label>Bio académica/profesional</mat-label>
+                  <textarea matInput rows="4" formControlName="bio"></textarea>
+                </mat-form-field>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>GitHub (opcional)</mat-label>
+                    <input matInput formControlName="githubUrl" placeholder="https://github.com/..." />
+                    @if (studentForm.controls.githubUrl.hasError('githubUrl') && studentForm.controls.githubUrl.touched) {
+                      <mat-error>Ingresa una URL válida de GitHub o deja el campo vacío.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Portafolio (opcional)</mat-label>
+                    <input matInput formControlName="portfolioUrl" placeholder="https://..." />
+                    @if (studentForm.controls.portfolioUrl.hasError('portfolioUrl') && studentForm.controls.portfolioUrl.touched) {
+                      <mat-error>Ingresa una URL válida o deja el campo vacío.</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__actions">
+                  <button mat-stroked-button type="button" (click)="stepper.previous()">Anterior</button>
+                  <button mat-flat-button color="primary" type="button"
+                          (click)="saveRoleProfileStep(stepper)"
+                          [disabled]="submitting()">
+                    Guardar y continuar
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+
+            <mat-step label="Requisitos mínimos">
+              <div class="onboarding-flow__form">
+                <p class="onboarding-flow__hint">
+                  Debes tener al menos 1 habilidad y 1 formación/experiencia.
+                </p>
+
+                @if (existingSkills() === 0) {
+                  <form [formGroup]="skillForm" class="onboarding-flow__block">
+                    <h3>Agregar primera habilidad</h3>
+                    <div class="onboarding-flow__row">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Habilidad / Competencia</mat-label>
+                        <input matInput formControlName="name" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Categoría</mat-label>
+                        <mat-select formControlName="category">
+                          <mat-option value="technical">Técnica</mat-option>
+                          <mat-option value="soft">Blanda</mat-option>
+                          <mat-option value="language">Idioma</mat-option>
+                          <mat-option value="tool">Herramienta</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Nivel</mat-label>
+                        <mat-select formControlName="proficiencyLevel">
+                          <mat-option value="beginner">Principiante</mat-option>
+                          <mat-option value="intermediate">Intermedio</mat-option>
+                          <mat-option value="advanced">Avanzado</mat-option>
+                          <mat-option value="expert">Experto</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </form>
+                } @else {
+                  <div class="onboarding-flow__ok-row">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Ya tienes {{ existingSkills() }} habilidad(es) registrada(s).</span>
+                  </div>
+                }
+
+                @if (existingEducation() + existingExperiences() === 0) {
+                  <form [formGroup]="educationForm" class="onboarding-flow__block">
+                    <h3>Agregar primera formación</h3>
+                    <div class="onboarding-flow__row">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Institución</mat-label>
+                        <input matInput formControlName="institution" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Título / Grado</mat-label>
+                        <input matInput formControlName="degree" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Fecha inicio</mat-label>
+                        <input matInput type="date" formControlName="startDate" />
+                      </mat-form-field>
+                    </div>
+                  </form>
+                } @else {
+                  <div class="onboarding-flow__ok-row">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>
+                      Ya tienes {{ existingEducation() + existingExperiences() }} registro(s) de formación/experiencia.
+                    </span>
+                  </div>
+                }
+
+                <div class="onboarding-flow__actions">
+                  <button mat-stroked-button type="button" (click)="stepper.previous()">Anterior</button>
+                  <button mat-flat-button color="primary" type="button"
+                          (click)="saveRoleRequirementsStep(stepper)"
+                          [disabled]="submitting()">
+                    Guardar y continuar
+                  </button>
+                </div>
+              </div>
+            </mat-step>
+          }
+
+          @if (isCompany) {
+            <mat-step label="Perfil corporativo">
+              <form [formGroup]="companyForm" class="onboarding-flow__form">
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre de la empresa</mat-label>
+                    <input matInput formControlName="companyName" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>NIT</mat-label>
+                    <input matInput formControlName="nit" placeholder="Ej: 900123456-7" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Industria</mat-label>
+                    <input matInput formControlName="industry" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Ciudad principal</mat-label>
+                    <input matInput formControlName="headquartersCity" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Tamaño</mat-label>
+                    <mat-select formControlName="companySize">
+                      <mat-option value="startup">Startup</mat-option>
+                      <mat-option value="small">Pequeña</mat-option>
+                      <mat-option value="medium">Mediana</mat-option>
+                      <mat-option value="large">Grande</mat-option>
+                      <mat-option value="enterprise">Enterprise</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="outline" class="onboarding-flow__full">
+                  <mat-label>Descripción</mat-label>
+                  <textarea matInput rows="4" formControlName="description"></textarea>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="onboarding-flow__full">
+                  <mat-label>Sitio web (opcional)</mat-label>
+                  <input matInput formControlName="website" placeholder="https://..." />
+                  @if (companyForm.controls.website.hasError('website') && companyForm.controls.website.touched) {
+                    <mat-error>Ingresa una URL valida o deja el campo vacio.</mat-error>
+                  }
+                </mat-form-field>
+
+                <div class="onboarding-flow__actions">
+                  <button mat-stroked-button type="button" (click)="stepper.previous()">Anterior</button>
+                  <button mat-flat-button color="primary" type="button"
+                          (click)="saveRoleProfileStep(stepper)"
+                          [disabled]="submitting()">
+                    Guardar y continuar
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+
+            <mat-step label="Requisitos mínimos">
+              <div class="onboarding-flow__form">
+                <p class="onboarding-flow__hint">
+                  Debes tener al menos 1 contacto y 1 área de negocio.
+                </p>
+
+                @if (existingContacts() === 0) {
+                  <form [formGroup]="contactForm" class="onboarding-flow__block">
+                    <h3>Agregar contacto principal</h3>
+                    <div class="onboarding-flow__row">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Nombres</mat-label>
+                        <input matInput formControlName="firstName" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Apellidos</mat-label>
+                        <input matInput formControlName="lastName" />
+                      </mat-form-field>
+                    </div>
+
+                    <div class="onboarding-flow__row">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" formControlName="email" />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Cargo</mat-label>
+                        <input matInput formControlName="position" />
+                      </mat-form-field>
+                    </div>
+                  </form>
+                } @else {
+                  <div class="onboarding-flow__ok-row">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Ya tienes {{ existingContacts() }} contacto(s) registrado(s).</span>
+                  </div>
+                }
+
+                @if (existingBusinessAreas() === 0) {
+                  <form [formGroup]="businessAreaForm" class="onboarding-flow__block">
+                    <h3>Agregar área de negocio</h3>
+                    <mat-form-field appearance="outline" class="onboarding-flow__full">
+                      <mat-label>Área</mat-label>
+                      <input matInput formControlName="areaName" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="onboarding-flow__full">
+                      <mat-label>Descripción (opcional)</mat-label>
+                      <textarea matInput rows="3" formControlName="description"></textarea>
+                    </mat-form-field>
+                  </form>
+                } @else {
+                  <div class="onboarding-flow__ok-row">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Ya tienes {{ existingBusinessAreas() }} área(s) de negocio.</span>
+                  </div>
+                }
+
+                <div class="onboarding-flow__actions">
+                  <button mat-stroked-button type="button" (click)="stepper.previous()">Anterior</button>
+                  <button mat-flat-button color="primary" type="button"
+                          (click)="saveRoleRequirementsStep(stepper)"
+                          [disabled]="submitting()">
+                    Guardar y continuar
+                  </button>
+                </div>
+              </div>
+            </mat-step>
+          }
+
+          @if (isFaculty) {
+            <mat-step label="Rol docente">
+              <form [formGroup]="facultyForm" class="onboarding-flow__form">
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Código de empleado</mat-label>
+                    <input matInput formControlName="employeeCode" placeholder="Ej: EMP-2024-001" />
+                    @if (facultyForm.controls.employeeCode.hasError('pattern') && facultyForm.controls.employeeCode.touched) {
+                      <mat-error>Solo se permiten letras, números y guiones.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Departamento</mat-label>
+                    <input matInput formControlName="department" placeholder="Ej: Facultad de Ingeniería" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Rol</mat-label>
+                    <mat-select formControlName="role">
+                      @for (role of supervisorRoles; track role.value) {
+                        <mat-option [value]="role.value">{{ role.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Especialización (opcional)</mat-label>
+                    <input matInput formControlName="specialization" placeholder="Ej: Desarrollo de Software" />
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__actions">
+                  <button mat-stroked-button type="button" (click)="stepper.previous()">Anterior</button>
+                  <button mat-flat-button color="primary" type="button"
+                          (click)="saveRoleProfileStep(stepper)"
+                          [disabled]="submitting()">
+                    Guardar y continuar
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+          }
+
+          <mat-step label="Finalizar">
+            <div class="onboarding-flow__final-step">
+              @if (onboardingCompleted()) {
+                <mat-icon class="onboarding-flow__status-icon onboarding-flow__status-icon--ok">check_circle</mat-icon>
+                <h2>Onboarding completado</h2>
+                <p>Tu perfil ya cumple los requisitos mínimos. Puedes ir al dashboard.</p>
+              } @else {
+                <mat-icon class="onboarding-flow__status-icon onboarding-flow__status-icon--pending">hourglass_top</mat-icon>
+                <h2>Procesando estado de onboarding</h2>
+                <p>
+                  Si ya registraste toda la información, actualiza el estado para confirmar la sincronización.
+                </p>
+              }
+
+              <div class="onboarding-flow__actions">
+                <button mat-stroked-button type="button" (click)="refreshStatus()">
+                  Actualizar estado
+                </button>
+                <button mat-flat-button color="primary" type="button"
+                        (click)="goToDashboard()"
+                        [disabled]="!onboardingCompleted()">
+                  Ir al dashboard
+                </button>
+              </div>
+            </div>
+          </mat-step>
+        </mat-stepper>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

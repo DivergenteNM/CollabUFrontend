@@ -1,0 +1,83 @@
+
+    <div class="detail">
+      @if (matchResource.isLoading()) {
+        <app-skeleton width="100%" height="180px" />
+        <app-skeleton width="100%" height="240px" />
+        <app-skeleton width="100%" height="300px" />
+      } @else if (match(); as m) {
+        <!-- Back link -->
+        <button mat-button class="detail__back" (click)="router.navigate(['/matching'])">
+          <mat-icon>arrow_back</mat-icon> Volver a recomendaciones
+        </button>
+
+        <!-- Score Card -->
+        <app-match-score-card
+          [totalScore]="m.overallScore"
+          [breakdown]="m.matchBreakdown" />
+
+        <mat-divider />
+
+        <!-- Skills Comparison -->
+        <mat-card class="detail__skills">
+          <mat-card-content>
+            <h3><mat-icon>compare_arrows</mat-icon> Análisis de habilidades</h3>
+
+            <div class="detail__skills-grid">
+              <!-- Matching skills -->
+              <div class="detail__skills-col detail__skills-col--match">
+                <h4>
+                  <mat-icon>check_circle</mat-icon>
+                  Skills que coinciden ({{ m.matchingSkills.length }})
+                </h4>
+                <mat-chip-set>
+                  @for (skill of m.matchingSkills; track skill) {
+                    <mat-chip class="chip--match">{{ skill }}</mat-chip>
+                  }
+                  @empty {
+                    <p class="detail__no-skills">Sin coincidencias aún</p>
+                  }
+                </mat-chip-set>
+              </div>
+
+              <!-- Missing skills -->
+              <div class="detail__skills-col detail__skills-col--missing">
+                <h4>
+                  <mat-icon>cancel</mat-icon>
+                  Skills que te faltan ({{ m.missingSkills.length }})
+                </h4>
+                <mat-chip-set>
+                  @for (skill of m.missingSkills; track skill) {
+                    <mat-chip class="chip--missing">{{ skill }}</mat-chip>
+                  }
+                  @empty {
+                    <p class="detail__no-skills">¡Tienes todas las habilidades!</p>
+                  }
+                </mat-chip-set>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-divider />
+
+        <!-- Project Card -->
+        <section class="detail__project">
+          <h3><mat-icon>work</mat-icon> Proyecto</h3>
+          <app-project-card
+            [project]="m.project"
+            [matchScore]="m.overallScore"
+            (viewDetail)="router.navigate(['/projects', m.project.id])"
+            (apply)="openApplyDialog(m.project.id, m.project.title)" />
+        </section>
+
+        <!-- Actions -->
+        <div class="detail__actions">
+          <button mat-flat-button class="detail__apply" (click)="openApplyDialog(m.project.id, m.project.title)">
+            <mat-icon>send</mat-icon> Aplicar a este proyecto
+          </button>
+          <button mat-stroked-button (click)="router.navigate(['/projects', m.project.id])">
+            <mat-icon>open_in_new</mat-icon> Ver detalle completo del proyecto
+          </button>
+        </div>
+      }
+    </div>

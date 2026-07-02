@@ -1,0 +1,63 @@
+
+    <div class="my-apps">
+      <header class="my-apps__header">
+        <h1>Mis Aplicaciones</h1>
+      </header>
+
+      <!-- Filters -->
+      <div class="my-apps__filters">
+        <mat-form-field appearance="outline" class="my-apps__filter">
+          <mat-label>Estado</mat-label>
+          <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value); page.set(1)">
+            <mat-option value="">Todos</mat-option>
+            <mat-option [value]="ApplicationStatus.PENDING">Pendiente</mat-option>
+            <mat-option [value]="ApplicationStatus.UNDER_REVIEW">En revisión</mat-option>
+            <mat-option [value]="ApplicationStatus.INTERVIEW">Entrevista</mat-option>
+            <mat-option [value]="ApplicationStatus.ACCEPTED">Aceptada</mat-option>
+            <mat-option [value]="ApplicationStatus.REJECTED">Rechazada</mat-option>
+            <mat-option [value]="ApplicationStatus.IN_PROGRESS">En progreso</mat-option>
+            <mat-option [value]="ApplicationStatus.COMPLETED">Completada</mat-option>
+            <mat-option [value]="ApplicationStatus.WITHDRAWN">Retirada</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="my-apps__filter">
+          <mat-label>Ordenar</mat-label>
+          <mat-select [value]="sortBy()" (selectionChange)="sortBy.set($event.value)">
+            <mat-option value="appliedAt">Fecha aplicación</mat-option>
+            <mat-option value="matchScore">Match score</mat-option>
+            <mat-option value="status">Estado</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- List -->
+      <div class="my-apps__list">
+        @if (applicationsResource.isLoading()) {
+          @for (_ of [1,2,3]; track $index) {
+            <app-skeleton width="100%" height="200px" />
+          }
+        } @else if (applications().length === 0) {
+          <app-empty-state
+            icon="inbox"
+            title="Sin aplicaciones"
+            message="Aún no has aplicado a ningún proyecto. Explora los proyectos disponibles."
+            actionLabel="Ver Proyectos"
+            (actionClicked)="router.navigate(['/projects'])" />
+        } @else {
+          @for (app of applications(); track app.id) {
+            <app-application-card
+              [application]="app"
+              viewMode="student"
+              (viewDetail)="router.navigate(['/my-applications', $event])" />
+          }
+        }
+      </div>
+
+      @if (totalItems() > 0) {
+        <app-paginator
+          [totalItems]="totalItems()"
+          [pageSize]="10"
+          (pageChanged)="onPageChanged($event)" />
+      }
+    </div>

@@ -1,0 +1,17 @@
+<div class="star-rating__stars">
+  @for (star of starsArray(); track star) {
+    <mat-icon
+      class="star-rating__star"
+      [class.star-rating__star--filled]="star <= displayValue()"
+      [class.star-rating__star--half]="star === Math.ceil(value()) && value() % 1 >= 0.25 && value() % 1 < 0.75 && readonly()"
+      [class.star-rating__star--interactive]="!readonly()"
+      (mouseenter)="onHover(star)"
+      (mouseleave)="onLeave()"
+      (click)="onSelect(star)">
+      {{ getIcon(star) }}
+    </mat-icon>
+  }
+</div>
+@if (readonly() && value() !== null && value() !== undefined) {
+  <span class="star-rating__value">{{ (+value()).toFixed(1) }}</span>
+}

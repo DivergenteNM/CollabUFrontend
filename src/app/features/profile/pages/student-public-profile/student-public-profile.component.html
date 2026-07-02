@@ -1,0 +1,82 @@
+<div class="public-profile">
+  <button mat-button (click)="history.back()">
+    <mat-icon>arrow_back</mat-icon>
+    Volver
+  </button>
+
+  @if (resource.isLoading()) {
+    <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+  }
+
+  @if (resource.value()?.data; as s) {
+    <mat-card>
+      <mat-card-content>
+        <div class="profile-header">
+          <div class="avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="profile-info">
+            <h2>{{ s.program }}</h2>
+            <p>Semestre {{ s.semester }}</p>
+            @if (s.averageRating) {
+              <app-star-rating [value]="s.averageRating" [readonly]="true" size="sm" />
+            }
+          </div>
+        </div>
+
+        @if (s.bio) {
+          <div class="section">
+            <h3>Acerca de</h3>
+            <p>{{ s.bio }}</p>
+          </div>
+        }
+
+        @if (s.skills.length > 0) {
+          <div class="section">
+            <h3>Habilidades</h3>
+            <div class="skills-detailed">
+              @for (skill of s.skills; track skill.id) {
+                <mat-chip-set>
+                  <mat-chip>
+                    {{ skill.name }}
+                    <span class="skill-level">{{ levelLabel(skill.proficiencyLevel) }}</span>
+                  </mat-chip>
+                </mat-chip-set>
+              }
+            </div>
+          </div>
+        }
+
+        @if (((s.workExperience?.length ?? 0) + s.experiences.length) > 0) {
+          <div class="section">
+            <h3>Experiencia</h3>
+            @for (exp of (s.workExperience?.length ? s.workExperience : s.experiences); track exp.id) {
+              <div class="experience-item">
+                <strong>{{ exp.title }}</strong>
+                <span class="exp-company">{{ exp.companyName ?? 'Experiencia profesional' }}</span>
+                <p>{{ exp.description ?? '' }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        @if (s.linkedinUrl || s.githubUrl || s.portfolioUrl) {
+          <div class="section">
+            <h3>Enlaces</h3>
+            <div class="links">
+              @if (s.linkedinUrl) {
+                <a [href]="s.linkedinUrl" target="_blank"><mat-icon>link</mat-icon> LinkedIn</a>
+              }
+              @if (s.githubUrl) {
+                <a [href]="s.githubUrl" target="_blank"><mat-icon>code</mat-icon> GitHub</a>
+              }
+              @if (s.portfolioUrl) {
+                <a [href]="s.portfolioUrl" target="_blank"><mat-icon>language</mat-icon> Portfolio</a>
+              }
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

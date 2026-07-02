@@ -1,0 +1,123 @@
+<div class="faculty-dashboard">
+  <section class="dashboard__stats">
+    @if (isLoading()) {
+      @for (_ of [1,2,3]; track $index) {
+        <app-skeleton width="100%" height="120px" />
+      }
+    } @else {
+      <app-stat-card
+        icon="groups"
+        [value]="totalCount()"
+        label="Estudiantes Asignados"
+        color="primary"
+        [clickable]="true"
+        (clicked)="router.navigate(['/my-students'])" />
+      <app-stat-card
+        icon="check_circle"
+        [value]="activeCount()"
+        label="Asignaciones Activas"
+        color="accent" />
+      <app-stat-card
+        icon="verified"
+        [value]="completedCount()"
+        label="Completadas"
+        color="primary" />
+    }
+  </section>
+
+  <section class="dashboard__students">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>school</mat-icon> Mis Estudiantes
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (isLoading()) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <app-skeleton width="100%" height="56px" />
+          }
+        } @else if (assignments().length === 0) {
+          <app-empty-state
+            icon="people_outline"
+            title="Sin estudiantes asignados"
+            message="Aún no tienes estudiantes bajo tu supervisión." />
+        } @else {
+          <div class="students-table">
+            <div class="students-table__header">
+              <span>Estudiante</span>
+              <span>Proyecto</span>
+              <span>Empresa</span>
+              <span>Estado</span>
+            </div>
+            @for (a of assignments(); track a.id) {
+              <div class="students-table__row"
+                   (click)="navigateToStudent(a.applicationId)"
+                   (keydown.enter)="navigateToStudent(a.applicationId)"
+                   tabindex="0"
+                   role="button">
+                <div class="students-table__student">
+                  <span class="students-table__name">{{ a.studentName }}</span>
+                </div>
+                <div class="students-table__project">
+                  <span class="truncate">{{ a.projectTitle }}</span>
+                </div>
+                <div class="students-table__company">
+                  <span class="truncate">{{ a.companyName }}</span>
+                </div>
+                <div class="students-table__status">
+                  <app-status-badge [status]="a.status" size="sm" />
+                </div>
+              </div>
+            }
+          </div>
+          <button mat-button class="dashboard__view-all"
+                  (click)="router.navigate(['/my-students'])">
+            Ver todos los estudiantes
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  @defer (on viewport) {
+    <section class="dashboard__activity">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>notifications</mat-icon> Notificaciones Recientes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (notificationsStore.recentNotifications().length === 0) {
+            <app-empty-state
+              icon="notifications_none"
+              title="Sin notificaciones"
+              message="No tienes notificaciones recientes." />
+          } @else {
+            <div class="dashboard__notifications-list">
+              @for (n of notificationsStore.recentNotifications(); track n.id) {
+                <div class="notification-item" [class.unread]="!n.isRead">
+                  <mat-icon class="notification-item__icon">
+                    {{ n.isRead ? 'notifications_none' : 'notifications_active' }}
+                  </mat-icon>
+                  <div class="notification-item__content">
+                    <span class="notification-item__title">{{ n.title }}</span>
+                    <span class="notification-item__message">{{ n.message }}</span>
+                    <span class="notification-item__time">{{ n.createdAt | relativeTime }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <button mat-button class="dashboard__view-all"
+                    (click)="router.navigate(['/notifications'])">
+              Ver todas las notificaciones
+            </button>
+          }
+        </mat-card-content>
+      </mat-card>
+    </section>
+  } @placeholder {
+    <app-skeleton width="100%" height="200px" />
+  }
+</div>

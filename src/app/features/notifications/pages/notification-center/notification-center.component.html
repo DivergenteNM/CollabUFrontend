@@ -1,0 +1,55 @@
+
+    <div class="notif-center">
+      <header class="notif-center__header">
+        <h1>Notificaciones</h1>
+        @if (notificationsStore.hasUnread()) {
+          <button mat-stroked-button (click)="markAllAsRead()">
+            <mat-icon>done_all</mat-icon> Marcar todas como leídas
+          </button>
+        }
+      </header>
+
+      @if (notifications().length === 0) {
+        <app-empty-state
+          icon="notifications_none"
+          title="Sin notificaciones"
+          message="No tienes notificaciones por el momento." />
+      } @else {
+        @for (group of groupedNotifications(); track group.label) {
+          <div class="notif-center__group">
+            <h3 class="notif-center__group-label">{{ group.label }}</h3>
+            <div class="notif-center__group-list">
+              @for (notif of group.items; track notif.id) {
+                <div class="notif-center__item"
+                  [class.unread]="!notif.isRead"
+                  (click)="onNotificationClick(notif)">
+                  <div class="notif-center__indicator">
+                    <span class="notif-center__dot" [class.read]="notif.isRead"></span>
+                  </div>
+                  <div class="notif-center__icon">
+                    <mat-icon>{{ getNotificationIcon(notif.type) }}</mat-icon>
+                  </div>
+                  <div class="notif-center__content">
+                    <span class="notif-center__title">{{ notif.title }}</span>
+                    <span class="notif-center__message">{{ notif.message }}</span>
+                  </div>
+                  <span class="notif-center__time">{{ notif.createdAt | relativeTime }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (hasMore()) {
+          <div class="notif-center__load-more">
+            <button mat-button (click)="loadMore()" [disabled]="loadingMore()">
+              @if (loadingMore()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                Cargar más
+              }
+            </button>
+          </div>
+        }
+      }
+    </div>

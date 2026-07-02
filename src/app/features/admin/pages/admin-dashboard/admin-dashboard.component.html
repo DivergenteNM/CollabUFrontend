@@ -1,0 +1,242 @@
+﻿<div class="admin-analytics">
+
+  <!-- Header -->
+  <div class="admin-analytics__header">
+    <div class="header-left">
+      <h1>Panel de Administracion</h1>
+      <p class="header-subtitle">Resumen de actividad y metricas de la plataforma</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/admin/reports" class="header-btn">
+      <mat-icon>assessment</mat-icon>
+      Ver Reportes
+    </a>
+  </div>
+
+  @if (dashboard.isLoading()) {
+    <mat-progress-bar mode="indeterminate" class="loading-bar" />
+  }
+
+  @if (dashboard.value(); as data) {
+
+    <!-- Stat Cards -->
+    <div class="admin-analytics__stats">
+      <app-stat-card icon="people" [value]="data.platformMetrics.totalUsers" label="Total usuarios" color="primary" />
+      <app-stat-card icon="school" [value]="data.platformMetrics.totalStudents" label="Estudiantes" color="primary" />
+      <app-stat-card icon="business" [value]="data.platformMetrics.totalCompanies" label="Empresas" color="accent" />
+      <app-stat-card icon="folder_open" [value]="data.platformMetrics.activeProjects" label="Proyectos activos" color="primary" />
+      <app-stat-card icon="mail" [value]="data.platformMetrics.totalApplications" label="Aplicaciones totales" color="accent" />
+      <app-stat-card icon="grade" [value]="data.platformMetrics.avgMatchScore?.toFixed(1) ?? '—'" label="Match score promedio" color="primary" />
+    </div>
+
+    <!-- Actividad del mes -->
+    <div class="admin-analytics__trends-card">
+      <div class="trends-header">
+        <div>
+          <h2 class="trends-title">Actividad este mes</h2>
+          @if (data.trends.lastSnapshotDate) {
+            <span class="trends-subtitle">Ultimo snapshot: {{ data.trends.lastSnapshotDate | date:'mediumDate' }}</span>
+          }
+        </div>
+      </div>
+      <div class="trends-grid">
+        <div class="trend-item trend-item--users">
+          <div class="trend-icon-wrap">
+            <mat-icon>person_add</mat-icon>
+          </div>
+          <span class="trend-value">+{{ data.trends.newUsersThisMonth }}</span>
+          <span class="trend-label">Usuarios nuevos</span>
+        </div>
+        <div class="trend-divider"></div>
+        <div class="trend-item trend-item--projects">
+          <div class="trend-icon-wrap">
+            <mat-icon>add_circle</mat-icon>
+          </div>
+          <span class="trend-value">+{{ data.trends.newProjectsThisMonth }}</span>
+          <span class="trend-label">Proyectos nuevos</span>
+        </div>
+        <div class="trend-divider"></div>
+        <div class="trend-item trend-item--apps">
+          <div class="trend-icon-wrap">
+            <mat-icon>send</mat-icon>
+          </div>
+          <span class="trend-value">+{{ data.trends.applicationsThisMonth }}</span>
+          <span class="trend-label">Aplicaciones enviadas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Grid: 3 columnas -->
+    <div class="admin-analytics__charts">
+
+      <!-- Evolución histórica de la plataforma -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--primary">
+              <mat-icon>show_chart</mat-icon>
+            </div>
+            <div>
+              <mat-card-title>Evolución de la plataforma</mat-card-title>
+              <mat-card-subtitle>Últimos 30 snapshots</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content class="chart-content">
+          @if (platformHistory.isLoading()) {
+            <div class="chart-skeleton"></div>
+          } @else if ((platformHistory.value()?.length ?? 0) > 0) {
+            <app-line-chart [chartData]="platformChartData()" />
+          } @else {
+            <div class="empty-state">
+              <mat-icon>timeline</mat-icon>
+              <p>Sin datos históricos aún</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Demanda vs Oferta de skills -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--accent">
+              <mat-icon>equalizer</mat-icon>
+            </div>
+            <div>
+              <mat-card-title>Demanda vs. Oferta de Skills</mat-card-title>
+              <mat-card-subtitle>Top 10 habilidades</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content class="chart-content chart-content--tall">
+          @if (topSkillsForChart().length > 0) {
+            <app-skill-gap-chart [skills]="topSkillsForChart()" />
+          } @else {
+            <div class="empty-state">
+              <mat-icon>bar_chart</mat-icon>
+              <p>Sin datos de skills aún</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- Bottom Grid: 3 columnas -->
+    <div class="admin-analytics__bottom">
+
+      <!-- Acciones Pendientes -->
+      <mat-card class="bottom-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--warn">
+              <mat-icon>pending_actions</mat-icon>
+            </div>
+            <mat-card-title>Acciones Pendientes</mat-card-title>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="action-list">
+            <a routerLink="/admin/verifications" class="action-item">
+              <div class="action-icon-wrap action-icon-wrap--warn">
+                <mat-icon>verified</mat-icon>
+              </div>
+              <span>Empresas por verificar</span>
+              <mat-icon class="action-arrow">chevron_right</mat-icon>
+            </a>
+            <a routerLink="/admin/supervisors" class="action-item">
+              <div class="action-icon-wrap action-icon-wrap--primary">
+                <mat-icon>supervisor_account</mat-icon>
+              </div>
+              <span>Supervisores por asignar</span>
+              <mat-icon class="action-arrow">chevron_right</mat-icon>
+            </a>
+            <a routerLink="/admin/periods" class="action-item">
+              <div class="action-icon-wrap action-icon-wrap--accent">
+                <mat-icon>calendar_month</mat-icon>
+              </div>
+              <span>Gestionar periodos academicos</span>
+              <mat-icon class="action-arrow">chevron_right</mat-icon>
+            </a>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Top Skills -->
+      <mat-card class="bottom-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--primary">
+              <mat-icon>bar_chart</mat-icon>
+            </div>
+            <mat-card-title>Top Skills en Demanda</mat-card-title>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          @if (data.topSkills.length === 0) {
+            <div class="empty-state">
+              <mat-icon>insights</mat-icon>
+              <p>Sin datos de skills disponibles</p>
+            </div>
+          }
+          <div class="skills-list">
+            @for (skill of data.topSkills; track skill.name; let i = $index) {
+              <div class="skill-row">
+                <span class="skill-rank">#{{ i + 1 }}</span>
+                <span class="skill-name">{{ skill.name }}</span>
+                <div class="skill-badges">
+                  <span class="skill-badge skill-badge--demand">D: {{ skill.demand }}</span>
+                  <span class="skill-badge skill-badge--supply">O: {{ skill.supply }}</span>
+                </div>
+                <mat-icon class="skill-trend-icon skill-trend-icon--{{ skill.trend ?? 'stable' }}">{{ trendIcon(skill.trend) }}</mat-icon>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Reportes Recientes -->
+      <mat-card class="bottom-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="card-title-icon card-title-icon--accent">
+              <mat-icon>description</mat-icon>
+            </div>
+            <mat-card-title>Reportes Recientes</mat-card-title>
+          </div>
+          <a mat-button color="primary" routerLink="/admin/reports" class="see-all-btn">Ver todos</a>
+        </mat-card-header>
+        <mat-card-content>
+          @if (data.recentReports.length === 0) {
+            <div class="empty-state">
+              <mat-icon>folder_open</mat-icon>
+              <p>No hay reportes generados aun</p>
+            </div>
+          }
+          <div class="reports-list">
+            @for (report of data.recentReports; track report.id) {
+              <div class="report-row">
+                <div class="report-info">
+                  <span class="report-name">{{ report.name }}</span>
+                  <span class="report-type">{{ reportTypeLabel(report.type) }}</span>
+                </div>
+                <span class="report-status status-{{ report.status }}">{{ reportStatusLabel(report.status) }}</span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  }
+
+  @if (dashboard.error()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <mat-icon color="warn">error_outline</mat-icon>
+        <span>Error al cargar las metricas. Verifica que el servicio de analytics este activo.</span>
+      </mat-card-content>
+    </mat-card>
+  }
+
+</div>

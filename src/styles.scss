@@ -1,1 +1,98 @@
-/* You can add global styles to this file, and also import other style files */
+// =============================================================================
+// Collab-U — Global Styles Entry Point
+// =============================================================================
+
+// Design tokens & utilities
+@use 'styles/variables';
+@use 'styles/typography';
+@use 'styles/mixins';
+@use 'styles/grid';
+@use 'styles/animations';
+@use 'styles/accessibility';
+
+// Material Design 3 theme (verde UDENAR + azul complementario)
+@use 'styles/theme/collab-u-theme';
+
+// =============================================================================
+// Global resets & defaults
+// =============================================================================
+
+html {
+  height: 100%;
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  margin: 0;
+  height: 100%;
+}
+
+.dark-theme body {
+  color-scheme: dark;
+}
+
+// =============================================================================
+// Toast / Snackbar classes
+// =============================================================================
+
+.toast-success {
+  --mdc-snackbar-container-color: #2e7d32;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.toast-error {
+  --mdc-snackbar-container-color: #d32f2f;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.toast-warning {
+  --mdc-snackbar-container-color: #ed6c02;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.toast-info {
+  --mdc-snackbar-container-color: #1976d2;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+// =============================================================================
+// Global utility overrides
+// =============================================================================
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+::selection {
+  background-color: var(--color-primary-light);
+  color: #ffffff;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--text-disabled);
+  }
+}

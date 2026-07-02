@@ -1,0 +1,101 @@
+@use '../../../../../styles/mixins' as mx;
+
+:host {
+  display: block;
+}
+
+.login-form {
+  @include mx.form-layout;
+}
+
+.login-form__error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  margin-bottom: 16px;
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.login-form__field {
+  width: 100%;
+}
+
+.login-form__remember {
+  margin: -8px 0 16px;
+}
+
+.login-form__submit {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 16px;
+
+  mat-spinner {
+    margin: 0 auto;
+  }
+}
+
+.login-form__link {
+  text-align: center;
+  margin-bottom: 24px;
+
+  a {
+    color: var(--mat-sys-primary);
+    text-decoration: none;
+    font-size: 14px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.login-form__divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 13px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--mat-sys-outline-variant);
+  }
+}
+
+.login-form__oauth {
+  width: 100%;
+  height: 44px;
+  margin-bottom: 24px;
+}
+
+.login-form__register {
+  text-align: center;
+  font-size: 14px;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+
+  a {
+    color: var(--mat-sys-primary);
+    font-weight: 500;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 24px;
+  color: var(--mat-sys-on-surface);
+}
+
+.project-edit__form {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-edit__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 180px;
+  }
+}
+
+.flex-1 { flex: 1; }
+.full-width { width: 100%; }
+
+.project-edit__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.project-edit__req-card {
+  margin-bottom: 8px;
+}
+
+.meta {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+}

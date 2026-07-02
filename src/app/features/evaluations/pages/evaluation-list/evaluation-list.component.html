@@ -1,0 +1,156 @@
+<div class="evals">
+      <header class="evals__header">
+        <h1>Mis Evaluaciones</h1>
+        <button mat-flat-button (click)="router.navigate(['/my-evaluations/create'])">
+          <mat-icon>rate_review</mat-icon> Crear Evaluación
+        </button>
+      </header>
+
+      @if (aggregate()) {
+        <div class="evals__summary">
+          <mat-card class="evals__summary-card">
+            <mat-card-content>
+              <div class="evals__summary-row">
+                <div class="evals__summary-item">
+                  <span class="evals__summary-label">Promedio</span>
+                  <span class="evals__summary-value">{{ aggregate()!.averageScore !== null ? (aggregate()!.averageScore | number:'1.1-1') + '/5' : 'N/A' }}</span>
+                </div>
+                <div class="evals__summary-item">
+                  <span class="evals__summary-label">Completadas</span>
+                  <span class="evals__summary-value">{{ aggregate()!.completedCount }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      }
+
+      <mat-tab-group (selectedIndexChange)="onTabChange($event)" animationDuration="200ms">
+        <mat-tab label="Recibidas">
+          <div class="evals__filters">
+            <mat-form-field appearance="outline" class="evals__filter-field">
+              <mat-label>Tipo</mat-label>
+              <mat-select [value]="filterType()" (selectionChange)="filterType.set($event.value); onFilterChange()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option [value]="EvaluationType.COMPANY_EVALUATES_STUDENT">Empresa evalúa estudiante</mat-option>
+                <mat-option [value]="EvaluationType.SUPERVISOR_EVALUATES_STUDENT">Supervisor evalúa estudiante</mat-option>
+                <mat-option [value]="EvaluationType.SELF_EVALUATION">Auto-evaluación</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="evals__filter-field">
+              <mat-label>Estado</mat-label>
+              <mat-select [value]="filterStatus()" (selectionChange)="filterStatus.set($event.value); onFilterChange()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option [value]="EvaluationStatus.PENDING">Pendiente</mat-option>
+                <mat-option [value]="EvaluationStatus.IN_PROGRESS">En progreso</mat-option>
+                <mat-option [value]="EvaluationStatus.COMPLETED">Completada</mat-option>
+                <mat-option [value]="EvaluationStatus.EXPIRED">Expirada</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="evals__list">
+            @if (receivedResource.isLoading()) {
+              @for (_ of [1,2,3]; track $index) {
+                <app-skeleton width="100%" height="120px" />
+              }
+            } @else if (receivedEvals().length === 0) {
+              <app-empty-state
+                icon="star_border"
+                title="Sin evaluaciones recibidas"
+                message="Aún no has recibido ninguna evaluación." />
+            } @else {
+              @for (ev of receivedEvals(); track ev.id) {
+                <mat-card class="evals__card" (click)="router.navigate(['/my-evaluations', ev.id])">
+                  <mat-card-content>
+                    <div class="evals__card-row">
+                      <div class="evals__card-info">
+                        <div class="evals__card-top">
+                          <app-star-rating [value]="ev.overallScore ?? 0" [readonly]="true" size="sm" />
+                          <app-status-badge [status]="ev.status" />
+                          <span class="evals__date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
+                        </div>
+                        <span class="evals__type">{{ typeLabels(ev.evaluationType) }}</span>
+                        <p class="evals__excerpt">{{ (ev.overallComment ?? '') | slice:0:120 }}{{ (ev.overallComment ?? '').length > 120 ? '...' : '' }}</p>
+                      </div>
+                      <mat-icon class="evals__arrow">chevron_right</mat-icon>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              }
+
+              @if (receivedTotal() > 0) {
+                <app-paginator
+                  [totalItems]="receivedTotal()"
+                  [pageSize]="10"
+                  (pageChanged)="receivedPage.set($event.page)" />
+              }
+            }
+          </div>
+        </mat-tab>
+
+        <mat-tab label="Dadas">
+          <div class="evals__filters">
+            <mat-form-field appearance="outline" class="evals__filter-field">
+              <mat-label>Tipo</mat-label>
+              <mat-select [value]="filterType()" (selectionChange)="filterType.set($event.value); onFilterChange()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option [value]="EvaluationType.STUDENT_EVALUATES_COMPANY">Estudiante evalúa empresa</mat-option>
+                <mat-option [value]="EvaluationType.SELF_EVALUATION">Auto-evaluación</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="evals__filter-field">
+              <mat-label>Estado</mat-label>
+              <mat-select [value]="filterStatus()" (selectionChange)="filterStatus.set($event.value); onFilterChange()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option [value]="EvaluationStatus.PENDING">Pendiente</mat-option>
+                <mat-option [value]="EvaluationStatus.IN_PROGRESS">En progreso</mat-option>
+                <mat-option [value]="EvaluationStatus.COMPLETED">Completada</mat-option>
+                <mat-option [value]="EvaluationStatus.EXPIRED">Expirada</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="evals__list">
+            @if (givenResource.isLoading()) {
+              @for (_ of [1,2,3]; track $index) {
+                <app-skeleton width="100%" height="120px" />
+              }
+            } @else if (givenEvals().length === 0) {
+              <app-empty-state
+                icon="rate_review"
+                title="Sin evaluaciones dadas"
+                message="Aún no has evaluado a nadie."
+                actionLabel="Crear Evaluación"
+                (actionClicked)="router.navigate(['/my-evaluations/create'])" />
+            } @else {
+              @for (ev of givenEvals(); track ev.id) {
+                <mat-card class="evals__card" (click)="router.navigate(['/my-evaluations', ev.id])">
+                  <mat-card-content>
+                    <div class="evals__card-row">
+                      <div class="evals__card-info">
+                        <div class="evals__card-top">
+                          <app-star-rating [value]="ev.overallScore ?? 0" [readonly]="true" size="sm" />
+                          <app-status-badge [status]="ev.status" />
+                          <span class="evals__date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
+                        </div>
+                        <span class="evals__type">{{ typeLabels(ev.evaluationType) }}</span>
+                        <p class="evals__excerpt">{{ (ev.overallComment ?? '') | slice:0:120 }}{{ (ev.overallComment ?? '').length > 120 ? '...' : '' }}</p>
+                      </div>
+                      <mat-icon class="evals__arrow">chevron_right</mat-icon>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              }
+
+              @if (givenTotal() > 0) {
+                <app-paginator
+                  [totalItems]="givenTotal()"
+                  [pageSize]="10"
+                  (pageChanged)="givenPage.set($event.page)" />
+              }
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>

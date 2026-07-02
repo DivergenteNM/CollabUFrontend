@@ -1,5 +1,14 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
+
+# test
+/playwright-report
+/test-results
+/blob-report
+
+# TypeScript
+.tsbuildinfo
+
 # Compiled output
 /dist
 /tmp

@@ -1,0 +1,76 @@
+.settings {
+  max-width: 700px;
+  margin: 0 auto;
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+}
+
+.tab-content {
+  padding: 16px 0;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 16px 0 12px;
+
+  &.danger-section {
+    color: var(--mat-sys-error);
+  }
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.toggle-info {
+  strong {
+    display: block;
+    font-size: 0.9375rem;
+  }
+
+  span {
+    font-size: 0.8125rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-divider {
+  margin: 16px 0;
+}
+
+mat-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  mat-radio-button {
+    mat-icon {
+      vertical-align: middle;
+      margin-right: 4px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+button[color="warn"] {
+  margin-top: 8px;
+}

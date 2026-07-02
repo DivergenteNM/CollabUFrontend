@@ -1,0 +1,125 @@
+<div class="detail">
+  <header class="detail__header">
+    <button mat-icon-button aria-label="Volver" (click)="onBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Detalle de Evaluación</h1>
+  </header>
+
+  @if (isLoading()) {
+    <div class="detail__loading">
+      <app-skeleton width="100%" height="180px" />
+      <app-skeleton width="100%" height="250px" />
+      <app-skeleton width="100%" height="120px" />
+    </div>
+  } @else if (evaluation(); as ev) {
+    <mat-card class="detail__score-card">
+      <mat-card-content>
+        <div class="detail__score-header">
+          <div class="detail__score-stars">
+            <app-star-rating [value]="overallScoreDisplay()" [readonly]="true" size="lg" />
+            <span class="detail__score-value">{{ overallScoreDisplay().toFixed(1) }} / 5</span>
+          </div>
+          <div class="detail__score-badges">
+            <app-status-badge [status]="ev.status" size="md" />
+            @if (ev.isAnonymous) {
+              <span class="detail__anon-badge">
+                <mat-icon>visibility_off</mat-icon>
+                Anónima
+              </span>
+            }
+          </div>
+        </div>
+        <mat-divider />
+        <div class="detail__meta">
+          <div class="detail__meta-item">
+            <mat-icon>category</mat-icon>
+            <span>{{ typeLabel() }}</span>
+          </div>
+          <div class="detail__meta-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ formattedDate() }}</span>
+          </div>
+          <div class="detail__meta-item">
+            <mat-icon>person</mat-icon>
+            <span>{{ evaluatorRole() }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    @if (ev.overallComment) {
+      <mat-card class="detail__section">
+        <mat-card-content>
+          <div class="detail__section-header">
+            <mat-icon>comment</mat-icon>
+            <h3>Comentario general</h3>
+          </div>
+          <p class="detail__comment-text">{{ ev.overallComment }}</p>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (hasRatings()) {
+      <mat-card class="detail__section">
+        <mat-card-content>
+          <div class="detail__section-header">
+            <mat-icon>assessment</mat-icon>
+            <h3>Desglose por criterios</h3>
+          </div>
+          <div class="detail__criteria">
+            @for (r of ev.ratings; track r.id) {
+              <div class="detail__criterion">
+                <div class="detail__criterion-info">
+                  <span class="detail__criterion-name">{{ r.criterion?.name ?? 'Criterio' }}</span>
+                  @if (r.comment) {
+                    <span class="detail__criterion-comment">{{ r.comment }}</span>
+                  }
+                </div>
+                <div class="detail__criterion-score">
+                  <app-star-rating [value]="r.score" [readonly]="true" size="sm" />
+                  <span class="detail__criterion-value">{{ r.score }}/5</span>
+                </div>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <div class="detail__grid">
+      @if (ev.strengths) {
+        <mat-card class="detail__section">
+          <mat-card-content>
+            <div class="detail__section-header">
+              <mat-icon class="detail__icon-success">thumb_up</mat-icon>
+              <h3>Fortalezas</h3>
+            </div>
+            <p>{{ ev.strengths }}</p>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      @if (ev.areasForImprovement) {
+        <mat-card class="detail__section">
+          <mat-card-content>
+            <div class="detail__section-header">
+              <mat-icon class="detail__icon-warning">trending_up</mat-icon>
+              <h3>Áreas de mejora</h3>
+            </div>
+            <p>{{ ev.areasForImprovement }}</p>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    @if (!ev.overallComment && !ev.strengths && !ev.areasForImprovement && !hasRatings()) {
+      <mat-card class="detail__empty">
+        <mat-card-content>
+          <mat-icon>info</mat-icon>
+          <p>Esta evaluación aún no tiene comentarios ni calificaciones.</p>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>
