@@ -40,6 +40,10 @@ export const AuthStore = signalStore(
     isCompany: computed(() => store.user()?.role === UserRole.COMPANY),
     isFaculty: computed(() => store.user()?.role === UserRole.FACULTY),
     isAdmin: computed(() => store.user()?.role === UserRole.ADMIN),
+    isFacultyAdmin: computed(() => {
+      const role = store.user()?.role;
+      return role === UserRole.FACULTY || role === UserRole.ADMIN || (role as string) === 'faculty_admin';
+    }),
     onboardingRequired: computed(() => {
       const role = store.user()?.role;
       const requiresOnboarding = role === UserRole.STUDENT || role === UserRole.COMPANY || role === UserRole.FACULTY;
