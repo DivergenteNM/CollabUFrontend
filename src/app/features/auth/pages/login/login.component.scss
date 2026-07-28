@@ -60,28 +60,6 @@
   }
 }
 
-.login-form__divider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  color: var(--mat-sys-on-surface-variant);
-  font-size: 13px;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--mat-sys-outline-variant);
-  }
-}
-
-.login-form__oauth {
-  width: 100%;
-  height: 44px;
-  margin-bottom: 24px;
-}
 
 .login-form__register {
   text-align: center;
