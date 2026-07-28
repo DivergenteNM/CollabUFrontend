@@ -67,16 +67,6 @@
                 [ngModel]="prefs().evaluationAlerts"
                 (ngModelChange)="updatePref('evaluationAlerts', $event)" />
             </div>
-
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <strong>Resumen semanal</strong>
-                <span>Recibe un resumen de actividad cada lunes</span>
-              </div>
-              <mat-slide-toggle
-                [ngModel]="prefs().weeklyDigest"
-                (ngModelChange)="updatePref('weeklyDigest', $event)" />
-            </div>
           </mat-card-content>
         </mat-card>
       </div>
