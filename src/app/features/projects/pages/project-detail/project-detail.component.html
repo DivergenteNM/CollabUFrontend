@@ -66,9 +66,14 @@
               }
             </span>
           }
+          @if (p.academicPrograms && p.academicPrograms.length > 0) {
+            <span class="detail__meta-item">
+              <mat-icon>school</mat-icon> {{ p.academicPrograms.join(', ') }}
+            </span>
+          }
           @if (p.minimumSemester) {
             <span class="detail__meta-item">
-              <mat-icon>school</mat-icon> Semestre mín: {{ p.minimumSemester }}°
+              <mat-icon>grade</mat-icon> Semestre mín: {{ p.minimumSemester }}°
             </span>
           }
           <span class="detail__meta-item">
@@ -158,14 +163,14 @@
 
           <mat-card class="detail__apply-card">
             <mat-card-content>
-              @if (isBelowMinSemester()) {
+              @if (cannotApplyReason(); as reason) {
                 <div class="detail__semester-warning">
                   <mat-icon color="warn">warning</mat-icon>
-                  <span>No cumples con el semestre mínimo ({{ p.minimumSemester }}°). Tu semestre actual es {{ studentSemester() }}°.</span>
+                  <span>{{ reason }}</span>
                 </div>
               }
               <button mat-flat-button class="detail__apply-btn"
-                      [disabled]="isBelowMinSemester()"
+                      [disabled]="cannotApplyReason() !== null"
                       (click)="openApplyDialog(p)">
                 <mat-icon>send</mat-icon> Aplicar a este proyecto
               </button>

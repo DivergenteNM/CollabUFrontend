@@ -155,6 +155,37 @@ export class ProjectDetailComponent {
     return studentSem < minSem;
   });
 
+  readonly studentProgram = computed(() => {
+    try {
+      const res = this.studentProfileResource.value() as any;
+      const profile = res?.data ?? res;
+      return profile?.program ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  readonly isProgramMismatch = computed(() => {
+    const reqProgs = this.project()?.academicPrograms;
+    const studentProg = this.studentProgram();
+    if (!this.authStore.isStudent() || !reqProgs || reqProgs.length === 0 || !studentProg) return false;
+    const normStudent = studentProg.toLowerCase().trim();
+    return !reqProgs.some((p: string) => {
+      const normReq = p.toLowerCase().trim();
+      return normReq === normStudent || normStudent.includes(normReq) || normReq.includes(normStudent);
+    });
+  });
+
+  readonly cannotApplyReason = computed(() => {
+    if (this.isBelowMinSemester()) {
+      return `No cumples con el semestre mínimo (${this.project()?.minimumSemester}°). Tu semestre actual es ${this.studentSemester()}°.`;
+    }
+    if (this.isProgramMismatch()) {
+      return `Este proyecto está dirigido a: ${this.project()?.academicPrograms?.join(', ')}. Tu carrera registrada es "${this.studentProgram()}".`;
+    }
+    return null;
+  });
+
   readonly hasError = computed(() => !!this.projectResource.error());
   readonly errorMessage = computed(() => {
     const err = this.projectResource.error() as any;
