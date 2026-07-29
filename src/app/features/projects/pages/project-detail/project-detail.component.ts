@@ -1,5 +1,5 @@
 import {
-  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, input,
+  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, input, effect,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -17,6 +17,7 @@ import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Project, MatchBreakdown } from '../../../../core/models';
 import { MatchResult } from '../../../../core/models/matching.model';
 import { AuthStore } from '../../../../state/auth.store';
+import { SeoService } from '../../../../core/services/seo.service';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreCardComponent } from '../../../../shared/components/cards/match-score-card/match-score-card.component';
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
@@ -42,8 +43,59 @@ export class ProjectDetailComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   readonly location = inject(Location);
+  private readonly seoService = inject(SeoService);
 
   readonly id = input.required<string>();
+
+  constructor() {
+    effect(() => {
+      const p = this.project();
+      if (p) {
+        const companyName = p.companyName || 'Universidad de Nariño';
+        const pageTitle = `${p.title} - ${companyName}`;
+        const descriptionSnippet = p.description
+          ? (p.description.length > 160 ? `${p.description.substring(0, 157)}...` : p.description)
+          : `Convocatoria de práctica profesional ${p.title} en ${companyName}.`;
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://collabu.udenar.edu.co';
+        const pageUrl = `${origin}/projects/${p.id}`;
+
+        this.seoService.setMetaTags({
+          title: pageTitle,
+          description: descriptionSnippet,
+          ogTitle: pageTitle,
+          ogDescription: descriptionSnippet,
+          ogType: 'job',
+          ogUrl: pageUrl,
+          robots: 'index, follow',
+        });
+
+        const jobPostingSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'JobPosting',
+          'title': p.title,
+          'description': p.description || descriptionSnippet,
+          'datePosted': (p as any).createdAt || new Date().toISOString(),
+          'validThrough': (p as any).applicationDeadline || undefined,
+          'employmentType': 'INTERN',
+          'hiringOrganization': {
+            '@type': 'Organization',
+            'name': companyName,
+          },
+          'jobLocation': {
+            '@type': 'Place',
+            'address': {
+              '@type': 'PostalAddress',
+              'addressLocality': (p as any).location || 'Pasto',
+              'addressRegion': 'Nariño',
+              'addressCountry': 'CO',
+            },
+          },
+        };
+
+        this.seoService.setStructuredData(jobPostingSchema, 'project-detail-jsonld');
+      }
+    });
+  }
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
     () => {

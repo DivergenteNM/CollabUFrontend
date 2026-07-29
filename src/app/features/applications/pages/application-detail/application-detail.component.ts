@@ -36,7 +36,7 @@ import { CreateDeliverableDialogComponent } from '../../components/create-delive
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
     MatDialogModule, MatSnackBarModule, DatePipe, MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
-    SkeletonComponent, FileUploadComponent, EmptyStateComponent, CreateDeliverableDialogComponent,
+    SkeletonComponent, FileUploadComponent, EmptyStateComponent,
   ],
   templateUrl: './application-detail.component.html',
   styleUrl: './application-detail.component.scss',
