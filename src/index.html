@@ -2,10 +2,28 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>Collab-U — Plataforma de Prácticas</title>
+    <title>Collab-U — Plataforma de Prácticas Profesionales</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Collab-U: Plataforma de gestión de prácticas profesionales — Universidad de Nariño" />
+    <meta name="description" content="Collab-U: Plataforma de gestión de prácticas profesionales, pasantías y proyectos de investigación — Universidad de Nariño." />
+    <meta name="keywords" content="prácticas profesionales, pasantías, universidad de nariño, proyectos de investigación, tesis, empleo estudiante, collab-u" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#4f46e5" />
+    <link rel="canonical" href="https://collabu.udenar.edu.co/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Collab-U — Universidad de Nariño" />
+    <meta property="og:title" content="Collab-U — Plataforma de Prácticas Profesionales" />
+    <meta property="og:description" content="Conecta tu talento estudiantil con convocatorias de prácticas profesionales, pasantías y proyectos en la Universidad de Nariño." />
+    <meta property="og:image" content="/assets/images/og-default.png" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Collab-U — Plataforma de Prácticas Profesionales" />
+    <meta name="twitter:description" content="Conecta tu talento estudiantil con convocatorias de prácticas profesionales, pasantías y proyectos en la Universidad de Nariño." />
+    <meta name="twitter:image" content="/assets/images/og-default.png" />
+
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,6 +32,36 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- Structured Data (JSON-LD) - WebSite & Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://collabu.udenar.edu.co/#website",
+            "url": "https://collabu.udenar.edu.co/",
+            "name": "Collab-U",
+            "description": "Plataforma de gestión de prácticas profesionales de la Universidad de Nariño",
+            "inLanguage": "es"
+          },
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://collabu.udenar.edu.co/#organization",
+            "name": "Universidad de Nariño - Collab-U",
+            "url": "https://collabu.udenar.edu.co/",
+            "logo": "https://collabu.udenar.edu.co/assets/images/logo.png",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Pasto",
+              "addressRegion": "Nariño",
+              "addressCountry": "CO"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content" i18n>Saltar al contenido principal</a>

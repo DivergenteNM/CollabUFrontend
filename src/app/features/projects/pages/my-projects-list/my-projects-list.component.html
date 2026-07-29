@@ -53,9 +53,11 @@
                   <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'edit'])">
                     <mat-icon>edit</mat-icon> Editar
                   </button>
-                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'applicants'])">
-                    <mat-icon>people</mat-icon> Ver Aplicantes
-                  </button>
+                  @if (project.status !== projectStatusDraft) {
+                    <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'applicants'])">
+                      <mat-icon>people</mat-icon> Ver Aplicantes
+                    </button>
+                  }
                   @if (project.status === projectStatusDraft) {
                     <button mat-menu-item (click)="publishProject(project.id)">
                       <mat-icon>publish</mat-icon> Publicar

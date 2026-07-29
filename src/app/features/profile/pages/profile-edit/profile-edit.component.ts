@@ -27,6 +27,8 @@ import { CompanyProfileService } from '../../../../core/services/company-profile
 import { UserProfileService } from '../../../../core/services/user-profile.service';
 import { FacultyService } from '../../../faculty/services/faculty.service';
 
+import { AvatarUploadComponent } from '../../../../shared/components/ui/avatar-upload/avatar-upload.component';
+
 @Component({
   selector: 'app-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +37,7 @@ import { FacultyService } from '../../../faculty/services/faculty.service';
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatSnackBarModule, MatTabsModule,
+    AvatarUploadComponent,
   ],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.scss',

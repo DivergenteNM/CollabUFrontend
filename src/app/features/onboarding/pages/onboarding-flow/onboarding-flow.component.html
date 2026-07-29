@@ -21,6 +21,10 @@
       <mat-card-content>
         <mat-stepper #stepper>
           <mat-step label="Perfil base">
+            <div class="onboarding-flow__avatar-section">
+              <app-avatar-upload [currentAvatarUrl]="authStore.profile()?.avatarUrl" />
+            </div>
+
             <form [formGroup]="userForm" class="onboarding-flow__form">
               <div class="onboarding-flow__row">
                 <mat-form-field appearance="outline">

@@ -1,5 +1,5 @@
 import {
-  Component, ChangeDetectionStrategy, inject, signal, computed,
+  Component, ChangeDetectionStrategy, inject, signal, computed, effect,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
@@ -13,6 +13,7 @@ import { PaginatedResponse, Project } from '../../../../core/models';
 import { ProjectType } from '../../../../core/enums';
 import { AuthStore } from '../../../../state/auth.store';
 import { UiStore } from '../../../../state/ui.store';
+import { SeoService } from '../../../../core/services/seo.service';
 import { ProjectCardComponent } from '../../../../shared/components/cards/project-card/project-card.component';
 import { SearchFilterBarComponent, FilterConfig } from '../../../../shared/components/ui/search-filter-bar/search-filter-bar.component';
 import { PaginatorComponent } from '../../../../shared/components/ui/paginator/paginator.component';
@@ -35,11 +36,43 @@ export class ProjectListComponent {
   readonly location = inject(Location);
   readonly authStore = inject(AuthStore);
   readonly uiStore = inject(UiStore);
+  private readonly seoService = inject(SeoService);
 
   readonly filters = signal<Record<string, any>>({});
   readonly page = signal(1);
   readonly showMobileFilters = signal(false);
   readonly skeletonArray = Array(6);
+
+  constructor() {
+    effect(() => {
+      const list = this.projects();
+      if (list && list.length > 0) {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://collabu.udenar.edu.co';
+        const itemListSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          'name': 'Convocatorias de Prácticas Profesionales — Universidad de Nariño',
+          'description': 'Listado actualizado de proyectos y vacantes de prácticas profesionales.',
+          'numberOfItems': list.length,
+          'itemListElement': list.map((p, index) => ({
+            '@type': 'ListItem',
+            'position': index + 1,
+            'item': {
+              '@type': 'JobPosting',
+              'name': p.title,
+              'description': p.description || 'Convocatoria de práctica en Collab-U',
+              'url': `${origin}/projects/${p.id}`,
+              'hiringOrganization': {
+                '@type': 'Organization',
+                'name': p.companyName || 'Universidad de Nariño',
+              },
+            },
+          })),
+        };
+        this.seoService.setStructuredData(itemListSchema, 'projects-list-jsonld');
+      }
+    });
+  }
 
   readonly filterConfigs: FilterConfig[] = [
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar proyecto...' },

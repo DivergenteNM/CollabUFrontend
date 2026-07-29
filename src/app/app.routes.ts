@@ -24,7 +24,12 @@ export const routes: Routes = [
       import('./features/projects/pages/project-list/project-list.component').then(
         (m) => m.ProjectListComponent
       ),
-    data: { title: 'Proyectos Disponibles' },
+    data: {
+      title: 'Proyectos y Convocatorias de Prácticas',
+      description: 'Explora vacantes de prácticas profesionales, pasantías y proyectos de investigación de la Universidad de Nariño en Collab-U.',
+      keywords: 'prácticas profesionales, pasantías, universidad de nariño, proyectos de investigación, tesis',
+      robots: 'index, follow',
+    },
   },
   {
     path: 'projects/:id',
@@ -32,7 +37,11 @@ export const routes: Routes = [
       import('./features/projects/pages/project-detail/project-detail.component').then(
         (m) => m.ProjectDetailComponent
       ),
-    data: { title: 'Detalle de Proyecto' },
+    data: {
+      title: 'Detalle de Proyecto',
+      description: 'Consulta los requisitos, perfil buscado y descripción detallada de la convocatoria de práctica profesional en Collab-U.',
+      robots: 'index, follow',
+    },
   },
 
   // ============================================================

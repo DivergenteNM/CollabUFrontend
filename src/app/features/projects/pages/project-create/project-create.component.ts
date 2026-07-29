@@ -1,3 +1,4 @@
+import { CurrencyPipe } from '@angular/common';
 import {
   Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy,
 } from '@angular/core';
@@ -23,7 +24,7 @@ import { forkJoin, of } from 'rxjs';
 import { concatMap, catchError } from 'rxjs/operators';
 
 import { ProjectService } from '../../services/project.service';
-import { ProjectType, ProjectStatus } from '../../../../core/enums';
+import { ProjectType, ProjectStatus, CompensationType } from '../../../../core/enums';
 import { ProjectRequirement } from '../../../../core/models';
 
 const DRAFT_KEY = 'collabu_project_draft';
@@ -88,7 +89,7 @@ const hoursValidator: ValidatorFn = (group: AbstractControl): ValidationErrors |
   selector: 'app-project-create',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    ReactiveFormsModule,
+    ReactiveFormsModule, CurrencyPipe,
     MatStepperModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatRadioModule, MatDatepickerModule, MatIconModule, MatButtonModule,
     MatChipsModule, MatSlideToggleModule, MatCardModule, MatSnackBarModule,
@@ -119,6 +120,13 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     { value: ProjectType.OTHER, label: 'Otro' },
   ];
 
+  readonly compensationTypes = [
+    { value: CompensationType.UNPAID, label: 'No remunerado (Ad honorem)' },
+    { value: CompensationType.PAID, label: 'Remunerado (Salario / Pago)' },
+    { value: CompensationType.STIPEND, label: 'Estipendio / Auxilio (Transporte / Alimentación)' },
+    { value: CompensationType.ACADEMIC_CREDIT, label: 'Crédito Académico' },
+  ];
+
   readonly programs = [
     'Ingeniería de Sistemas',
     'Ingeniería Electrónica',
@@ -129,6 +137,9 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     title: ['', [Validators.required, Validators.minLength(10)]],
     description: ['', [Validators.required, Validators.minLength(50)]],
     projectType: ['' as string as ProjectType, Validators.required],
+    compensationType: [CompensationType.UNPAID as CompensationType, Validators.required],
+    compensationAmount: [null as number | null, [Validators.min(0)]],
+    currency: ['COP'],
     positionsAvailable: [1, [Validators.required, Validators.min(1)]],
     isRemote: [false],
     location: [''],
@@ -150,8 +161,29 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     if (this.autoSaveTimer) clearInterval(this.autoSaveTimer);
   }
 
+  readonly languageOptions = ['Español', 'Inglés', 'Portugués', 'Francés'];
+
   getProjectTypeLabel(value?: string): string {
     return this.projectTypes.find((t) => t.value === value)?.label ?? '';
+  }
+
+  getCompensationTypeLabel(value?: string): string {
+    return this.compensationTypes.find((t) => t.value === value)?.label ?? '';
+  }
+
+  getLanguageSelectValue(name?: string): string {
+    return this.languageOptions.includes(name ?? '') ? (name ?? '') : 'other';
+  }
+
+  onLanguageSelectChange(index: number, val: string): void {
+    if (val === 'other') {
+      const currentName = this.requirements()[index]?.name ?? '';
+      if (this.languageOptions.includes(currentName)) {
+        this.updateRequirement(index, 'name', '');
+      }
+    } else {
+      this.updateRequirement(index, 'name', val);
+    }
   }
 
   addRequirement(): void {
@@ -214,10 +246,14 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
 
     // Mapear los datos que espera el backend
     const formValue = this.infoForm.getRawValue();
+    const isPaidOrStipend = formValue.compensationType === CompensationType.PAID || formValue.compensationType === CompensationType.STIPEND;
     const createData: any = {
       title: formValue.title,
       description: formValue.description,
       projectType: formValue.projectType,
+      compensationType: formValue.compensationType,
+      compensationAmount: isPaidOrStipend ? (formValue.compensationAmount || undefined) : undefined,
+      currency: formValue.currency || 'COP',
       positionsAvailable: formValue.positionsAvailable,
       locationType: formValue.isRemote ? 'remote' : 'onsite',
       location: formValue.location || undefined,

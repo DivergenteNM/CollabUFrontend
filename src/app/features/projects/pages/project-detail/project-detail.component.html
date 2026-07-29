@@ -57,6 +57,25 @@
               <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHours }}h total
             </span>
           }
+          @if (p.compensationType) {
+            <span class="detail__meta-item">
+              <mat-icon>payments</mat-icon>
+              {{ compensationLabel(p.compensationType) }}
+              @if ((p.compensationType === 'paid' || p.compensationType === 'stipend') && p.compensationAmount) {
+                : {{ p.compensationAmount | currency:(p.currency || 'COP'):'symbol':'1.0-0' }}
+              }
+            </span>
+          }
+          @if (p.academicPrograms && p.academicPrograms.length > 0) {
+            <span class="detail__meta-item">
+              <mat-icon>school</mat-icon> {{ p.academicPrograms.join(', ') }}
+            </span>
+          }
+          @if (p.minimumSemester) {
+            <span class="detail__meta-item">
+              <mat-icon>grade</mat-icon> Semestre mín: {{ p.minimumSemester }}°
+            </span>
+          }
           <span class="detail__meta-item">
             <mat-icon>event</mat-icon> {{ p.startDate | date:'d MMM yyyy' }} — {{ p.endDate | date:'d MMM yyyy' }}
           </span>
@@ -144,7 +163,14 @@
 
           <mat-card class="detail__apply-card">
             <mat-card-content>
+              @if (cannotApplyReason(); as reason) {
+                <div class="detail__semester-warning">
+                  <mat-icon color="warn">warning</mat-icon>
+                  <span>{{ reason }}</span>
+                </div>
+              }
               <button mat-flat-button class="detail__apply-btn"
+                      [disabled]="cannotApplyReason() !== null"
                       (click)="openApplyDialog(p)">
                 <mat-icon>send</mat-icon> Aplicar a este proyecto
               </button>

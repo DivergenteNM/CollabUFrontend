@@ -52,4 +52,16 @@ export class UserProfileService extends BaseApiService {
       .patch<ApiResponse<UserProfile> | UserProfile>(`${this.apiUrl}/profile`, data)
       .pipe(map((res) => normalizeApiResponse<UserProfile>(res, 'Perfil actualizado')));
   }
+
+  uploadAvatar(avatarUrl: string): Observable<ApiResponse<UserProfile>> {
+    return this.http
+      .post<ApiResponse<UserProfile> | UserProfile>(`${this.apiUrl}/profile/avatar`, { avatarUrl })
+      .pipe(map((res) => normalizeApiResponse<UserProfile>(res, 'Avatar actualizado')));
+  }
+
+  deleteAvatar(): Observable<ApiResponse<UserProfile>> {
+    return this.http
+      .delete<ApiResponse<UserProfile> | UserProfile>(`${this.apiUrl}/profile/avatar`)
+      .pipe(map((res) => normalizeApiResponse<UserProfile>(res, 'Avatar eliminado')));
+  }
 }

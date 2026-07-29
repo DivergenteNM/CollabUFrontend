@@ -1,4 +1,4 @@
-import { ProjectType, ProjectStatus } from '../enums';
+import { ProjectType, ProjectStatus, CompensationType } from '../enums';
 
 export interface Project {
   id: string;
@@ -22,6 +22,9 @@ export interface Project {
   isRemote: boolean;
   location?: string;
   supervisorName?: string;
+  compensationType?: CompensationType;
+  compensationAmount?: number;
+  currency?: string;
   requirements: ProjectRequirement[];
   tags: string[];
   createdAt: string;
