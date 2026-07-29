@@ -113,6 +113,13 @@ export class ProjectDetailComponent {
     },
   );
 
+  readonly studentProfileResource = httpResource<ApiResponse<any>>(
+    () => {
+      if (!this.isBrowser || !this.authStore.isStudent()) return undefined;
+      return { url: `${environment.apiUrl}/students/profile` };
+    },
+  );
+
   readonly project = computed(() => {
     try {
       const res = this.projectResource.value() as any;
@@ -129,6 +136,23 @@ export class ProjectDetailComponent {
     } catch {
       return null;
     }
+  });
+
+  readonly studentSemester = computed(() => {
+    try {
+      const res = this.studentProfileResource.value() as any;
+      const profile = res?.data ?? res;
+      return profile?.semester ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  readonly isBelowMinSemester = computed(() => {
+    const minSem = this.project()?.minimumSemester;
+    const studentSem = this.studentSemester();
+    if (!this.authStore.isStudent() || !minSem || studentSem === null) return false;
+    return studentSem < minSem;
   });
 
   readonly hasError = computed(() => !!this.projectResource.error());
