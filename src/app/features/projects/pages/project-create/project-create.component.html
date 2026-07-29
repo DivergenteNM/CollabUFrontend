@@ -163,11 +163,32 @@
                   </mat-select>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>Nombre</mat-label>
-                  <input matInput [value]="req.name"
-                         (input)="updateRequirement($index, 'name', $any($event.target).value)" />
-                </mat-form-field>
+                @if (req.type === 'language') {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Idioma</mat-label>
+                    <mat-select [value]="getLanguageSelectValue(req.name)"
+                                (selectionChange)="onLanguageSelectChange($index, $event.value)">
+                      @for (lang of languageOptions; track lang) {
+                        <mat-option [value]="lang">{{ lang }}</mat-option>
+                      }
+                      <mat-option value="other">Otro...</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  @if (getLanguageSelectValue(req.name) === 'other') {
+                    <mat-form-field appearance="outline" class="flex-1">
+                      <mat-label>Especificar Idioma</mat-label>
+                      <input matInput [value]="req.name" placeholder="Ej: Italiano, Mandarín"
+                             (input)="updateRequirement($index, 'name', $any($event.target).value)" />
+                    </mat-form-field>
+                  }
+                } @else {
+                  <mat-form-field appearance="outline" class="flex-1">
+                    <mat-label>Nombre</mat-label>
+                    <input matInput [value]="req.name"
+                           (input)="updateRequirement($index, 'name', $any($event.target).value)" />
+                  </mat-form-field>
+                }
 
                 <mat-form-field appearance="outline">
                   <mat-label>Nivel</mat-label>

@@ -161,12 +161,29 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     if (this.autoSaveTimer) clearInterval(this.autoSaveTimer);
   }
 
+  readonly languageOptions = ['Español', 'Inglés', 'Portugués', 'Francés'];
+
   getProjectTypeLabel(value?: string): string {
     return this.projectTypes.find((t) => t.value === value)?.label ?? '';
   }
 
   getCompensationTypeLabel(value?: string): string {
     return this.compensationTypes.find((t) => t.value === value)?.label ?? '';
+  }
+
+  getLanguageSelectValue(name?: string): string {
+    return this.languageOptions.includes(name ?? '') ? (name ?? '') : 'other';
+  }
+
+  onLanguageSelectChange(index: number, val: string): void {
+    if (val === 'other') {
+      const currentName = this.requirements()[index]?.name ?? '';
+      if (this.languageOptions.includes(currentName)) {
+        this.updateRequirement(index, 'name', '');
+      }
+    } else {
+      this.updateRequirement(index, 'name', val);
+    }
   }
 
   addRequirement(): void {

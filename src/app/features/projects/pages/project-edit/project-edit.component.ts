@@ -224,6 +224,23 @@ export class ProjectEditComponent {
     this.deliverables.update((d) => d.map((item, idx) => idx === i ? { ...item, [field]: val } : item));
   }
 
+  readonly languageOptions = ['Español', 'Inglés', 'Portugués', 'Francés'];
+
+  getLanguageSelectValue(name?: string): string {
+    return this.languageOptions.includes(name ?? '') ? (name ?? '') : 'other';
+  }
+
+  onLanguageSelectChange(index: number, val: string): void {
+    if (val === 'other') {
+      const currentName = this.requirements()[index]?.name ?? '';
+      if (this.languageOptions.includes(currentName)) {
+        this.updateReq(index, 'name', '');
+      }
+    } else {
+      this.updateReq(index, 'name', val);
+    }
+  }
+
   getTypeLabel(v?: string | null): string {
     return this.projectTypes.find((t) => t.value === v)?.label ?? '';
   }
