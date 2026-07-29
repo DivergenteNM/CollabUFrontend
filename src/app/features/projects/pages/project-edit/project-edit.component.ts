@@ -27,7 +27,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 import { environment } from '../../../../../environments/environment';
 import { ProjectService } from '../../services/project.service';
-import { ProjectType } from '../../../../core/enums';
+import { ProjectType, CompensationType } from '../../../../core/enums';
 import { ApiResponse, Project, ProjectRequirement } from '../../../../core/models';
 
 const dateRangeValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
@@ -119,6 +119,13 @@ export class ProjectEditComponent {
     { value: ProjectType.OTHER, label: 'Otro' },
   ];
 
+  readonly compensationTypes = [
+    { value: CompensationType.UNPAID, label: 'No remunerado (Ad honorem)' },
+    { value: CompensationType.PAID, label: 'Remunerado (Salario / Pago)' },
+    { value: CompensationType.STIPEND, label: 'Estipendio / Auxilio (Transporte / Alimentación)' },
+    { value: CompensationType.ACADEMIC_CREDIT, label: 'Crédito Académico' },
+  ];
+
   readonly programs = [
     'Ingeniería de Sistemas',
     'Ingeniería Electrónica',
@@ -130,6 +137,9 @@ export class ProjectEditComponent {
     title: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(50)]],
     projectType: ['' as string as ProjectType, Validators.required],
+    compensationType: [CompensationType.UNPAID as CompensationType, Validators.required],
+    compensationAmount: [null as number | null, [Validators.min(0)]],
+    currency: ['COP'],
     positionsAvailable: [1, [Validators.required, Validators.min(1)]],
     isRemote: [false],
     location: [''],
@@ -170,6 +180,9 @@ export class ProjectEditComponent {
         title: p.title,
         description: p.description,
         projectType: p.projectType,
+        compensationType: p.compensationType ?? CompensationType.UNPAID,
+        compensationAmount: p.compensationAmount ? Number(p.compensationAmount) : null,
+        currency: p.currency ?? 'COP',
         positionsAvailable: p.positionsAvailable,
         // Backend uses locationType enum; map to isRemote boolean for the form
         isRemote: (p as any).locationType === 'remote',
@@ -243,9 +256,13 @@ export class ProjectEditComponent {
 
     // Backend uses locationType enum ('remote'|'onsite'), not isRemote boolean.
     // weeklyHours, totalHoursRequired, supervisorName don't exist in DB — omit.
+    const isPaidOrStipend = raw.compensationType === CompensationType.PAID || raw.compensationType === CompensationType.STIPEND;
     const data: Record<string, any> = {
       title: raw.title,
       description: raw.description,
+      compensationType: raw.compensationType,
+      compensationAmount: isPaidOrStipend ? (raw.compensationAmount || undefined) : undefined,
+      currency: raw.currency || 'COP',
       positionsAvailable: raw.positionsAvailable,
       locationType: raw.isRemote ? 'remote' : 'onsite',
       location: raw.isRemote ? undefined : (raw.location || undefined),

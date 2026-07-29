@@ -57,6 +57,15 @@
               <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHours }}h total
             </span>
           }
+          @if (p.compensationType) {
+            <span class="detail__meta-item">
+              <mat-icon>payments</mat-icon>
+              {{ compensationLabel(p.compensationType) }}
+              @if ((p.compensationType === 'paid' || p.compensationType === 'stipend') && p.compensationAmount) {
+                : {{ p.compensationAmount | currency:(p.currency || 'COP'):'symbol':'1.0-0' }}
+              }
+            </span>
+          }
           <span class="detail__meta-item">
             <mat-icon>event</mat-icon> {{ p.startDate | date:'d MMM yyyy' }} — {{ p.endDate | date:'d MMM yyyy' }}
           </span>

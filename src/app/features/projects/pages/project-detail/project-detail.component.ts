@@ -11,7 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe, Location } from '@angular/common';
+import { DatePipe, CurrencyPipe, Location } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Project, MatchBreakdown } from '../../../../core/models';
@@ -29,7 +29,7 @@ import { ApplyDialogComponent, ApplyDialogData } from '../../components/apply-di
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule, MatChipsModule,
-    MatTabsModule, MatDividerModule, DatePipe,
+    MatTabsModule, MatDividerModule, DatePipe, CurrencyPipe,
     StatusBadgeComponent, MatchScoreCardComponent, SkillChipListComponent,
     SkeletonComponent,
   ],
@@ -147,6 +147,16 @@ export class ProjectDetailComponent {
     };
     return typeMap[this.project()?.projectType ?? ''] ?? '';
   });
+
+  compensationLabel(type?: string): string {
+    const map: Record<string, string> = {
+      paid: 'Remunerado',
+      unpaid: 'No remunerado',
+      stipend: 'Estipendio / Auxilio',
+      academic_credit: 'Crédito Académico',
+    };
+    return map[type ?? ''] ?? type ?? '';
+  }
 
   matchBreakdown(match: MatchResult): MatchBreakdown {
     return {

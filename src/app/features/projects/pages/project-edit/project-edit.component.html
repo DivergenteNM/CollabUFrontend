@@ -38,6 +38,25 @@
           </div>
 
           <div class="project-edit__row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Tipo de Compensación / Pago</mat-label>
+              <mat-select formControlName="compensationType">
+                @for (comp of compensationTypes; track comp.value) {
+                  <mat-option [value]="comp.value">{{ comp.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            @if (infoForm.value.compensationType === 'paid' || infoForm.value.compensationType === 'stipend') {
+              <mat-form-field appearance="outline" class="flex-1">
+                <mat-label>Monto / Salario (COP)</mat-label>
+                <input matInput type="number" formControlName="compensationAmount" min="0" />
+                <span matPrefix style="margin-right: 4px;">$</span>
+              </mat-form-field>
+            }
+          </div>
+
+          <div class="project-edit__row">
             <mat-slide-toggle formControlName="isRemote">Remoto</mat-slide-toggle>
             @if (!infoForm.value.isRemote) {
               <mat-form-field appearance="outline" class="flex-1">
