@@ -134,7 +134,7 @@
                   <mat-label>Tipo</mat-label>
                   <mat-select [value]="req.type"
                               (selectionChange)="updateRequirement($index, 'type', $event.value)">
-                    <mat-option value="skill">Habilidad</mat-option>
+                    <mat-option value="skill">Habilidad / Competencia </mat-option>
                     <mat-option value="education">Educación</mat-option>
                     <mat-option value="experience">Experiencia</mat-option>
                     <mat-option value="language">Idioma</mat-option>
@@ -194,6 +194,66 @@
                  [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
                  (matChipInputTokenEnd)="addTag($event)" />
         </mat-form-field>
+
+        <div class="project-create__step-actions">
+          <button mat-stroked-button matStepperPrevious>Anterior</button>
+          <button mat-flat-button matStepperNext>Siguiente</button>
+        </div>
+      </div>
+    </mat-step>
+
+    <mat-step label="Entregables">
+      <div class="project-create__form">
+        <h3>Entregables del Proyecto</h3>
+
+        @for (del of deliverables(); track $index) {
+          <mat-card class="project-create__req-card">
+            <mat-card-content>
+              <div class="project-create__row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Título</mat-label>
+                  <input matInput [value]="del.title"
+                         (input)="updateDeliverable($index, 'title', $any($event.target).value)" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Peso (%)</mat-label>
+                  <input matInput type="number" [value]="del.weightPercentage" min="1" max="100"
+                         (input)="updateDeliverable($index, 'weightPercentage', +$any($event.target).value)" />
+                </mat-form-field>
+              </div>
+
+              <div class="project-create__row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Descripción</mat-label>
+                  <input matInput [value]="del.description"
+                         (input)="updateDeliverable($index, 'description', $any($event.target).value)" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha límite</mat-label>
+                  <input matInput [value]="del.dueDate" type="date"
+                         (input)="updateDeliverable($index, 'dueDate', $any($event.target).value)" />
+                </mat-form-field>
+              </div>
+
+              <div class="project-create__row">
+                <mat-slide-toggle
+                  [checked]="del.isMandatory"
+                  (change)="updateDeliverable($index, 'isMandatory', $event.checked)">
+                  Obligatorio
+                </mat-slide-toggle>
+                <button mat-icon-button color="warn" aria-label="Eliminar entregable" (click)="removeDeliverable($index)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <button mat-stroked-button (click)="addDeliverable()">
+          <mat-icon>add</mat-icon> Agregar Entregable
+        </button>
 
         <div class="project-create__step-actions">
           <button mat-stroked-button matStepperPrevious>Anterior</button>

@@ -181,6 +181,11 @@
           @if (app.status === ApplicationStatus.IN_PROGRESS || app.status === ApplicationStatus.COMPLETED) {
             <mat-tab label="Entregables">
               <div class="detail__tab-content">
+                <div class="detail__deliverables-header">
+                  <button mat-stroked-button color="primary" (click)="openCreateDeliverableDialog()">
+                    <mat-icon>add</mat-icon> Crear Entregable
+                  </button>
+                </div>
                 @if (app.deliverables && app.deliverables.length > 0) {
                   <div class="detail__deliverables">
                     @for (del of app.deliverables; track del.id; let i = $index) {
@@ -189,9 +194,14 @@
                           <div class="detail__deliverable-header">
                             <div>
                               <h4>#{{ i + 1 }} — {{ del.title }}</h4>
-                              <span class="detail__deliverable-due">
-                                Fecha límite: {{ del.dueDate | date:'d MMM yyyy' }}
-                              </span>
+                              @if (del.dueDate) {
+                                <span class="detail__deliverable-due">
+                                  Fecha límite: {{ del.dueDate | date:'d MMM yyyy' }}
+                                </span>
+                              }
+                              @if (del.isOverdue) {
+                                <span class="detail__deliverable-overdue">Vencido</span>
+                              }
                             </div>
                             <div class="detail__deliverable-meta">
                               <span class="detail__deliverable-status"
@@ -211,7 +221,7 @@
                               <mat-icon>comment</mat-icon> {{ del.feedback }}
                             </p>
                           }
-                          @if (del.status === 'pending' || del.status === 'revision_requested') {
+                          @if (del.status === 'pending' || del.status === 'needs_revision') {
                             <div class="detail__deliverable-upload">
                               <app-file-upload
                                 accept=".pdf,.doc,.docx,.zip"

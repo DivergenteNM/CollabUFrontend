@@ -52,4 +52,20 @@ export class ProjectService extends BaseApiService {
       params: this.buildParams(params)
     });
   }
+
+  getDeliverables(projectId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${projectId}/deliverables`);
+  }
+
+  addDeliverable(projectId: string, data: any): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${projectId}/deliverables`, data);
+  }
+
+  updateDeliverable(projectId: string, deliverableId: string, data: any): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${projectId}/deliverables/${deliverableId}`, data);
+  }
+
+  deleteDeliverable(projectId: string, deliverableId: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${projectId}/deliverables/${deliverableId}`);
+  }
 }

@@ -5,6 +5,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
@@ -19,7 +23,8 @@ import { StarRatingComponent } from '../../../../shared/components/ui/star-ratin
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink, MatIconModule, MatButtonModule, MatCardModule,
-    MatTabsModule, MatChipsModule, DatePipe,
+    MatTabsModule, MatChipsModule, MatFormFieldModule, MatInputModule,
+    MatSliderModule, MatSnackBarModule, DatePipe,
     StatusBadgeComponent, SkeletonComponent, StarRatingComponent,
   ],
   templateUrl: './student-supervision.component.html',
@@ -36,6 +41,10 @@ export class StudentSupervisionComponent implements OnDestroy {
   readonly detail = signal<AssignmentDetail | null>(null);
   readonly deliverables = signal<Deliverable[]>([]);
   readonly evaluations = signal<EvaluationItem[]>([]);
+  readonly reviewGrade = signal(3);
+  readonly reviewFeedback = signal('');
+
+  private readonly snackBar = inject(MatSnackBar);
 
   constructor() {
     this.loadAssignment();
@@ -111,5 +120,20 @@ export class StudentSupervisionComponent implements OnDestroy {
       needs_revision: 'Solicita revisión',
     };
     return labels[status] ?? status;
+  }
+
+  reviewDeliverable(appId: string, delId: string, status: 'approved' | 'rejected' | 'needs_revision'): void {
+    this.facultyService.reviewDeliverable(appId, delId, status, {
+      grade: this.reviewGrade(),
+      feedback: this.reviewFeedback(),
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Entregable revisado', 'OK', { duration: 3000 });
+        this.reviewFeedback.set('');
+        this.reviewGrade.set(3);
+        this.loadAssignment();
+      },
+      error: () => this.snackBar.open('Error al revisar entregable', 'Cerrar', { duration: 4000 }),
+    });
   }
 }
