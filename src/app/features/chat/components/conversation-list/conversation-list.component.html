@@ -7,23 +7,27 @@
 
       <div class="conv-item">
         <div class="conv-item__avatar"
-          [class.online]="getOtherParticipant(conv).isOnline">
-          <mat-icon>person</mat-icon>
+          [class.online]="isOnline(conv)"
+          [class.group]="kind(conv) !== 'direct'">
+          <mat-icon>{{ avatarIcon(conv) }}</mat-icon>
         </div>
 
         <div class="conv-item__info">
           <div class="conv-item__top">
-            <span class="conv-item__name">{{ getOtherParticipant(conv).displayName }}</span>
+            <span class="conv-item__name">{{ displayName(conv) }}</span>
             @if (conv.lastMessage) {
               <span class="conv-item__time">{{ conv.lastMessage.createdAt | relativeTime }}</span>
             }
           </div>
           <div class="conv-item__bottom">
             <span class="conv-item__preview">
+              @if (kind(conv) !== 'direct') {
+                <mat-icon class="conv-item__type-icon">{{ avatarIcon(conv) }}</mat-icon>
+              }
               @if (conv.lastMessage) {
                 {{ conv.lastMessage.content | slice:0:50 }}{{ conv.lastMessage.content.length > 50 ? '...' : '' }}
               } @else {
-                Sin mensajes aún
+                {{ kind(conv) !== 'direct' ? participantsSummary(conv) : 'Sin mensajes aún' }}
               }
             </span>
             @if (conv.unreadCount > 0) {

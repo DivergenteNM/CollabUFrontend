@@ -1,13 +1,117 @@
 <div class="students-list">
   <div class="students-list__header">
     <h1>Mis Estudiantes</h1>
+    <p class="students-list__subtitle">Estudiantes y proyectos asignados a tu cargo.</p>
   </div>
 
-  <app-data-table
-    [data]="students()"
-    [columns]="columns"
-    [totalItems]="totalCount()"
-    [loading]="isLoading()"
-    (rowClicked)="onRowClick($event)"
-    (pageChanged)="onPage($event)" />
+  @if (isLoading()) {
+    <div class="students-list__grid">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="student-card student-card--skeleton">
+          <div class="skeleton-line skeleton-line--title"></div>
+          <div class="skeleton-line skeleton-line--subtitle"></div>
+          <div class="skeleton-line skeleton-line--meta"></div>
+        </div>
+      }
+    </div>
+  } @else if (students().length === 0) {
+    <div class="students-list__empty">
+      <mat-icon>school</mat-icon>
+      <p>No tienes estudiantes asignados en este momento.</p>
+    </div>
+  } @else {
+    <ng-template #cardTpl let-student>
+      <div class="student-card" (click)="onRowClick(student)" (keydown.enter)="onRowClick(student)" tabindex="0">
+        <div class="student-card__top">
+          <div class="student-card__avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="student-card__identity">
+            <h3 class="student-card__name">{{ student.studentName }}</h3>
+            @if (student.studentCode) {
+              <span class="student-card__code">{{ student.studentCode }}</span>
+            }
+          </div>
+          <span class="student-card__status" [class]="'student-card__status--' + student.status">
+            {{ assignmentStatusLabel(student.status) }}
+          </span>
+        </div>
+
+        <div class="student-card__project">
+          <mat-icon>folder</mat-icon>
+          <span>{{ student.projectTitle }}</span>
+        </div>
+
+        <div class="student-card__meta">
+          <span class="student-card__company">
+            <mat-icon>business</mat-icon> {{ student.companyName }}
+          </span>
+          <span class="student-card__role" [class.student-card__role--jurado]="student.role !== 'asesor'">
+            {{ roleLabels[student.role] ?? student.role }}
+          </span>
+        </div>
+
+        @if (canAcceptOrDecline(student)) {
+          <div class="student-card__actions" (click)="$event.stopPropagation()">
+            <button mat-flat-button color="primary" [disabled]="processingId() === student.id" (click)="accept(student, $event)">
+              <mat-icon>check</mat-icon> Aceptar
+            </button>
+            <button mat-stroked-button color="warn" [disabled]="processingId() === student.id" (click)="decline(student, $event)">
+              <mat-icon>close</mat-icon> Declinar
+            </button>
+          </div>
+        }
+        @if (isTerminal(student) && student.role === 'jurado_anteproyecto') {
+          <div class="student-card__hint">
+            <mat-icon>history</mat-icon> Ver mi historial de revisión
+          </div>
+        }
+      </div>
+    </ng-template>
+
+    @if (pendingGroup().length > 0) {
+      <div class="students-list__section">
+        <h2 class="students-list__section-title">Pendientes</h2>
+        <div class="students-list__grid">
+          @for (student of pendingGroup(); track student.id) {
+            <ng-container [ngTemplateOutlet]="cardTpl" [ngTemplateOutletContext]="{ $implicit: student }" />
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeGroup().length > 0) {
+      <div class="students-list__section">
+        <h2 class="students-list__section-title">Activos</h2>
+        <div class="students-list__grid">
+          @for (student of activeGroup(); track student.id) {
+            <ng-container [ngTemplateOutlet]="cardTpl" [ngTemplateOutletContext]="{ $implicit: student }" />
+          }
+        </div>
+      </div>
+    }
+
+    @if (historyGroup().length > 0) {
+      <div class="students-list__section">
+        <h2 class="students-list__section-title">Historial</h2>
+        <div class="students-list__grid">
+          @for (student of historyGroup(); track student.id) {
+            <ng-container [ngTemplateOutlet]="cardTpl" [ngTemplateOutletContext]="{ $implicit: student }" />
+          }
+        </div>
+      </div>
+    }
+
+    @if (totalCount() > 50) {
+      <div class="students-list__pagination">
+        <button mat-button [disabled]="page() <= 1" (click)="onPage({ page: page() - 1 })">
+          <mat-icon>chevron_left</mat-icon> Anterior
+        </button>
+        <span class="students-list__page-info">Página {{ page() }}</span>
+        <button mat-button [disabled]="students().length < 50" (click)="onPage({ page: page() + 1 })">
+          Siguiente <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    }
+  }
 </div>

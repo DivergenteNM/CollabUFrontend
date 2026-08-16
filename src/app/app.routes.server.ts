@@ -41,11 +41,11 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
-    path: 'admin/verifications/:id',
+    path: 'my-students/:applicationId',
     renderMode: RenderMode.Client,
   },
   {
-    path: 'my-students/:applicationId',
+    path: 'workspace/:applicationId',
     renderMode: RenderMode.Client,
   },
   {

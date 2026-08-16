@@ -57,6 +57,16 @@
               <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHours }}h total
             </span>
           }
+          @if (p.compensationType) {
+            <span class="detail__meta-item">
+              <mat-icon>payments</mat-icon> {{ p.compensationType === 'paid' ? 'Remunerado' : p.compensationType === 'stipend' ? 'Auxilio' : 'No remunerado' }}
+            </span>
+          }
+          @if (p.minimumSemester) {
+            <span class="detail__meta-item">
+              <mat-icon>school</mat-icon> Desde semestre {{ p.minimumSemester }}
+            </span>
+          }
           <span class="detail__meta-item">
             <mat-icon>event</mat-icon> {{ p.startDate | date:'d MMM yyyy' }} — {{ p.endDate | date:'d MMM yyyy' }}
           </span>
@@ -68,8 +78,16 @@
           </span>
         </div>
 
-        @if (p.tags.length > 0) {
-          <app-skill-chip-list [skills]="p.tags" [maxVisible]="8" />
+        @if (academicProgramNames(p).length > 0) {
+          <div class="detail__meta">
+            @for (name of academicProgramNames(p); track name) {
+              <span class="detail__meta-item"><mat-icon>menu_book</mat-icon> {{ name }}</span>
+            }
+          </div>
+        }
+
+        @if (p.skills?.length > 0) {
+          <app-skill-chip-list [skills]="skillNames(p)" [maxVisible]="8" />
         }
       </mat-card-content>
     </mat-card>
@@ -85,11 +103,11 @@
 
           <mat-tab label="Requisitos">
             <div class="detail__tab-content">
-              @if (p.requirements.length === 0) {
-                <p class="detail__empty-tab">No se especificaron requisitos.</p>
+              @if (nonSkillRequirements(p).length === 0) {
+                <p class="detail__empty-tab">No se especificaron requisitos adicionales.</p>
               } @else {
                 <div class="detail__requirements">
-                  @for (req of p.requirements; track req.id) {
+                  @for (req of nonSkillRequirements(p); track req.id) {
                     <div class="detail__requirement" [class.mandatory]="req.isMandatory">
                       <div class="detail__requirement-header">
                         <mat-icon>{{ getRequirementIcon(req.type) }}</mat-icon>

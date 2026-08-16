@@ -1,5 +1,5 @@
 import {
-  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, input,
+  Component, ChangeDetectionStrategy, inject, computed, signal, PLATFORM_ID, input,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -22,6 +22,8 @@ import { MatchScoreCardComponent } from '../../../../shared/components/cards/mat
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { ApplyDialogComponent, ApplyDialogData } from '../../components/apply-dialog/apply-dialog.component';
+import { AdminService } from '../../../admin/services/admin.service';
+import { AcademicProgram } from '../../../../core/models';
 
 @Component({
   selector: 'app-project-detail',
@@ -42,8 +44,10 @@ export class ProjectDetailComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   readonly location = inject(Location);
+  private readonly adminService = inject(AdminService);
 
   readonly id = input.required<string>();
+  private readonly programs = signal<AcademicProgram[]>([]);
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
     () => {
@@ -84,6 +88,26 @@ export class ProjectDetailComponent {
     const err = this.projectResource.error() as any;
     return err?.message ?? 'No se pudo cargar el proyecto.';
   });
+
+  constructor() {
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => this.programs.set(programs),
+      error: () => {},
+    });
+  }
+
+  academicProgramNames(project: Project): string[] {
+    const ids = (project as any).academicPrograms ?? [];
+    return ids.map((id: string) => this.programs().find((p) => p.id === id)?.name ?? id);
+  }
+
+  nonSkillRequirements(project: Project): any[] {
+    return (project.requirements ?? []).filter((r: any) => r.type !== 'skill');
+  }
+
+  skillNames(project: Project): string[] {
+    return ((project as any).skills ?? []).map((s: any) => s.name + (s.isMandatory ? '' : ' (deseable)'));
+  }
 
   readonly projectTypeLabel = computed(() => {
     const typeMap: Record<string, string> = {

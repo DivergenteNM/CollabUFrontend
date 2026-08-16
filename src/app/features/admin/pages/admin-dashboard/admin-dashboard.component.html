@@ -151,6 +151,13 @@
               <span>Supervisores por asignar</span>
               <mat-icon class="action-arrow">chevron_right</mat-icon>
             </a>
+            <a routerLink="/admin/academic-process" class="action-item">
+              <div class="action-icon-wrap action-icon-wrap--accent">
+                <mat-icon>assignment_turned_in</mat-icon>
+              </div>
+              <span>Cola de trabajo académico</span>
+              <mat-icon class="action-arrow">chevron_right</mat-icon>
+            </a>
             <a routerLink="/admin/periods" class="action-item">
               <div class="action-icon-wrap action-icon-wrap--accent">
                 <mat-icon>calendar_month</mat-icon>
@@ -227,6 +234,41 @@
         </mat-card-content>
       </mat-card>
 
+    </div>
+
+    <!-- KPIs del flujo académico -->
+    <div class="admin-analytics__trends-card">
+      <div class="trends-header">
+        <h2 class="trends-title">Flujo académico</h2>
+      </div>
+
+      @if (academicKpis.value(); as kpis) {
+        <div class="admin-analytics__stats">
+          <app-stat-card icon="task_alt" [value]="completionRate() !== null ? completionRate() + '%' : '—'" label="Tasa de completitud" color="primary" />
+          <app-stat-card icon="groups" [value]="kpis.assignmentStats?.totalAssignments ?? 0" label="Asignaciones totales" color="accent" />
+          <app-stat-card icon="schedule" [value]="kpis.assignmentStats?.avgAcceptanceHours != null ? (kpis.assignmentStats!.avgAcceptanceHours + 'h') : '—'" label="Tiempo promedio de aceptación" color="primary" />
+          <app-stat-card icon="rate_review" [value]="kpis.academicStats?.avgAnteproyectoCorrections ?? '—'" label="Correcciones promedio anteproyecto" color="accent" />
+        </div>
+
+        @if (topWorkload().length > 0) {
+          <div class="skills-list" style="margin-top: 16px;">
+            <p class="trends-subtitle" style="margin-bottom: 8px;">Docentes con mayor carga activa</p>
+            @for (w of topWorkload(); track w.supervisorId) {
+              <div class="skill-row">
+                <span class="skill-name">{{ w.supervisorId }}</span>
+                <span class="skill-badge skill-badge--demand">{{ w.activeCount }} estudiantes</span>
+              </div>
+            }
+          </div>
+        }
+      } @else if (academicKpis.isLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      } @else {
+        <div class="empty-state">
+          <mat-icon>school</mat-icon>
+          <p>Sin datos del flujo académico aún</p>
+        </div>
+      }
     </div>
   }
 

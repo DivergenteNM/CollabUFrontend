@@ -15,9 +15,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { DatePipe } from '@angular/common';
 import { httpResource, HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
+import { RejectionCategory, AdminService } from '../../services/admin.service';
+import { AcademicProgram } from '../../../../core/models';
+import { StorageService } from '../../../../core/services/storage.service';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface CompanyRow {
@@ -59,8 +63,9 @@ export interface ProjectRow {
   totalHours?: number;
   minimumSemester?: number;
   academicPrograms?: string[];
-  tags?: string[];
-  requirements?: { name: string; requirementType: string; proficiencyLevel: string; isMandatory: boolean }[];
+  skills?: { name: string; category: string; proficiencyLevel: string | null; isMandatory: boolean }[];
+  requirements?: { name: string; type: string; proficiencyLevel: string; isMandatory: boolean }[];
+  requestDocumentFileId?: string | null;
 }
 
 interface PaginatedMeta { page: number; limit: number; total: number; totalPages: number; }
@@ -238,14 +243,14 @@ export class CompanyDetailDialogComponent {
         </section>
       }
 
-      @if (p.requirements?.length) {
+      @if (nonSkillRequirements().length) {
         <mat-divider />
         <section class="det-section">
           <h3 class="det-section-title"><mat-icon>checklist</mat-icon> Requisitos</h3>
-          @for (req of p.requirements; track req.name) {
+          @for (req of nonSkillRequirements(); track req.name) {
             <div class="det-req" [class.det-req--mandatory]="req.isMandatory">
               <span class="det-req-name">{{ req.name }}</span>
-              <span class="det-req-type">{{ req.requirementType }}</span>
+              <span class="det-req-type">{{ req.type }}</span>
               @if (req.proficiencyLevel) { <span class="det-req-level">{{ req.proficiencyLevel }}</span> }
               <span class="det-req-flag" [class.det-req-flag--req]="req.isMandatory">
                 {{ req.isMandatory ? 'Obligatorio' : 'Opcional' }}
@@ -255,15 +260,19 @@ export class CompanyDetailDialogComponent {
         </section>
       }
 
-      @if (p.tags?.length) {
+      @if (p.skills?.length) {
         <mat-divider />
         <section class="det-section">
-          <h3 class="det-section-title"><mat-icon>label</mat-icon> Etiquetas</h3>
-          <div class="det-tags">
-            @for (tag of p.tags; track tag) {
-              <span class="det-tag">{{ tag }}</span>
-            }
-          </div>
+          <h3 class="det-section-title"><mat-icon>psychology</mat-icon> Habilidades requeridas</h3>
+          @for (skill of p.skills; track skill.name) {
+            <div class="det-req" [class.det-req--mandatory]="skill.isMandatory">
+              <span class="det-req-name">{{ skill.name }}</span>
+              @if (skill.proficiencyLevel) { <span class="det-req-level">{{ skill.proficiencyLevel }}</span> }
+              <span class="det-req-flag" [class.det-req-flag--req]="skill.isMandatory">
+                {{ skill.isMandatory ? 'Obligatoria' : 'Deseable' }}
+              </span>
+            </div>
+          }
         </section>
       }
 
@@ -272,12 +281,24 @@ export class CompanyDetailDialogComponent {
         <section class="det-section">
           <h3 class="det-section-title"><mat-icon>school</mat-icon> Programas académicos</h3>
           <div class="det-tags">
-            @for (prog of p.academicPrograms; track prog) {
-              <span class="det-tag det-tag--prog">{{ prog }}</span>
+            @for (progId of p.academicPrograms; track progId) {
+              <span class="det-tag det-tag--prog">{{ programName(progId) }}</span>
             }
           </div>
         </section>
       }
+
+      <mat-divider />
+      <section class="det-section">
+        <h3 class="det-section-title"><mat-icon>description</mat-icon> Documento de solicitud formal</h3>
+        @if (p.requestDocumentFileId) {
+          <button mat-stroked-button (click)="downloadDocument()" [disabled]="downloading()">
+            <mat-icon>download</mat-icon> {{ downloading() ? 'Descargando...' : 'Descargar documento' }}
+          </button>
+        } @else {
+          <p class="det-description">No adjuntado.</p>
+        }
+      </section>
 
     </mat-dialog-content>
 
@@ -320,6 +341,36 @@ export class CompanyDetailDialogComponent {
 export class ProjectDetailDialogComponent {
   readonly p         = inject<ProjectRow>(MAT_DIALOG_DATA);
   readonly dialogRef = inject(MatDialogRef<ProjectDetailDialogComponent>);
+  private readonly adminService = inject(AdminService);
+  private readonly storageService = inject(StorageService);
+
+  readonly downloading = signal(false);
+  private readonly programs = signal<AcademicProgram[]>([]);
+
+  constructor() {
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => this.programs.set(programs),
+      error: () => {},
+    });
+  }
+
+  programName(id: string): string {
+    return this.programs().find((p) => p.id === id)?.name ?? id;
+  }
+
+  /** Excluye requirements ya migrados a `skills` para no mostrar duplicados en datos antiguos. */
+  nonSkillRequirements(): { name: string; type: string; proficiencyLevel: string; isMandatory: boolean }[] {
+    return (this.p.requirements ?? []).filter((r) => r.type !== 'skill');
+  }
+
+  downloadDocument(): void {
+    if (!this.p.requestDocumentFileId) return;
+    this.downloading.set(true);
+    this.storageService.saveAs(this.p.requestDocumentFileId, `solicitud-${this.p.title}.pdf`).subscribe({
+      next: () => this.downloading.set(false),
+      error: () => this.downloading.set(false),
+    });
+  }
 
   projTypeLabel(s: string) {
     return ({ internship:'Práctica', professional_practice:'Práctica Profesional', thesis:'Tesis',
@@ -365,6 +416,192 @@ export class RejectDialogComponent {
   reason = '';
 }
 
+// ─── Project Review Dialog (aprobar / solicitar cambios / rechazar) ───────────
+export interface ProjectReviewDialogData {
+  mode: 'approve' | 'needs_changes' | 'reject';
+  project: ProjectRow;
+  categories: RejectionCategory[];
+}
+export interface ProjectReviewDialogResult {
+  action: 'approve' | 'needs_changes' | 'reject';
+  notes?: string;
+  categories?: string[];
+}
+
+@Component({
+  selector: 'app-project-review-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule,
+    MatIconModule, MatCheckboxModule, MatDividerModule, FormsModule,
+  ],
+  template: `
+    @if (data.mode === 'approve') {
+      <h2 mat-dialog-title class="dlg-title"><mat-icon color="primary">check_circle</mat-icon> Aprobar proyecto</h2>
+      <mat-dialog-content class="dlg-content dlg-content--wide">
+        <p class="dlg-sub">Aprobar "{{ data.project.title }}" — quedará publicado y visible para estudiantes.</p>
+
+        <section class="rev-section">
+          <h4 class="rev-section-title"><mat-icon>info</mat-icon> Proyecto</h4>
+          <div class="rev-grid">
+            <div class="rev-field"><span class="rev-label">Tipo</span><span>{{ projTypeLabel(data.project.projectType) }}</span></div>
+            <div class="rev-field"><span class="rev-label">Modalidad</span><span>{{ locationLabel(data.project.locationType) }}</span></div>
+            <div class="rev-field"><span class="rev-label">Vacantes</span><span>{{ data.project.positionsAvailable }}</span></div>
+            <div class="rev-field"><span class="rev-label">Semestre mínimo</span><span>{{ data.project.minimumSemester ?? '—' }}</span></div>
+            <div class="rev-field"><span class="rev-label">Horas semanales</span><span>{{ data.project.weeklyHours ? data.project.weeklyHours + ' h/sem' : '—' }}</span></div>
+            <div class="rev-field"><span class="rev-label">Documento adjunto</span><span>{{ data.project.requestDocumentFileId ? 'Sí' : 'No' }}</span></div>
+          </div>
+          @if (data.project.description) {
+            <p class="rev-description">{{ data.project.description }}</p>
+          }
+          @if (data.project.skills?.length) {
+            <div class="rev-tags">
+              @for (skill of data.project.skills; track skill.name) {
+                <span class="rev-tag">{{ skill.name }}</span>
+              }
+            </div>
+          }
+        </section>
+
+        <mat-divider />
+
+        <section class="rev-section">
+          <h4 class="rev-section-title"><mat-icon>business</mat-icon> Empresa</h4>
+          @if (loadingCompany()) {
+            <p class="dlg-sub">Cargando información de la empresa...</p>
+          } @else if (company(); as c) {
+            <div class="rev-grid">
+              <div class="rev-field"><span class="rev-label">Nombre</span><span>{{ c.companyName }}</span></div>
+              <div class="rev-field"><span class="rev-label">NIT</span><span>{{ c.nit || '—' }}</span></div>
+              <div class="rev-field"><span class="rev-label">Industria</span><span>{{ c.industry || '—' }}</span></div>
+              <div class="rev-field"><span class="rev-label">Sede</span><span>{{ c.headquartersCity || '—' }}</span></div>
+            </div>
+            @if (primaryContact(c); as contact) {
+              <p class="dlg-sub">Contacto: {{ contact.firstName }} {{ contact.lastName }} — {{ contact.email }}</p>
+            }
+          } @else {
+            <p class="dlg-sub">No se pudo cargar la información de la empresa.</p>
+          }
+        </section>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="dialogRef.close(null)">Cancelar</button>
+        <button mat-flat-button color="primary" (click)="confirmApprove()">
+          <mat-icon>check_circle</mat-icon> Aprobar
+        </button>
+      </mat-dialog-actions>
+    }
+
+    @if (data.mode === 'needs_changes') {
+      <h2 mat-dialog-title class="dlg-title"><mat-icon style="color:#b45309">edit_note</mat-icon> Solicitar cambios</h2>
+      <mat-dialog-content class="dlg-content">
+        <p class="dlg-sub">Indica a la empresa qué debe ajustar en "{{ data.project.title }}" antes de volver a enviarlo.</p>
+        <mat-form-field appearance="outline" class="full-w">
+          <mat-label>Cambios requeridos</mat-label>
+          <textarea matInput [(ngModel)]="notes" rows="4" required
+            placeholder="Ej: Especificar mejor los requisitos técnicos, corregir la duración..."></textarea>
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="dialogRef.close(null)">Cancelar</button>
+        <button mat-flat-button style="background:#b45309;color:#fff" [disabled]="!notes.trim()" (click)="confirmNeedsChanges()">
+          <mat-icon>edit_note</mat-icon> Solicitar cambios
+        </button>
+      </mat-dialog-actions>
+    }
+
+    @if (data.mode === 'reject') {
+      <h2 mat-dialog-title class="dlg-title"><mat-icon color="warn">cancel</mat-icon> Rechazar proyecto</h2>
+      <mat-dialog-content class="dlg-content">
+        <p class="dlg-sub">Selecciona el motivo del rechazo de "{{ data.project.title }}".</p>
+        <div class="cat-list">
+          @for (cat of data.categories; track cat.id) {
+            <mat-checkbox [checked]="selectedCategories.includes(cat.name)"
+              (change)="toggleCategory(cat.name)">{{ cat.name }}</mat-checkbox>
+          }
+        </div>
+        <mat-form-field appearance="outline" class="full-w">
+          <mat-label>Observaciones adicionales (opcional)</mat-label>
+          <textarea matInput [(ngModel)]="notes" rows="3"></textarea>
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="dialogRef.close(null)">Cancelar</button>
+        <button mat-flat-button color="warn" [disabled]="selectedCategories.length === 0" (click)="confirmReject()">
+          <mat-icon>thumb_down</mat-icon> Rechazar
+        </button>
+      </mat-dialog-actions>
+    }
+  `,
+  styles: [`.dlg-title{display:flex;align-items:center;gap:8px}
+    .dlg-content{min-width:420px;max-width:480px;padding-top:8px;display:flex;flex-direction:column;gap:12px}
+    .dlg-content--wide{min-width:560px;max-width:640px}
+    .dlg-sub{font-size:.875rem;color:#555;margin:0 0 4px}.full-w{width:100%}
+    .cat-list{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+    .rev-section{padding:4px 0}
+    .rev-section-title{display:flex;align-items:center;gap:6px;font-size:.8125rem;font-weight:600;
+      color:#374151;margin:0 0 8px;mat-icon{font-size:16px;height:16px;width:16px}}
+    .rev-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px}
+    .rev-field{display:flex;flex-direction:column;gap:1px;font-size:.8125rem}
+    .rev-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;color:#9ca3af;font-weight:600}
+    .rev-description{font-size:.8125rem;color:#374151;margin:8px 0 0;white-space:pre-wrap}
+    .rev-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .rev-tag{background:#ede9fe;color:#5b21b6;font-size:.7rem;padding:2px 9px;border-radius:10px}`],
+})
+export class ProjectReviewDialogComponent {
+  readonly data      = inject<ProjectReviewDialogData>(MAT_DIALOG_DATA);
+  readonly dialogRef = inject(MatDialogRef<ProjectReviewDialogComponent, ProjectReviewDialogResult | null>);
+  private readonly http = inject(HttpClient);
+
+  notes = '';
+  selectedCategories: string[] = [];
+
+  readonly loadingCompany = signal(false);
+  readonly company = signal<CompanyRow | null>(null);
+
+  constructor() {
+    if (this.data.mode === 'approve' && this.data.project.companyId) {
+      this.loadingCompany.set(true);
+      this.http.get<CompanyRow>(`${environment.apiUrl}/companies/profile/${this.data.project.companyId}`).subscribe({
+        next: (c) => { this.company.set(c); this.loadingCompany.set(false); },
+        error: () => this.loadingCompany.set(false),
+      });
+    }
+  }
+
+  primaryContact(c: CompanyRow) {
+    return c.contacts?.find((x) => x.isPrimary) ?? c.contacts?.[0];
+  }
+
+  projTypeLabel(s: string) {
+    return ({ internship:'Práctica', professional_practice:'Práctica Profesional', thesis:'Tesis',
+      research:'Investigación', other:'Otro' } as Record<string,string>)[s] ?? s;
+  }
+  locationLabel(s: string) {
+    return ({ remote:'Remoto', onsite:'Presencial', hybrid:'Híbrido' } as Record<string,string>)[s] ?? s;
+  }
+
+  toggleCategory(name: string) {
+    this.selectedCategories = this.selectedCategories.includes(name)
+      ? this.selectedCategories.filter((c) => c !== name)
+      : [...this.selectedCategories, name];
+  }
+
+  confirmApprove() {
+    this.dialogRef.close({ action: 'approve' });
+  }
+
+  confirmNeedsChanges() {
+    if (!this.notes.trim()) return;
+    this.dialogRef.close({ action: 'needs_changes', notes: this.notes.trim() });
+  }
+
+  confirmReject() {
+    if (this.selectedCategories.length === 0) return;
+    this.dialogRef.close({ action: 'reject', categories: this.selectedCategories, notes: this.notes.trim() || undefined });
+  }
+}
+
 // ─── Suspend Dialog ───────────────────────────────────────────────────────────
 @Component({
   selector: 'app-suspend-dialog',
@@ -405,7 +642,7 @@ export class SuspendDialogComponent {
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatTabsModule, MatTableModule, MatPaginatorModule,
     MatTooltipModule, MatProgressBarModule, MatChipsModule,
-    MatDividerModule, FormsModule, DatePipe,
+    MatDividerModule, MatCheckboxModule, FormsModule, DatePipe,
   ],
   templateUrl: './company-verifications.component.html',
   styleUrl:    './company-verifications.component.scss',
@@ -413,6 +650,11 @@ export class SuspendDialogComponent {
 export class CompanyVerificationsComponent {
   private readonly http   = inject(HttpClient);
   private readonly dialog = inject(MatDialog);
+
+  readonly rejectionCategoriesResource = httpResource<RejectionCategory[]>(
+    () => ({ url: `${environment.apiUrl}/admin/rejection-categories`, params: { onlyActive: 'true' } }),
+  );
+  readonly rejectionCategories = computed(() => this.rejectionCategoriesResource.value() ?? []);
 
   // ── Empresas ──
   readonly companySearch = signal('');
@@ -532,21 +774,28 @@ export class CompanyVerificationsComponent {
   // ── Project actions ──
   onProjectPage(e: PageEvent) { this.projectPage.set(e.pageIndex + 1); }
 
+  private openReviewDialog(mode: 'approve' | 'needs_changes' | 'reject', project: ProjectRow) {
+    this.dialog.open<ProjectReviewDialogComponent, ProjectReviewDialogData, ProjectReviewDialogResult | null>(
+      ProjectReviewDialogComponent,
+      { data: { mode, project, categories: this.rejectionCategories() }, width: mode === 'approve' ? '640px' : '480px' },
+    ).afterClosed().subscribe((result) => {
+      if (!result) return;
+      const { action, ...body } = result;
+      this.http.patch(`${environment.apiUrl}/projects/admin/${project.id}/review`, { action, ...body })
+        .subscribe(() => this.projectResource.reload());
+    });
+  }
+
   approveProject(project: ProjectRow) {
-    this.http.patch(`${environment.apiUrl}/projects/admin/${project.id}/review`, { action: 'approve' })
-      .subscribe(() => this.projectResource.reload());
+    this.openReviewDialog('approve', project);
+  }
+
+  requestChangesProject(project: ProjectRow) {
+    this.openReviewDialog('needs_changes', project);
   }
 
   rejectProject(project: ProjectRow) {
-    this.dialog.open(RejectDialogComponent, {
-      data: { title: 'Rechazar proyecto', subtitle: `¿Rechazar "${project.title}"?` },
-      width: '440px',
-    }).afterClosed().subscribe(reason => {
-      if (reason !== null) {
-        this.http.patch(`${environment.apiUrl}/projects/admin/${project.id}/review`, { action: 'reject', reason })
-          .subscribe(() => this.projectResource.reload());
-      }
-    });
+    this.openReviewDialog('reject', project);
   }
 }
 

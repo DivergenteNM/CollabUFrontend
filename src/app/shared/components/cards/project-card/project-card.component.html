@@ -25,11 +25,11 @@
     </div>
 
     <mat-chip-set class="project-card__tags">
-      @for (tag of project().tags.slice(0, 3); track tag) {
-        <mat-chip>{{ tag }}</mat-chip>
+      @for (skill of project().skills.slice(0, 3); track skill.name) {
+        <mat-chip>{{ skill.name }}</mat-chip>
       }
-      @if (project().tags.length > 3) {
-        <mat-chip>+{{ project().tags.length - 3 }}</mat-chip>
+      @if (project().skills.length > 3) {
+        <mat-chip>+{{ project().skills.length - 3 }}</mat-chip>
       }
     </mat-chip-set>
 

@@ -1,0 +1,271 @@
+// =============================================================================
+// FASE 14 — Refinamiento visual integral
+//
+// Consolida reglas globales que cubren los 11 puntos del planning §14:
+//   14.1  Sistema de espaciado consistente
+//   14.2  Tipografía y jerarquía
+//   14.3  Paleta y modo oscuro
+//   14.4  Cards y contenedores
+//   14.5  Chips y badges de estado (fuente única)
+//   14.6  Formularios y campos
+//   14.7  Tablas y listas
+//   14.8  Empty states y loading
+//   14.9  Responsive 375-1920
+//   14.10 Micro-interacciones
+//   14.11 Accesibilidad visual
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 14.2 Escala tipográfica canónica (usar en lugar de font-size ad-hoc)
+// -----------------------------------------------------------------------------
+
+.u-title-lg  { font-size: var(--font-size-2xl); font-weight: 700; line-height: 1.2; margin: 0; }
+.u-title-md  { font-size: var(--font-size-xl);  font-weight: 700; line-height: 1.25; margin: 0; }
+.u-title-sm  { font-size: var(--font-size-lg);  font-weight: 600; line-height: 1.3;  margin: 0; }
+.u-body      { font-size: var(--font-size-base); font-weight: 400; line-height: 1.5; }
+.u-body-sm   { font-size: var(--font-size-sm);  font-weight: 400; line-height: 1.4; }
+.u-caption   { font-size: var(--font-size-xs);  color: var(--text-secondary); }
+.u-label     {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+// -----------------------------------------------------------------------------
+// 14.4 Cards y contenedores — normalizamos padding, borde, sombra
+// -----------------------------------------------------------------------------
+
+.mat-mdc-card {
+  border-radius: var(--border-radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow var(--transition-fast);
+}
+
+.mat-mdc-card.interactive:hover,
+.mat-mdc-card[role="button"]:hover,
+a.mat-mdc-card:hover {
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-1px);
+}
+
+.mat-mdc-card-header { padding-bottom: var(--space-2) !important; }
+.mat-mdc-card-content { padding: var(--card-padding) !important; }
+
+// -----------------------------------------------------------------------------
+// 14.5 Chips de estado — fuente única, sin duplicar por componente.
+//      Cada card SCSS que aún los redeclare debería migrar a estas clases.
+// -----------------------------------------------------------------------------
+
+.u-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.u-chip--info    { background: #dbeafe; color: #1e40af; }
+.u-chip--success { background: #d1fae5; color: #065f46; }
+.u-chip--warning { background: #fef3c7; color: #92400e; }
+.u-chip--danger  { background: #fee2e2; color: #991b1b; }
+.u-chip--neutral { background: #f3f4f6; color: #6b7280; }
+
+// Sinónimos por estado del dominio (aplicables a mat-chip via [class])
+.u-chip.status-pending,
+.u-chip.status-pending_submission,
+.u-chip.status-pending_acceptance { background: #fef3c7; color: #92400e; }
+
+.u-chip.status-under_review,
+.u-chip.status-submitted,
+.u-chip.status-revised { background: #dbeafe; color: #1e40af; }
+
+.u-chip.status-accepted,
+.u-chip.status-approved,
+.u-chip.status-completed,
+.u-chip.status-active { background: #d1fae5; color: #065f46; }
+
+.u-chip.status-rejected,
+.u-chip.status-cancelled,
+.u-chip.status-declined { background: #fee2e2; color: #991b1b; }
+
+.u-chip.status-needs_revision,
+.u-chip.status-correction_requested { background: #fef9c3; color: #854d0e; }
+
+// -----------------------------------------------------------------------------
+// 14.6 Formularios — spacing consistente, textarea comfortable, subscript oculto
+// -----------------------------------------------------------------------------
+
+.u-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.u-form-row .mat-mdc-form-field { width: 100%; }
+
+.u-form-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+// Textarea con altura mínima cómoda
+.mat-mdc-form-field textarea.mat-mdc-input-element {
+  min-height: 72px;
+  resize: vertical;
+}
+
+// -----------------------------------------------------------------------------
+// 14.7 Tablas — headers legibles, alineación consistente, scroll horizontal
+// -----------------------------------------------------------------------------
+
+.u-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.u-table-wrap table.mat-mdc-table {
+  min-width: 720px;
+  width: 100%;
+}
+
+table.mat-mdc-table th.mat-mdc-header-cell {
+  font-weight: 700 !important;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+table.mat-mdc-table td.mat-mdc-cell { padding: var(--space-2) var(--space-3); }
+
+// -----------------------------------------------------------------------------
+// 14.8 Empty states y skeletons — clase canónica
+// -----------------------------------------------------------------------------
+
+.u-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+  color: var(--text-secondary);
+
+  mat-icon,
+  .material-icons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--text-disabled);
+  }
+
+  p { margin: 0; font-size: var(--font-size-sm); max-width: 360px; }
+}
+
+.u-skeleton {
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-md);
+  animation: u-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes u-skeleton-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.8; }
+}
+
+// -----------------------------------------------------------------------------
+// 14.9 Responsive helpers
+// -----------------------------------------------------------------------------
+
+// Toda página envuelta en .u-page respeta el max-width y el padding lateral
+.u-page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--page-padding);
+}
+
+@media (max-width: 599px) {
+  .u-page { padding: var(--space-3); }
+  .u-hide-mobile { display: none !important; }
+}
+
+@media (min-width: 600px) {
+  .u-hide-desktop { display: none !important; }
+}
+
+// Regla dura: ningún hijo debe forzar scroll horizontal
+body, .u-page { overflow-x: hidden; }
+
+// -----------------------------------------------------------------------------
+// 14.10 Micro-interacciones — hover, focus, transición homogénea
+// -----------------------------------------------------------------------------
+
+button,
+a,
+.mat-mdc-list-item,
+.mat-mdc-tab {
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+// -----------------------------------------------------------------------------
+// 14.11 Accesibilidad visual — focus ring, prefers-reduced-motion
+// -----------------------------------------------------------------------------
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-sm);
+}
+
+button:focus-visible,
+a:focus-visible,
+.mat-mdc-list-item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Contraste mínimo en texto secundario para WCAG AA
+.u-text-secondary {
+  color: var(--text-secondary);
+}
+
+// -----------------------------------------------------------------------------
+// 14.1 Utilidades de espaciado — para migrar valores mágicos
+// -----------------------------------------------------------------------------
+
+.u-stack-1 > * + * { margin-top: var(--space-1); }
+.u-stack-2 > * + * { margin-top: var(--space-2); }
+.u-stack-3 > * + * { margin-top: var(--space-3); }
+.u-stack-4 > * + * { margin-top: var(--space-4); }
+.u-stack-6 > * + * { margin-top: var(--space-6); }
+
+.u-inline-2 { display: flex; gap: var(--space-2); align-items: center; }
+.u-inline-3 { display: flex; gap: var(--space-3); align-items: center; }
+.u-inline-4 { display: flex; gap: var(--space-4); align-items: center; }

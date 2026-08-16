@@ -12,7 +12,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { StudentService } from '../../../students/services/student.service';
-import { StudentSkill } from '../../../../core/models';
+import { AdminService } from '../../../admin/services/admin.service';
+import { StudentSkill, SkillCatalogEntry, SkillCategory } from '../../../../core/models';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -29,6 +30,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/co
 })
 export class SkillsManagerComponent implements OnInit {
   private readonly studentService = inject(StudentService);
+  private readonly adminService = inject(AdminService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
@@ -38,19 +40,30 @@ export class SkillsManagerComponent implements OnInit {
   readonly removing = signal(false);
 
   newSkillName = '';
-  newSkillCategory = '';
-  newSkillLevel: StudentSkill['proficiencyLevel'] = 'basic';
+  newSkillCategory: SkillCategory = 'concept';
+  newSkillLevel: StudentSkill['proficiencyLevel'] = 'beginner' as StudentSkill['proficiencyLevel'];
+  private matchedCatalogId: string | null = null;
 
-  private readonly suggestions = [
-    'Angular', 'React', 'Vue', 'TypeScript', 'JavaScript', 'Python', 'Java',
-    'Node.js', 'SQL', 'PostgreSQL', 'MongoDB', 'Docker', 'Git', 'AWS',
-    'Flutter', 'Swift', 'Kotlin', 'C#', '.NET', 'PHP', 'Laravel',
-    'HTML', 'CSS', 'SASS', 'Tailwind CSS', 'Figma', 'Adobe XD',
+  readonly catalog = signal<SkillCatalogEntry[]>([]);
+  readonly filteredSuggestions = signal<SkillCatalogEntry[]>([]);
+
+  readonly categoryOptions: { value: SkillCategory; label: string }[] = [
+    { value: 'language', label: 'Lenguaje' },
+    { value: 'framework', label: 'Framework' },
+    { value: 'tool', label: 'Herramienta' },
+    { value: 'concept', label: 'Concepto' },
+    { value: 'soft_skill', label: 'Habilidad blanda' },
   ];
 
-  readonly filteredSuggestions = signal<string[]>(this.suggestions);
-
   ngOnInit(): void {
+    this.studentService.getProfile().subscribe({
+      next: (resp) => {
+        const programName = (resp.data as any)?.program ?? null;
+        this.loadCatalog(programName);
+      },
+      error: () => this.loadCatalog(null),
+    });
+
     this.studentService.getSkills().subscribe({
       next: (resp) => {
         this.skills.set(resp.data);
@@ -60,21 +73,77 @@ export class SkillsManagerComponent implements OnInit {
     });
   }
 
+  private loadCatalog(programName: string | null): void {
+    if (!programName) {
+      this.adminService.getSkillCatalog().subscribe({
+        next: (entries) => { this.catalog.set(entries); this.filterSuggestions(''); },
+      });
+      return;
+    }
+
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => {
+        const program = programs.find((p) => p.name === programName);
+        this.adminService.getSkillCatalog(program ? { programId: program.id } : undefined).subscribe({
+          next: (entries) => { this.catalog.set(entries); this.filterSuggestions(''); },
+        });
+      },
+      error: () => {
+        this.adminService.getSkillCatalog().subscribe({
+          next: (entries) => { this.catalog.set(entries); this.filterSuggestions(''); },
+        });
+      },
+    });
+  }
+
+  onNameChange(value: string): void {
+    this.newSkillName = value;
+    this.filterSuggestions(value);
+    const match = this.catalog().find((s) => s.displayName.toLowerCase() === value.trim().toLowerCase());
+    this.matchedCatalogId = match?.id ?? null;
+    if (match) this.newSkillCategory = match.category;
+  }
+
+  private filterSuggestions(q: string): void {
+    const query = q.trim().toLowerCase();
+    const owned = new Set(this.skills().map((s) => s.name.toLowerCase()));
+    const source = this.catalog().filter((s) => !owned.has(s.displayName.toLowerCase()));
+    this.filteredSuggestions.set(
+      query
+        ? source.filter((s) => s.displayName.toLowerCase().includes(query))
+        : source,
+    );
+  }
+
+  addFromChip(entry: SkillCatalogEntry): void {
+    this.newSkillName = entry.displayName;
+    this.newSkillCategory = entry.category;
+    this.matchedCatalogId = entry.id;
+    this.addSkill();
+  }
+
+  categoryLabel(cat: string): string {
+    return this.categoryOptions.find((c) => c.value === cat)?.label ?? cat;
+  }
+
   addSkill(): void {
     if (!this.newSkillName.trim()) return;
     this.adding.set(true);
 
     this.studentService.addSkill({
       name: this.newSkillName.trim(),
-      category: this.newSkillCategory.trim() || 'General',
+      category: this.newSkillCategory,
       proficiencyLevel: this.newSkillLevel,
+      catalogSkillId: this.matchedCatalogId ?? undefined,
     }).subscribe({
       next: (resp) => {
         this.skills.update(list => [...list, resp.data]);
         this.newSkillName = '';
-        this.newSkillCategory = '';
-        this.newSkillLevel = 'basic';
+        this.newSkillCategory = 'concept';
+        this.newSkillLevel = 'beginner' as StudentSkill['proficiencyLevel'];
+        this.matchedCatalogId = null;
         this.adding.set(false);
+        this.filterSuggestions('');
         this.snackBar.open('Habilidad agregada', 'Cerrar', { duration: 2000 });
       },
       error: () => this.adding.set(false),
@@ -98,6 +167,7 @@ export class SkillsManagerComponent implements OnInit {
         next: () => {
           this.skills.update(list => list.filter(s => s.id !== skill.id));
           this.removing.set(false);
+          this.filterSuggestions('');
           this.snackBar.open('Habilidad eliminada', 'Cerrar', { duration: 2000 });
         },
         error: () => this.removing.set(false),
@@ -107,7 +177,6 @@ export class SkillsManagerComponent implements OnInit {
 
   levelLabel(level?: string): string {
     const labels: Record<string, string> = {
-      basic: 'Básico',
       beginner: 'Principiante',
       intermediate: 'Intermedio',
       advanced: 'Avanzado',

@@ -12,28 +12,54 @@
       <mat-card-title>Agregar Habilidad</mat-card-title>
     </mat-card-header>
     <mat-card-content>
+      @if (filteredSuggestions().length > 0) {
+        <div class="skills-manager__chips">
+          <span class="skills-manager__chips-label">Sugerencias:</span>
+          <mat-chip-set>
+            @for (s of filteredSuggestions().slice(0, 20); track s.id) {
+              <mat-chip
+                [disabled]="adding()"
+                (click)="addFromChip(s)"
+                class="skills-manager__chip">
+                <mat-icon>add</mat-icon>
+                {{ s.displayName }}
+              </mat-chip>
+            }
+          </mat-chip-set>
+        </div>
+      }
+
       <div class="add-form">
         <mat-form-field appearance="outline">
           <mat-label>Habilidad / Competencia</mat-label>
-          <input matInput [(ngModel)]="newSkillName"
+          <input matInput
+            [ngModel]="newSkillName"
+            (ngModelChange)="onNameChange($event)"
             [matAutocomplete]="auto"
             placeholder="Ej: Angular, Python, SQL..." />
-          <mat-autocomplete #auto="matAutocomplete">
-            @for (s of filteredSuggestions(); track s) {
-              <mat-option [value]="s">{{ s }}</mat-option>
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onNameChange($event.option.value)">
+            @for (s of filteredSuggestions(); track s.id) {
+              <mat-option [value]="s.displayName">
+                {{ s.displayName }}
+                <small class="skills-manager__opt-cat"> · {{ categoryLabel(s.category) }}</small>
+              </mat-option>
             }
           </mat-autocomplete>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Categoría</mat-label>
-          <input matInput [(ngModel)]="newSkillCategory" placeholder="Ej: Frontend, Backend..." />
+          <mat-select [(ngModel)]="newSkillCategory">
+            @for (opt of categoryOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Nivel</mat-label>
           <mat-select [(ngModel)]="newSkillLevel">
-            <mat-option value="basic">Básico</mat-option>
+            <mat-option value="beginner">Principiante</mat-option>
             <mat-option value="intermediate">Intermedio</mat-option>
             <mat-option value="advanced">Avanzado</mat-option>
             <mat-option value="expert">Experto</mat-option>

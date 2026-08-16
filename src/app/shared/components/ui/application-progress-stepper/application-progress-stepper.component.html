@@ -1,5 +1,5 @@
 <div class="stepper">
-  @for (step of steps; track step.status; let i = $index; let last = $last) {
+  @for (step of steps(); track step.status; let i = $index; let last = $last) {
     <div class="stepper__step"
          [class.stepper__step--completed]="i < currentIndex()"
          [class.stepper__step--active]="i === currentIndex()"

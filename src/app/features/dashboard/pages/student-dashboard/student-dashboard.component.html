@@ -142,12 +142,12 @@
               </div>
               @for (app of applications(); track app.id) {
                 <div class="dashboard__table-row"
-                     (click)="router.navigate(['/my-applications', app.id])"
-                     (keydown.enter)="router.navigate(['/my-applications', app.id])"
+                     (click)="router.navigate(['/workspace', app.id])"
+                     (keydown.enter)="router.navigate(['/workspace', app.id])"
                      tabindex="0"
                      role="button">
-                  <span class="truncate">{{ app.project?.title || 'Proyecto' }}</span>
-                  <span class="truncate">{{ app.project?.companyName || '—' }}</span>
+                  <span class="truncate">{{ app.project?.title || app.projectTitle || 'Sin título' }}</span>
+                  <span class="truncate">{{ app.project?.companyName || app.companyName || '—' }}</span>
                   <span><app-status-badge [status]="app.status" size="sm" /></span>
                   <span>
                     @if (app.matchScore) {

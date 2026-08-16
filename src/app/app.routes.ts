@@ -85,6 +85,24 @@ export const routes: Routes = [
           import('./features/chat/chat.routes').then((m) => m.CHAT_ROUTES),
       },
 
+      // ---- Workspace del proyecto (todos los roles) ----
+      {
+        path: 'workspace',
+        loadChildren: () =>
+          import('./features/workspace/workspace.routes').then(
+            (m) => m.WORKSPACE_ROUTES,
+          ),
+      },
+
+      // ---- Workspace de selección — aplicación/entrevista/asignación de asesor ----
+      {
+        path: 'selection',
+        loadChildren: () =>
+          import('./features/selection-workspace/selection-workspace.routes').then(
+            (m) => m.SELECTION_WORKSPACE_ROUTES,
+          ),
+      },
+
       // ---- Rutas de ESTUDIANTE ----
       {
         path: 'my-applications',

@@ -1,0 +1,177 @@
+<div class="sw">
+  @if (contextResource.isLoading() && !context()) {
+    <div class="sw__loading">
+      <app-skeleton height="80px" />
+      <app-skeleton height="200px" />
+      <app-skeleton height="200px" />
+    </div>
+  } @else if (contextResource.error()) {
+    <div class="sw__error">
+      <mat-icon>error_outline</mat-icon>
+      <p>No se pudo cargar esta postulación.</p>
+      <button mat-stroked-button (click)="reload()">Reintentar</button>
+    </div>
+  } @else if (context(); as ctx) {
+    <!-- Header -->
+    <div class="sw__header">
+      <button mat-icon-button (click)="goBack()" matTooltip="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="sw__header-text">
+        <h1>{{ project()?.title ?? 'Postulación' }}</h1>
+        <div class="sw__header-meta">
+          <app-status-badge [status]="application()!.status" domain="application" />
+          @if (isCompany() || isAdmin() || isAsesor()) {
+            <span class="sw__candidate-name">{{ candidateName() }}</span>
+          }
+        </div>
+      </div>
+      @if (can('chat') && !isTerminal()) {
+        <button mat-stroked-button (click)="startChat()" [disabled]="loadingChat()">
+          <mat-icon>chat</mat-icon> Mensaje
+        </button>
+      }
+    </div>
+
+    <!-- Próximo paso -->
+    @if (nextStep()) {
+      <div class="sw__next-step" [class.sw__next-step--terminal]="isTerminal()">
+        <mat-icon>{{ isTerminal() ? 'info' : 'arrow_forward' }}</mat-icon>
+        <span>{{ nextStep() }}</span>
+      </div>
+    }
+
+    <div class="sw__grid">
+      <!-- Columna principal -->
+      <div class="sw__main">
+
+        <!-- Acciones de estado -->
+        @if (!isTerminal() && (isCompany() || isStudent())) {
+          <mat-card class="sw__actions-card">
+            <mat-card-content class="sw__actions">
+              @if (isCompany()) {
+                @switch (application()!.status) {
+                  @case ('pending') {
+                    <button mat-stroked-button (click)="changeStatus('under_review')">Mover a revisión</button>
+                    <button mat-stroked-button (click)="changeStatus('shortlisted')">Preseleccionar</button>
+                    <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
+                  }
+                  @case ('under_review') {
+                    <button mat-stroked-button (click)="changeStatus('shortlisted')">Preseleccionar</button>
+                    <button mat-stroked-button (click)="changeStatus('interview')">Marcar en entrevista</button>
+                    <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
+                  }
+                  @case ('shortlisted') {
+                    <button mat-stroked-button (click)="changeStatus('interview')">Marcar en entrevista</button>
+                    <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
+                  }
+                  @case ('interview') {
+                    <button mat-flat-button color="primary" (click)="changeStatus('accepted')">Aceptar candidato</button>
+                    <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
+                  }
+                  @case ('accepted') {
+                    <span class="sw__waiting">Esperando asignación de asesor por el administrador.</span>
+                  }
+                  @case ('pending_supervisor') {
+                    <span class="sw__waiting">Asesor asignado — esperando su aceptación.</span>
+                  }
+                }
+              }
+              @if (isStudent() && ['pending','under_review','shortlisted','interview'].includes(application()!.status)) {
+                <button mat-stroked-button color="warn" (click)="withdraw()">Retirar postulación</button>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+        @if (isAdmin() && application()!.status === 'accepted') {
+          <mat-card class="sw__actions-card">
+            <mat-card-content class="sw__actions">
+              <button mat-flat-button color="primary" (click)="goToSupervisorAssignment()">
+                <mat-icon>school</mat-icon> Ir a asignar asesor
+              </button>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Asesor: aceptar/declinar la asignación propuesta -->
+        @if (myPendingAsesorAssignment(); as assignment) {
+          <mat-card class="sw__actions-card">
+            <mat-card-content class="sw__actions">
+              <span class="sw__waiting">Se te propuso como asesor de este proyecto.</span>
+              <button mat-flat-button color="primary" [disabled]="busy()" (click)="acceptAsesorAssignment()">
+                <mat-icon>check</mat-icon> Aceptar asignación
+              </button>
+              <button mat-stroked-button color="warn" [disabled]="busy()" (click)="declineAsesorAssignment()">
+                <mat-icon>close</mat-icon> Declinar
+              </button>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Info del proyecto: descripción, modalidad, duración, programas, skills, documento -->
+        <app-project-info-card [project]="projectDetail()" />
+
+        <!-- Info de empresa (estudiante/admin/asesor) -->
+        @if (isStudent() || isAdmin() || isAsesor()) {
+          <app-company-profile-card [company]="companyProfile()" />
+        }
+
+        <!-- Info del candidato (empresa/admin/asesor) -->
+        @if (can('view_candidate')) {
+          <app-candidate-profile-card [student]="candidateProfile()" [fullName]="candidateName()" />
+        }
+
+        @if (!academicRecord()) {
+          <!-- Entrevista -->
+          <app-interview-panel
+            [interviews]="interviews()"
+            [canManage]="can('manage_interviews') && !isTerminal()"
+            [isStudent]="isStudent()"
+            (scheduleRequested)="openScheduleInterview()"
+            (rescheduleRequested)="openRescheduleInterview($event)"
+            (cancelRequested)="cancelInterview($event)"
+            (completeRequested)="openCompleteInterview($event)"
+            (uploadSolutionRequested)="requestSolutionFile($event)"
+            (feedbackSubmitted)="submitInterviewFeedback($event)" />
+
+          <!-- Documentos de selección -->
+          @if (can('view_selection_documents')) {
+            <app-selection-documents-panel
+              [documents]="selectionDocuments()"
+              [canRequest]="can('request_selection_document') && !isTerminal()"
+              [canReview]="can('review_selection_document') && !isTerminal()"
+              [isStudent]="isStudent()"
+              (requestRequested)="openRequestDocument()"
+              (submitRequested)="requestSelectionDocFile($event)"
+              (reviewRequested)="reviewSelectionDocument($event)" />
+          }
+        }
+
+        <!-- Anteproyecto: se habilita apenas el asesor acepta y existe registro académico -->
+        @if (showAnteproyecto()) {
+          <app-anteproyecto-panel
+            [applicationId]="applicationId()"
+            [canEdit]="can('submit_anteproyecto')"
+            [canComment]="can('comment_anteproyecto')"
+            [canReview]="can('review_anteproyecto')"
+            [canExtendDeadline]="can('extend_deadline')"
+            [juradoParticipants]="juradoParticipants()" />
+        }
+      </div>
+
+      <!-- Columna lateral: chat -->
+      @if (can('chat') && !isTerminal()) {
+        <div class="sw__side">
+          <app-project-chat-panel
+            [applicationId]="applicationId()"
+            [projectId]="project()?.id ?? null"
+            [participantIds]="participantUserIds()" />
+        </div>
+      }
+    </div>
+  }
+
+  <input #solutionFileInput type="file" hidden (change)="onSolutionFileSelected($event)" />
+  <input #selectionDocFileInput type="file" hidden (change)="onSelectionDocFileSelected($event)" />
+</div>

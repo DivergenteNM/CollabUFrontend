@@ -28,3 +28,56 @@ mat-dialog-content p {
   background-color: #c62828;
   color: #fff;
 }
+
+.confirm-dialog__context {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--mat-sys-surface-container-low, #f5f5f5);
+  border-radius: 8px;
+  margin-bottom: 12px;
+
+  mat-icon {
+    color: var(--mat-sys-on-surface-variant);
+    flex-shrink: 0;
+  }
+}
+
+.confirm-dialog__context-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.confirm-dialog__context-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.confirm-dialog__context-value {
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.confirm-dialog__context-status {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.confirm-dialog__consequences {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+
+  li {
+    margin-bottom: 4px;
+  }
+}

@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
 
+/**
+ * §FASE 6 — `/received-applications/:id` se sustituye por `/workspace/:id`.
+ * Se preserva como redirect para bookmarks y notificaciones antiguas.
+ */
 export const APPLICATIONS_COMPANY_ROUTES: Routes = [
   {
     path: '',
@@ -11,10 +15,7 @@ export const APPLICATIONS_COMPANY_ROUTES: Routes = [
   },
   {
     path: ':id',
-    loadComponent: () =>
-      import('./pages/application-review/application-review.component').then(
-        (m) => m.ApplicationReviewComponent
-      ),
-    data: { title: 'Revisar Aplicación' },
+    redirectTo: '/workspace/:id',
+    pathMatch: 'full',
   },
 ];

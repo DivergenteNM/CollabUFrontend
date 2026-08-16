@@ -238,3 +238,71 @@
     .detail__deliverable-upload {
       margin-top: 12px;
     }
+
+    // ── Acciones pendientes del usuario ──────────────────────────────────
+    // Lo accionable va arriba: antes había que bajar hasta las pestañas para
+    // descubrir que había una corrección con plazo a punto de vencer.
+    .detail__actions-required {
+      margin-bottom: 24px;
+      border-left: 4px solid var(--color-warning);
+    }
+
+    .detail__actions-required-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--mat-sys-on-surface);
+
+      mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--color-warning); }
+    }
+
+    .detail__action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid var(--mat-sys-outline-variant);
+
+      &:first-of-type { border-top: none; }
+
+      mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+    }
+
+    .detail__action-item--danger mat-icon { color: var(--color-error); }
+    .detail__action-item--warning mat-icon { color: var(--color-warning); }
+    .detail__action-item--info mat-icon { color: var(--mat-sys-on-surface-variant); }
+
+    .detail__action-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+
+      strong { font-size: 0.875rem; }
+      p { margin: 0; font-size: 0.8125rem; color: var(--mat-sys-on-surface-variant); }
+    }
+
+    .detail__action-due {
+      font-size: 0.75rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .detail__action-item--danger .detail__action-due { color: var(--color-error); font-weight: 600; }
+
+    // ── Archivos de la prueba técnica ────────────────────────────────────
+    .detail__interview-file {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 12px 0;
+    }
+
+    .detail__interview-file-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--mat-sys-on-surface-variant);
+    }

@@ -45,7 +45,7 @@ export class StudentService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<StudentSkill[]>(res, 'Habilidades obtenidas')));
   }
 
-  addSkill(data: Partial<StudentSkill>): Observable<ApiResponse<StudentSkill>> {
+  addSkill(data: Partial<StudentSkill> & { catalogSkillId?: string }): Observable<ApiResponse<StudentSkill>> {
     const payload = {
       ...data,
       category: this.mapSkillCategory(data.category),
@@ -157,21 +157,24 @@ export class StudentService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<StudentDocument>(res, 'Documento subido')));
   }
 
-  private mapSkillCategory(rawCategory?: string): 'technical' | 'soft' | 'language' | 'tool' {
+  private mapSkillCategory(rawCategory?: string): 'language' | 'framework' | 'tool' | 'concept' | 'soft_skill' {
     const value = (rawCategory ?? '').toLowerCase();
 
-    if (value.includes('soft') || value.includes('blanda')) return 'soft';
-    if (value.includes('language') || value.includes('idioma')) return 'language';
+    if (value.includes('soft') || value.includes('blanda')) return 'soft_skill';
+    if (value.includes('framework')) return 'framework';
     if (value.includes('tool') || value.includes('herramienta')) return 'tool';
-    return 'technical';
+    if (value.includes('language') || value.includes('lenguaje') || value.includes('idioma')) return 'language';
+    if (value.includes('concept') || value.includes('concepto')) return 'concept';
+    return 'concept';
   }
 
   private mapSkillLevel(rawLevel?: string): 'beginner' | 'intermediate' | 'advanced' | 'expert' {
     const value = (rawLevel ?? '').toLowerCase();
 
-    if (value === 'basic' || value === 'basico' || value === 'básico') return 'beginner';
+    if (value === 'basic' || value === 'basico' || value === 'básico' || value === 'beginner' || value === 'principiante') return 'beginner';
     if (value === 'intermediate' || value === 'intermedio') return 'intermediate';
     if (value === 'advanced' || value === 'avanzado') return 'advanced';
-    return 'expert';
+    if (value === 'expert' || value === 'experto') return 'expert';
+    return 'beginner';
   }
 }

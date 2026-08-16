@@ -50,8 +50,8 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.notificationService.getPreferences().subscribe((resp) => {
-      if (resp.data) {
-        this.prefs.set(resp.data);
+      if (resp) {
+        this.prefs.set(resp);
       }
     });
   }

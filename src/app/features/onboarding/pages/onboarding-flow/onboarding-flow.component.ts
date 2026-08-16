@@ -3,6 +3,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } 
 import {
   AbstractControl,
   FormBuilder,
+  FormsModule,
   ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
@@ -19,19 +20,32 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { CompanyProfile, StudentProfile, StudentSkill } from '../../../../core/models';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { CompanyProfile, StudentProfile, StudentSkill, AcademicProgram, SkillCatalogEntry } from '../../../../core/models';
 import { UserRole } from '../../../../core/enums';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
 import { UserProfileService } from '../../../../core/services/user-profile.service';
 import { StudentService } from '../../../students/services/student.service';
+import { AdminService } from '../../../admin/services/admin.service';
 import { AuthStore } from '../../../../state/auth.store';
 import { FacultyService } from '../../../faculty/services/faculty.service';
+
+interface SelectedSkill {
+  name: string;
+  catalogSkillId: string | null;
+  category: SkillCatalogEntry['category'];
+  proficiencyLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+}
+
+const MIN_ONBOARDING_SKILLS = 3;
 
 @Component({
   selector: 'app-onboarding-flow',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
+    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -41,6 +55,8 @@ import { FacultyService } from '../../../faculty/services/faculty.service';
     MatStepperModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatChipsModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './onboarding-flow.component.html',
   styleUrl: './onboarding-flow.component.scss',
@@ -50,6 +66,7 @@ export class OnboardingFlowComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly userProfileService = inject(UserProfileService);
   private readonly studentService = inject(StudentService);
+  private readonly adminService = inject(AdminService);
   private readonly companyProfileService = inject(CompanyProfileService);
   private readonly facultyService = inject(FacultyService);
   private readonly snackBar = inject(MatSnackBar);
@@ -58,11 +75,11 @@ export class OnboardingFlowComponent implements OnInit {
   readonly loading = signal(true);
   readonly submitting = signal(false);
 
-  readonly studentPrograms = [
-    'Ingeniería de Sistemas',
-    'Ingeniería Civil',
-    'Ingeniería Electrónica',
-  ] as const;
+  readonly programs = signal<AcademicProgram[]>([]);
+  readonly loadingPrograms = signal(false);
+  readonly skillCatalog = signal<SkillCatalogEntry[]>([]);
+  readonly loadingCatalog = signal(false);
+  readonly minOnboardingSkills = MIN_ONBOARDING_SKILLS;
 
   readonly supervisorRoles = [
     { value: 'faculty_supervisor', label: 'Supervisor de Facultad' },
@@ -88,24 +105,25 @@ export class OnboardingFlowComponent implements OnInit {
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     phone: [''],
+    city: [''],
+    department: [''],
     bio: [''],
     linkedinUrl: ['', [this.optionalLinkedInValidator()]],
   });
 
   readonly studentForm = this.fb.nonNullable.group({
     studentCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
-    program: ['', [Validators.required, this.allowedProgramValidator()]],
+    program: ['', [Validators.required]],
     semester: [1, [Validators.required, Validators.min(1), Validators.max(16)]],
     bio: ['', [Validators.required, Validators.minLength(10)]],
     githubUrl: ['', [this.optionalGithubValidator()]],
     portfolioUrl: ['', [this.optionalHttpUrlValidator('portfolioUrl')]],
   });
 
-  readonly skillForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    category: ['technical', Validators.required],
-    proficiencyLevel: ['intermediate', Validators.required],
-  });
+  /** Habilidades seleccionadas para el paso "Habilidades" — del catálogo dinámico o libres. */
+  readonly selectedSkills = signal<SelectedSkill[]>([]);
+  customSkillDraft = '';
+  readonly isAvailableForInternship = signal(true);
 
   readonly educationForm = this.fb.nonNullable.group({
     institution: ['', [Validators.required, Validators.minLength(2)]],
@@ -241,9 +259,46 @@ export class OnboardingFlowComponent implements OnInit {
       this.tryLoadUserProfile(),
       this.tryLoadRoleProfile(),
       this.tryLoadRoleRequirements(),
+      this.isStudent ? this.loadPrograms() : Promise.resolve(),
     ]);
 
+    if (this.isStudent) {
+      const program = this.studentForm.controls.program.value;
+      const programId = this.programs().find((p) => p.name === program)?.id ?? null;
+      await this.loadSkillCatalog(programId);
+    }
+
     this.loading.set(false);
+  }
+
+  private async loadPrograms(): Promise<void> {
+    this.loadingPrograms.set(true);
+    try {
+      const programs = await firstValueFrom(this.adminService.getPrograms(true));
+      this.programs.set(programs);
+    } catch (error) {
+      console.warn('Error cargando programas académicos', error);
+    } finally {
+      this.loadingPrograms.set(false);
+    }
+  }
+
+  private async loadSkillCatalog(programId: string | null): Promise<void> {
+    this.loadingCatalog.set(true);
+    try {
+      const catalog = await firstValueFrom(this.adminService.getSkillCatalog(programId ? { programId } : undefined));
+      this.skillCatalog.set(catalog);
+    } catch (error) {
+      console.warn('Error cargando catálogo de habilidades', error);
+    } finally {
+      this.loadingCatalog.set(false);
+    }
+  }
+
+  /** Se dispara al cambiar el programa en el select — recarga el catálogo filtrado por el nuevo programa. */
+  async onProgramChange(programName: string): Promise<void> {
+    const programId = this.programs().find((p) => p.name === programName)?.id ?? null;
+    await this.loadSkillCatalog(programId);
   }
 
   private async tryLoadUserProfile(): Promise<void> {
@@ -254,6 +309,8 @@ export class OnboardingFlowComponent implements OnInit {
         firstName: response.data.firstName ?? '',
         lastName: response.data.lastName ?? '',
         phone: response.data.phone ?? '',
+        city: response.data.city ?? '',
+        department: response.data.department ?? '',
         bio: response.data.bio ?? '',
         linkedinUrl: response.data.linkedinUrl ?? '',
       });
@@ -482,17 +539,58 @@ export class OnboardingFlowComponent implements OnInit {
     }
   }
 
-  private async saveStudentRequirements(stepper: MatStepper): Promise<void> {
-    const requiresSkill = this.existingSkills() === 0;
-    const requiresEducation = this.existingEducation() + this.existingExperiences() === 0;
+  isSkillSelected(name: string): boolean {
+    return this.selectedSkills().some((s) => s.name.toLowerCase() === name.toLowerCase());
+  }
 
-    if (requiresSkill && this.skillForm.invalid) {
-      this.skillForm.markAllAsTouched();
+  toggleCatalogSkill(entry: SkillCatalogEntry): void {
+    if (this.isSkillSelected(entry.displayName)) {
+      this.removeSelectedSkill(entry.displayName);
       return;
     }
+    this.selectedSkills.update((current) => [
+      ...current,
+      { name: entry.displayName, catalogSkillId: entry.id, category: entry.category, proficiencyLevel: 'beginner' },
+    ]);
+  }
 
-    if (requiresEducation && this.educationForm.invalid) {
-      this.educationForm.markAllAsTouched();
+  addCustomSkill(): void {
+    const value = (this.customSkillDraft ?? '').trim();
+    if (value.length < 2 || this.isSkillSelected(value)) {
+      this.customSkillDraft = '';
+      return;
+    }
+    this.selectedSkills.update((current) => [
+      ...current,
+      { name: value, catalogSkillId: null, category: 'concept', proficiencyLevel: 'beginner' },
+    ]);
+    this.customSkillDraft = '';
+  }
+
+  removeSelectedSkill(name: string): void {
+    this.selectedSkills.set(this.selectedSkills().filter((s) => s.name.toLowerCase() !== name.toLowerCase()));
+  }
+
+  setSkillProficiency(name: string, level: SelectedSkill['proficiencyLevel']): void {
+    this.selectedSkills.update((current) =>
+      current.map((s) => (s.name === name ? { ...s, proficiencyLevel: level } : s)),
+    );
+  }
+
+  private async saveStudentRequirements(stepper: MatStepper): Promise<void> {
+    const requiresSkill = this.existingSkills() === 0;
+    const skillsToAdd = this.selectedSkills();
+
+    // El estudiante debe registrar un mínimo de habilidades la primera vez —
+    // un perfil sin habilidades no sirve para matching. La formación académica
+    // dejó de ser obligatoria en el onboarding (ver ajuste UX solicitado por
+    // facultad): se completa desde el perfil.
+    if (requiresSkill && skillsToAdd.length < this.minOnboardingSkills) {
+      this.snackBar.open(
+        `Selecciona o escribe al menos ${this.minOnboardingSkills} habilidades.`,
+        'Cerrar',
+        { duration: 3200 },
+      );
       return;
     }
 
@@ -500,29 +598,30 @@ export class OnboardingFlowComponent implements OnInit {
 
     try {
       if (requiresSkill) {
-        const rawSkill = this.skillForm.getRawValue();
-        const skillPayload: Partial<StudentSkill> = {
-          name: rawSkill.name,
-          category: rawSkill.category,
-          proficiencyLevel: rawSkill.proficiencyLevel as StudentSkill['proficiencyLevel'],
-        };
-        await firstValueFrom(this.studentService.addSkill(skillPayload));
+        for (const skill of skillsToAdd) {
+          const payload: Partial<StudentSkill> & { catalogSkillId?: string } = {
+            name: skill.name,
+            category: skill.category,
+            proficiencyLevel: skill.proficiencyLevel,
+            catalogSkillId: skill.catalogSkillId ?? undefined,
+          };
+          await firstValueFrom(this.studentService.addSkill(payload));
+        }
+        this.selectedSkills.set([]);
       }
 
-      if (requiresEducation) {
-        const educationPayload = {
-          ...this.educationForm.getRawValue(),
-          isCurrent: true,
-        };
-        await firstValueFrom(this.studentService.addEducation(educationPayload));
-      }
+      await firstValueFrom(
+        this.studentService.updateProfile({
+          availability: this.isAvailableForInternship() ? 'flexible' : 'unavailable',
+        }),
+      );
 
       await this.loadStudentRequirements();
       this.authStore.refreshProfile();
-      this.snackBar.open('Requisitos mínimos registrados', 'Cerrar', { duration: 2600 });
+      this.snackBar.open('Habilidades registradas', 'Cerrar', { duration: 2600 });
       stepper.next();
     } catch (error) {
-      this.handleSaveError(error, 'No se pudieron guardar los requisitos del estudiante');
+      this.handleSaveError(error, 'No se pudieron guardar las habilidades');
     } finally {
       this.submitting.set(false);
     }
@@ -585,6 +684,8 @@ export class OnboardingFlowComponent implements OnInit {
       firstName: raw.firstName.trim(),
       lastName: raw.lastName.trim(),
       phone: this.normalizeOptionalText(raw.phone),
+      city: this.normalizeOptionalText(raw.city),
+      department: this.normalizeOptionalText(raw.department),
       bio: this.normalizeOptionalText(raw.bio),
       linkedinUrl: this.normalizeOptionalText(raw.linkedinUrl),
     };
@@ -631,16 +732,6 @@ export class OnboardingFlowComponent implements OnInit {
     } catch {
       return false;
     }
-  }
-
-  private allowedProgramValidator(): ValidatorFn {
-    const allowed = new Set(this.studentPrograms);
-
-    return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value as string | null;
-      if (!value) return null;
-      return allowed.has(value as (typeof this.studentPrograms)[number]) ? null : { invalidProgram: true };
-    };
   }
 
   private optionalHttpUrlValidator(errorKey: string): ValidatorFn {

@@ -1,6 +1,7 @@
 import {
-  Component, ChangeDetectionStrategy, inject, computed,
+  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
@@ -32,18 +33,27 @@ import { RelativeTimePipe } from '../../../../shared/pipes';
 export class StudentDashboardComponent {
   readonly router = inject(Router);
   readonly notificationsStore = inject(NotificationsStore);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   // --- httpResource data loading ---
+  // Browser-only: the server has no auth token (localStorage doesn't exist during SSR),
+  // so these authenticated requests would 401 on the server and that error would get
+  // baked into the hydration transfer-state, leaving the dashboard stuck showing empty
+  // data after a hard reload until an unrelated client-side navigation refires them.
   readonly profileResource = httpResource<any>(
-    () => ({ url: `${environment.apiUrl}/students/profile` })
+    () => (this.isBrowser ? { url: `${environment.apiUrl}/students/profile` } : undefined)
   );
 
   readonly recommendationsResource = httpResource<PaginatedResponse<Recommendation>>(
-    () => ({ url: `${environment.apiUrl}/matching/recommendations`, params: { limit: '3' } }),
+    () => (this.isBrowser
+      ? { url: `${environment.apiUrl}/matching/recommendations`, params: { limit: '3' } }
+      : undefined),
   );
 
   readonly applicationsResource = httpResource<PaginatedResponse<Application>>(
-    () => ({ url: `${environment.apiUrl}/applications/my`, params: { limit: '5' } }),
+    () => (this.isBrowser
+      ? { url: `${environment.apiUrl}/applications/my`, params: { limit: '5' } }
+      : undefined),
   );
 
   // --- Computed signals from resources ---

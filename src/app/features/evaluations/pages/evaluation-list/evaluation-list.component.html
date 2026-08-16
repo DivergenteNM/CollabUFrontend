@@ -1,98 +1,168 @@
+<div class="evals">
+  <header class="evals__header">
+    <h1>Evaluaciones</h1>
+    <p class="evals__subtitle">
+      Completa las evaluaciones pendientes, consulta lo que ya enviaste y revisa la retroalimentación que recibiste.
+    </p>
+  </header>
 
-    <div class="evals">
-      <header class="evals__header">
-        <h1>Mis Evaluaciones</h1>
-        <button mat-flat-button (click)="router.navigate(['/my-evaluations/create'])">
-          <mat-icon>rate_review</mat-icon> Crear Evaluación
-        </button>
-      </header>
+  <mat-tab-group [selectedIndex]="activeTab()" (selectedIndexChange)="onTabChange($event)"
+    animationDuration="200ms" class="evals__tabs">
 
-      <mat-tab-group (selectedIndexChange)="onTabChange($event)" animationDuration="200ms">
-        <!-- Recibidas -->
-        <mat-tab label="Recibidas">
-          <div class="evals__list">
-            @if (receivedResource.isLoading()) {
-              @for (_ of [1,2,3]; track $index) {
-                <app-skeleton width="100%" height="120px" />
-              }
-            } @else if (receivedEvals().length === 0) {
-              <app-empty-state
-                icon="star_border"
-                title="Sin evaluaciones recibidas"
-                message="Aún no has recibido ninguna evaluación." />
-            } @else {
-              @for (ev of receivedEvals(); track ev.id) {
-                <mat-card class="evals__card" (click)="router.navigate(['/my-evaluations', ev.id])">
-                  <mat-card-content>
-                    <div class="evals__card-row">
-                      <div class="evals__card-info">
-                        <div class="evals__card-top">
-                          <app-star-rating [value]="ev.overallRating" [readonly]="true" size="sm" />
-                          <span class="evals__date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
-                        </div>
-                        <h3 class="evals__project">{{ ev.projectTitle }}</h3>
-                        <span class="evals__evaluator">
-                          {{ ev.isAnonymous ? 'Evaluador anónimo' : ('Evaluador: ' + ev.evaluatorType) }}
-                        </span>
-                        <p class="evals__excerpt">{{ ev.comment | slice:0:120 }}{{ ev.comment.length > 120 ? '...' : '' }}</p>
-                      </div>
-                      <mat-icon class="evals__arrow">chevron_right</mat-icon>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              }
+    <!-- ── Pendientes ────────────────────────────────────────────────── -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>pending_actions</mat-icon>
+        <span>Pendientes</span>
+        @if (pendingTotal() > 0) {
+          <span class="evals__tab-count">{{ pendingTotal() }}</span>
+        }
+      </ng-template>
 
-              @if (receivedTotal() > 0) {
-                <app-paginator
-                  [totalItems]="receivedTotal()"
-                  [pageSize]="10"
-                  (pageChanged)="receivedPage.set($event.page)" />
-              }
-            }
-          </div>
-        </mat-tab>
+      @if (pendingResource.isLoading()) {
+        <app-skeleton width="100%" height="120px" />
+        <app-skeleton width="100%" height="120px" />
+      } @else if (pending().length === 0) {
+        <app-empty-state
+          icon="check_circle_outline"
+          title="Sin evaluaciones pendientes"
+          message="Cuando alguien te asigne una evaluación aparecerá aquí." />
+      } @else {
+        <div class="evals__grid">
+          @for (ev of pending(); track ev.id) {
+            <mat-card class="eval-card eval-card--pending"
+              (click)="openEvaluation(ev.id)"
+              (keydown.enter)="openEvaluation(ev.id)"
+              tabindex="0" role="button">
+              <mat-card-content>
+                <div class="eval-card__top">
+                  <mat-icon class="eval-card__icon">pending_actions</mat-icon>
+                  <span class="eval-card__type">{{ typeLabel[ev.evaluationType] || ev.evaluationType }}</span>
+                  <span class="eval-card__chip chip-pending">{{ statusLabel[ev.status] }}</span>
+                </div>
+                <h3 class="eval-card__title">{{ ev.projectTitle || 'Proyecto' }}</h3>
+                <div class="eval-card__meta">
+                  <span><mat-icon>person</mat-icon> {{ ev.evaluatedName || 'Persona a evaluar' }}</span>
+                  @if (ev.dueDate) {
+                    <span><mat-icon>schedule</mat-icon> Vence {{ ev.dueDate | date:'d MMM yyyy' }}</span>
+                  }
+                </div>
+                <button mat-flat-button color="primary" class="eval-card__cta">
+                  <mat-icon>rate_review</mat-icon> Completar evaluación
+                </button>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+        @if (pendingTotal() > 10) {
+          <app-paginator
+            [totalItems]="pendingTotal()" [pageSize]="10"
+            (pageChanged)="pendingPage.set($event.page)" />
+        }
+      }
+    </mat-tab>
 
-        <!-- Dadas -->
-        <mat-tab label="Dadas">
-          <div class="evals__list">
-            @if (givenResource.isLoading()) {
-              @for (_ of [1,2,3]; track $index) {
-                <app-skeleton width="100%" height="120px" />
-              }
-            } @else if (givenEvals().length === 0) {
-              <app-empty-state
-                icon="rate_review"
-                title="Sin evaluaciones dadas"
-                message="Aún no has evaluado a nadie."
-                actionLabel="Crear Evaluación"
-                (actionClicked)="router.navigate(['/my-evaluations/create'])" />
-            } @else {
-              @for (ev of givenEvals(); track ev.id) {
-                <mat-card class="evals__card" (click)="router.navigate(['/my-evaluations', ev.id])">
-                  <mat-card-content>
-                    <div class="evals__card-row">
-                      <div class="evals__card-info">
-                        <div class="evals__card-top">
-                          <app-star-rating [value]="ev.overallRating" [readonly]="true" size="sm" />
-                          <span class="evals__date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
-                        </div>
-                        <h3 class="evals__project">{{ ev.projectTitle }}</h3>
-                        <p class="evals__excerpt">{{ ev.comment | slice:0:120 }}{{ ev.comment.length > 120 ? '...' : '' }}</p>
-                      </div>
-                      <mat-icon class="evals__arrow">chevron_right</mat-icon>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              }
+    <!-- ── Enviadas ──────────────────────────────────────────────────── -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>outgoing_mail</mat-icon>
+        <span>Enviadas</span>
+        @if (sentTotal() > 0) {
+          <span class="evals__tab-count">{{ sentTotal() }}</span>
+        }
+      </ng-template>
 
-              @if (givenTotal() > 0) {
-                <app-paginator
-                  [totalItems]="givenTotal()"
-                  [pageSize]="10"
-                  (pageChanged)="givenPage.set($event.page)" />
-              }
-            }
-          </div>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
+      @if (sentResource.isLoading()) {
+        <app-skeleton width="100%" height="120px" />
+      } @else if (sent().length === 0) {
+        <app-empty-state
+          icon="outbox"
+          title="Sin evaluaciones enviadas"
+          message="Las evaluaciones que completes aparecerán aquí." />
+      } @else {
+        <div class="evals__grid">
+          @for (ev of sent(); track ev.id) {
+            <mat-card class="eval-card" (click)="openEvaluation(ev.id)"
+              (keydown.enter)="openEvaluation(ev.id)" tabindex="0" role="button">
+              <mat-card-content>
+                <div class="eval-card__top">
+                  <mat-icon class="eval-card__icon">task_alt</mat-icon>
+                  <span class="eval-card__type">{{ typeLabel[ev.evaluationType] || ev.evaluationType }}</span>
+                  <span class="eval-card__chip chip-done">{{ statusLabel[ev.status] }}</span>
+                </div>
+                <h3 class="eval-card__title">{{ ev.projectTitle || 'Proyecto' }}</h3>
+                <div class="eval-card__meta">
+                  <span><mat-icon>person</mat-icon> {{ ev.evaluatedName || 'Evaluado' }}</span>
+                  @if (ev.completedAt) {
+                    <span><mat-icon>event_available</mat-icon> {{ ev.completedAt | date:'d MMM yyyy' }}</span>
+                  }
+                </div>
+                <div class="eval-card__score">
+                  <mat-icon>star</mat-icon>
+                  <strong>{{ scoreOutOf5(ev.overallScore) }}/5</strong>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+        @if (sentTotal() > 10) {
+          <app-paginator [totalItems]="sentTotal()" [pageSize]="10"
+            (pageChanged)="sentPage.set($event.page)" />
+        }
+      }
+    </mat-tab>
+
+    <!-- ── Recibidas ─────────────────────────────────────────────────── -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>inbox</mat-icon>
+        <span>Recibidas</span>
+        @if (receivedTotal() > 0) {
+          <span class="evals__tab-count">{{ receivedTotal() }}</span>
+        }
+      </ng-template>
+
+      @if (receivedResource.isLoading()) {
+        <app-skeleton width="100%" height="120px" />
+      } @else if (received().length === 0) {
+        <app-empty-state
+          icon="rate_review"
+          title="Sin evaluaciones recibidas"
+          message="Cuando alguien complete una evaluación sobre ti, aparecerá aquí." />
+      } @else {
+        <div class="evals__grid">
+          @for (ev of received(); track ev.id) {
+            <mat-card class="eval-card" (click)="openEvaluation(ev.id)"
+              (keydown.enter)="openEvaluation(ev.id)" tabindex="0" role="button">
+              <mat-card-content>
+                <div class="eval-card__top">
+                  <mat-icon class="eval-card__icon">rate_review</mat-icon>
+                  <span class="eval-card__type">{{ typeLabel[ev.evaluationType] || ev.evaluationType }}</span>
+                  <span class="eval-card__chip chip-done">{{ statusLabel[ev.status] }}</span>
+                </div>
+                <h3 class="eval-card__title">{{ ev.projectTitle || 'Proyecto' }}</h3>
+                <div class="eval-card__meta">
+                  <span>
+                    <mat-icon>person</mat-icon>
+                    {{ ev.isAnonymous ? 'Evaluador anónimo' : (ev.evaluatorName || 'Evaluador') }}
+                  </span>
+                  @if (ev.completedAt) {
+                    <span><mat-icon>event_available</mat-icon> {{ ev.completedAt | date:'d MMM yyyy' }}</span>
+                  }
+                </div>
+                <div class="eval-card__score">
+                  <mat-icon>star</mat-icon>
+                  <strong>{{ scoreOutOf5(ev.overallScore) }}/5</strong>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+        @if (receivedTotal() > 10) {
+          <app-paginator [totalItems]="receivedTotal()" [pageSize]="10"
+            (pageChanged)="receivedPage.set($event.page)" />
+        }
+      }
+    </mat-tab>
+  </mat-tab-group>
+</div>

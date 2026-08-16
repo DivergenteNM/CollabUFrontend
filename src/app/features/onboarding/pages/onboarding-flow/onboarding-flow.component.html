@@ -49,6 +49,18 @@
                 </mat-form-field>
               </div>
 
+              <div class="onboarding-flow__row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Ciudad (opcional)</mat-label>
+                  <input matInput formControlName="city" placeholder="Ej. Pasto" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Departamento (opcional)</mat-label>
+                  <input matInput formControlName="department" placeholder="Ej. Nariño" />
+                </mat-form-field>
+              </div>
+
               <mat-form-field appearance="outline" class="onboarding-flow__full">
                 <mat-label>Bio corta</mat-label>
                 <textarea matInput rows="4" formControlName="bio"></textarea>
@@ -78,11 +90,14 @@
 
                   <mat-form-field appearance="outline">
                     <mat-label>Programa</mat-label>
-                    <mat-select formControlName="program">
-                      @for (program of studentPrograms; track program) {
-                        <mat-option [value]="program">{{ program }}</mat-option>
+                    <mat-select formControlName="program" (selectionChange)="onProgramChange($event.value)">
+                      @for (program of programs(); track program.id) {
+                        <mat-option [value]="program.name">{{ program.name }}</mat-option>
                       }
                     </mat-select>
+                    @if (loadingPrograms()) {
+                      <mat-hint>Cargando programas...</mat-hint>
+                    }
                   </mat-form-field>
                 </div>
 
@@ -127,75 +142,86 @@
               </form>
             </mat-step>
 
-            <mat-step label="Requisitos mínimos">
+            <mat-step label="Habilidades">
               <div class="onboarding-flow__form">
                 <p class="onboarding-flow__hint">
-                  Debes tener al menos 1 habilidad y 1 formación/experiencia.
+                  Selecciona al menos {{ minOnboardingSkills }} habilidades que domines e indica tu nivel en cada una.
+                  El catálogo se ajusta a tu programa académico.
                 </p>
 
                 @if (existingSkills() === 0) {
-                  <form [formGroup]="skillForm" class="onboarding-flow__block">
-                    <h3>Agregar primera habilidad</h3>
-                    <div class="onboarding-flow__row">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Habilidad / Competencia</mat-label>
-                        <input matInput formControlName="name" />
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Categoría</mat-label>
-                        <mat-select formControlName="category">
-                          <mat-option value="technical">Técnica</mat-option>
-                          <mat-option value="soft">Blanda</mat-option>
-                          <mat-option value="language">Idioma</mat-option>
-                          <mat-option value="tool">Herramienta</mat-option>
-                        </mat-select>
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Nivel</mat-label>
-                        <mat-select formControlName="proficiencyLevel">
-                          <mat-option value="beginner">Principiante</mat-option>
-                          <mat-option value="intermediate">Intermedio</mat-option>
-                          <mat-option value="advanced">Avanzado</mat-option>
-                          <mat-option value="expert">Experto</mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                  <div class="onboarding-flow__block">
+                    <h3>Catálogo de tu programa</h3>
+                    @if (loadingCatalog()) {
+                      <p class="onboarding-flow__hint">Cargando catálogo...</p>
+                    }
+                    <div class="onboarding-flow__chips">
+                      @for (entry of skillCatalog(); track entry.id) {
+                        <button type="button" mat-stroked-button
+                          class="skill-chip"
+                          [class.skill-chip--selected]="isSkillSelected(entry.displayName)"
+                          (click)="toggleCatalogSkill(entry)">
+                          @if (isSkillSelected(entry.displayName)) {
+                            <mat-icon>check</mat-icon>
+                          } @else {
+                            <mat-icon>add</mat-icon>
+                          }
+                          {{ entry.displayName }}
+                        </button>
+                      }
                     </div>
-                  </form>
-                } @else {
-                  <div class="onboarding-flow__ok-row">
-                    <mat-icon>check_circle</mat-icon>
-                    <span>Ya tienes {{ existingSkills() }} habilidad(es) registrada(s).</span>
+
+                    <h3 class="onboarding-flow__block-sub">Agregar habilidad personalizada</h3>
+                    <div class="onboarding-flow__custom-skill">
+                      <mat-form-field appearance="outline" class="onboarding-flow__custom-skill-field">
+                        <mat-label>Escribe una habilidad</mat-label>
+                        <input matInput [(ngModel)]="customSkillDraft"
+                          [ngModelOptions]="{ standalone: true }"
+                          (keydown.enter)="$event.preventDefault(); addCustomSkill()"
+                          placeholder="Ej. Diseño UX, Blender, etc." />
+                      </mat-form-field>
+                      <button mat-flat-button color="primary" type="button" (click)="addCustomSkill()">
+                        <mat-icon>add</mat-icon> Agregar
+                      </button>
+                    </div>
+
+                    @if (selectedSkills().length > 0) {
+                      <h3 class="onboarding-flow__block-sub">
+                        Tus habilidades seleccionadas ({{ selectedSkills().length }}/{{ minOnboardingSkills }} mínimo)
+                      </h3>
+                      <div class="onboarding-flow__selected-list">
+                        @for (skill of selectedSkills(); track skill.name) {
+                          <div class="onboarding-flow__selected-row">
+                            <span class="onboarding-flow__selected-name">{{ skill.name }}</span>
+                            <mat-form-field appearance="outline" class="onboarding-flow__selected-level">
+                              <mat-label>Nivel</mat-label>
+                              <mat-select [value]="skill.proficiencyLevel"
+                                (selectionChange)="setSkillProficiency(skill.name, $event.value)">
+                                <mat-option value="beginner">Principiante</mat-option>
+                                <mat-option value="intermediate">Intermedio</mat-option>
+                                <mat-option value="advanced">Avanzado</mat-option>
+                                <mat-option value="expert">Experto</mat-option>
+                              </mat-select>
+                            </mat-form-field>
+                            <button mat-icon-button type="button"
+                              aria-label="Quitar" (click)="removeSelectedSkill(skill.name)">
+                              <mat-icon>close</mat-icon>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <h3 class="onboarding-flow__block-sub">Disponibilidad</h3>
+                    <mat-slide-toggle [checked]="isAvailableForInternship()"
+                      (change)="isAvailableForInternship.set($event.checked)">
+                      Disponible para prácticas/pasantías
+                    </mat-slide-toggle>
                   </div>
-                }
-
-                @if (existingEducation() + existingExperiences() === 0) {
-                  <form [formGroup]="educationForm" class="onboarding-flow__block">
-                    <h3>Agregar primera formación</h3>
-                    <div class="onboarding-flow__row">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Institución</mat-label>
-                        <input matInput formControlName="institution" />
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Título / Grado</mat-label>
-                        <input matInput formControlName="degree" />
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Fecha inicio</mat-label>
-                        <input matInput type="date" formControlName="startDate" />
-                      </mat-form-field>
-                    </div>
-                  </form>
                 } @else {
                   <div class="onboarding-flow__ok-row">
                     <mat-icon>check_circle</mat-icon>
-                    <span>
-                      Ya tienes {{ existingEducation() + existingExperiences() }} registro(s) de formación/experiencia.
-                    </span>
+                    <span>Ya tienes {{ existingSkills() }} habilidad(es) registrada(s). Puedes agregar más desde tu perfil.</span>
                   </div>
                 }
 

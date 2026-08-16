@@ -42,8 +42,8 @@
                     </div>
 
                     <mat-chip-set class="recs__tags">
-                      @for (tag of rec.project.tags.slice(0, 4); track tag) {
-                        <mat-chip>{{ tag }}</mat-chip>
+                      @for (skill of rec.project.skills.slice(0, 4); track skill.name) {
+                        <mat-chip>{{ skill.name }}</mat-chip>
                       }
                     </mat-chip-set>
                   </div>

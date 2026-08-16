@@ -17,6 +17,33 @@
   &__add {
     margin-bottom: 24px;
   }
+
+  &__chips {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  &__chips-label {
+    font-size: 0.8125rem;
+    color: var(--mat-sys-on-surface-variant);
+    font-weight: 500;
+  }
+
+  &__chip {
+    cursor: pointer;
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__opt-cat {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.75rem;
+  }
 }
 
 .add-form {

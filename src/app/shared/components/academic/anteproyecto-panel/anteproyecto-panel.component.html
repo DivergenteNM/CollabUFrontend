@@ -1,0 +1,236 @@
+<mat-card class="ap-panel">
+  <mat-card-header>
+    <mat-card-title>Anteproyecto</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (resource.isLoading()) {
+      <div class="ap-panel__state">
+        <mat-spinner diameter="24" />
+        <p>Cargando el anteproyecto…</p>
+      </div>
+    } @else if (accessRevoked()) {
+      <app-empty-state
+        icon="task_alt"
+        title="Tu revisión quedó registrada"
+        message="Tu participación en la revisión de este anteproyecto concluyó — el resto del proceso lo ve el estudiante y el asesor." />
+    } @else if (resource.error()) {
+      <app-empty-state
+        icon="cloud_off"
+        title="No se pudo cargar el anteproyecto"
+        message="Hubo un problema al consultar el estado de la entrega."
+        actionLabel="Reintentar"
+        (actionClicked)="resource.reload()" />
+    } @else if (!submission()) {
+      <div class="ap-panel__state">
+        <mat-icon>menu_book</mat-icon>
+        <p>El proceso de anteproyecto se habilita cuando tu asesor acepta la asignación</p>
+      </div>
+    } @else {
+      <div class="ap-panel__row">
+        <mat-chip [class]="'chip--' + submission()!.status">
+          {{ statusLabel(submission()!.status) }}
+        </mat-chip>
+        @if (submission()!.versionNumber > 0) {
+          <span class="ap-panel__meta">Versión {{ submission()!.versionNumber }}</span>
+        }
+        @if (submission()!.correctionCount > 0) {
+          <span class="ap-panel__meta">
+            {{ submission()!.correctionCount }} corrección(es) solicitada(s)
+          </span>
+        }
+      </div>
+
+      @if (activeDeadline(); as deadline) {
+        <app-deadline-chip [date]="deadline.date">
+          @if (deadline.owner === 'student') {
+            Debes responder antes del
+          } @else {
+            En revisión — el jurado responde antes del
+          }
+        </app-deadline-chip>
+      }
+
+      @if (canExtendDeadline() && activeDeadline()) {
+        <div class="ap-panel__extend">
+          @if (!showExtendForm()) {
+            <button mat-button type="button" (click)="showExtendForm.set(true); extendTarget.set(activeDeadline()!.owner === 'student' ? 'student' : 'review')">
+              <mat-icon>more_time</mat-icon> Extender plazo
+            </button>
+          } @else {
+            <div class="ap-panel__extend-form">
+              <mat-form-field appearance="outline" class="ap-panel__extend-field">
+                <mat-label>Plazo a extender</mat-label>
+                <mat-select [value]="extendTarget()" (valueChange)="extendTarget.set($event)">
+                  <mat-option value="review">Revisión del jurado</mat-option>
+                  <mat-option value="student">Respuesta del estudiante</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="ap-panel__extend-field ap-panel__extend-field--days">
+                <mat-label>Días hábiles</mat-label>
+                <input matInput type="number" min="1" [value]="extendDays()" (input)="extendDays.set(+$any($event.target).value)" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="ap-panel__extend-field">
+                <mat-label>Motivo (opcional)</mat-label>
+                <input matInput [value]="extendReason()" (input)="extendReason.set($any($event.target).value)" />
+              </mat-form-field>
+              <div class="ap-panel__extend-actions">
+                <button mat-button type="button" (click)="showExtendForm.set(false)">Cancelar</button>
+                <button mat-flat-button color="primary" type="button" [disabled]="submittingExtend()" (click)="submitExtendDeadline()">
+                  @if (submittingExtend()) { <mat-spinner diameter="16" /> } @else { Confirmar }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (submission()!.currentFileId) {
+        <div class="ap-panel__file">
+          <span class="ap-panel__file-label">Versión actual</span>
+          <app-file-link
+            [fileId]="submission()!.currentFileId"
+            downloadName="anteproyecto.pdf" />
+        </div>
+      }
+
+      @if (submission()!.reviewerComments) {
+        <p class="ap-panel__comment ap-panel__comment--reviewer">
+          <strong>Comentario del jurado:</strong> {{ submission()!.reviewerComments }}
+        </p>
+      }
+      @if (submission()!.asesorComments) {
+        <p class="ap-panel__comment">
+          <strong>Comentario del asesor:</strong> {{ submission()!.asesorComments }}
+        </p>
+      }
+
+      <!-- Revisión de jurados — vistos buenos, sin lenguaje de votación -->
+      @if (juradoReviewStatus(); as jr) {
+        <div class="ap-panel__jurados">
+          <div class="ap-panel__jurados-title">
+            Revisión de jurados
+            <span class="ap-panel__jurados-count">
+              Jurados asignados: {{ jr.total }} · Vistos buenos: {{ jr.approvedCount }}/{{ jr.total }}
+            </span>
+          </div>
+          <div class="ap-panel__jurados-list">
+            @for (row of jr.rows; track row.userId) {
+              <div class="ap-panel__jurado-row">
+                <mat-icon [class]="'ap-panel__jurado-icon--' + (row.vote ?? 'pending')">
+                  {{ row.vote === 'approve' ? 'check_circle' : row.vote === 'reject' ? 'cancel' : 'hourglass_top' }}
+                </mat-icon>
+                <span>{{ row.name }}</span>
+                <span class="ap-panel__jurado-status">
+                  {{ row.vote === 'approve' ? 'Visto bueno' : row.vote === 'reject' ? 'Rechazó' : 'Pendiente' }}
+                </span>
+              </div>
+            }
+          </div>
+          @if (jr.allApproved) {
+            <div class="ap-panel__jurados-accepted">
+              <mat-icon>task_alt</mat-icon> Anteproyecto aceptado
+            </div>
+          }
+        </div>
+      }
+
+      @if (canSubmit() && canEdit()) {
+        <div class="ap-panel__upload">
+          @if (uploading()) {
+            <button mat-flat-button color="primary" type="button" disabled>
+              <mat-spinner diameter="18" />
+            </button>
+          } @else {
+            <button mat-flat-button color="primary" type="button" (click)="fileInput.click()">
+              <mat-icon>upload_file</mat-icon>
+              {{ submission()!.versionNumber === 0 ? 'Entregar anteproyecto' : 'Re-entregar anteproyecto' }}
+            </button>
+          }
+          <input #fileInput type="file" hidden accept=".pdf,.doc,.docx" (change)="onFileSelected($event)" />
+        </div>
+      }
+
+      @if (canComment()) {
+        <div class="ap-panel__comment-form">
+          <mat-form-field appearance="outline" class="ap-panel__comment-field">
+            <mat-label>Agregar comentario</mat-label>
+            <textarea matInput rows="2" [value]="commentText()" (input)="commentText.set($any($event.target).value)"></textarea>
+          </mat-form-field>
+          <button mat-stroked-button type="button" [disabled]="!commentText().trim() || submittingComment()" (click)="submitComment()">
+            @if (submittingComment()) { <mat-spinner diameter="16" /> } @else { <mat-icon>comment</mat-icon> Comentar }
+          </button>
+        </div>
+      }
+
+      @if (canReviewNow()) {
+        <div class="ap-panel__review-form">
+          <mat-form-field appearance="outline" class="ap-panel__comment-field">
+            <mat-label>Comentario (obligatorio para corrección/rechazo)</mat-label>
+            <textarea matInput rows="2" [value]="reviewComment()" (input)="reviewComment.set($any($event.target).value)"></textarea>
+          </mat-form-field>
+
+          <div class="ap-panel__review-file">
+            @if (reviewFile(); as f) {
+              <span class="ap-panel__review-file-name"><mat-icon>attach_file</mat-icon> {{ f.name }}</span>
+              <button mat-icon-button type="button" matTooltip="Quitar" (click)="clearReviewFile()">
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <button mat-button type="button" (click)="reviewFileInput.click()">
+                <mat-icon>attach_file</mat-icon> Adjuntar documento (opcional)
+              </button>
+            }
+            <input #reviewFileInput type="file" hidden (change)="onReviewFileSelected($event)" />
+          </div>
+          @if (reviewFileError()) {
+            <p class="ap-panel__review-file-error">{{ reviewFileError() }}</p>
+          }
+
+          <div class="ap-panel__review-actions">
+            <button mat-flat-button color="primary" type="button" [disabled]="!!submittingReview()" (click)="submitReview('approve')">
+              @if (submittingReview() === 'approve') { <mat-spinner diameter="16" /> } @else { <mat-icon>check_circle</mat-icon> Dar visto bueno }
+            </button>
+            <button mat-stroked-button type="button" [disabled]="!!submittingReview()" (click)="submitReview('correction')">
+              @if (submittingReview() === 'correction') { <mat-spinner diameter="16" /> } @else { <mat-icon>edit_note</mat-icon> Solicitar corrección }
+            </button>
+            <button mat-stroked-button color="warn" type="button" [disabled]="!!submittingReview()" (click)="submitReview('reject')">
+              @if (submittingReview() === 'reject') { <mat-spinner diameter="16" /> } @else { <mat-icon>cancel</mat-icon> Rechazar }
+            </button>
+          </div>
+        </div>
+      } @else if (canReview() && myVote()) {
+        <p class="ap-panel__my-vote">
+          Ya diste tu decisión para esta versión: <strong>{{ myVote() === 'approve' ? 'Visto bueno' : 'Rechazado' }}</strong>
+        </p>
+      }
+
+      @if (historyByVersion().length > 0) {
+        <div class="ap-panel__history">
+          <h4 class="ap-panel__history-title">Historial por versión</h4>
+          @for (group of historyByVersion(); track group.version) {
+            <div class="ap-panel__version-group">
+              <div class="ap-panel__version-label">Versión {{ group.version }}</div>
+              @for (h of group.items; track h.id) {
+                <div class="ap-panel__history-item">
+                  <mat-icon>history</mat-icon>
+                  <div class="ap-panel__history-body">
+                    <div class="ap-panel__history-head">
+                      <strong>{{ historyLabel(h.action) }}</strong>
+                      <span>{{ actorLabel(h.actorRole) }}</span>
+                      <span>{{ h.createdAt | date:'d MMM yyyy, h:mm a' }}</span>
+                    </div>
+                    @if (h.comment) { <p>{{ h.comment }}</p> }
+                    @if (h.fileId) {
+                      <span class="ap-panel__history-file-label">Documento adjunto:</span>
+                      <app-file-link [fileId]="h.fileId" />
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </mat-card-content>
+</mat-card>

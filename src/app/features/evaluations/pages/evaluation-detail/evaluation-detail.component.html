@@ -1,90 +1,202 @@
+<div class="edetail">
+  <button mat-button class="edetail__back" (click)="router.navigate(['/my-evaluations'])">
+    <mat-icon>arrow_back</mat-icon> Volver
+  </button>
 
-    <div class="detail">
-      <button mat-button class="detail__back" (click)="router.navigate(['/my-evaluations'])">
-        <mat-icon>arrow_back</mat-icon> Volver a evaluaciones
-      </button>
+  @if (resource.isLoading()) {
+    <app-skeleton width="100%" height="180px" />
+    <app-skeleton width="100%" height="320px" />
+  } @else if (!evaluation()) {
+    <app-empty-state
+      icon="error_outline"
+      title="Evaluación no disponible"
+      message="No se pudo cargar esta evaluación o ya no existe."
+      actionLabel="Volver"
+      (actionClicked)="router.navigate(['/my-evaluations'])" />
+  } @else if (evaluation(); as ev) {
 
-      @if (evalResource.isLoading()) {
-        <app-skeleton width="100%" height="200px" />
-        <app-skeleton width="100%" height="300px" />
-      } @else if (evaluation(); as ev) {
-        <!-- Rating Header -->
-        <mat-card class="detail__rating-card">
-          <mat-card-content>
-            <div class="detail__rating-header">
-              <app-star-rating [value]="ev.overallRating" [readonly]="true" size="lg" />
-              <div class="detail__rating-meta">
-                <h2>{{ ev.projectTitle }}</h2>
-                <p>
-                  {{ ev.isAnonymous ? 'Evaluador anónimo' : ev.evaluatorType }}
-                  · {{ ev.createdAt | date:'d MMMM yyyy' }}
-                </p>
+    <!-- ── Header ──────────────────────────────────────────────────── -->
+    <mat-card class="edetail__header-card">
+      <mat-card-content>
+        <div class="edetail__header-top">
+          <mat-icon class="edetail__header-icon">rate_review</mat-icon>
+          <div class="edetail__header-body">
+            <span class="edetail__type">{{ typeLabel[ev.evaluationType] || ev.evaluationType }}</span>
+            <h1>{{ ev.projectTitle || 'Proyecto' }}</h1>
+            <p class="edetail__meta">
+              @if (ev.isAnonymous && isEvaluated()) {
+                <span><mat-icon>visibility_off</mat-icon> Evaluador anónimo</span>
+              } @else {
+                @if (isEvaluator()) {
+                  <span><mat-icon>person</mat-icon> Evaluando a: <strong>{{ ev.evaluatedName || '—' }}</strong></span>
+                } @else {
+                  <span><mat-icon>person</mat-icon> Evaluado por: <strong>{{ ev.evaluatorName || '—' }}</strong></span>
+                }
+              }
+              @if (ev.dueDate && !isCompleted()) {
+                <span><mat-icon>schedule</mat-icon> Vence: {{ ev.dueDate | date:'d MMM yyyy' }}</span>
+              }
+              @if (ev.completedAt) {
+                <span><mat-icon>event_available</mat-icon> Completada: {{ ev.completedAt | date:'d MMM yyyy' }}</span>
+              }
+            </p>
+          </div>
+          @if (isCompleted()) {
+            <div class="edetail__overall">
+              <app-star-rating [value]="+displayScore(ev.overallScore)" [readonly]="true" size="lg" />
+              <strong>{{ displayScore(ev.overallScore) }}/5</strong>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ── Formulario (evaluador + pendiente) ──────────────────────── -->
+    @if (canSubmit()) {
+      <mat-card class="edetail__form-card">
+        <mat-card-content>
+          <h2><mat-icon>edit_note</mat-icon> Completa la evaluación</h2>
+          <p class="edetail__hint">
+            Califica cada criterio de 0 a 100. Puedes añadir un comentario breve por criterio.
+            Al final ajusta la nota general y describe fortalezas y áreas de mejora.
+          </p>
+
+          @if (criteriaResource.isLoading()) {
+            <app-skeleton width="100%" height="200px" />
+          } @else if (drafts().length === 0) {
+            <app-empty-state
+              icon="rule"
+              title="Sin criterios activos"
+              message="No hay criterios definidos para este tipo de evaluación. Contacta con el administrador." />
+          } @else {
+
+            @for (d of drafts(); track d.criterionId) {
+              <div class="criterion">
+                <div class="criterion__head">
+                  <div>
+                    <h3>{{ d.name }}</h3>
+                    @if (d.description) { <p>{{ d.description }}</p> }
+                  </div>
+                  <span class="criterion__score">{{ d.score }}<span>/100</span></span>
+                </div>
+
+                <mat-slider min="0" max="100" step="5" discrete>
+                  <input matSliderThumb [value]="d.score"
+                    (valueChange)="updateDraftScore(d.criterionId, $event)" />
+                </mat-slider>
+
+                <mat-form-field appearance="outline" class="criterion__comment">
+                  <mat-label>Comentario (opcional)</mat-label>
+                  <textarea matInput rows="2"
+                    [value]="d.comment"
+                    (input)="updateDraftComment(d.criterionId, $any($event.target).value)"></textarea>
+                </mat-form-field>
               </div>
+              <mat-divider />
+            }
+
+            <div class="edetail__overall-form">
+              <h3><mat-icon>summarize</mat-icon> Valoración global</h3>
+              <div class="overall-slider">
+                <span>Puntuación general: <strong>{{ overallScore }}/100</strong></span>
+                <mat-slider min="0" max="100" step="5" discrete>
+                  <input matSliderThumb [(ngModel)]="overallScore" />
+                </mat-slider>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-w">
+                <mat-label>Comentario general</mat-label>
+                <textarea matInput rows="3" [(ngModel)]="overallComment"></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-w">
+                <mat-label>Fortalezas</mat-label>
+                <textarea matInput rows="3" [(ngModel)]="strengths"
+                  placeholder="Ej. Aporte técnico, iniciativa, calidad del trabajo entregado…"></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-w">
+                <mat-label>Áreas de mejora</mat-label>
+                <textarea matInput rows="3" [(ngModel)]="areasForImprovement"
+                  placeholder="Ej. Comunicación, cumplimiento de plazos, profundidad del análisis…"></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="edetail__actions">
+              <button mat-stroked-button (click)="router.navigate(['/my-evaluations'])">Cancelar</button>
+              <button mat-flat-button color="primary"
+                [disabled]="submitting()" (click)="submit()">
+                @if (submitting()) {
+                  <mat-spinner diameter="18" />
+                } @else {
+                  <ng-container><mat-icon>send</mat-icon> Enviar evaluación</ng-container>
+                }
+              </button>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- ── Resultados (completed) ──────────────────────────────────── -->
+    @if (isCompleted()) {
+      @if (ev.ratings.length > 0) {
+        <mat-card class="edetail__results-card">
+          <mat-card-content>
+            <h2><mat-icon>assessment</mat-icon> Desglose por criterio</h2>
+            <div class="edetail__criteria-bars">
+              @for (r of ev.ratings; track r.criterionId) {
+                <div class="criterion-result">
+                  <app-match-score-bar
+                    [score]="+r.score"
+                    [label]="r.criterion?.name || 'Criterio'"
+                    size="md" />
+                  @if (r.comment) {
+                    <p class="criterion-result__comment">{{ r.comment }}</p>
+                  }
+                </div>
+              }
             </div>
           </mat-card-content>
         </mat-card>
+      }
 
-        <!-- Criteria Breakdown -->
-        @if (ev.criteria.length > 0) {
-          <mat-card class="detail__criteria">
-            <mat-card-content>
-              <h3><mat-icon>assessment</mat-icon> Desglose de criterios</h3>
-              <div class="detail__criteria-bars">
-                @for (c of ev.criteria; track c.criteriaId) {
-                  <app-match-score-bar
-                    [score]="c.rating * 20"
-                    [label]="c.criteriaName"
-                    size="md" />
-                }
-              </div>
-            </mat-card-content>
-          </mat-card>
-        }
-
-        <!-- Comment -->
-        <mat-card class="detail__comment">
+      @if (ev.overallComment || ev.strengths || ev.areasForImprovement) {
+        <mat-card class="edetail__comments-card">
           <mat-card-content>
-            <h3><mat-icon>comment</mat-icon> Comentario</h3>
-            <p class="detail__comment-text">{{ ev.comment }}</p>
+            <h2><mat-icon>comment</mat-icon> Comentarios</h2>
+            @if (ev.overallComment) {
+              <section>
+                <h4>Valoración general</h4>
+                <p>{{ ev.overallComment }}</p>
+              </section>
+            }
+            @if (ev.strengths) {
+              <section class="section--strengths">
+                <h4><mat-icon>thumb_up</mat-icon> Fortalezas</h4>
+                <p>{{ ev.strengths }}</p>
+              </section>
+            }
+            @if (ev.areasForImprovement) {
+              <section class="section--improve">
+                <h4><mat-icon>trending_up</mat-icon> Áreas de mejora</h4>
+                <p>{{ ev.areasForImprovement }}</p>
+              </section>
+            }
           </mat-card-content>
         </mat-card>
-
-        <mat-divider />
-
-        <!-- Response -->
-        @if (ev.response) {
-          <mat-card class="detail__response">
-            <mat-card-content>
-              <h3><mat-icon>reply</mat-icon> Respuesta</h3>
-              <p class="detail__response-text">{{ ev.response.content }}</p>
-              <span class="detail__response-date">{{ ev.response.respondedAt | date:'d MMM yyyy, HH:mm' }}</span>
-            </mat-card-content>
-          </mat-card>
-        } @else if (isReceivedEvaluation()) {
-          <!-- Reply form for received evaluations -->
-          <mat-card class="detail__reply">
-            <mat-card-content>
-              @if (!showReplyForm()) {
-                <button mat-stroked-button (click)="showReplyForm.set(true)">
-                  <mat-icon>reply</mat-icon> Responder a esta evaluación
-                </button>
-              } @else {
-                <h3>Tu respuesta</h3>
-                <mat-form-field appearance="outline" class="detail__reply-field">
-                  <mat-label>Escribe tu respuesta</mat-label>
-                  <textarea matInput rows="3" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"></textarea>
-                </mat-form-field>
-                <div class="detail__reply-actions">
-                  <button mat-button (click)="showReplyForm.set(false)">Cancelar</button>
-                  <button mat-flat-button
-                    [disabled]="!replyText().trim() || replying()"
-                    (click)="submitReply()">
-                    Enviar respuesta
-                  </button>
-                </div>
-              }
-            </mat-card-content>
-          </mat-card>
-        }
       }
-    </div>
+    }
+
+    <!-- ── Placeholder (pendiente pero no soy evaluador) ─────────── -->
+    @if (isPending() && !canSubmit()) {
+      <mat-card class="edetail__placeholder">
+        <mat-card-content>
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>Esta evaluación está pendiente de completar por el evaluador asignado.</p>
+        </mat-card-content>
+      </mat-card>
+    }
+
+  }
+</div>

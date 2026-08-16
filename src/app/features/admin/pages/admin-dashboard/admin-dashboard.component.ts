@@ -10,6 +10,7 @@ import { httpResource } from '@angular/common/http';
 import { ChartData } from 'chart.js';
 import { environment } from '../../../../../environments/environment';
 import { AnalyticsDashboard, PlatformMetrics, SkillTrend } from '../../../../core/models';
+import { AcademicKpis } from '../../../analytics/services/analytics.service';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
 import { LineChartComponent } from '../../../../shared/components/charts/line-chart/line-chart.component';
 import { SkillGapChartComponent } from '../../../../shared/components/charts/skill-gap-chart/skill-gap-chart.component';
@@ -35,6 +36,22 @@ export class AdminAnalyticsComponent {
   readonly platformHistory = httpResource<PlatformMetrics[]>(() => {
     if (!isPlatformBrowser(this.platformId)) return undefined;
     return { url: `${environment.apiUrl}/analytics/platform` };
+  });
+
+  readonly academicKpis = httpResource<AcademicKpis>(() => {
+    if (!isPlatformBrowser(this.platformId)) return undefined;
+    return { url: `${environment.apiUrl}/analytics/academic-kpis` };
+  });
+
+  readonly completionRate = computed(() => {
+    const stats = this.academicKpis.value()?.academicStats;
+    if (!stats || stats.totalRecords === 0) return null;
+    return Math.round((stats.completedCount / stats.totalRecords) * 10000) / 100;
+  });
+
+  readonly topWorkload = computed(() => {
+    const workload = this.academicKpis.value()?.assignmentStats?.supervisorWorkload ?? [];
+    return [...workload].sort((a, b) => b.activeCount - a.activeCount).slice(0, 5);
   });
 
   readonly platformChartData = computed<ChartData<'line'>>(() => {
@@ -93,6 +110,9 @@ export class AdminAnalyticsComponent {
       student_outcomes: 'Resultados Estudiante',
       skill_gap_analysis: 'Brecha de Skills',
       matching_effectiveness: 'Efectividad Matching',
+      academic_process_summary: 'Resumen del Proceso Académico',
+      supervisor_workload: 'Carga de Docentes',
+      project_completion_rates: 'Tasas de Completitud',
       custom: 'Personalizado',
     };
     return labels[type] ?? type;

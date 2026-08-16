@@ -15,11 +15,20 @@
           routerLinkActive="sidebar__item--active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="sidebar__item"
+          [matTooltip]="item.badgeKind === 'notifications' ? unreadBreakdownTooltip() : ''"
+          matTooltipPosition="right"
         >
           <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
           <span matListItemTitle class="sidebar__item-label">{{ item.label }}</span>
-          @if (item.label === 'Notificaciones' && unreadCount() > 0) {
-            <span matListItemMeta class="sidebar__badge" [matBadge]="unreadCount()" matBadgeColor="warn" matBadgeSize="small" matBadgeOverlap="false"></span>
+          @if (item.badgeKind === 'notifications' && unreadCount() > 0) {
+            <span matListItemMeta class="sidebar__badge"
+              [matBadge]="unreadCount()" matBadgeColor="warn"
+              matBadgeSize="small" matBadgeOverlap="false"></span>
+          }
+          @if (item.badgeKind === 'chat' && chatUnread() > 0) {
+            <span matListItemMeta class="sidebar__badge"
+              [matBadge]="chatUnread()" matBadgeColor="accent"
+              matBadgeSize="small" matBadgeOverlap="false"></span>
           }
         </a>
         @if (item.children) {

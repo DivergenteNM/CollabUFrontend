@@ -1,0 +1,472 @@
+@if (contextResource.isLoading()) {
+  <div class="ws">
+    <app-skeleton width="100%" height="80px" />
+    <app-skeleton width="100%" height="48px" />
+    <div class="ws__body">
+      <div class="ws__main">
+        <app-skeleton width="100%" height="300px" />
+      </div>
+      <div class="ws__side">
+        <app-skeleton width="100%" height="200px" />
+      </div>
+    </div>
+  </div>
+} @else if (contextResource.error()) {
+  <div class="ws">
+    <app-empty-state
+      icon="error_outline"
+      title="No se pudo cargar el proyecto"
+      message="No tienes permiso para ver este proyecto, o no existe."
+      actionLabel="Volver"
+      (actionClicked)="goBack()" />
+  </div>
+} @else if (context(); as ctx) {
+  <div class="ws">
+    <!-- Header -->
+    <header class="ws__header">
+      <button mat-button class="ws__back" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon> Volver
+      </button>
+      <div class="ws__header-info">
+        <h1 class="ws__title">{{ ctx.project?.title ?? 'Proyecto' }}</h1>
+        <div class="ws__meta">
+          <app-status-badge [status]="ctx.application.status" domain="application" size="sm" />
+          @if (ctx.academicRecord) {
+            <app-status-badge [status]="ctx.academicRecord.status" domain="academicRecord" size="sm" />
+          }
+        </div>
+      </div>
+      <div class="ws__header-actions">
+        @if (can('withdraw_application') && !isReadOnly() && (ctx.application.status === 'pending' || ctx.application.status === 'under_review')) {
+          <button mat-stroked-button color="warn" (click)="withdraw()">
+            <mat-icon>undo</mat-icon> Retirar
+          </button>
+        }
+        @if (can('chat')) {
+          <button mat-flat-button color="primary" (click)="startChat()" [disabled]="loadingChat()"
+            [matBadge]="projectChatUnread() > 0 ? projectChatUnread() : null"
+            matBadgeColor="warn" matBadgeSize="small" matBadgeOverlap="true">
+            @if (loadingChat()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              <ng-container><mat-icon>chat</mat-icon> Chat</ng-container>
+            }
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Banner proyecto completado/cancelado -->
+    @if (isCompleted()) {
+      <mat-card class="ws__completed-banner">
+        <mat-card-content>
+          <mat-icon class="ws__completed-icon">workspace_premium</mat-icon>
+          <div class="ws__completed-body">
+            <strong>Proyecto completado</strong>
+            @if (academicRecord()?.actualEndDate; as endDate) {
+              <span>Finalizado el {{ endDate | date:'d MMMM yyyy' }}.</span>
+            }
+          </div>
+          @if (finalGradeFileId(); as fileId) {
+            <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
+          }
+        </mat-card-content>
+      </mat-card>
+    } @else if (isCancelled()) {
+      <mat-card class="ws__completed-banner ws__completed-banner--cancelled">
+        <mat-card-content>
+          <mat-icon>block</mat-icon>
+          <div class="ws__completed-body">
+            <strong>Proyecto cancelado</strong>
+            <span>Este proyecto se cerró antes de completarse. Solo se conserva el historial.</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Lifecycle timeline -->
+    @if (stage(); as stg) {
+      <app-lifecycle-timeline
+        [currentStage]="stg.current"
+        [completedStages]="stg.completed"
+        [waitingOn]="stg.waitingOn" />
+    }
+
+    <!-- Pending actions -->
+    @if (pendingActions().length > 0) {
+      <mat-card class="ws__actions-card">
+        <mat-card-content>
+          <h3 class="ws__actions-title">
+            <mat-icon>assignment_late</mat-icon> Acciones pendientes
+          </h3>
+          @for (action of pendingActions(); track action.type + action.label) {
+            <div class="ws__action" [class]="'ws__action--' + action.severity">
+              <mat-icon>{{ action.severity === 'danger' ? 'error' : action.severity === 'warning' ? 'warning' : 'info' }}</mat-icon>
+              <div class="ws__action-body">
+                <strong>{{ action.label }}</strong>
+                @if (action.description) { <p>{{ action.description }}</p> }
+                @if (action.dueDate) {
+                  <app-deadline-chip [date]="action.dueDate">Fecha límite:</app-deadline-chip>
+                }
+              </div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Two-column layout -->
+    <div class="ws__body">
+      <!-- Main column -->
+      <div class="ws__main">
+        <mat-tab-group animationDuration="200ms" [selectedIndex]="selectedTabIndex()">
+          <!-- Resumen -->
+          <mat-tab label="Resumen">
+            <div class="ws__tab">
+              <mat-card>
+                <mat-card-content>
+                  <h3>Información general</h3>
+                  <div class="ws__info-row">
+                    <span class="ws__label">Fecha de postulación</span>
+                    <span>{{ ctx.application.appliedAt | date:'d MMMM yyyy' }}</span>
+                  </div>
+                  @if (ctx.application.matchScore) {
+                    <div class="ws__info-row">
+                      <span class="ws__label">Compatibilidad</span>
+                      <span class="ws__score">{{ ctx.application.matchScore }}%</span>
+                    </div>
+                  }
+                  @if (ctx.application.acceptedAt) {
+                    <div class="ws__info-row">
+                      <span class="ws__label">Aceptado el</span>
+                      <span>{{ ctx.application.acceptedAt | date:'d MMMM yyyy' }}</span>
+                    </div>
+                  }
+                  @if (ctx.application.coverLetter) {
+                    <div class="ws__info-row ws__info-row--block">
+                      <span class="ws__label">Carta de motivación</span>
+                      <p class="ws__cover-letter">{{ ctx.application.coverLetter }}</p>
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+
+              @if (progressResource.value(); as progress) {
+                <app-progress-bar [progress]="progress" />
+              }
+
+              @if (isCompleted()) {
+                <mat-card class="ws__closure-card">
+                  <mat-card-content>
+                    <h3>Cierre académico</h3>
+                    @if (academicRecord()?.actualEndDate; as endDate) {
+                      <div class="ws__info-row">
+                        <span class="ws__label">Fecha de finalización</span>
+                        <span>{{ endDate | date:'d MMMM yyyy' }}</span>
+                      </div>
+                    }
+                    @if (finalGradeFileId(); as fileId) {
+                      <div class="ws__info-row ws__info-row--block">
+                        <span class="ws__label">Acta y nota final</span>
+                        <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
+                      </div>
+                    } @else {
+                      <p class="ws__empty">El acta aún no ha sido cargada.</p>
+                    }
+                  </mat-card-content>
+                </mat-card>
+              }
+
+              <!-- Company private notes -->
+              @if (can('view_private_notes')) {
+                <mat-card>
+                  <mat-card-content>
+                    <h3>Notas privadas</h3>
+                    <p class="ws__tab-hint">Solo visibles para tu empresa.</p>
+                    @if (ctx.application.notes) {
+                      <p class="ws__cover-letter">{{ ctx.application.notes }}</p>
+                    } @else {
+                      <p class="ws__empty">Sin notas privadas.</p>
+                    }
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          </mat-tab>
+
+          <!-- Proceso académico -->
+          @if (showAcademicTab()) {
+            <mat-tab label="Proceso académico">
+              <div class="ws__tab">
+                @if (showAnteproyecto()) {
+                  <div id="ws-anchor-anteproyecto">
+                    <app-anteproyecto-panel
+                      [applicationId]="applicationId()"
+                      [canEdit]="can('submit_anteproyecto') && !isReadOnly()" />
+                  </div>
+                }
+                @if (showDocuments()) {
+                  @if (isWaitingDocumentsStage()) {
+                    <div class="ws__stage-banner">
+                      <mat-icon>folder_open</mat-icon>
+                      <span>Etapa: Documentos — esperando la carga de los documentos requeridos.</span>
+                    </div>
+                    @if (can('manage_document_requirements')) {
+                      <button mat-stroked-button class="ws__define-docs-btn" (click)="openSelectDocumentRequirements()">
+                        <mat-icon>playlist_add_check</mat-icon> Definir documentos requeridos
+                      </button>
+                    }
+                  }
+                  <app-documents-panel
+                    #studentDocsPanel
+                    [applicationId]="applicationId()"
+                    actorType="student"
+                    title="Documentos del estudiante"
+                    [canUpload]="can('upload_document') && !isReadOnly() && (viewerContextRole() === 'student' || viewerContextRole() === 'admin')"
+                    [canReview]="can('review_document') && !isReadOnly()"
+                    (reviewed)="reloadAll()" />
+                  <app-documents-panel
+                    #companyDocsPanel
+                    [applicationId]="applicationId()"
+                    actorType="company"
+                    title="Documentos de la empresa"
+                    [canUpload]="can('upload_document') && !isReadOnly() && (viewerContextRole() === 'company' || viewerContextRole() === 'admin')"
+                    [canReview]="can('review_document') && !isReadOnly()"
+                    (reviewed)="reloadAll()" />
+                }
+                @if (can('manage_initiation_agreement')) {
+                  <div id="ws-anchor-agreement">
+                    <app-initiation-agreement #initiationAgreement [applicationId]="applicationId()" />
+                  </div>
+                }
+                @if (showFinalDocsPanel()) {
+                  <div id="ws-anchor-final-docs">
+                    <app-final-documents-panel
+                      [applicationId]="applicationId()"
+                      [viewerRole]="viewerContextRole()"
+                      (reviewed)="reloadAll()" />
+                  </div>
+                }
+                @if (can('manage_finalization')) {
+                  <div id="ws-anchor-finalization">
+                    <app-finalization [applicationId]="applicationId()" />
+                  </div>
+                }
+              </div>
+            </mat-tab>
+          }
+
+          <!-- Entregables -->
+          @if (showDeliverablesTab()) {
+            <mat-tab label="Entregables">
+              <div class="ws__tab">
+                <div class="ws__deliverables-header">
+                  <p class="ws__tab-hint">
+                    Pendientes: {{ counters()?.deliverablesPending ?? 0 }} ·
+                    En revisión: {{ counters()?.deliverablesAwaitingReview ?? 0 }}
+                  </p>
+                  @if (can('create_deliverable') && !isReadOnly()) {
+                    <button mat-stroked-button (click)="openCreateDeliverable()">
+                      <mat-icon>add</mat-icon> Nuevo entregable
+                    </button>
+                  }
+                </div>
+
+                @if (deliverablesResource.isLoading()) {
+                  <app-skeleton width="100%" height="120px" />
+                  <app-skeleton width="100%" height="120px" />
+                } @else if (deliverables().length === 0) {
+                  <app-empty-state
+                    icon="assignment"
+                    title="Sin entregables"
+                    message="No hay entregables asignados todavía." />
+                } @else {
+                  @for (d of deliverables(); track d.id) {
+                    <app-deliverable-card
+                      [deliverable]="d"
+                      [canSubmit]="can('submit_deliverable') && !isReadOnly()"
+                      [canReview]="can('review_deliverable') && !isReadOnly()"
+                      (submitted)="onDeliverableSubmit($event)"
+                      (reviewed)="onDeliverableReview($event)" />
+                  }
+                }
+              </div>
+            </mat-tab>
+          }
+
+          <!-- Evaluaciones -->
+          @if (showEvaluationsTab()) {
+            <mat-tab label="Evaluaciones">
+              <div class="ws__tab" id="ws-anchor-evaluations">
+                @if (evaluationsResource.isLoading()) {
+                  <app-skeleton width="100%" height="120px" />
+                } @else {
+                  @if (evaluationsAboutMe().length > 0) {
+                    <h4 class="ws__section-title">Sobre mí</h4>
+                    @for (e of evaluationsAboutMe(); track e.id) {
+                      <mat-card class="ws__eval-card"
+                        (click)="goToEvaluation(e.id)"
+                        (keydown.enter)="goToEvaluation(e.id)" tabindex="0" role="button">
+                        <mat-card-content>
+                          <div class="ws__eval-head">
+                            <strong>{{ evalTypeLabel(e.evaluationType) }}</strong>
+                            <span class="ws__eval-date">{{ e.createdAt | date:'d MMM yyyy' }}</span>
+                          </div>
+                          @if (e.status === 'completed' && e.overallScore != null) {
+                            <div class="ws__eval-rating">
+                              <mat-icon>star</mat-icon>
+                              <strong>{{ (+e.overallScore / 20).toFixed(1) }}/5</strong>
+                            </div>
+                            @if (e.overallComment) {
+                              <p class="ws__eval-comment">{{ e.overallComment }}</p>
+                            }
+                          } @else {
+                            <span class="ws__eval-pending">Aún no completada</span>
+                          }
+                        </mat-card-content>
+                      </mat-card>
+                    }
+                  }
+
+                  @if (evaluationsAsEvaluator().length > 0) {
+                    <h4 class="ws__section-title">Como evaluador</h4>
+                    @for (e of evaluationsAsEvaluator(); track e.id) {
+                      <mat-card class="ws__eval-card"
+                        (click)="goToEvaluation(e.id)"
+                        (keydown.enter)="goToEvaluation(e.id)" tabindex="0" role="button">
+                        <mat-card-content>
+                          <div class="ws__eval-head">
+                            <strong>{{ evalTypeLabel(e.evaluationType) }}</strong>
+                            <span class="ws__eval-date">{{ e.createdAt | date:'d MMM yyyy' }}</span>
+                          </div>
+                          @if (e.status === 'completed' && e.overallScore != null) {
+                            <div class="ws__eval-rating">
+                              <mat-icon>star</mat-icon>
+                              <strong>{{ (+e.overallScore / 20).toFixed(1) }}/5</strong>
+                            </div>
+                          } @else {
+                            <span class="ws__eval-pending">Pendiente de completar</span>
+                            <button mat-flat-button color="primary"
+                              (click)="$event.stopPropagation(); goToEvaluation(e.id)">
+                              <mat-icon>rate_review</mat-icon> Completar
+                            </button>
+                          }
+                        </mat-card-content>
+                      </mat-card>
+                    }
+                  }
+
+                  @if (evaluations().length === 0) {
+                    <app-empty-state
+                      icon="rate_review"
+                      title="Sin evaluaciones"
+                      message="No hay evaluaciones asociadas a este proyecto." />
+                  }
+                }
+              </div>
+            </mat-tab>
+          }
+
+          <!-- Chat -->
+          @if (can('chat')) {
+            <mat-tab label="Chat">
+              <div class="ws__tab">
+                <app-project-chat-panel
+                  [applicationId]="applicationId()"
+                  [projectId]="ctx.project?.id ?? null"
+                  [participantIds]="participantUserIds()" />
+              </div>
+            </mat-tab>
+          }
+
+          <!-- Actividad -->
+          <mat-tab label="Actividad">
+            <div class="ws__tab">
+              @if (timelineEvents().length > 0) {
+                <app-timeline [events]="timelineEvents()" />
+              } @else {
+                <p class="ws__empty">Sin actividad registrada.</p>
+              }
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="ws__side">
+        <app-project-info-card [project]="projectDetail()" />
+
+        <app-company-profile-card [company]="companyProfile()" />
+
+        <app-people-card
+          [participants]="participants()"
+          [canChat]="can('chat')"
+          (chatRequested)="startChat($event)" />
+
+        @if (academicRecord(); as record) {
+          <mat-card class="ws__dates-card">
+            <mat-card-header>
+              <mat-card-title>Fechas clave</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              @if (record.officialStartDate) {
+                <div class="ws__info-row">
+                  <span class="ws__label">Inicio oficial</span>
+                  <span>{{ record.officialStartDate | date:'d MMM yyyy' }}</span>
+                </div>
+              }
+              @if (record.expectedEndDate) {
+                <div class="ws__info-row">
+                  <span class="ws__label">Fin esperado</span>
+                  <app-deadline-chip [date]="record.expectedEndDate" />
+                </div>
+              }
+              @if (record.agreedDurationWeeks) {
+                <div class="ws__info-row">
+                  <span class="ws__label">Duración acordada</span>
+                  <span>{{ record.agreedDurationWeeks }} semanas</span>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Role context card -->
+        @if (contextRole(); as role) {
+          @if (role !== 'student' && role !== 'admin') {
+            <mat-card class="ws__role-card">
+              <mat-card-content>
+                <div class="ws__role-badge">
+                  <mat-icon>{{ roleIcon(role) }}</mat-icon>
+                  <span>{{ roleLabel(role) }}</span>
+                </div>
+                @if (role === 'company') {
+                  <p class="ws__tab-hint">
+                    Puedes gestionar entregables, revisar documentos y comunicarte con el estudiante.
+                  </p>
+                } @else if (role === 'asesor') {
+                  <p class="ws__tab-hint">
+                    Como asesor, puedes comentar el anteproyecto, revisar entregables y hacer seguimiento al progreso.
+                  </p>
+                } @else if (role === 'jurado_anteproyecto' || role === 'jurado_final') {
+                  <p class="ws__tab-hint">
+                    Como jurado, puedes evaluar y votar sobre las entregas asignadas a tu etapa.
+                  </p>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        }
+      </aside>
+    </div>
+  </div>
+} @else {
+  <div class="ws">
+    <app-empty-state
+      icon="search_off"
+      title="Proyecto no encontrado"
+      message="El proyecto que buscas no existe o no tienes acceso."
+      actionLabel="Volver"
+      (actionClicked)="goBack()" />
+  </div>
+}

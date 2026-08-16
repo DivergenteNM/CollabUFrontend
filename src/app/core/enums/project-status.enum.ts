@@ -1,8 +1,8 @@
 export enum ProjectStatus {
   DRAFT = 'draft',
+  NEEDS_CHANGES = 'needs_changes',
   PENDING_APPROVAL = 'pending_approval',
   PUBLISHED = 'published',
-  APPLICATIONS_CLOSED = 'applications_closed',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
