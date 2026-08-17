@@ -5,6 +5,8 @@ export interface StudentProfile {
   userId: string;
   user?: UserProfile;
   program: string;
+  /** FK real contra admin_service.academic_programs — nullable durante la transición desde `program` (texto libre). */
+  programId?: string | null;
   faculty?: string;
   semester: number;
   studentCode?: string;

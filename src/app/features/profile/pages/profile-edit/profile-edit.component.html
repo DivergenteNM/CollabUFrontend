@@ -90,7 +90,16 @@
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Programa académico</mat-label>
-                <input matInput formControlName="program" />
+                <mat-select formControlName="program" (selectionChange)="onProgramChange($event.value)">
+                  @for (program of programs(); track program.id) {
+                    <mat-option [value]="program.name">{{ program.name }}</mat-option>
+                  }
+                </mat-select>
+                @if (unrecognizedLegacyProgram()) {
+                  <mat-hint>
+                    Tu programa actual ("{{ unrecognizedLegacyProgram() }}") no está en el catálogo — selecciona el correcto de la lista.
+                  </mat-hint>
+                }
               </mat-form-field>
             </div>
 

@@ -27,7 +27,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, Application, Interview, MatchBreakdown } from '../../../../core/models';
+import { ApiResponse, Application, Interview } from '../../../../core/models';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';

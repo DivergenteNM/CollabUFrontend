@@ -77,6 +77,10 @@ export class OnboardingFlowComponent implements OnInit {
 
   readonly programs = signal<AcademicProgram[]>([]);
   readonly loadingPrograms = signal(false);
+  /** programId real seleccionado — fuente de verdad para guardar, no se infiere del texto al enviar. */
+  readonly selectedProgramId = signal<string | null>(null);
+  /** Texto de programa legacy que no matchea ningún programa del catálogo real (dato existente, no se sobrescribe hasta que el estudiante elija uno del selector). */
+  readonly unrecognizedLegacyProgram = signal<string | null>(null);
   readonly skillCatalog = signal<SkillCatalogEntry[]>([]);
   readonly loadingCatalog = signal(false);
   readonly minOnboardingSkills = MIN_ONBOARDING_SKILLS;
@@ -263,9 +267,23 @@ export class OnboardingFlowComponent implements OnInit {
     ]);
 
     if (this.isStudent) {
-      const program = this.studentForm.controls.program.value;
-      const programId = this.programs().find((p) => p.name === program)?.id ?? null;
-      await this.loadSkillCatalog(programId);
+      const programText = this.studentForm.controls.program.value;
+      // programId ya vino resuelto del backend (best-effort en creación/actualización previa,
+      // o backfill — ver migrate-student-program.mjs). Si no vino pero el texto guardado SÍ
+      // coincide con un programa real del catálogo, se resuelve aquí mismo (mismo criterio que
+      // el backend: nombre normalizado exacto). Si no coincide con nada, es un dato legacy
+      // inconsistente (p.ej. "Ingeniería Industrial", programa que no existe en el catálogo real)
+      // — se muestra sin forzar una selección ni sobrescribir el texto existente.
+      if (!this.selectedProgramId() && programText) {
+        const norm = programText.toLowerCase().trim();
+        const match = this.programs().find((p) => p.name.toLowerCase().trim() === norm);
+        if (match) {
+          this.selectedProgramId.set(match.id);
+        } else {
+          this.unrecognizedLegacyProgram.set(programText);
+        }
+      }
+      await this.loadSkillCatalog(this.selectedProgramId());
     }
 
     this.loading.set(false);
@@ -295,9 +313,11 @@ export class OnboardingFlowComponent implements OnInit {
     }
   }
 
-  /** Se dispara al cambiar el programa en el select — recarga el catálogo filtrado por el nuevo programa. */
+  /** Se dispara al cambiar el programa en el select — fija el programId real y recarga el catálogo filtrado. */
   async onProgramChange(programName: string): Promise<void> {
     const programId = this.programs().find((p) => p.name === programName)?.id ?? null;
+    this.selectedProgramId.set(programId);
+    this.unrecognizedLegacyProgram.set(null); // el estudiante eligió del catálogo real, ya no aplica el aviso legacy
     await this.loadSkillCatalog(programId);
   }
 
@@ -335,6 +355,7 @@ export class OnboardingFlowComponent implements OnInit {
           githubUrl: response.data.githubUrl ?? '',
           portfolioUrl: response.data.portfolioUrl ?? '',
         });
+        this.selectedProgramId.set(response.data.programId ?? null);
       } catch (error) {
         if (!this.isNotFound(error)) {
           console.warn('Error cargando perfil de estudiante', error);
@@ -691,13 +712,14 @@ export class OnboardingFlowComponent implements OnInit {
     };
   }
 
-  private buildStudentCreatePayload(userId: string): Pick<StudentProfile, 'userId' | 'program' | 'semester' | 'studentCode'> & { bio?: string } {
+  private buildStudentCreatePayload(userId: string): Pick<StudentProfile, 'userId' | 'program' | 'semester' | 'studentCode'> & { bio?: string; programId?: string } {
     const raw = this.studentForm.getRawValue();
 
     return {
       userId,
       studentCode: raw.studentCode,
       program: raw.program,
+      programId: this.selectedProgramId() ?? undefined,
       semester: raw.semester,
       bio: this.normalizeOptionalText(raw.bio),
     };
@@ -709,6 +731,7 @@ export class OnboardingFlowComponent implements OnInit {
     return {
       studentCode: raw.studentCode,
       program: raw.program,
+      programId: this.selectedProgramId() ?? undefined,
       semester: raw.semester,
       bio: this.normalizeOptionalText(raw.bio),
       githubUrl: this.normalizeOptionalText(raw.githubUrl),

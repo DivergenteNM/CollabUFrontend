@@ -12,7 +12,6 @@ export interface Application {
   resumeUrl?: string;
   portfolioUrl?: string;
   matchScore?: number;
-  matchBreakdown?: MatchBreakdown;
   appliedAt: string;
   reviewedAt?: string;
   acceptedAt?: string;
@@ -79,13 +78,4 @@ export interface Deliverable {
   assignedAt?: string;
   isOverdue?: boolean;
   attachments?: any[];
-}
-
-export interface MatchBreakdown {
-  overall: number;
-  skill: number;
-  experience: number;
-  education: number;
-  availability: number;
-  rating: number;
 }

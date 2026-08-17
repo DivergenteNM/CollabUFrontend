@@ -61,11 +61,12 @@
         } @else {
           <div class="dashboard__recommendations">
             @for (rec of recommendations(); track rec.id) {
-              <app-project-card
-                [project]="rec.project"
-                [matchScore]="rec.matchScore"
-                (viewDetail)="router.navigate(['/projects', $event])"
-                (apply)="router.navigate(['/projects', $event])" />
+              <mat-card class="dashboard__rec-card" (click)="router.navigate(['/matching/project', rec.matchResult.projectId])">
+                <mat-card-content>
+                  <h4 class="dashboard__rec-title">{{ rec.projectTitle || 'Proyecto' }}</h4>
+                  <app-match-score-bar [score]="rec.matchResult.overallScore" size="sm" />
+                </mat-card-content>
+              </mat-card>
             }
           </div>
         }

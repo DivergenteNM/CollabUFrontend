@@ -58,8 +58,14 @@ export class SkillsManagerComponent implements OnInit {
   ngOnInit(): void {
     this.studentService.getProfile().subscribe({
       next: (resp) => {
-        const programName = (resp.data as any)?.program ?? null;
-        this.loadCatalog(programName);
+        const programId = resp.data.programId ?? null;
+        if (programId) {
+          this.loadCatalogByProgramId(programId);
+        } else {
+          // Dato legacy sin programId resuelto (ver PLANNING_MATCHING_SERVICE_FIX.md FASE 3/8) —
+          // fallback por nombre normalizado, mismo criterio que el backend.
+          this.loadCatalog(resp.data.program ?? null);
+        }
       },
       error: () => this.loadCatalog(null),
     });
@@ -70,6 +76,12 @@ export class SkillsManagerComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  private loadCatalogByProgramId(programId: string): void {
+    this.adminService.getSkillCatalog({ programId }).subscribe({
+      next: (entries) => { this.catalog.set(entries); this.filterSuggestions(''); },
     });
   }
 

@@ -116,10 +116,15 @@
 
           <!-- Right: Match + Cover Letter -->
           <div class="review__right">
-            @if (app.matchScore != null && app.matchBreakdown) {
-              <app-match-score-card
-                [totalScore]="app.matchScore"
-                [breakdown]="app.matchBreakdown" />
+            @if (app.matchScore != null) {
+              <mat-card>
+                <mat-card-content>
+                  <div class="review__match-score">
+                    <mat-icon>star</mat-icon>
+                    <span>Match Score: {{ app.matchScore }}%</span>
+                  </div>
+                </mat-card-content>
+              </mat-card>
             }
 
             <mat-card>

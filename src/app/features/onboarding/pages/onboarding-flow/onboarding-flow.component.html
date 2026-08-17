@@ -97,6 +97,10 @@
                     </mat-select>
                     @if (loadingPrograms()) {
                       <mat-hint>Cargando programas...</mat-hint>
+                    } @else if (unrecognizedLegacyProgram()) {
+                      <mat-hint>
+                        Tu programa actual ("{{ unrecognizedLegacyProgram() }}") no está en el catálogo — selecciona el correcto de la lista.
+                      </mat-hint>
                     }
                   </mat-form-field>
                 </div>

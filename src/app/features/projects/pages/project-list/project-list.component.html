@@ -1,21 +1,24 @@
 <div class="project-list">
-  <button mat-button class="project-list__back" (click)="goBack()">
-    <mat-icon>arrow_back</mat-icon> Volver
-  </button>
-
   <header class="project-list__header">
-    <h1>Proyectos Disponibles</h1>
-    @if (totalProjects() > 0) {
-      <span class="project-list__count">{{ totalProjects() }} proyectos encontrados</span>
-    }
+    <div class="project-list__title-block">
+      <h1>Proyectos Disponibles</h1>
+      <p class="project-list__subtitle">
+        @if (totalProjects() > 0) {
+          {{ totalProjects() }} proyecto{{ totalProjects() === 1 ? '' : 's' }} publicado{{ totalProjects() === 1 ? '' : 's' }} para postularte
+        } @else {
+          Explora las oportunidades publicadas por las empresas
+        }
+      </p>
+    </div>
   </header>
 
   @if (!uiStore.isMobile()) {
     <app-search-filter-bar
+      class="project-list__filters"
       [filters]="filterConfigs"
       (filtersChanged)="onFiltersChanged($event)" />
   } @else {
-    <button mat-stroked-button (click)="showMobileFilters.set(true)">
+    <button mat-stroked-button class="project-list__mobile-filters-toggle" (click)="showMobileFilters.set(true)">
       <mat-icon>filter_list</mat-icon> Filtros
     </button>
 
@@ -58,7 +61,7 @@
       @for (project of projects(); track project.id) {
         <app-project-card
           [project]="project"
-          [matchScore]="authStore.isStudent() ? project.applicationsCount : undefined"
+          [matchScore]="matchScoreFor(project.id)"
           [showActions]="true"
           [canApply]="authStore.isStudent()"
           (viewDetail)="router.navigate(['/projects', $event])"

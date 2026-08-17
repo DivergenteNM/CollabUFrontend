@@ -8,10 +8,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, PaginatedResponse, StudentProfile, Recommendation, Application, normalizeApiResponse } from '../../../../core/models';
+import { ApiResponse, PaginatedResponse, StudentProfile, RecommendationsPage, Application, normalizeApiResponse } from '../../../../core/models';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
-import { ProjectCardComponent } from '../../../../shared/components/cards/project-card/project-card.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreBarComponent } from '../../../../shared/components/ui/match-score-bar/match-score-bar.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
@@ -23,7 +22,7 @@ import { RelativeTimePipe } from '../../../../shared/pipes';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule,
-    StatCardComponent, ProjectCardComponent, StatusBadgeComponent,
+    StatCardComponent, StatusBadgeComponent,
     MatchScoreBarComponent, SkeletonComponent, EmptyStateComponent,
     RelativeTimePipe,
   ],
@@ -44,7 +43,8 @@ export class StudentDashboardComponent {
     () => (this.isBrowser ? { url: `${environment.apiUrl}/students/profile` } : undefined)
   );
 
-  readonly recommendationsResource = httpResource<PaginatedResponse<Recommendation>>(
+  // matching-service no envuelve la respuesta en {data,meta} — devuelve {data,total,page,limit} plano.
+  readonly recommendationsResource = httpResource<RecommendationsPage>(
     () => (this.isBrowser
       ? { url: `${environment.apiUrl}/matching/recommendations`, params: { limit: '3' } }
       : undefined),
@@ -77,7 +77,7 @@ export class StudentDashboardComponent {
   );
 
   readonly recommendationsCount = computed(() =>
-    this.recommendationsResource.value()?.meta?.total ?? 0
+    this.recommendationsResource.value()?.total ?? 0
   );
 
   readonly applications = computed(() =>

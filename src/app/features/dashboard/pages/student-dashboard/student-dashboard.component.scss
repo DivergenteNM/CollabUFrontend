@@ -47,6 +47,16 @@
   gap: 16px;
 }
 
+.dashboard__rec-card {
+  cursor: pointer;
+}
+
+.dashboard__rec-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 .dashboard__notifications-list {
   display: flex;
   flex-direction: column;
