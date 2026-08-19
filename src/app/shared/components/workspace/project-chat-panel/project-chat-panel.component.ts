@@ -407,7 +407,7 @@ export class ProjectChatPanelComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.chatService.createConversation(participantIds, 'project', projectId).subscribe({
+    this.chatService.createConversation(participantIds, 'project', projectId, undefined, this.applicationId()).subscribe({
       next: (res: any) => {
         const conv = res?.data ?? res;
         if (!conv?.id) {

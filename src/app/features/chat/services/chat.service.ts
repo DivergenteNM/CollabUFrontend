@@ -42,7 +42,8 @@ export class ChatService extends BaseApiService {
     participantIds: string[],
     type: 'direct' | 'group' | 'project' = 'direct',
     projectId?: string,
-    initialMessage?: string
+    initialMessage?: string,
+    applicationId?: string,
   ): Observable<ApiResponse<Conversation>> {
     // Filtramos UUIDs válidos y dropeamos campos undefined/null:
     // el DTO backend rechaza participantIds vacíos, projectId no-UUID y
@@ -59,6 +60,9 @@ export class ChatService extends BaseApiService {
     const body: Record<string, any> = { participantIds: cleanIds, type };
     if (projectId && uuidRe.test(projectId)) body['projectId'] = projectId;
     if (initialMessage && initialMessage.trim()) body['initialMessage'] = initialMessage.trim();
+    // Separa la conversación por postulación dentro del mismo proyecto — sin esto,
+    // distintos candidatos al mismo proyecto terminan en un único hilo compartido.
+    if (applicationId && uuidRe.test(applicationId)) body['applicationId'] = applicationId;
     return this.http.post<ApiResponse<Conversation>>(`${this.apiUrl}/conversations`, body);
   }
 
