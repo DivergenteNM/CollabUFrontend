@@ -23,6 +23,10 @@ export class AnalyticsService extends BaseApiService {
     return this.http.get<AnalyticsDashboard>(`${this.apiUrl}/dashboard`);
   }
 
+  getAcademicKpis(): Observable<AcademicKpis> {
+    return this.http.get<AcademicKpis>(`${this.apiUrl}/academic-kpis`);
+  }
+
   // ─── Plataforma ─────────────────────────────────────────────────────────────
 
   getPlatformMetrics(query: MetricsQuery = {}): Observable<PlatformMetrics[]> {
@@ -92,4 +96,21 @@ export class AnalyticsService extends BaseApiService {
   getReport(id: string): Observable<Report> {
     return this.http.get<Report>(`${this.apiUrl}/reports/${id}`);
   }
+}
+
+export interface AcademicKpis {
+  assignmentStats: {
+    totalAssignments: number;
+    byRole: Record<string, number>;
+    byStatus: Record<string, number>;
+    avgAcceptanceHours: number | null;
+    supervisorWorkload: { supervisorId: string; activeCount: number }[];
+  } | null;
+  academicStats: {
+    totalRecords: number;
+    byStatus: Record<string, number>;
+    completedCount: number;
+    avgDurationDays: number | null;
+    avgAnteproyectoCorrections: number | null;
+  } | null;
 }

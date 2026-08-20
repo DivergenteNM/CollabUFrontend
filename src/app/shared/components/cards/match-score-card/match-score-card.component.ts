@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatchBreakdown } from '../../../../core/models';
+import { MatResultBreakdown } from '../../../../core/models';
 import { MatchScoreBarComponent } from '../../ui/match-score-bar/match-score-bar.component';
 
 interface BreakdownItem {
@@ -22,17 +22,18 @@ interface BreakdownItem {
 })
 export class MatchScoreCardComponent {
   readonly totalScore = input.required<number>();
-  readonly breakdown = input.required<MatchBreakdown>();
+  readonly breakdown = input.required<MatResultBreakdown>();
   readonly compact = input<boolean>(false);
 
   readonly breakdownItems = computed<BreakdownItem[]>(() => {
     const b = this.breakdown();
     return [
-      { label: 'Skills',        score: b.skill },
-      { label: 'Experiencia',   score: b.experience },
-      { label: 'Educación',     score: b.education },
-      { label: 'Disponibilidad', score: b.availability },
-      { label: 'Rating',        score: b.rating },
+      { label: 'Skills',         score: b.skillsScore ?? 0 },
+      { label: 'Nivel',          score: b.proficiencyScore ?? 0 },
+      { label: 'Programa',       score: b.programScore ?? 0 },
+      { label: 'Semestre',       score: b.semesterScore ?? 0 },
+      { label: 'Disponibilidad', score: b.availabilityScore ?? 0 },
+      { label: 'Idioma',         score: b.languageScore ?? 0 },
     ];
   });
 }

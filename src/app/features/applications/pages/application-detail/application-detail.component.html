@@ -27,6 +27,31 @@
           </mat-card-content>
         </mat-card>
 
+        <!-- Qué tienes que hacer ahora -->
+        @if (pendingActions().length > 0) {
+          <mat-card class="detail__actions-required">
+            <mat-card-content>
+              <h3 class="detail__actions-required-title">
+                <mat-icon>assignment_late</mat-icon> Pendiente de tu parte
+              </h3>
+              @for (action of pendingActions(); track action.type + action.label) {
+                <div class="detail__action-item" [class]="'detail__action-item--' + action.severity">
+                  <mat-icon>{{ action.severity === 'danger' ? 'error' : 'schedule' }}</mat-icon>
+                  <div class="detail__action-body">
+                    <strong>{{ action.label }}</strong>
+                    @if (action.description) { <p>{{ action.description }}</p> }
+                    @if (action.dueDate) {
+                      <span class="detail__action-due">
+                        Fecha límite: {{ action.dueDate | date:'d MMM yyyy' }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
         <!-- Tabs -->
         <mat-tab-group class="detail__tabs" animationDuration="200ms">
           <!-- Resumen -->
@@ -108,11 +133,12 @@
 
               <!-- Actions -->
               <div class="detail__actions">
-                @if (canWithdraw()) {
+                @if (canWithdraw() && can('withdraw_application')) {
                   <button mat-stroked-button color="warn" (click)="withdraw()">
                     <mat-icon>undo</mat-icon> Retirar Aplicación
                   </button>
                 }
+                @if (can('chat')) {
                 <button mat-flat-button color="primary" (click)="startChat()" [disabled]="loadingChat()">
                   <span style="display: flex; align-items: center; gap: 8px; justify-content: center;">
                     @if (loadingChat()) {
@@ -124,6 +150,7 @@
                     }
                   </span>
                 </button>
+                }
               </div>
             </div>
           </mat-tab>
@@ -168,6 +195,35 @@
                       @if (interview.notes) {
                         <p class="detail__interview-notes">{{ interview.notes }}</p>
                       }
+                      @if (interview.interviewType === 'technical') {
+                        <mat-divider style="margin: 12px 0" />
+                        <h5>Prueba técnica</h5>
+                        @if (interview.technicalTaskDescription) {
+                          <p>{{ interview.technicalTaskDescription }}</p>
+                        }
+                        @if (interview.technicalTaskDueDate) {
+                          <p><mat-icon style="vertical-align:middle;font-size:16px">event</mat-icon>
+                            Fecha límite: {{ interview.technicalTaskDueDate | date:'d MMM yyyy' }}</p>
+                        }
+                        @if (interview.companyBriefFileId) {
+                          <div class="detail__interview-file">
+                            <span class="detail__interview-file-label">Enunciado de la empresa</span>
+                            <app-file-link [fileId]="interview.companyBriefFileId" />
+                          </div>
+                        }
+                        @if (interview.studentSolutionFileId) {
+                          <div class="detail__interview-file">
+                            <span class="detail__interview-file-label">Tu solución</span>
+                            <app-file-link [fileId]="interview.studentSolutionFileId" />
+                          </div>
+                        } @else if (can('submit_interview_solution')) {
+                          <app-file-upload
+                            accept=".pdf,.doc,.docx,.zip"
+                            [maxSizeMB]="10"
+                            label="Subir solución"
+                            (fileSelected)="submitInterviewSolution(interview.id, $event)" />
+                        }
+                      }
                     </mat-card-content>
                   </mat-card>
                 }
@@ -177,15 +233,10 @@
             </div>
           </mat-tab>
 
-          <!-- Entregables (visible en in_progress) -->
-          @if (app.status === ApplicationStatus.IN_PROGRESS || app.status === ApplicationStatus.COMPLETED) {
+          <!-- Entregables — visibles cuando el proyecto está en desarrollo o cierre -->
+          @if (showDeliverablesTab()) {
             <mat-tab label="Entregables">
               <div class="detail__tab-content">
-                <div class="detail__deliverables-header">
-                  <button mat-stroked-button color="primary" (click)="openCreateDeliverableDialog()">
-                    <mat-icon>add</mat-icon> Crear Entregable
-                  </button>
-                </div>
                 @if (app.deliverables && app.deliverables.length > 0) {
                   <div class="detail__deliverables">
                     @for (del of app.deliverables; track del.id; let i = $index) {
@@ -236,6 +287,34 @@
                   </div>
                 } @else {
                   <p class="detail__empty">No hay entregables asignados aún.</p>
+                }
+              </div>
+            </mat-tab>
+          }
+
+          <!--
+            El proceso académico se muestra en cuanto existe registro académico:
+            el anteproyecto y los documentos obligatorios se entregan ANTES de que
+            el proyecto pase a "en progreso".
+          -->
+          @if (showAcademicTab()) {
+            <mat-tab label="Proceso académico">
+              <div class="detail__tab-content">
+                @if (progressResource.value(); as progress) {
+                  <app-progress-bar [progress]="progress" />
+                }
+                @if (can('view_anteproyecto')) {
+                  <app-anteproyecto-panel
+                    [applicationId]="app.id"
+                    [canEdit]="can('submit_anteproyecto')" />
+                }
+                @if (can('view_documents')) {
+                  <app-documents-panel
+                    [applicationId]="app.id"
+                    actorType="student"
+                    [canUpload]="can('upload_document')"
+                    [canReview]="can('review_document')"
+                    (reviewed)="reloadAll()" />
                 }
               </div>
             </mat-tab>

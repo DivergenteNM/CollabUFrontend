@@ -2,7 +2,6 @@ import {
   Component, ChangeDetectionStrategy, inject, input, signal, effect, computed, PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { of, forkJoin } from 'rxjs';
@@ -18,17 +17,26 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { FormsModule } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 import { environment } from '../../../../../environments/environment';
 import { ProjectService } from '../../services/project.service';
-import { ProjectType, CompensationType } from '../../../../core/enums';
-import { ApiResponse, Project, ProjectRequirement } from '../../../../core/models';
+import { ProjectType } from '../../../../core/enums';
+import { ApiResponse, Project, ProjectRequirement, AcademicProgram, SkillCatalogEntry, SkillCategory } from '../../../../core/models';
+import { AdminService } from '../../../admin/services/admin.service';
+import { StorageService } from '../../../../core/services/storage.service';
+
+interface DraftSkill {
+  name: string;
+  catalogSkillId: string | null;
+  category: SkillCategory;
+  proficiencyLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert' | null;
+  isMandatory: boolean;
+}
 
 const dateRangeValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
   const start = group.get('startDate');
@@ -88,10 +96,10 @@ const hoursValidator: ValidatorFn = (group: AbstractControl): ValidationErrors |
   selector: 'app-project-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    ReactiveFormsModule, DatePipe,
+    ReactiveFormsModule, FormsModule,
     MatStepperModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatDatepickerModule, MatIconModule, MatButtonModule,
-    MatChipsModule, MatSlideToggleModule, MatCardModule, MatSnackBarModule, MatProgressBarModule,
+    MatSlideToggleModule, MatCardModule, MatSnackBarModule, MatProgressBarModule,
   ],
   templateUrl: './project-edit.component.html',
   styleUrl: './project-edit.component.scss',
@@ -99,17 +107,26 @@ const hoursValidator: ValidatorFn = (group: AbstractControl): ValidationErrors |
 export class ProjectEditComponent {
   private readonly fb = inject(FormBuilder);
   private readonly projectService = inject(ProjectService);
+  private readonly adminService = inject(AdminService);
+  private readonly storageService = inject(StorageService);
   readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   readonly id = input.required<string>();
-  readonly separatorKeyCodes = [ENTER, COMMA] as const;
   readonly submitting = signal(false);
-  readonly tags = signal<string[]>([]);
   readonly requirements = signal<Partial<ProjectRequirement>[]>([]);
-  readonly deliverables = signal<any[]>([]);
+
+  readonly academicPrograms = signal<AcademicProgram[]>([]);
+  readonly skillCatalog = signal<SkillCatalogEntry[]>([]);
+  readonly loadingCatalog = signal(false);
+  readonly skills = signal<DraftSkill[]>([]);
+  customSkillDraft = '';
+
+  readonly documentFileId = signal<string | null>(null);
+  readonly documentFileName = signal<string | null>(null);
+  readonly uploadingDocument = signal(false);
 
   readonly projectTypes = [
     { value: ProjectType.PROFESSIONAL_PRACTICE, label: 'Práctica Profesional' },
@@ -119,27 +136,11 @@ export class ProjectEditComponent {
     { value: ProjectType.OTHER, label: 'Otro' },
   ];
 
-  readonly compensationTypes = [
-    { value: CompensationType.UNPAID, label: 'No remunerado (Ad honorem)' },
-    { value: CompensationType.PAID, label: 'Remunerado (Salario / Pago)' },
-    { value: CompensationType.STIPEND, label: 'Estipendio / Auxilio (Transporte / Alimentación)' },
-    { value: CompensationType.ACADEMIC_CREDIT, label: 'Crédito Académico' },
-  ];
-
-  readonly programs = [
-    'Ingeniería de Sistemas',
-    'Ingeniería Electrónica',
-    'Ingeniería Civil',
-  ];
-
   // Date controls typed as Date|null — NativeDateAdapter requires Date objects, not ISO strings.
   readonly infoForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(50)]],
     projectType: ['' as string as ProjectType, Validators.required],
-    compensationType: [CompensationType.UNPAID as CompensationType, Validators.required],
-    compensationAmount: [null as number | null, [Validators.min(0)]],
-    currency: ['COP'],
     positionsAvailable: [1, [Validators.required, Validators.min(1)]],
     isRemote: [false],
     location: [''],
@@ -169,8 +170,16 @@ export class ProjectEditComponent {
 
   readonly isLoading = computed(() => this.projectResource.isLoading());
   readonly hasError = computed(() => !!this.projectResource.error());
+  readonly errorMessage = computed(() => {
+    const err = this.projectResource.error() as any;
+    if (!err) return '';
+    const raw = err?.error?.message ?? err?.message;
+    return Array.isArray(raw) ? raw.join('; ') : (raw ?? 'Error desconocido');
+  });
 
   constructor() {
+    this.loadPrograms();
+
     // Populate form whenever the project data arrives
     effect(() => {
       const p = this.project();
@@ -180,9 +189,6 @@ export class ProjectEditComponent {
         title: p.title,
         description: p.description,
         projectType: p.projectType,
-        compensationType: p.compensationType ?? CompensationType.UNPAID,
-        compensationAmount: p.compensationAmount ? Number(p.compensationAmount) : null,
-        currency: p.currency ?? 'COP',
         positionsAvailable: p.positionsAvailable,
         // Backend uses locationType enum; map to isRemote boolean for the form
         isRemote: (p as any).locationType === 'remote',
@@ -196,49 +202,115 @@ export class ProjectEditComponent {
         weeklyHours: p.weeklyHours ?? null,
         totalHours: p.totalHours ?? null,
       });
-      this.requirements.set(p.requirements ?? []);
-      this.loadDeliverables();
-      // Tags come as ProjectTag[] objects from backend — extract the tag string
-      const rawTags = (p as any).tags ?? [];
-      this.tags.set(rawTags.map((t: any) => (typeof t === 'string' ? t : t.tag ?? '')).filter(Boolean));
+      this.requirements.set((p.requirements ?? []).filter((r) => (r.type as string) !== 'skill'));
+      this.loadSkillCatalog(p.academicPrograms ?? []);
+
+      const rawSkills = (p as any).skills ?? [];
+      this.skills.set(rawSkills.map((s: any) => ({
+        name: s.name,
+        catalogSkillId: s.catalogSkillId ?? null,
+        category: s.category,
+        proficiencyLevel: s.proficiencyLevel ?? null,
+        isMandatory: !!s.isMandatory,
+      })));
+
+      if (p.requestDocumentFileId) {
+        this.documentFileId.set(p.requestDocumentFileId);
+        this.documentFileName.set('Documento ya cargado');
+      }
     });
   }
 
-  private loadDeliverables(): void {
-    const projectId = this.id();
-    if (!projectId) return;
-    this.projectService.getDeliverables(projectId).subscribe({
-      next: (dels) => this.deliverables.set(dels),
-      error: () => this.deliverables.set([]),
+  private loadPrograms(): void {
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => this.academicPrograms.set(programs),
+      error: () => {},
     });
   }
 
-  addDel(): void {
-    this.deliverables.update((d) => [
-      ...d,
-      { title: '', description: '', dueDate: '', weightPercentage: 10, isMandatory: true, displayOrder: d.length },
+  getProgramName(programId: string): string {
+    return this.academicPrograms().find((p) => p.id === programId)?.name ?? programId;
+  }
+
+  onProgramsChange(programIds: string[]): void {
+    this.loadSkillCatalog(programIds);
+  }
+
+  private loadSkillCatalog(programIds: string[]): void {
+    this.loadingCatalog.set(true);
+    const requests = programIds.length > 0
+      ? programIds.map((pid) => this.adminService.getSkillCatalog({ programId: pid }))
+      : [this.adminService.getSkillCatalog()];
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        const merged = new Map<string, SkillCatalogEntry>();
+        for (const list of results) for (const entry of list) merged.set(entry.id, entry);
+        this.skillCatalog.set(Array.from(merged.values()));
+        this.loadingCatalog.set(false);
+      },
+      error: () => this.loadingCatalog.set(false),
+    });
+  }
+
+  isSkillSelected(name: string): boolean {
+    return this.skills().some((s) => s.name.toLowerCase() === name.toLowerCase());
+  }
+
+  toggleCatalogSkill(entry: SkillCatalogEntry): void {
+    if (this.isSkillSelected(entry.displayName)) {
+      this.removeSkill(entry.displayName);
+      return;
+    }
+    this.skills.update((current) => [
+      ...current,
+      { name: entry.displayName, catalogSkillId: entry.id, category: entry.category, proficiencyLevel: null, isMandatory: false },
     ]);
   }
-  removeDel(i: number): void { this.deliverables.update((d) => d.filter((_, idx) => idx !== i)); }
-  updateDel(i: number, field: string, val: any): void {
-    this.deliverables.update((d) => d.map((item, idx) => idx === i ? { ...item, [field]: val } : item));
-  }
 
-  readonly languageOptions = ['Español', 'Inglés', 'Portugués', 'Francés'];
-
-  getLanguageSelectValue(name?: string): string {
-    return this.languageOptions.includes(name ?? '') ? (name ?? '') : 'other';
-  }
-
-  onLanguageSelectChange(index: number, val: string): void {
-    if (val === 'other') {
-      const currentName = this.requirements()[index]?.name ?? '';
-      if (this.languageOptions.includes(currentName)) {
-        this.updateReq(index, 'name', '');
-      }
-    } else {
-      this.updateReq(index, 'name', val);
+  addCustomSkill(): void {
+    const value = (this.customSkillDraft ?? '').trim();
+    if (value.length < 2 || this.isSkillSelected(value)) {
+      this.customSkillDraft = '';
+      return;
     }
+    this.skills.update((current) => [
+      ...current,
+      { name: value, catalogSkillId: null, category: 'concept', proficiencyLevel: null, isMandatory: false },
+    ]);
+    this.customSkillDraft = '';
+  }
+
+  removeSkill(name: string): void {
+    this.skills.set(this.skills().filter((s) => s.name.toLowerCase() !== name.toLowerCase()));
+  }
+
+  setSkillProficiency(name: string, level: DraftSkill['proficiencyLevel']): void {
+    this.skills.update((current) => current.map((s) => (s.name === name ? { ...s, proficiencyLevel: level } : s)));
+  }
+
+  onDocumentSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploadingDocument.set(true);
+    this.storageService.upload(file, 'project_document').subscribe({
+      next: (res) => {
+        this.documentFileId.set(res.data.fileId);
+        this.documentFileName.set(file.name);
+        this.uploadingDocument.set(false);
+        this.snackBar.open('Documento cargado', 'OK', { duration: 2400 });
+      },
+      error: (err) => {
+        this.uploadingDocument.set(false);
+        const msg = err?.error?.message ?? 'No se pudo cargar el documento';
+        this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
+
+  clearDocument(): void {
+    this.documentFileId.set(null);
+    this.documentFileName.set(null);
   }
 
   getTypeLabel(v?: string | null): string {
@@ -246,19 +318,12 @@ export class ProjectEditComponent {
   }
 
   addReq(): void {
-    this.requirements.update((r) => [...r, { name: '', type: 'skill' as const, isMandatory: false, proficiencyLevel: 'basic' as const }]);
+    this.requirements.update((r) => [...r, { name: '', type: 'other' as const, isMandatory: false }]);
   }
   removeReq(i: number): void { this.requirements.update((r) => r.filter((_, idx) => idx !== i)); }
   updateReq(i: number, field: string, val: any): void {
     this.requirements.update((r) => r.map((item, idx) => idx === i ? { ...item, [field]: val } : item));
   }
-
-  addTag(event: MatChipInputEvent): void {
-    const v = (event.value || '').trim();
-    if (v && !this.tags().includes(v)) this.tags.update((t) => [...t, v]);
-    event.chipInput.clear();
-  }
-  removeTag(tag: string): void { this.tags.update((t) => t.filter((v) => v !== tag)); }
 
   save(): void {
     if (this.submitting()) return;
@@ -273,13 +338,9 @@ export class ProjectEditComponent {
 
     // Backend uses locationType enum ('remote'|'onsite'), not isRemote boolean.
     // weeklyHours, totalHoursRequired, supervisorName don't exist in DB — omit.
-    const isPaidOrStipend = raw.compensationType === CompensationType.PAID || raw.compensationType === CompensationType.STIPEND;
     const data: Record<string, any> = {
       title: raw.title,
       description: raw.description,
-      compensationType: raw.compensationType,
-      compensationAmount: isPaidOrStipend ? (raw.compensationAmount || undefined) : undefined,
-      currency: raw.currency || 'COP',
       positionsAvailable: raw.positionsAvailable,
       locationType: raw.isRemote ? 'remote' : 'onsite',
       location: raw.isRemote ? undefined : (raw.location || undefined),
@@ -288,7 +349,14 @@ export class ProjectEditComponent {
       applicationDeadline: toIso(raw.applicationDeadline),
       academicPrograms: raw.academicPrograms,
       minimumSemester: raw.minimumSemester || undefined,
-      tags: this.tags(),
+      skills: this.skills().map((s) => ({
+        name: s.name,
+        catalogSkillId: s.catalogSkillId ?? undefined,
+        category: s.category,
+        proficiencyLevel: s.proficiencyLevel ?? undefined,
+        isMandatory: s.isMandatory,
+      })),
+      requestDocumentFileId: this.documentFileId() ?? undefined,
       weeklyHours: raw.weeklyHours || undefined,
       totalHours: raw.totalHours || undefined,
     };
@@ -305,30 +373,17 @@ export class ProjectEditComponent {
         );
         return reqs$.length > 0 ? forkJoin(reqs$) : of([]);
       }),
-      concatMap(() => {
-        const dels$ = this.deliverables()
-          .filter((d) => d.id)
-          .map((d) =>
-            this.projectService.updateDeliverable(this.id(), d.id, {
-              title: d.title,
-              description: d.description || undefined,
-              dueDate: d.dueDate || undefined,
-              weightPercentage: d.weightPercentage,
-              isMandatory: d.isMandatory,
-              displayOrder: d.displayOrder,
-            }).pipe(catchError(() => of(null))),
-          );
-        return dels$.length > 0 ? forkJoin(dels$) : of([]);
-      }),
     ).subscribe({
       next: () => {
         this.submitting.set(false);
         this.snackBar.open('Proyecto actualizado', 'OK', { duration: 3000 });
         this.router.navigate(['/my-projects']);
       },
-      error: () => {
+      error: (err) => {
         this.submitting.set(false);
-        this.snackBar.open('Error al actualizar', 'Cerrar', { duration: 4000 });
+        const raw = err?.error?.message;
+        const msg = Array.isArray(raw) ? raw.join('; ') : raw ?? 'Error al actualizar';
+        this.snackBar.open(msg, 'Cerrar', { duration: 6000 });
       },
     });
   }

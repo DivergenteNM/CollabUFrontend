@@ -1,5 +1,5 @@
 import {
-  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, input, effect,
+  Component, ChangeDetectionStrategy, inject, computed, signal, PLATFORM_ID, input, effect,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -8,30 +8,32 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe, CurrencyPipe, Location } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, Project, MatchBreakdown } from '../../../../core/models';
-import { MatchResult } from '../../../../core/models/matching.model';
+import { ApiResponse, CompanyProfile, Project } from '../../../../core/models';
+import { MatchResult, MatResultBreakdown } from '../../../../core/models/matching.model';
 import { AuthStore } from '../../../../state/auth.store';
-import { SeoService } from '../../../../core/services/seo.service';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreCardComponent } from '../../../../shared/components/cards/match-score-card/match-score-card.component';
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
+import { FileLinkComponent } from '../../../../shared/components/ui/file-link/file-link.component';
 import { ApplyDialogComponent, ApplyDialogData } from '../../components/apply-dialog/apply-dialog.component';
+import { AdminService } from '../../../admin/services/admin.service';
+import { CompanyProfileService } from '../../../../core/services/company-profile.service';
+import { AcademicProgram } from '../../../../core/models';
 
 @Component({
   selector: 'app-project-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule, MatChipsModule,
-    MatTabsModule, MatDividerModule, DatePipe, CurrencyPipe,
+    MatDividerModule, DatePipe,
     StatusBadgeComponent, MatchScoreCardComponent, SkillChipListComponent,
-    SkeletonComponent,
+    SkeletonComponent, FileLinkComponent,
   ],
   templateUrl: './project-detail.component.html',
   styleUrl: './project-detail.component.scss',
@@ -43,59 +45,13 @@ export class ProjectDetailComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   readonly location = inject(Location);
-  private readonly seoService = inject(SeoService);
+  private readonly adminService = inject(AdminService);
+  private readonly companyProfileService = inject(CompanyProfileService);
 
   readonly id = input.required<string>();
-
-  constructor() {
-    effect(() => {
-      const p = this.project();
-      if (p) {
-        const companyName = p.companyName || 'Universidad de Nariño';
-        const pageTitle = `${p.title} - ${companyName}`;
-        const descriptionSnippet = p.description
-          ? (p.description.length > 160 ? `${p.description.substring(0, 157)}...` : p.description)
-          : `Convocatoria de práctica profesional ${p.title} en ${companyName}.`;
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://collabu.udenar.edu.co';
-        const pageUrl = `${origin}/projects/${p.id}`;
-
-        this.seoService.setMetaTags({
-          title: pageTitle,
-          description: descriptionSnippet,
-          ogTitle: pageTitle,
-          ogDescription: descriptionSnippet,
-          ogType: 'job',
-          ogUrl: pageUrl,
-          robots: 'index, follow',
-        });
-
-        const jobPostingSchema = {
-          '@context': 'https://schema.org',
-          '@type': 'JobPosting',
-          'title': p.title,
-          'description': p.description || descriptionSnippet,
-          'datePosted': (p as any).createdAt || new Date().toISOString(),
-          'validThrough': (p as any).applicationDeadline || undefined,
-          'employmentType': 'INTERN',
-          'hiringOrganization': {
-            '@type': 'Organization',
-            'name': companyName,
-          },
-          'jobLocation': {
-            '@type': 'Place',
-            'address': {
-              '@type': 'PostalAddress',
-              'addressLocality': (p as any).location || 'Pasto',
-              'addressRegion': 'Nariño',
-              'addressCountry': 'CO',
-            },
-          },
-        };
-
-        this.seoService.setStructuredData(jobPostingSchema, 'project-detail-jsonld');
-      }
-    });
-  }
+  private readonly programs = signal<AcademicProgram[]>([]);
+  readonly companyProfile = signal<CompanyProfile | null>(null);
+  readonly companyProfileLoading = signal(false);
 
   readonly projectResource = httpResource<ApiResponse<Project>>(
     () => {
@@ -110,13 +66,6 @@ export class ProjectDetailComponent {
       const id = this.id();
       if (!this.isBrowser || !id || !this.authStore.isStudent()) return undefined;
       return { url: `${environment.apiUrl}/matching/projects/${id}/my-match` };
-    },
-  );
-
-  readonly studentProfileResource = httpResource<ApiResponse<any>>(
-    () => {
-      if (!this.isBrowser || !this.authStore.isStudent()) return undefined;
-      return { url: `${environment.apiUrl}/students/profile` };
     },
   );
 
@@ -138,59 +87,49 @@ export class ProjectDetailComponent {
     }
   });
 
-  readonly studentSemester = computed(() => {
-    try {
-      const res = this.studentProfileResource.value() as any;
-      const profile = res?.data ?? res;
-      return profile?.semester ?? null;
-    } catch {
-      return null;
-    }
-  });
-
-  readonly isBelowMinSemester = computed(() => {
-    const minSem = this.project()?.minimumSemester;
-    const studentSem = this.studentSemester();
-    if (!this.authStore.isStudent() || !minSem || studentSem === null) return false;
-    return studentSem < minSem;
-  });
-
-  readonly studentProgram = computed(() => {
-    try {
-      const res = this.studentProfileResource.value() as any;
-      const profile = res?.data ?? res;
-      return profile?.program ?? null;
-    } catch {
-      return null;
-    }
-  });
-
-  readonly isProgramMismatch = computed(() => {
-    const reqProgs = this.project()?.academicPrograms;
-    const studentProg = this.studentProgram();
-    if (!this.authStore.isStudent() || !reqProgs || reqProgs.length === 0 || !studentProg) return false;
-    const normStudent = studentProg.toLowerCase().trim();
-    return !reqProgs.some((p: string) => {
-      const normReq = p.toLowerCase().trim();
-      return normReq === normStudent || normStudent.includes(normReq) || normReq.includes(normStudent);
-    });
-  });
-
-  readonly cannotApplyReason = computed(() => {
-    if (this.isBelowMinSemester()) {
-      return `No cumples con el semestre mínimo (${this.project()?.minimumSemester}°). Tu semestre actual es ${this.studentSemester()}°.`;
-    }
-    if (this.isProgramMismatch()) {
-      return `Este proyecto está dirigido a: ${this.project()?.academicPrograms?.join(', ')}. Tu carrera registrada es "${this.studentProgram()}".`;
-    }
-    return null;
-  });
-
   readonly hasError = computed(() => !!this.projectResource.error());
   readonly errorMessage = computed(() => {
     const err = this.projectResource.error() as any;
     return err?.message ?? 'No se pudo cargar el proyecto.';
   });
+
+  constructor() {
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => this.programs.set(programs),
+      error: () => {},
+    });
+
+    let requestedCompanyId: string | null = null;
+    effect(() => {
+      const p = this.project();
+      if (!p?.companyId || p.companyId === requestedCompanyId) return;
+      requestedCompanyId = p.companyId;
+      this.companyProfileLoading.set(true);
+      this.companyProfileService.getProfileByUserId(p.companyId).subscribe({
+        next: (res) => {
+          this.companyProfileLoading.set(false);
+          this.companyProfile.set((res as any)?.data ?? (res as any) ?? null);
+        },
+        error: () => {
+          this.companyProfileLoading.set(false);
+          this.companyProfile.set(null);
+        },
+      });
+    });
+  }
+
+  academicProgramNames(project: Project): string[] {
+    const ids = (project as any).academicPrograms ?? [];
+    return ids.map((id: string) => this.programs().find((p) => p.id === id)?.name ?? id);
+  }
+
+  nonSkillRequirements(project: Project): any[] {
+    return (project.requirements ?? []).filter((r: any) => r.type !== 'skill');
+  }
+
+  skillNames(project: Project): string[] {
+    return ((project as any).skills ?? []).map((s: any) => s.name + (s.isMandatory ? '' : ' (deseable)'));
+  }
 
   readonly projectTypeLabel = computed(() => {
     const typeMap: Record<string, string> = {
@@ -203,25 +142,8 @@ export class ProjectDetailComponent {
     return typeMap[this.project()?.projectType ?? ''] ?? '';
   });
 
-  compensationLabel(type?: string): string {
-    const map: Record<string, string> = {
-      paid: 'Remunerado',
-      unpaid: 'No remunerado',
-      stipend: 'Estipendio / Auxilio',
-      academic_credit: 'Crédito Académico',
-    };
-    return map[type ?? ''] ?? type ?? '';
-  }
-
-  matchBreakdown(match: MatchResult): MatchBreakdown {
-    return {
-      overall: match.overallScore,
-      skill: match.skillScore,
-      experience: match.experienceScore,
-      education: match.educationScore,
-      availability: match.availabilityScore,
-      rating: match.ratingScore,
-    };
+  matchBreakdown(match: MatchResult): MatResultBreakdown {
+    return match;
   }
 
   getRequirementIcon(type: string): string {
@@ -234,6 +156,19 @@ export class ProjectDetailComponent {
     };
     return map[type] ?? 'check';
   }
+
+  readonly companySizeLabel = computed(() => {
+    const map: Record<string, string> = {
+      startup: 'Startup',
+      micro: 'Microempresa',
+      small: 'Pequeña empresa',
+      medium: 'Mediana empresa',
+      large: 'Gran empresa',
+      enterprise: 'Corporación',
+    };
+    const size = this.companyProfile()?.companySize;
+    return size ? (map[size] ?? size) : null;
+  });
 
   proficiencyLabel(level: string): string {
     const map: Record<string, string> = {

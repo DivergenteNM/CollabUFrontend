@@ -2,7 +2,7 @@
   <mat-card-header>
     <mat-card-title>
       @if (viewMode() === 'student') {
-      {{ application().project?.title || 'Proyecto' }}
+      {{ application().project?.title || application().projectTitle || 'Proyecto' }}
       } @else {
       <div class="application-card__title-company">
         <div class="student-name">
@@ -12,8 +12,8 @@
           Estudiante #{{ application().student?.studentCode || application().studentId }}
           }
         </div>
-        @if (application().project) {
-        <span class="project-tag">{{ application().project!.title }}</span>
+        @if (application().project?.title || application().projectTitle) {
+        <span class="project-tag">{{ application().project?.title || application().projectTitle }}</span>
         }
       </div>
       }

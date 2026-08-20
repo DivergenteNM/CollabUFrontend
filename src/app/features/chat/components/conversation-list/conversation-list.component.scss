@@ -118,3 +118,17 @@ a.unread .conv-item__preview {
     font-size: 0.875rem;
   }
 }
+
+.conv-item__avatar.group {
+  background: var(--mat-sys-secondary-container, #e0e7ff);
+  color: var(--mat-sys-on-secondary-container, #1e3a8a);
+}
+
+.conv-item__type-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: var(--text-secondary);
+}

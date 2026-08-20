@@ -3,7 +3,26 @@
   {{ data.title }}
 </h2>
 <mat-dialog-content>
+  @if (data.context; as ctx) {
+    <div class="confirm-dialog__context">
+      <mat-icon>{{ ctx.icon || 'folder' }}</mat-icon>
+      <div class="confirm-dialog__context-body">
+        <span class="confirm-dialog__context-label">{{ ctx.label }}</span>
+        <strong class="confirm-dialog__context-value">{{ ctx.value }}</strong>
+        @if (ctx.status) {
+          <span class="confirm-dialog__context-status">{{ ctx.status }}</span>
+        }
+      </div>
+    </div>
+  }
   <p>{{ data.message }}</p>
+  @if (data.consequences && data.consequences.length > 0) {
+    <ul class="confirm-dialog__consequences">
+      @for (c of data.consequences; track c) {
+        <li>{{ c }}</li>
+      }
+    </ul>
+  }
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button (click)="dialogRef.close(false)">

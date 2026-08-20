@@ -67,7 +67,7 @@
         <div class="detail-grid">
           <div class="detail-item">
             <span class="detail-label">Período</span>
-            <span class="detail-value">{{ d.periodId ? d.periodId : '—' }}</span>
+            <span class="detail-value">{{ d.periodName || '—' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Fecha Inicio</span>
@@ -133,7 +133,7 @@
                                     rows="2"></textarea>
                         </mat-form-field>
                         <div class="review-row">
-                          <label>Nota: {{ reviewGrade() }}/5</label>
+                          <label>Nota (1-5): {{ reviewGrade() }}/5</label>
                           <mat-slider min="1" max="5" step="1" discrete>
                             <input matSliderThumb [value]="reviewGrade()"
                                    (valueChange)="reviewGrade.set($event)" />
@@ -159,6 +159,98 @@
         </div>
       </mat-tab>
 
+      <mat-tab label="Progreso">
+        <div class="tab-content">
+          @if (progress()) {
+            <app-progress-bar [progress]="progress()!" />
+          } @else {
+            <div class="empty">
+              <mat-icon>trending_up</mat-icon>
+              <p>El progreso se habilita cuando se carga el acuerdo de iniciación</p>
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Anteproyecto">
+        <div class="tab-content">
+          @if (!anteproyecto()) {
+            <div class="empty">
+              <mat-icon>menu_book</mat-icon>
+              <p>Aún no hay proceso de anteproyecto para este estudiante</p>
+            </div>
+          } @else {
+            <mat-card class="deliverable-card">
+              <mat-card-content>
+                <div class="deliverable-row">
+                  <div class="deliverable-info">
+                    <strong>Versión {{ anteproyecto()!.versionNumber }}</strong>
+                    <span class="deliverable-desc">Correcciones usadas: {{ anteproyecto()!.correctionCount }}</span>
+                    @if (anteproyecto()!.deadlineForReview) {
+                      <span class="deliverable-due"><mat-icon>schedule</mat-icon> Plazo de revisión: {{ anteproyecto()!.deadlineForReview | date:'d MMM yyyy' }}</span>
+                    }
+                    @if (anteproyecto()!.deadlineForStudent) {
+                      <span class="deliverable-due"><mat-icon>schedule</mat-icon> Plazo del estudiante: {{ anteproyecto()!.deadlineForStudent | date:'d MMM yyyy' }}</span>
+                    }
+                    @if (anteproyecto()!.asesorComments) {
+                      <p class="deliverable-desc">Comentario del asesor: {{ anteproyecto()!.asesorComments }}</p>
+                    }
+                    @if (anteproyecto()!.reviewerComments) {
+                      <p class="deliverable-desc">Comentario del jurado: {{ anteproyecto()!.reviewerComments }}</p>
+                    }
+                  </div>
+                  <mat-chip-set>
+                    <mat-chip>{{ anteproyectoStatusLabel(anteproyecto()!.status) }}</mat-chip>
+                  </mat-chip-set>
+                </div>
+
+                @if (detail()!.role === 'asesor') {
+                  <div class="review-form">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Comentario (visible para jurado y estudiante)</mat-label>
+                      <textarea matInput [value]="anteproyectoComment()"
+                                (input)="anteproyectoComment.set($any($event.target).value)" rows="2"></textarea>
+                    </mat-form-field>
+                    <div class="review-actions">
+                      <button mat-flat-button [disabled]="anteproyectoLoading()" (click)="submitAsesorComment()">Comentar</button>
+                    </div>
+                  </div>
+                }
+
+                @if (detail()!.role === 'jurado_anteproyecto' && ['submitted', 'revised', 'under_review'].includes(anteproyecto()!.status)) {
+                  <div class="review-form">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Comentario de revisión</mat-label>
+                      <textarea matInput [value]="anteproyectoComment()"
+                                (input)="anteproyectoComment.set($any($event.target).value)" rows="2"></textarea>
+                    </mat-form-field>
+                    <div class="review-actions">
+                      <button mat-stroked-button [disabled]="anteproyectoLoading()" (click)="reviewAnteproyecto('correction')">Solicitar corrección</button>
+                      <button mat-stroked-button [disabled]="anteproyectoLoading()" (click)="reviewAnteproyecto('reject')">Rechazar</button>
+                      <button mat-flat-button [disabled]="anteproyectoLoading()" (click)="reviewAnteproyecto('approve')">Aprobar</button>
+                    </div>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            @if (anteproyectoHistory().length > 0) {
+              <div class="history-list">
+                @for (h of anteproyectoHistory(); track h.id) {
+                  <div class="history-item">
+                    <mat-icon>history</mat-icon>
+                    <div>
+                      <strong>{{ h.action }}</strong> &middot; {{ h.createdAt | date:'d MMM yyyy, h:mm a' }}
+                      @if (h.comment) { <p class="deliverable-desc">{{ h.comment }}</p> }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </mat-tab>
+
       <mat-tab label="Evaluaciones">
         <div class="tab-content">
           @if (evaluations().length === 0) {
@@ -171,17 +263,25 @@
               <mat-card class="eval-card">
                 <mat-card-content>
                   <div class="eval-header">
-                    <strong>{{ ev.evaluatorType === 'faculty' ? 'Docente' : ev.evaluatorType === 'company' ? 'Empresa' : 'Estudiante' }}</strong>
+                    <strong>{{ evalTypeLabel(ev.evaluationType) }}</strong>
                     <span class="eval-date">{{ ev.createdAt | date:'d MMM yyyy' }}</span>
                   </div>
-                  <app-star-rating [value]="ev.overallRating" [readonly]="true" size="sm" />
-                  <p class="eval-comment">{{ ev.comment }}</p>
-                  @if (ev.ratings && ev.ratings.length > 0) {
-                    <div class="eval-criteria">
-                      @for (r of ev.ratings; track r.criteriaId) {
-                        <span class="eval-criteria-item">{{ r.criteriaId }}: {{ r.rating }}/5</span>
-                      }
-                    </div>
+                  @if (ev.status === 'completed' && ev.overallScore != null) {
+                    <app-star-rating [value]="+ev.overallScore / 20" [readonly]="true" size="sm" />
+                    @if (ev.overallComment) {
+                      <p class="eval-comment">{{ ev.overallComment }}</p>
+                    }
+                    @if (ev.ratings && ev.ratings.length > 0) {
+                      <div class="eval-criteria">
+                        @for (r of ev.ratings; track r.criterionId) {
+                          <span class="eval-criteria-item">
+                            {{ r.criterion?.name || 'Criterio' }}: {{ r.score }}/100
+                          </span>
+                        }
+                      </div>
+                    }
+                  } @else {
+                    <span class="eval-pending">Pendiente de completar</span>
                   }
                 </mat-card-content>
               </mat-card>

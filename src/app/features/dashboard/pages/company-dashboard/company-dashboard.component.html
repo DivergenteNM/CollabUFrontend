@@ -116,14 +116,14 @@
             <div class="dashboard__project-list">
               @for (proj of projects(); track proj.id) {
                 <div class="project-summary"
-                     (click)="router.navigate(['/my-projects', proj.id])"
-                     (keydown.enter)="router.navigate(['/my-projects', proj.id])"
+                     (click)="router.navigate(['/my-projects', proj.id, 'applicants'])"
+                     (keydown.enter)="router.navigate(['/my-projects', proj.id, 'applicants'])"
                      tabindex="0"
                      role="button">
                   <div class="project-summary__info">
                     <span class="project-summary__title">{{ proj.title }}</span>
                     <span class="project-summary__meta">
-                      <app-status-badge [status]="proj.status" size="sm" />
+                      <app-status-badge [status]="proj.status" domain="project" size="sm" />
                       <span>{{ proj.positionsFilled }}/{{ proj.positionsAvailable }} posiciones</span>
                     </span>
                   </div>

@@ -13,7 +13,7 @@
         <!-- Score Card -->
         <app-match-score-card
           [totalScore]="m.overallScore"
-          [breakdown]="m.matchBreakdown" />
+          [breakdown]="m" />
 
         <mat-divider />
 
@@ -27,10 +27,10 @@
               <div class="detail__skills-col detail__skills-col--match">
                 <h4>
                   <mat-icon>check_circle</mat-icon>
-                  Skills que coinciden ({{ m.matchingSkills.length }})
+                  Skills que coinciden ({{ matchingSkillNames().length }})
                 </h4>
                 <mat-chip-set>
-                  @for (skill of m.matchingSkills; track skill) {
+                  @for (skill of matchingSkillNames(); track skill) {
                     <mat-chip class="chip--match">{{ skill }}</mat-chip>
                   }
                   @empty {
@@ -43,10 +43,10 @@
               <div class="detail__skills-col detail__skills-col--missing">
                 <h4>
                   <mat-icon>cancel</mat-icon>
-                  Skills que te faltan ({{ m.missingSkills.length }})
+                  Skills que te faltan ({{ missingSkillNames().length }})
                 </h4>
                 <mat-chip-set>
-                  @for (skill of m.missingSkills; track skill) {
+                  @for (skill of missingSkillNames(); track skill) {
                     <mat-chip class="chip--missing">{{ skill }}</mat-chip>
                   }
                   @empty {
@@ -61,23 +61,25 @@
         <mat-divider />
 
         <!-- Project Card -->
-        <section class="detail__project">
-          <h3><mat-icon>work</mat-icon> Proyecto</h3>
-          <app-project-card
-            [project]="m.project"
-            [matchScore]="m.overallScore"
-            (viewDetail)="router.navigate(['/projects', m.project.id])"
-            (apply)="openApplyDialog(m.project.id, m.project.title)" />
-        </section>
+        @if (project(); as p) {
+          <section class="detail__project">
+            <h3><mat-icon>work</mat-icon> Proyecto</h3>
+            <app-project-card
+              [project]="p"
+              [matchScore]="m.overallScore"
+              (viewDetail)="router.navigate(['/projects', p.id])"
+              (apply)="openApplyDialog(p.id, p.title)" />
+          </section>
 
-        <!-- Actions -->
-        <div class="detail__actions">
-          <button mat-flat-button class="detail__apply" (click)="openApplyDialog(m.project.id, m.project.title)">
-            <mat-icon>send</mat-icon> Aplicar a este proyecto
-          </button>
-          <button mat-stroked-button (click)="router.navigate(['/projects', m.project.id])">
-            <mat-icon>open_in_new</mat-icon> Ver detalle completo del proyecto
-          </button>
-        </div>
+          <!-- Actions -->
+          <div class="detail__actions">
+            <button mat-flat-button class="detail__apply" (click)="openApplyDialog(p.id, p.title)">
+              <mat-icon>send</mat-icon> Aplicar a este proyecto
+            </button>
+            <button mat-stroked-button (click)="router.navigate(['/projects', p.id])">
+              <mat-icon>open_in_new</mat-icon> Ver detalle completo del proyecto
+            </button>
+          </div>
+        }
       }
     </div>

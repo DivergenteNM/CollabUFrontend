@@ -116,10 +116,15 @@
 
           <!-- Right: Match + Cover Letter -->
           <div class="review__right">
-            @if (app.matchScore != null && app.matchBreakdown) {
-              <app-match-score-card
-                [totalScore]="app.matchScore"
-                [breakdown]="app.matchBreakdown" />
+            @if (app.matchScore != null) {
+              <mat-card>
+                <mat-card-content>
+                  <div class="review__match-score">
+                    <mat-icon>star</mat-icon>
+                    <span>Match Score: {{ app.matchScore }}%</span>
+                  </div>
+                </mat-card-content>
+              </mat-card>
             }
 
             <mat-card>
@@ -220,6 +225,8 @@
                       <mat-select formControlName="modality">
                         <mat-option value="presencial">Presencial</mat-option>
                         <mat-option value="virtual">Virtual</mat-option>
+                        <mat-option value="phone">Telefónica</mat-option>
+                        <mat-option value="technical">Prueba técnica</mat-option>
                       </mat-select>
                     </mat-form-field>
                     <mat-form-field appearance="outline" class="full-width">
@@ -255,6 +262,107 @@
                     </div>
                   </form>
                 }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Entrevistas -->
+            @if (app.interviews && app.interviews.length > 0) {
+              <mat-card>
+                <mat-card-content>
+                  <h3>Entrevistas</h3>
+                  @for (interview of app.interviews; track interview.id) {
+                    <div class="review__deliverable">
+                      <div class="review__deliverable-header">
+                        <span class="review__deliverable-title">
+                          {{ interviewTypeLabel(interview.interviewType) }} — {{ interview.scheduledAt | date:'d MMM y, HH:mm' }}
+                        </span>
+                        <span class="review__deliverable-status">{{ interview.status }}</span>
+                      </div>
+
+                      @if (interview.companyResolution) {
+                        <p [style.color]="interview.companyResolution === 'passed' ? '#059669' : '#dc2626'">
+                          <mat-icon style="vertical-align:middle;font-size:16px;height:16px;width:16px">
+                            {{ interview.companyResolution === 'passed' ? 'check_circle' : 'cancel' }}
+                          </mat-icon>
+                          {{ interview.companyResolution === 'passed' ? 'Aprobado' : 'No aprobado' }}
+                          @if (interview.resolutionComment) { — {{ interview.resolutionComment }} }
+                        </p>
+                      }
+
+                      @if (interview.interviewType === 'technical') {
+                        <div class="review__deliverable-review">
+                          @if (interview.companyBriefFileId) {
+                            <p><mat-icon style="vertical-align:middle;font-size:16px">attach_file</mat-icon> Enunciado cargado</p>
+                          }
+                          @if (interview.studentSolutionFileId) {
+                            <p><mat-icon style="vertical-align:middle;font-size:16px">task_alt</mat-icon> El estudiante subió su solución</p>
+                          } @else {
+                            <p class="review__empty">El estudiante aún no ha subido su solución.</p>
+                          }
+                          <button mat-stroked-button (click)="toggleBriefForm(interview)">
+                            <mat-icon>upload_file</mat-icon> {{ interview.companyBriefFileId ? 'Actualizar' : 'Cargar' }} enunciado
+                          </button>
+
+                          @if (briefFormInterviewId() === interview.id) {
+                            <div class="review__inline-form">
+                              <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Descripción de la prueba</mat-label>
+                                <textarea matInput [(ngModel)]="technicalTaskDescription" rows="3"></textarea>
+                              </mat-form-field>
+                              <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Fecha límite</mat-label>
+                                <input matInput type="date" [(ngModel)]="technicalTaskDueDate" />
+                              </mat-form-field>
+                              <app-file-upload (fileSelected)="saveBrief(interview, $event)" [multiple]="false" />
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      @if (interview.status !== 'completed' && interview.status !== 'cancelled') {
+                        <button mat-stroked-button (click)="toggleResolveForm(interview)" style="margin-top:8px">
+                          <mat-icon>done_all</mat-icon> Finalizar y resolver
+                        </button>
+
+                        @if (resolvingInterviewId() === interview.id) {
+                          <div class="review__inline-form">
+                            <mat-form-field appearance="outline">
+                              <mat-label>Resolución</mat-label>
+                              <mat-select [(ngModel)]="resolutionChoice">
+                                <mat-option value="passed">Aprobado</mat-option>
+                                <mat-option value="failed">No aprobado</mat-option>
+                              </mat-select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>Comentario (privado, solo visible para tu empresa)</mat-label>
+                              <textarea matInput [(ngModel)]="resolutionComment" rows="3"></textarea>
+                            </mat-form-field>
+                            <div class="review__form-actions">
+                              <button mat-button (click)="resolvingInterviewId.set(null)">Cancelar</button>
+                              <button mat-flat-button (click)="confirmResolveInterview(interview)">Guardar</button>
+                            </div>
+                          </div>
+                        }
+                      }
+                      <mat-divider style="margin-top:12px" />
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+            }
+
+            <!-- Notas privadas -->
+            <mat-card>
+              <mat-card-content>
+                <h3><mat-icon style="vertical-align:middle">lock</mat-icon> Notas privadas</h3>
+                <p class="review__empty">Solo visibles para tu empresa. El estudiante nunca las verá.</p>
+                <mat-form-field appearance="outline" class="full-width">
+                  <textarea matInput [(ngModel)]="notesText" rows="4"
+                    placeholder="Observaciones internas sobre este candidato..."></textarea>
+                </mat-form-field>
+                <button mat-flat-button [disabled]="savingNotes()" (click)="saveNotes()">
+                  <mat-icon>save</mat-icon> Guardar nota
+                </button>
               </mat-card-content>
             </mat-card>
 
@@ -325,6 +433,10 @@
                   }
                 </mat-card-content>
               </mat-card>
+              @if (progressResource.value(); as progress) {
+                <app-progress-bar [progress]="progress" />
+              }
+              <app-documents-panel [applicationId]="app.id" actorType="company" />
             }
           </div>
         </div>

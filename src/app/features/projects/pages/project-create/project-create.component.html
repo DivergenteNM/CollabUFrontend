@@ -36,27 +36,6 @@
         </div>
 
         <div class="project-create__row">
-          <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Tipo de Compensación / Pago</mat-label>
-            <mat-select formControlName="compensationType">
-              @for (comp of compensationTypes; track comp.value) {
-                <mat-option [value]="comp.value">{{ comp.label }}</mat-option>
-              }
-            </mat-select>
-            <mat-error>Selecciona el tipo de compensación</mat-error>
-          </mat-form-field>
-
-          @if (infoForm.value.compensationType === 'paid' || infoForm.value.compensationType === 'stipend') {
-            <mat-form-field appearance="outline" class="flex-1">
-              <mat-label>Monto / Salario (COP)</mat-label>
-              <input matInput type="number" formControlName="compensationAmount" min="0" placeholder="Ej: 1500000" />
-              <span matPrefix style="margin-right: 4px;">$</span>
-              <mat-error>Monto inválido (mínimo 0)</mat-error>
-            </mat-form-field>
-          }
-        </div>
-
-        <div class="project-create__row">
           <mat-slide-toggle formControlName="isRemote">Remoto</mat-slide-toggle>
 
           @if (!infoForm.value.isRemote) {
@@ -69,7 +48,7 @@
 
         <div class="project-create__row">
           <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Horas Semanales (Opcional)</mat-label>
+            <mat-label>Horas Semanales</mat-label>
             <input matInput type="number" formControlName="weeklyHours" min="1" placeholder="Ej: 10" />
             <mat-error>Mínimo 1 hora semanal</mat-error>
           </mat-form-field>
@@ -119,15 +98,19 @@
           </mat-form-field>
         </div>
 
-        <h3>Perfil Académico Ideal (Opcional)</h3>
+        <h3>Perfil Académico Ideal</h3>
         <div class="project-create__row">
           <mat-form-field appearance="outline" class="flex-1">
             <mat-label>Carreras Relacionadas</mat-label>
-            <mat-select formControlName="academicPrograms" multiple>
-              @for (program of programs; track program) {
-                <mat-option [value]="program">{{ program }}</mat-option>
+            <mat-select formControlName="academicPrograms" multiple
+                        (selectionChange)="onProgramsChange($event.value)">
+              @for (program of academicPrograms(); track program.id) {
+                <mat-option [value]="program.id">{{ program.name }}</mat-option>
               }
             </mat-select>
+            @if (loadingPrograms()) {
+              <mat-hint>Cargando programas...</mat-hint>
+            }
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -143,9 +126,79 @@
       </form>
     </mat-step>
 
-    <mat-step label="Requisitos">
+    <mat-step label="Habilidades">
       <div class="project-create__form">
-        <h3>Requisitos del Proyecto</h3>
+        <h3>Habilidades requeridas</h3>
+        <p class="project-create__hint">
+          Selecciona del catálogo (filtrado por las carreras elegidas) o agrega habilidades libres.
+          Marca cuáles son obligatorias.
+        </p>
+
+        @if (loadingCatalog()) {
+          <p class="project-create__hint">Cargando catálogo...</p>
+        }
+        <div class="project-create__skill-suggestions">
+          <mat-card class="project-create__req-card">
+            <mat-card-content>
+              @for (entry of skillCatalog(); track entry.id) {
+                <button type="button" mat-stroked-button
+                  class="skill-chip"
+                  [class.skill-chip--selected]="isSkillSelected(entry.displayName)"
+                  (click)="toggleCatalogSkill(entry)">
+                  @if (isSkillSelected(entry.displayName)) {
+                    <mat-icon>check</mat-icon>
+                  } @else {
+                    <mat-icon>add</mat-icon>
+                  }
+                  {{ entry.displayName }}
+                </button>
+              }
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="project-create__row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Agregar habilidad libre</mat-label>
+            <input matInput [(ngModel)]="customSkillDraft" [ngModelOptions]="{ standalone: true }"
+              (keydown.enter)="$event.preventDefault(); addCustomSkill()"
+              placeholder="Ej. Power BI, Blender, etc." />
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="button" (click)="addCustomSkill()">
+            <mat-icon>add</mat-icon> Agregar
+          </button>
+        </div>
+
+        @if (skills().length > 0) {
+          <h4>Habilidades seleccionadas ({{ skills().length }})</h4>
+          @for (skill of skills(); track skill.name) {
+            <mat-card class="project-create__req-card">
+              <mat-card-content>
+                <div class="project-create__row">
+                  <span class="flex-1">{{ skill.name }}</span>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nivel mínimo</mat-label>
+                    <mat-select [value]="skill.proficiencyLevel"
+                                (selectionChange)="setSkillProficiency(skill.name, $event.value)">
+                      <mat-option [value]="null">Sin mínimo</mat-option>
+                      <mat-option value="beginner">Principiante</mat-option>
+                      <mat-option value="intermediate">Intermedio</mat-option>
+                      <mat-option value="advanced">Avanzado</mat-option>
+                      <mat-option value="expert">Experto</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <button mat-icon-button color="warn" aria-label="Quitar habilidad" (click)="removeSkill(skill.name)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        }
+
+        <h3 style="margin-top: 24px">Otros requisitos (educación, experiencia, idiomas, certificaciones)</h3>
 
         @for (req of requirementsControls(); track $index) {
           <mat-card class="project-create__req-card">
@@ -155,50 +208,18 @@
                   <mat-label>Tipo</mat-label>
                   <mat-select [value]="req.type"
                               (selectionChange)="updateRequirement($index, 'type', $event.value)">
-                    <mat-option value="skill">Habilidad / Competencia </mat-option>
                     <mat-option value="education">Educación</mat-option>
                     <mat-option value="experience">Experiencia</mat-option>
                     <mat-option value="language">Idioma</mat-option>
+                    <mat-option value="certification">Certificación</mat-option>
                     <mat-option value="other">Otro</mat-option>
                   </mat-select>
                 </mat-form-field>
 
-                @if (req.type === 'language') {
-                  <mat-form-field appearance="outline">
-                    <mat-label>Idioma</mat-label>
-                    <mat-select [value]="getLanguageSelectValue(req.name)"
-                                (selectionChange)="onLanguageSelectChange($index, $event.value)">
-                      @for (lang of languageOptions; track lang) {
-                        <mat-option [value]="lang">{{ lang }}</mat-option>
-                      }
-                      <mat-option value="other">Otro...</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-
-                  @if (getLanguageSelectValue(req.name) === 'other') {
-                    <mat-form-field appearance="outline" class="flex-1">
-                      <mat-label>Especificar Idioma</mat-label>
-                      <input matInput [value]="req.name" placeholder="Ej: Italiano, Mandarín"
-                             (input)="updateRequirement($index, 'name', $any($event.target).value)" />
-                    </mat-form-field>
-                  }
-                } @else {
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Nombre</mat-label>
-                    <input matInput [value]="req.name"
-                           (input)="updateRequirement($index, 'name', $any($event.target).value)" />
-                  </mat-form-field>
-                }
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Nivel</mat-label>
-                  <mat-select [value]="req.proficiencyLevel"
-                              (selectionChange)="updateRequirement($index, 'proficiencyLevel', $event.value)">
-                    <mat-option value="basic">Básico</mat-option>
-                    <mat-option value="intermediate">Intermedio</mat-option>
-                    <mat-option value="advanced">Avanzado</mat-option>
-                    <mat-option value="expert">Experto</mat-option>
-                  </mat-select>
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput [value]="req.name"
+                         (input)="updateRequirement($index, 'name', $any($event.target).value)" />
                 </mat-form-field>
               </div>
 
@@ -220,82 +241,25 @@
           <mat-icon>add</mat-icon> Agregar Requisito
         </button>
 
-        <h3 style="margin-top: 24px">Tags</h3>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Tags del Proyecto</mat-label>
-          <mat-chip-grid #chipGrid>
-            @for (tag of tags(); track tag) {
-              <mat-chip-row (removed)="removeTag(tag)">
-                {{ tag }}
-                <button matChipRemove><mat-icon>cancel</mat-icon></button>
-              </mat-chip-row>
-            }
-          </mat-chip-grid>
-          <input matInput placeholder="Agregar tag..."
-                 [matChipInputFor]="chipGrid"
-                 [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
-                 (matChipInputTokenEnd)="addTag($event)" />
-        </mat-form-field>
-
-        <div class="project-create__step-actions">
-          <button mat-stroked-button matStepperPrevious>Anterior</button>
-          <button mat-flat-button matStepperNext>Siguiente</button>
-        </div>
-      </div>
-    </mat-step>
-
-    <mat-step label="Entregables">
-      <div class="project-create__form">
-        <h3>Entregables del Proyecto</h3>
-
-        @for (del of deliverables(); track $index) {
-          <mat-card class="project-create__req-card">
-            <mat-card-content>
-              <div class="project-create__row">
-                <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>Título</mat-label>
-                  <input matInput [value]="del.title"
-                         (input)="updateDeliverable($index, 'title', $any($event.target).value)" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Peso (%)</mat-label>
-                  <input matInput type="number" [value]="del.weightPercentage" min="1" max="100"
-                         (input)="updateDeliverable($index, 'weightPercentage', +$any($event.target).value)" />
-                </mat-form-field>
-              </div>
-
-              <div class="project-create__row">
-                <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>Descripción</mat-label>
-                  <input matInput [value]="del.description"
-                         (input)="updateDeliverable($index, 'description', $any($event.target).value)" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Fecha límite</mat-label>
-                  <input matInput [value]="del.dueDate" type="date"
-                         (input)="updateDeliverable($index, 'dueDate', $any($event.target).value)" />
-                </mat-form-field>
-              </div>
-
-              <div class="project-create__row">
-                <mat-slide-toggle
-                  [checked]="del.isMandatory"
-                  (change)="updateDeliverable($index, 'isMandatory', $event.checked)">
-                  Obligatorio
-                </mat-slide-toggle>
-                <button mat-icon-button color="warn" aria-label="Eliminar entregable" (click)="removeDeliverable($index)">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </mat-card-content>
-          </mat-card>
+        <h3 style="margin-top: 24px">Documento de solicitud formal</h3>
+        <p class="project-create__hint">
+          Carta u oficio de solicitud institucional. Requerido para enviar el proyecto a revisión (no para guardar como borrador).
+        </p>
+        @if (documentFileId()) {
+          <div class="project-create__row">
+            <mat-icon>description</mat-icon>
+            <span>{{ documentFileName() }}</span>
+            <button mat-icon-button color="warn" aria-label="Quitar documento" (click)="clearDocument()">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        } @else {
+          <button mat-stroked-button type="button" [disabled]="uploadingDocument()" (click)="documentInput.click()">
+            <mat-icon>upload_file</mat-icon>
+            {{ uploadingDocument() ? 'Cargando...' : 'Adjuntar documento (PDF/DOC)' }}
+          </button>
+          <input #documentInput type="file" hidden accept=".pdf,.doc,.docx" (change)="onDocumentSelected($event)" />
         }
-
-        <button mat-stroked-button (click)="addDeliverable()">
-          <mat-icon>add</mat-icon> Agregar Entregable
-        </button>
 
         <div class="project-create__step-actions">
           <button mat-stroked-button matStepperPrevious>Anterior</button>
@@ -321,13 +285,6 @@
               @if (infoForm.value.totalHours) {
                 <span>• {{ infoForm.value.totalHours }}h tot</span>
               }
-              @if (infoForm.value.compensationType) {
-                <span>• {{ getCompensationTypeLabel(infoForm.value.compensationType) }}
-                  @if ((infoForm.value.compensationType === 'paid' || infoForm.value.compensationType === 'stipend') && infoForm.value.compensationAmount) {
-                    ({{ infoForm.value.compensationAmount | currency:(infoForm.value.currency || 'COP'):'symbol':'1.0-0' }})
-                  }
-                </span>
-              }
             </p>
 
             <h4>Descripción</h4>
@@ -346,14 +303,26 @@
               </ul>
             }
 
-            @if (tags().length > 0) {
-              <h4>Tags</h4>
+            @if (skills().length > 0) {
+              <h4>Habilidades ({{ skills().length }})</h4>
               <div class="project-create__preview-tags">
-                @for (tag of tags(); track tag) {
-                  <span class="tag-chip">{{ tag }}</span>
+                @for (skill of skills(); track skill.name) {
+                  <span class="tag-chip">{{ skill.name }}</span>
                 }
               </div>
             }
+
+            @if (infoForm.value.academicPrograms?.length) {
+              <h4>Programas académicos</h4>
+              <p>
+                @for (programId of infoForm.value.academicPrograms; track programId) {
+                  <span class="tag-chip">{{ getProgramName(programId) }}</span>
+                }
+              </p>
+            }
+
+            <h4>Documento de solicitud</h4>
+            <p>{{ documentFileName() || 'No adjuntado (requerido para enviar a revisión)' }}</p>
           </mat-card-content>
         </mat-card>
 

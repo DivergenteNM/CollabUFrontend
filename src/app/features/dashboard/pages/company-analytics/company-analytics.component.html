@@ -21,7 +21,7 @@
       <app-stat-card icon="school" [value]="m.totalStudentsHired" label="Estudiantes contratados" color="primary" />
       <app-stat-card icon="timer" [value]="avgResponseLabel()" label="Tiempo respuesta promedio" color="accent" />
       @if (m.avgEvaluationReceived !== null) {
-        <app-stat-card icon="star" [value]="m.avgEvaluationReceived!.toFixed(1)" label="Evaluación recibida" color="primary" />
+        <app-stat-card icon="star" [value]="(+m.avgEvaluationReceived).toFixed(1)" label="Evaluación recibida" color="primary" />
       }
     </div>
 

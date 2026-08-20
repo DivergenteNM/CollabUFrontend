@@ -7,8 +7,10 @@ export interface Project {
   companyLogoUrl?: string;
   title: string;
   description: string;
+  shortDescription?: string | null;
   projectType: ProjectType;
   status: ProjectStatus;
+  durationMonths?: number | null;
   positionsAvailable: number;
   positionsFilled: number;
   applicationsCount: number;
@@ -20,26 +22,43 @@ export interface Project {
   weeklyHours?: number;
   totalHours?: number;
   isRemote: boolean;
+  locationType?: 'remote' | 'onsite' | 'hybrid';
   location?: string;
   supervisorName?: string;
   compensationType?: CompensationType;
-  compensationAmount?: number;
+  compensationAmount?: number | null;
   currency?: string;
   requirements: ProjectRequirement[];
-  tags: string[];
+  skills: ProjectSkill[];
+  requestDocumentFileId?: string | null;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  facultyReviewNotes?: string | null;
+  facultyRejectionCategories?: string[] | null;
+  facultyReviewerId?: string | null;
+  facultyReviewedAt?: string | null;
+  submittedForReviewAt?: string | null;
 }
 
 export interface ProjectRequirement {
   id: string;
   name: string;
-  type: 'skill' | 'education' | 'experience' | 'language' | 'other';
+  type: 'education' | 'experience' | 'language' | 'certification' | 'other';
   description?: string;
   isMandatory: boolean;
   proficiencyLevel?: 'basic' | 'intermediate' | 'advanced' | 'expert';
   minimumYears?: number;
+}
+
+export interface ProjectSkill {
+  id?: string;
+  name: string;
+  catalogSkillId?: string | null;
+  category: 'language' | 'framework' | 'tool' | 'concept' | 'soft_skill';
+  proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert' | null;
+  isMandatory: boolean;
+  displayOrder?: number;
 }
 
 export interface ProjectFilters {

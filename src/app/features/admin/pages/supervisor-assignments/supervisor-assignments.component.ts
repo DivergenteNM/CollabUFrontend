@@ -1,10 +1,14 @@
 import {
   Component, ChangeDetectionStrategy, signal, computed,
-  inject, OnInit,
+  inject, OnInit, effect,
 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 import { DatePipe, DecimalPipe, SlicePipe, NgClass, CurrencyPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { statusLabel as registryLabel } from '../../../../core/status/status-registry';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -126,12 +130,14 @@ interface ProjectDetailData {
           </div>
         }
 
-        <!-- Tags -->
-        @if (proj()!.tags?.length) {
+        <!-- Habilidades -->
+        @if (proj()!.skills?.length) {
           <div class="pd-section">
-            <span class="pd-section-title"><mat-icon>label_outline</mat-icon> Tecnologías / Tags</span>
+            <span class="pd-section-title"><mat-icon>psychology</mat-icon> Habilidades requeridas</span>
             <div class="pd-chips">
-              @for (t of proj()!.tags; track t) { <span class="pd-chip">{{ t }}</span> }
+              @for (s of proj()!.skills; track s.name) {
+                <span class="pd-chip">{{ s.name }}{{ s.isMandatory ? ' *' : '' }}</span>
+              }
             </div>
           </div>
         }
@@ -141,24 +147,24 @@ interface ProjectDetailData {
           <div class="pd-section">
             <span class="pd-section-title"><mat-icon>menu_book</mat-icon> Programas académicos</span>
             <div class="pd-chips">
-              @for (p of proj()!.academicPrograms; track p) { <span class="pd-chip prog">{{ p }}</span> }
+              @for (id of proj()!.academicPrograms; track id) { <span class="pd-chip prog">{{ programName(id) }}</span> }
             </div>
           </div>
         }
 
         <!-- Requisitos -->
-        @if (proj()!.requirements?.length) {
+        @if (nonSkillRequirements().length) {
           <div class="pd-section">
             <span class="pd-section-title"><mat-icon>checklist</mat-icon> Requisitos</span>
             <div class="pd-reqs">
-              @for (r of proj()!.requirements; track r.id) {
+              @for (r of nonSkillRequirements(); track r.id) {
                 <div class="pd-req-item">
                   <mat-icon class="req-ico" [class.mandatory]="r.isMandatory">{{ r.isMandatory ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
                   <div>
                     <span class="req-name">{{ r.name }}</span>
                     @if (r.description) { <span class="req-desc">{{ r.description }}</span> }
                   </div>
-                  <span class="req-type">{{ r.requirementType }}</span>
+                  <span class="req-type">{{ r.type }}</span>
                 </div>
               }
             </div>
@@ -232,10 +238,28 @@ interface ProjectDetailData {
 export class ProjectDetailDialogComponent implements OnInit {
   readonly data = inject<ProjectDetailData>(MAT_DIALOG_DATA);
   private readonly http = inject(HttpClient);
+  private readonly adminService = inject(AdminService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly proj = signal<any>(null);
+  private readonly programs = signal<{ id: string; name: string }[]>([]);
+
+  constructor() {
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => this.programs.set(programs),
+      error: () => {},
+    });
+  }
+
+  programName(id: string): string {
+    return this.programs().find((p) => p.id === id)?.name ?? id;
+  }
+
+  /** Excluye requirements ya migrados a `skills` para no mostrar duplicados en datos antiguos. */
+  nonSkillRequirements(): any[] {
+    return (this.proj()?.requirements ?? []).filter((r: any) => r.type !== 'skill');
+  }
 
   typeLabel(t: string) {
     const m: Record<string, string> = {
@@ -245,11 +269,7 @@ export class ProjectDetailDialogComponent implements OnInit {
     return m[t] ?? t;
   }
   statusLabel(s: string) {
-    const m: Record<string, string> = {
-      draft: 'Borrador', pending_approval: 'En revisión', published: 'Publicado',
-      in_progress: 'En curso', completed: 'Completado', cancelled: 'Cancelado',
-    };
-    return m[s] ?? s;
+    return registryLabel('project', s);
   }
   modeLabel(m: string) {
     const mp: Record<string, string> = { remote: 'Remoto', onsite: 'Presencial', hybrid: 'Híbrido' };
@@ -288,59 +308,87 @@ interface AssignDialogData {
     MatChipsModule, FormsModule, DecimalPipe,
   ],
   template: `
-    <h2 mat-dialog-title>
-      <mat-icon>school</mat-icon>
-      Asignar asesor académico
-    </h2>
-    <mat-dialog-content>
-      <div class="app-summary">
-        <div class="app-row"><span class="lbl">Estudiante</span><span class="val">{{ data.application.studentName }}</span></div>
-        <div class="app-row"><span class="lbl">Proyecto</span><span class="val">{{ data.application.projectTitle }}</span></div>
+    <div class="asd-header">
+      <div class="asd-header-icon"><mat-icon>school</mat-icon></div>
+      <div>
+        <h2 mat-dialog-title class="asd-title">Asignar asesor académico</h2>
+        <p class="asd-subtitle">Vincula un docente y, opcionalmente, jurado(s) de anteproyecto a esta postulación.</p>
+      </div>
+    </div>
+
+    <mat-dialog-content class="asd-content">
+      <section class="asd-summary">
+        <div class="asd-summary-row">
+          <mat-icon>person</mat-icon>
+          <span class="asd-summary-label">Estudiante</span>
+          <span class="asd-summary-value">{{ data.application.studentName }}</span>
+        </div>
+        <div class="asd-summary-row">
+          <mat-icon>work</mat-icon>
+          <span class="asd-summary-label">Proyecto</span>
+          <span class="asd-summary-value">{{ data.application.projectTitle }}</span>
+        </div>
         @if (data.application.matchScore) {
-          <div class="app-row">
-            <span class="lbl">Match score</span>
-            <span class="val">{{ data.application.matchScore | number:'1.0-0' }}%</span>
+          <div class="asd-summary-row">
+            <mat-icon>insights</mat-icon>
+            <span class="asd-summary-label">Match score</span>
+            <span class="asd-summary-value">{{ data.application.matchScore | number:'1.0-0' }}%</span>
           </div>
         }
-      </div>
+      </section>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asesor académico</mat-label>
-        <mat-select [(ngModel)]="selectedSupervisorId">
-          @for (sup of data.supervisors; track sup.id) {
-            <mat-option [value]="sup.id" [disabled]="sup.currentStudents >= sup.maxStudents">
-              {{ sup.fullName ?? sup.userId }}
-              — {{ sup.department }}
-              ({{ sup.currentStudents }}/{{ sup.maxStudents }})
-            </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <section class="asd-section">
+        <h3 class="asd-section-title">Asesor</h3>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Asesor académico</mat-label>
+          <mat-select [(ngModel)]="selectedSupervisorId">
+            @for (sup of data.supervisors; track sup.id) {
+              <mat-option [value]="sup.id" [disabled]="sup.currentStudents >= sup.maxStudents">
+                {{ sup.fullName ?? sup.userId }} — {{ sup.department }} ({{ sup.currentStudents }}/{{ sup.maxStudents }})
+              </mat-option>
+            }
+          </mat-select>
+          <mat-hint>El asesor debe aceptar la asignación antes de que el proyecto inicie.</mat-hint>
+        </mat-form-field>
+      </section>
 
-      <div class="date-row">
-        <mat-form-field appearance="outline">
+      <section class="asd-section">
+        <h3 class="asd-section-title">Jurado de anteproyecto <span class="asd-optional">(opcional)</span></h3>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Jurado(s)</mat-label>
+          <mat-select [(ngModel)]="selectedJuradoIds" multiple>
+            @for (sup of data.supervisors; track sup.id) {
+              <mat-option [value]="sup.id" [disabled]="sup.id === selectedSupervisorId">
+                {{ sup.fullName ?? sup.userId }} — {{ sup.department }}
+              </mat-option>
+            }
+          </mat-select>
+          <mat-hint>Se auto-acepta y revisa el anteproyecto — no puede ser la misma persona que el asesor.</mat-hint>
+        </mat-form-field>
+      </section>
+
+      <section class="asd-section">
+        <h3 class="asd-section-title">Fecha e inicio</h3>
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Fecha de inicio</mat-label>
           <input matInput type="date" [(ngModel)]="startDate" />
         </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha de fin (opcional)</mat-label>
-          <input matInput type="date" [(ngModel)]="endDate" />
-        </mat-form-field>
-      </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Notas (opcional)</mat-label>
-        <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
-      </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notas <span class="asd-optional">(opcional)</span></mat-label>
+          <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
+        </mat-form-field>
+      </section>
 
       @if (!data.periodId) {
-        <p class="warn-text">
+        <p class="asd-warn">
           <mat-icon>warning</mat-icon>
           No hay período académico activo. Crea uno en "Períodos" antes de asignar.
         </p>
       }
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
+
+    <mat-dialog-actions align="end" class="asd-actions">
       <button mat-button mat-dialog-close>Cancelar</button>
       <button mat-flat-button color="primary"
         [disabled]="!selectedSupervisorId || !startDate || !data.periodId"
@@ -351,16 +399,60 @@ interface AssignDialogData {
     </mat-dialog-actions>
   `,
   styles: [`
-    h2[mat-dialog-title] { display: flex; align-items: center; gap: 8px; font-size: 18px; }
-    mat-dialog-content { min-width: 420px; display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }
-    .app-summary { background: #f5f5f5; border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-    .app-row { display: flex; gap: 8px; font-size: 14px; }
-    .lbl { font-weight: 500; min-width: 100px; color: #555; }
-    .val { color: #222; }
+    .asd-header {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 20px 24px 4px;
+    }
+    .asd-header-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: color-mix(in srgb, var(--mat-sys-primary, #1565c0) 12%, transparent);
+      color: var(--mat-sys-primary, #1565c0);
+      display: flex; align-items: center; justify-content: center;
+      mat-icon { font-size: 22px; width: 22px; height: 22px; }
+    }
+    .asd-title { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+    .asd-subtitle { margin: 4px 0 0; font-size: .8125rem; color: var(--text-secondary, #666); }
+
+    .asd-content {
+      min-width: 480px; max-width: 560px;
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 8px 24px 4px;
+    }
+
+    .asd-summary {
+      background: var(--mat-sys-surface-container-low, #f5f5f5);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .asd-summary-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: .8125rem;
+      mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--text-secondary, #888); flex-shrink: 0; }
+    }
+    .asd-summary-label { color: var(--text-secondary, #666); min-width: 90px; flex-shrink: 0; }
+    .asd-summary-value { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .asd-section { margin-bottom: 8px; }
+    .asd-section-title {
+      margin: 0 0 8px; font-size: .75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em;
+      color: var(--text-secondary, #888);
+    }
+    .asd-optional { text-transform: none; font-weight: 400; letter-spacing: normal; }
+
     .full-width { width: 100%; }
-    .date-row { display: flex; gap: 12px; }
-    .date-row mat-form-field { flex: 1; }
-    .warn-text { color: #e65100; display: flex; align-items: center; gap: 4px; font-size: 13px; background: #fff3e0; padding: 8px 12px; border-radius: 6px; margin: 0; }
+
+    .asd-warn {
+      display: flex; align-items: center; gap: 8px;
+      color: #e65100; font-size: .8125rem;
+      background: #fff3e0; padding: 10px 14px; border-radius: 8px;
+      margin: 4px 0 0;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
+    }
+
+    .asd-actions { padding: 12px 24px 20px; }
   `],
 })
 export class AssignSupervisorDialogComponent {
@@ -368,15 +460,15 @@ export class AssignSupervisorDialogComponent {
   private readonly ref = inject(MatDialogRef<AssignSupervisorDialogComponent>);
 
   selectedSupervisorId = '';
+  selectedJuradoIds: string[] = [];
   startDate = new Date().toISOString().slice(0, 10);
-  endDate = '';
   notes = '';
 
   confirm() {
     this.ref.close({
       supervisorId: this.selectedSupervisorId,
+      juradoIds: this.selectedJuradoIds.length ? this.selectedJuradoIds : undefined,
       startDate: this.startDate,
-      endDate: this.endDate || undefined,
       notes: this.notes || undefined,
     });
   }
@@ -402,6 +494,15 @@ export class SupervisorAssignmentsComponent implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  /** Deep-link desde "Proceso académico": `?applicationId=` abre el diálogo directamente. */
+  private readonly deepLinkAppId = toSignal(
+    this.route.queryParamMap.pipe(map((p) => p.get('applicationId'))),
+    { initialValue: null },
+  );
+  private deepLinkHandled = false;
 
   // ── Page state ──
   readonly page = signal(1);
@@ -438,6 +539,19 @@ export class SupervisorAssignmentsComponent implements OnInit {
 
   readonly columns = ['student', 'project', 'matchScore', 'acceptedAt', 'actions'];
 
+  constructor() {
+    effect(() => {
+      const appId = this.deepLinkAppId();
+      const rows = this.rows();
+      if (!appId || this.deepLinkHandled || this.loadingMeta() || rows.length === 0) return;
+      const target = rows.find((r) => r.id === appId);
+      if (!target) return;
+      this.deepLinkHandled = true;
+      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.openAssignDialog(target);
+    });
+  }
+
   ngOnInit() {
     this.adminService.getSupervisors(true).subscribe({
       next: (sups) => this.supervisors.set(sups),
@@ -468,7 +582,7 @@ export class SupervisorAssignmentsComponent implements OnInit {
         supervisors: this.supervisors(),
         periodId: this.currentPeriodId(),
       } as AssignDialogData,
-      width: '520px',
+      width: '600px',
       maxHeight: '90vh',
     });
 
@@ -481,17 +595,17 @@ export class SupervisorAssignmentsComponent implements OnInit {
       this.assigning.set(true);
       this.adminService.assignSupervisor({
         supervisorId: result.supervisorId,
+        juradoIds: result.juradoIds,
         studentId: app.studentId,
         projectId: app.projectId,
         applicationId: app.id,
         periodId: this.currentPeriodId()!,
         startDate: result.startDate,
-        endDate: result.endDate,
         notes: result.notes,
       }).subscribe({
         next: () => {
           this.assigning.set(false);
-          this.snackBar.open('Asesor asignado correctamente. El proyecto ha iniciado.', 'OK', { duration: 5000 });
+          this.snackBar.open('Asesor y jurado asignados. El proyecto iniciará cuando el asesor acepte.', 'OK', { duration: 6000 });
           this.resource.reload();
         },
         error: (err) => {

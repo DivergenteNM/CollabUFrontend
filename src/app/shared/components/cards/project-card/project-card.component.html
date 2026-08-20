@@ -1,9 +1,13 @@
 <mat-card class="project-card__container">
   <mat-card-header>
-    <mat-icon mat-card-avatar class="project-card__company-icon">business</mat-icon>
+    @if (project().companyLogoUrl) {
+      <img mat-card-avatar [src]="project().companyLogoUrl" class="project-card__company-logo" alt="" />
+    } @else {
+      <mat-icon mat-card-avatar class="project-card__company-icon">business</mat-icon>
+    }
     <mat-card-title>{{ project().companyName }}</mat-card-title>
     <mat-card-subtitle>
-      <app-status-badge [status]="project().status" size="sm" />
+      <app-status-badge [status]="project().status" domain="project" size="sm" />
     </mat-card-subtitle>
   </mat-card-header>
 
@@ -25,11 +29,11 @@
     </div>
 
     <mat-chip-set class="project-card__tags">
-      @for (tag of project().tags.slice(0, 3); track tag) {
-        <mat-chip>{{ tag }}</mat-chip>
+      @for (skill of project().skills.slice(0, 3); track skill.name) {
+        <mat-chip>{{ skill.name }}</mat-chip>
       }
-      @if (project().tags.length > 3) {
-        <mat-chip>+{{ project().tags.length - 3 }}</mat-chip>
+      @if (project().skills.length > 3) {
+        <mat-chip>+{{ project().skills.length - 3 }}</mat-chip>
       }
     </mat-chip-set>
 
@@ -39,7 +43,9 @@
     </div>
 
     @if (matchScore() !== undefined) {
-      <app-match-score-bar [score]="matchScore()!" label="Match" size="sm" />
+      <div class="project-card__match">
+        <app-match-score-bar [score]="matchScore()!" label="Match" size="sm" />
+      </div>
     }
   </mat-card-content>
 

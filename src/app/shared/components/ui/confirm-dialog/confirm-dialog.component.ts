@@ -9,6 +9,20 @@ export interface ConfirmDialogData {
   confirmText?: string;
   cancelText?: string;
   type?: 'info' | 'warning' | 'danger';
+  /**
+   * Contexto opcional que se muestra en un bloque destacado sobre el mensaje.
+   * Útil para diálogos que operan sobre una entidad concreta (proyecto,
+   * postulación, entregable), evitando el "confirmar en vacío" del diálogo
+   * genérico. §15.3 del planning.
+   */
+  context?: {
+    label: string;              // p.ej. "Proyecto"
+    value: string;              // p.ej. "Plataforma interna de RRHH"
+    icon?: string;              // p.ej. "folder"
+    status?: string;            // p.ej. "En progreso"
+  };
+  /** Lista de consecuencias que se aplican al confirmar. */
+  consequences?: string[];
 }
 
 const TYPE_CONFIG: Record<string, { icon: string; color: string }> = {

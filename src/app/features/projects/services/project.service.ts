@@ -7,6 +7,7 @@ import {
   PaginationParams,
   Project,
   ProjectFilters,
+  ProjectSkill,
 } from '../../../core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -67,5 +68,17 @@ export class ProjectService extends BaseApiService {
 
   deleteDeliverable(projectId: string, deliverableId: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${projectId}/deliverables/${deliverableId}`);
+  }
+
+  getSkills(projectId: string): Observable<ProjectSkill[]> {
+    return this.http.get<ProjectSkill[]>(`${this.apiUrl}/${projectId}/skills`);
+  }
+
+  addSkill(projectId: string, data: Partial<ProjectSkill>): Observable<ApiResponse<ProjectSkill>> {
+    return this.http.post<ApiResponse<ProjectSkill>>(`${this.apiUrl}/${projectId}/skills`, data);
+  }
+
+  deleteSkill(projectId: string, skillId: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${projectId}/skills/${skillId}`);
   }
 }

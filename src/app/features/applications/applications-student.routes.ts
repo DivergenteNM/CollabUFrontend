@@ -1,5 +1,10 @@
 import { Routes } from '@angular/router';
 
+/**
+ * §FASE 2 — el detalle legacy `/my-applications/:id` se sustituye por
+ * `/workspace/:id`. La ruta se conserva como redirect para no romper
+ * bookmarks o enlaces externos.
+ */
 export const APPLICATIONS_STUDENT_ROUTES: Routes = [
   {
     path: '',
@@ -11,10 +16,7 @@ export const APPLICATIONS_STUDENT_ROUTES: Routes = [
   },
   {
     path: ':id',
-    loadComponent: () =>
-      import('./pages/application-detail/application-detail.component').then(
-        (m) => m.ApplicationDetailComponent
-      ),
-    data: { title: 'Detalle de Aplicación' },
+    redirectTo: '/workspace/:id',
+    pathMatch: 'full',
   },
 ];

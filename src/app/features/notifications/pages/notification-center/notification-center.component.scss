@@ -6,7 +6,16 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
       h1 { font-size: 1.75rem; font-weight: 700; margin: 0; color: var(--mat-sys-on-surface); }
+    }
+
+    .notif-center__toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .notif-center__group {
@@ -14,6 +23,9 @@
     }
 
     .notif-center__group-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 0.8125rem;
       font-weight: 600;
       text-transform: uppercase;
@@ -22,6 +34,19 @@
       margin: 0 0 8px;
       padding: 0 0 8px;
       border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+      mat-icon {
+        font-size: 18px; width: 18px; height: 18px;
+      }
+    }
+
+    .notif-center__group-count {
+      margin-left: auto;
+      font-size: 0.75rem;
+      background: var(--mat-sys-surface-container);
+      color: var(--mat-sys-on-surface);
+      padding: 2px 8px;
+      border-radius: 10px;
     }
 
     .notif-center__group-list {
@@ -73,10 +98,8 @@
       color: var(--mat-sys-on-surface-variant);
     }
 
-    .unread .notif-center__icon {
-      background: var(--mat-sys-primary);
-      color: var(--mat-sys-on-primary);
-    }
+    // El registry inyecta color por tono via [style.background]/[style.color];
+    // los estilos por defecto aquí solo aplican cuando el registry no fija ninguno.
 
     .notif-center__content {
       flex: 1;

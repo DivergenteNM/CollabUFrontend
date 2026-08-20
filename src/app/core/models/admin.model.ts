@@ -24,6 +24,28 @@ export interface SupervisorAssignment {
   status: 'active' | 'completed' | 'transferred';
 }
 
+export interface AcademicProgram {
+  id: string;
+  name: string;
+  code: string;
+  faculty: string;
+  department?: string;
+  totalSemesters: number;
+  requiresInternship: boolean;
+  minimumSemesterForInternship: number;
+  isActive: boolean;
+}
+
+export type SkillCategory = 'language' | 'framework' | 'tool' | 'concept' | 'soft_skill';
+
+export interface SkillCatalogEntry {
+  id: string;
+  name: string;
+  displayName: string;
+  category: SkillCategory;
+  isActive: boolean;
+}
+
 export interface AcademicPeriod {
   id: string;
   name: string;

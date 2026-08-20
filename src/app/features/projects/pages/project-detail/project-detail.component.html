@@ -4,8 +4,8 @@
   </button>
 
   @if (projectResource.isLoading() || (!project() && !hasError())) {
-    <app-skeleton width="100%" height="200px" />
-    <app-skeleton width="100%" height="400px" />
+    <app-skeleton width="100%" height="120px" />
+    <app-skeleton width="100%" height="500px" />
   } @else if (hasError()) {
     <div class="detail__error">
       <mat-icon class="detail__error-icon">error_outline</mat-icon>
@@ -16,141 +16,216 @@
       </button>
     </div>
   } @else if (project(); as p) {
-    <mat-card class="detail__header">
-      <mat-card-content>
-        <div class="detail__header-top">
-          <div class="detail__company">
-            <mat-icon class="detail__company-icon">business</mat-icon>
-            <div>
-              <h3 class="detail__company-name">{{ p.companyName }}</h3>
-              @if (p.supervisorName) {
-                <span class="detail__supervisor">Supervisor: {{ p.supervisorName }}</span>
-              }
-            </div>
-          </div>
-          <app-status-badge [status]="p.status" />
-        </div>
-
-        <h1 class="detail__title">{{ p.title }}</h1>
-
-        <div class="detail__meta">
-          <span class="detail__meta-item">
-            <mat-icon>label</mat-icon> {{ projectTypeLabel() }}
-          </span>
-          @if (p.location) {
-            <span class="detail__meta-item">
-              <mat-icon>location_on</mat-icon> {{ p.location }}
-            </span>
-          }
-          @if (p.isRemote) {
-            <span class="detail__meta-item">
-              <mat-icon>laptop</mat-icon> Remoto
-            </span>
-          }
-          @if (p.weeklyHours) {
-            <span class="detail__meta-item">
-              <mat-icon>schedule</mat-icon> {{ p.weeklyHours }}h/semana
-            </span>
-          }
-          @if (p.totalHours) {
-            <span class="detail__meta-item">
-              <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHours }}h total
-            </span>
-          }
-          @if (p.compensationType) {
-            <span class="detail__meta-item">
-              <mat-icon>payments</mat-icon>
-              {{ compensationLabel(p.compensationType) }}
-              @if ((p.compensationType === 'paid' || p.compensationType === 'stipend') && p.compensationAmount) {
-                : {{ p.compensationAmount | currency:(p.currency || 'COP'):'symbol':'1.0-0' }}
-              }
-            </span>
-          }
-          @if (p.academicPrograms && p.academicPrograms.length > 0) {
-            <span class="detail__meta-item">
-              <mat-icon>school</mat-icon> {{ p.academicPrograms.join(', ') }}
-            </span>
-          }
-          @if (p.minimumSemester) {
-            <span class="detail__meta-item">
-              <mat-icon>grade</mat-icon> Semestre mín: {{ p.minimumSemester }}°
-            </span>
-          }
-          <span class="detail__meta-item">
-            <mat-icon>event</mat-icon> {{ p.startDate | date:'d MMM yyyy' }} — {{ p.endDate | date:'d MMM yyyy' }}
-          </span>
-          <span class="detail__meta-item">
-            <mat-icon>people</mat-icon> {{ p.positionsFilled }}/{{ p.positionsAvailable }} posiciones
-          </span>
-          <span class="detail__meta-item highlight">
-            <mat-icon>event_busy</mat-icon> Aplicar antes: {{ p.applicationDeadline | date:'d MMM yyyy' }}
-          </span>
-        </div>
-
-        @if (p.tags.length > 0) {
-          <app-skill-chip-list [skills]="p.tags" [maxVisible]="8" />
-        }
-      </mat-card-content>
-    </mat-card>
+    <div class="detail__header">
+      <h1 class="detail__title">{{ p.title }}</h1>
+      <div class="detail__header-sub">
+        <span class="detail__company-name">
+          <mat-icon>business</mat-icon> {{ p.companyName }}
+        </span>
+        <app-status-badge [status]="p.status" domain="project" />
+      </div>
+    </div>
 
     <div class="detail__body">
       <div class="detail__content">
-        <mat-tab-group>
-          <mat-tab label="Descripción">
-            <div class="detail__tab-content">
-              <div class="detail__description" [innerHTML]="p.description"></div>
-            </div>
-          </mat-tab>
 
-          <mat-tab label="Requisitos">
-            <div class="detail__tab-content">
-              @if (p.requirements.length === 0) {
-                <p class="detail__empty-tab">No se especificaron requisitos.</p>
-              } @else {
-                <div class="detail__requirements">
-                  @for (req of p.requirements; track req.id) {
-                    <div class="detail__requirement" [class.mandatory]="req.isMandatory">
-                      <div class="detail__requirement-header">
-                        <mat-icon>{{ getRequirementIcon(req.type) }}</mat-icon>
-                        <span class="detail__requirement-name">{{ req.name }}</span>
-                        @if (req.isMandatory) {
-                          <span class="detail__requirement-badge">Obligatorio</span>
-                        }
-                      </div>
-                      @if (req.description) {
-                        <p class="detail__requirement-desc">{{ req.description }}</p>
-                      }
-                      <div class="detail__requirement-meta">
-                        @if (req.proficiencyLevel) {
-                          <span>Nivel: {{ proficiencyLabel(req.proficiencyLevel) }}</span>
-                        }
-                        @if (req.minimumYears) {
-                          <span>Mín. {{ req.minimumYears }} año(s)</span>
-                        }
-                      </div>
-                    </div>
+        <section class="detail__section">
+          <h2 class="detail__section-title">Información general</h2>
+          <div class="detail__meta">
+            <span class="detail__meta-item">
+              <mat-icon>label</mat-icon> {{ projectTypeLabel() }}
+            </span>
+            @if (p.location) {
+              <span class="detail__meta-item">
+                <mat-icon>location_on</mat-icon> {{ p.location }}
+              </span>
+            }
+            @if (p.isRemote) {
+              <span class="detail__meta-item">
+                <mat-icon>laptop</mat-icon> Remoto
+              </span>
+            }
+            @if (p.weeklyHours) {
+              <span class="detail__meta-item">
+                <mat-icon>schedule</mat-icon> {{ p.weeklyHours }}h/semana
+              </span>
+            }
+            @if (p.totalHours) {
+              <span class="detail__meta-item">
+                <mat-icon>hourglass_bottom</mat-icon> {{ p.totalHours }}h total
+              </span>
+            }
+            @if (p.compensationType) {
+              <span class="detail__meta-item">
+                <mat-icon>payments</mat-icon> {{ p.compensationType === 'paid' ? 'Remunerado' : p.compensationType === 'stipend' ? 'Auxilio' : 'No remunerado' }}
+              </span>
+            }
+            @if (p.minimumSemester) {
+              <span class="detail__meta-item">
+                <mat-icon>school</mat-icon> Desde semestre {{ p.minimumSemester }}
+              </span>
+            }
+            <span class="detail__meta-item">
+              <mat-icon>event</mat-icon> {{ p.startDate | date:'d MMM yyyy' }} — {{ p.endDate | date:'d MMM yyyy' }}
+            </span>
+            <span class="detail__meta-item">
+              <mat-icon>people</mat-icon> {{ p.positionsFilled }}/{{ p.positionsAvailable }} posiciones
+            </span>
+            <span class="detail__meta-item highlight">
+              <mat-icon>event_busy</mat-icon> Aplicar antes: {{ p.applicationDeadline | date:'d MMM yyyy' }}
+            </span>
+            @for (name of academicProgramNames(p); track name) {
+              <span class="detail__meta-item"><mat-icon>menu_book</mat-icon> {{ name }}</span>
+            }
+          </div>
+        </section>
+
+        <mat-divider />
+
+        <section class="detail__section">
+          <h2 class="detail__section-title">Descripción</h2>
+          <div class="detail__description" [innerHTML]="p.description"></div>
+        </section>
+
+        <mat-divider />
+
+        <section class="detail__section">
+          <h2 class="detail__section-title">Habilidades y requisitos</h2>
+
+          @if (p.skills?.length > 0) {
+            <app-skill-chip-list [skills]="skillNames(p)" [maxVisible]="20" />
+          }
+
+          @if (nonSkillRequirements(p).length > 0) {
+            <div class="detail__requirements">
+              @for (req of nonSkillRequirements(p); track req.id) {
+                <div class="detail__requirement" [class.mandatory]="req.isMandatory">
+                  <div class="detail__requirement-header">
+                    <mat-icon>{{ getRequirementIcon(req.type) }}</mat-icon>
+                    <span class="detail__requirement-name">{{ req.name }}</span>
+                    @if (req.isMandatory) {
+                      <span class="detail__requirement-badge">Obligatorio</span>
+                    }
+                  </div>
+                  @if (req.description) {
+                    <p class="detail__requirement-desc">{{ req.description }}</p>
                   }
+                  <div class="detail__requirement-meta">
+                    @if (req.proficiencyLevel) {
+                      <span>Nivel: {{ proficiencyLabel(req.proficiencyLevel) }}</span>
+                    }
+                    @if (req.minimumYears) {
+                      <span>Mín. {{ req.minimumYears }} año(s)</span>
+                    }
+                  </div>
                 </div>
               }
             </div>
-          </mat-tab>
+          }
 
-          <mat-tab label="Empresa">
-            @defer (on viewport) {
-              <div class="detail__tab-content">
-                <div class="detail__company-info">
+          @if (!p.skills?.length && nonSkillRequirements(p).length === 0) {
+            <p class="detail__empty">No se especificaron habilidades ni requisitos adicionales.</p>
+          }
+        </section>
+
+        @if (p.requestDocumentFileId) {
+          <mat-divider />
+          <section class="detail__section">
+            <h2 class="detail__section-title">Documento de solicitud</h2>
+            <app-file-link [fileId]="p.requestDocumentFileId" />
+          </section>
+        }
+
+        <mat-divider />
+
+        <section class="detail__section">
+          <h2 class="detail__section-title">Empresa</h2>
+
+          @if (companyProfileLoading()) {
+            <app-skeleton width="100%" height="140px" />
+          } @else if (companyProfile(); as company) {
+            <div class="detail__company-card">
+              <div class="detail__company-head">
+                @if (company.logoUrl) {
+                  <img class="detail__company-logo" [src]="company.logoUrl" [alt]="company.companyName" />
+                } @else {
                   <mat-icon class="detail__company-icon--large">business</mat-icon>
-                  <h3>{{ p.companyName }}</h3>
-                  <p class="detail__company-stats">
-                    {{ p.applicationsCount }} aplicaciones recibidas · {{ p.positionsAvailable }} posiciones
-                  </p>
+                }
+                <div>
+                  <h3>{{ company.legalName || company.companyName }}</h3>
+                  @if (company.industry) {
+                    <p class="detail__company-industry">{{ company.industry }}</p>
+                  }
                 </div>
               </div>
-            } @placeholder {
-              <app-skeleton width="100%" height="200px" />
-            }
-          </mat-tab>
-        </mat-tab-group>
+
+              @if (company.description) {
+                <p class="detail__company-description">{{ company.description }}</p>
+              }
+
+              <div class="detail__meta">
+                @if (companySizeLabel()) {
+                  <span class="detail__meta-item"><mat-icon>groups</mat-icon> {{ companySizeLabel() }}</span>
+                }
+                @if (company.employeeCount) {
+                  <span class="detail__meta-item"><mat-icon>badge</mat-icon> {{ company.employeeCount }} empleados</span>
+                }
+                @if (company.foundedYear) {
+                  <span class="detail__meta-item"><mat-icon>calendar_today</mat-icon> Desde {{ company.foundedYear }}</span>
+                }
+                @if (company.headquartersCity) {
+                  <span class="detail__meta-item"><mat-icon>location_on</mat-icon> {{ company.headquartersCity }}{{ company.headquartersState ? ', ' + company.headquartersState : '' }}</span>
+                }
+                @if (company.website || company.websiteUrl) {
+                  <a class="detail__meta-item detail__meta-link" [href]="company.website || company.websiteUrl" target="_blank" rel="noopener">
+                    <mat-icon>language</mat-icon> Sitio web
+                  </a>
+                }
+              </div>
+
+              @if (company.locations?.length) {
+                <div class="detail__company-block">
+                  <h4>Sedes</h4>
+                  <ul class="detail__company-list">
+                    @for (loc of company.locations; track loc.id) {
+                      <li>
+                        {{ loc.branchName ? loc.branchName + ' — ' : '' }}{{ loc.city }}{{ loc.state ? ', ' + loc.state : '' }}
+                        @if (loc.isHeadquarters) { <span class="detail__company-tag">Sede principal</span> }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              @if (company.businessAreas?.length) {
+                <div class="detail__company-block">
+                  <h4>Áreas de negocio</h4>
+                  <div class="detail__company-areas">
+                    @for (area of company.businessAreas; track area.id) {
+                      <span class="detail__company-tag">{{ area.areaName }}</span>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (company.contacts?.length) {
+                <div class="detail__company-block">
+                  <h4>Contacto</h4>
+                  <ul class="detail__company-list">
+                    @for (contact of company.contacts; track contact.id) {
+                      <li>
+                        {{ contact.firstName }} {{ contact.lastName }}{{ contact.position ? ' — ' + contact.position : '' }}
+                        @if (contact.email) { · {{ contact.email }} }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="detail__empty">No hay información adicional de la empresa.</p>
+          }
+        </section>
       </div>
 
       @if (authStore.isStudent()) {
@@ -163,14 +238,7 @@
 
           <mat-card class="detail__apply-card">
             <mat-card-content>
-              @if (cannotApplyReason(); as reason) {
-                <div class="detail__semester-warning">
-                  <mat-icon color="warn">warning</mat-icon>
-                  <span>{{ reason }}</span>
-                </div>
-              }
               <button mat-flat-button class="detail__apply-btn"
-                      [disabled]="cannotApplyReason() !== null"
                       (click)="openApplyDialog(p)">
                 <mat-icon>send</mat-icon> Aplicar a este proyecto
               </button>

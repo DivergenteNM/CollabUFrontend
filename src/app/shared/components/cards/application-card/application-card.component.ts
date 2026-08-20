@@ -30,7 +30,9 @@ export class ApplicationCardComponent {
     const s = this.application().status;
     return s !== ApplicationStatus.COMPLETED &&
            s !== ApplicationStatus.CANCELLED &&
-           s !== ApplicationStatus.WITHDRAWN;
+           s !== ApplicationStatus.WITHDRAWN &&
+           s !== ApplicationStatus.IN_PROGRESS &&
+           s !== ApplicationStatus.REJECTED;
   });
 
   readonly availableActions = computed(() => {
@@ -59,11 +61,6 @@ export class ApplicationCardComponent {
       case ApplicationStatus.ACCEPTED:
         actions.push(
           { status: ApplicationStatus.IN_PROGRESS, label: 'Iniciar', icon: 'play_circle' },
-        );
-        break;
-      case ApplicationStatus.IN_PROGRESS:
-        actions.push(
-          { status: ApplicationStatus.COMPLETED, label: 'Completar', icon: 'task_alt' },
         );
         break;
     }

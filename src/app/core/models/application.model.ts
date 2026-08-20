@@ -12,7 +12,6 @@ export interface Application {
   resumeUrl?: string;
   portfolioUrl?: string;
   matchScore?: number;
-  matchBreakdown?: MatchBreakdown;
   appliedAt: string;
   reviewedAt?: string;
   acceptedAt?: string;
@@ -21,8 +20,11 @@ export interface Application {
   cancelledAt?: string;
   cancellationReason?: string;
   supervisorId?: string;
+  notes?: string | null;
   student?: StudentProfile;
   project?: Project;
+  projectTitle?: string | null;
+  companyName?: string | null;
   timeline?: ApplicationTimelineEntry[];
   interviews?: Interview[];
   deliverables?: Deliverable[];
@@ -47,7 +49,16 @@ export interface Interview {
   location?: string;
   meetingLink?: string;
   notes?: string;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show';
+  interviewerNotes?: string | null;
+  score?: number | null;
+  companyResolution?: 'passed' | 'failed' | null;
+  resolutionComment?: string | null;
+  companyBriefFileId?: string | null;
+  technicalTaskDescription?: string | null;
+  technicalTaskDueDate?: string | null;
+  studentSolutionFileId?: string | null;
+  studentFeedback?: string | null;
   feedback?: string;
   rating?: number;
 }
@@ -67,13 +78,4 @@ export interface Deliverable {
   assignedAt?: string;
   isOverdue?: boolean;
   attachments?: any[];
-}
-
-export interface MatchBreakdown {
-  overall: number;
-  skill: number;
-  experience: number;
-  education: number;
-  availability: number;
-  rating: number;
 }

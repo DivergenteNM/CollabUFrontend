@@ -15,10 +15,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 
-import { environment } from '../../../../../environments/environment';
-import { ApiResponse, Application } from '../../../../core/models';
+import { Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
-import { ApplicationService } from '../../services/application.service';
+import { statusLabel as registryLabel } from '../../../../core/status/status-registry';
+import { ApplicationService, Permission } from '../../services/application.service';
 import { ChatService } from '../../../chat/services/chat.service';
 import { ApplicationProgressStepperComponent } from '../../../../shared/components/ui/application-progress-stepper/application-progress-stepper.component';
 import { TimelineComponent, TimelineEvent } from '../../../../shared/components/ui/timeline/timeline.component';
@@ -27,7 +27,11 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CreateDeliverableDialogComponent } from '../../components/create-deliverable-dialog/create-deliverable-dialog.component';
+import { FileLinkComponent } from '../../../../shared/components/ui/file-link/file-link.component';
+import { AnteproyectoPanelComponent } from '../../../../shared/components/academic/anteproyecto-panel/anteproyecto-panel.component';
+import { DocumentsPanelComponent } from '../../../../shared/components/academic/documents-panel/documents-panel.component';
+import { ProgressBarComponent } from '../../../../shared/components/academic/progress-bar/progress-bar.component';
+import { catchError } from 'rxjs';
 
 @Component({
   selector: 'app-application-detail',
@@ -36,7 +40,8 @@ import { CreateDeliverableDialogComponent } from '../../components/create-delive
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
     MatDialogModule, MatSnackBarModule, DatePipe, MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
-    SkeletonComponent, FileUploadComponent, EmptyStateComponent,
+    SkeletonComponent, FileUploadComponent, EmptyStateComponent, FileLinkComponent,
+    AnteproyectoPanelComponent, DocumentsPanelComponent, ProgressBarComponent,
   ],
   templateUrl: './application-detail.component.html',
   styleUrl: './application-detail.component.scss',
@@ -66,6 +71,46 @@ export class ApplicationDetailComponent {
   readonly application = computed(() =>
     this.applicationResource.value() as Application | undefined,
   );
+
+  /**
+   * Contexto del proyecto: permisos del visor, etapa académica y participantes.
+   * Es la fuente de verdad para decidir qué mostrar; el estado de la postulación
+   * por sí solo no describe el ciclo académico.
+   */
+  readonly contextResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getContext(id),
+  });
+
+  readonly context = computed(() => this.contextResource.value() ?? null);
+  readonly academicRecord = computed(() => this.context()?.academicRecord ?? null);
+  readonly pendingActions = computed(() => this.context()?.pendingActions ?? []);
+
+  can(permission: Permission): boolean {
+    return this.context()?.viewer.permissions.includes(permission) ?? false;
+  }
+
+  /**
+   * El anteproyecto y los documentos obligatorios ocurren ANTES de `in_progress`.
+   * Condicionar su visibilidad al estado de la postulación los ocultaba
+   * justamente durante la fase en la que hay que entregarlos.
+   */
+  readonly showAcademicTab = computed(() => {
+    const record = this.academicRecord();
+    return !!record && record.status !== 'cancelled';
+  });
+
+  readonly showDeliverablesTab = computed(() => {
+    const record = this.academicRecord();
+    if (!record) return false;
+    return ['active', 'waiting_final_docs', 'final_docs_review', 'waiting_sustentation', 'finalizing', 'completed']
+      .includes(record.status);
+  });
+
+  readonly progressResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getProgress(id).pipe(catchError(() => of(null))),
+  });
 
   readonly canWithdraw = computed(() => {
     const s = this.application()?.status;
@@ -118,21 +163,14 @@ export class ApplicationDetailComponent {
       scheduled: 'Programada',
       completed: 'Completada',
       cancelled: 'Cancelada',
+      rescheduled: 'Reprogramada',
       no_show: 'No asistió',
     };
     return labels[status] ?? status;
   }
 
   deliverableStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      pending: 'Pendiente',
-      submitted: 'Entregado',
-      approved: 'Aprobado',
-      rejected: 'Rechazado',
-      revision_requested: 'Revisión solicitada',
-      needs_revision: 'Revisión solicitada',
-    };
-    return labels[status] ?? status;
+    return registryLabel('deliverable', status);
   }
 
   startChat(): void {
@@ -202,6 +240,17 @@ export class ApplicationDetailComponent {
     });
   }
 
+  submitInterviewSolution(interviewId: string, files: File[]): void {
+    if (!files.length) return;
+    this.applicationService.setInterviewSolution(this.id(), interviewId, files[0]).subscribe({
+      next: () => {
+        this.snackBar.open('Solución subida correctamente', 'OK', { duration: 3000 });
+        this.applicationResource.reload();
+      },
+      error: () => this.snackBar.open('Error al subir la solución', 'Cerrar', { duration: 4000 }),
+    });
+  }
+
   private getTimelineIcon(toStatus: string): string {
     const icons: Record<string, string> = {
       pending: 'send',
@@ -234,23 +283,10 @@ export class ApplicationDetailComponent {
     return titles[toStatus] ?? toStatus;
   }
 
-  openCreateDeliverableDialog(): void {
-    const app = this.application();
-    if (!app) return;
-    const dialogRef = this.dialog.open(CreateDeliverableDialogComponent, {
-      width: '500px',
-      data: { applicationId: app.id },
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.applicationService.createDeliverable(app.id, result).subscribe({
-          next: () => {
-            this.snackBar.open('Entregable creado', 'OK', { duration: 3000 });
-            this.applicationResource.reload();
-          },
-          error: () => this.snackBar.open('Error al crear entregable', 'Cerrar', { duration: 4000 }),
-        });
-      }
-    });
+  /** Recarga lo que depende del contexto tras una acción que cambia de etapa. */
+  reloadAll(): void {
+    this.applicationResource.reload();
+    this.contextResource.reload();
+    this.progressResource.reload();
   }
 }

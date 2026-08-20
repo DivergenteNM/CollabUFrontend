@@ -19,23 +19,36 @@ export class NotificationService extends BaseApiService {
     });
   }
 
-  getUnreadCount(): Observable<ApiResponse<{ count: number }>> {
-    return this.http.get<ApiResponse<{ count: number }>>(`${this.apiUrl}/unread-count`);
+  getUnreadCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/unread-count`);
   }
 
   markAsRead(id: string): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${id}/read`, {});
   }
 
-  markAllAsRead(): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/read-all`, {});
+  /**
+   * El backend expone `PATCH /read` con `notificationIds` opcional; cuando el
+   * arreglo se omite, marca todas las no leídas del usuario. Se envía cuerpo
+   * vacío para preservar semántica y evitar 400 por content-type ausente.
+   */
+  markAllAsRead(): Observable<{ updated: number }> {
+    return this.http.patch<{ updated: number }>(`${this.apiUrl}/read`, {});
   }
 
-  getPreferences(): Observable<ApiResponse<NotificationPreferences>> {
-    return this.http.get<ApiResponse<NotificationPreferences>>(`${this.apiUrl}/preferences`);
+  markManyAsRead(notificationIds: string[]): Observable<{ updated: number }> {
+    return this.http.patch<{ updated: number }>(`${this.apiUrl}/read`, { notificationIds });
   }
 
-  updatePreferences(prefs: Partial<NotificationPreferences>): Observable<ApiResponse<NotificationPreferences>> {
-    return this.http.put<ApiResponse<NotificationPreferences>>(`${this.apiUrl}/preferences`, prefs);
+  deleteNotification(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getPreferences(): Observable<NotificationPreferences> {
+    return this.http.get<NotificationPreferences>(`${this.apiUrl}/preferences`);
+  }
+
+  updatePreferences(prefs: Partial<NotificationPreferences>): Observable<NotificationPreferences> {
+    return this.http.patch<NotificationPreferences>(`${this.apiUrl}/preferences`, prefs);
   }
 }
