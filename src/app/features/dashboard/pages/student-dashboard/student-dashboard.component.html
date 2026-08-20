@@ -1,4 +1,23 @@
 <div class="student-dashboard">
+  <div class="dashboard__welcome-banner">
+    <div class="dashboard__user-avatar">
+      @if (authStore.profile()?.avatarUrl) {
+        <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" />
+      } @else {
+        <div class="dashboard__user-avatar-placeholder">
+          <span>{{ userInitials() }}</span>
+        </div>
+      }
+    </div>
+    <div class="dashboard__user-info">
+      <h2>¡Hola, {{ authStore.displayName() }}! 👋</h2>
+      <p>Bienvenido a tu panel de estudiante en Collab-U</p>
+    </div>
+    <a mat-stroked-button routerLink="/profile/edit" class="dashboard__edit-profile-btn">
+      <mat-icon>photo_camera</mat-icon> Editar Foto
+    </a>
+  </div>
+
   <section class="dashboard__stats">
     @if (profileResource.isLoading()) {
       @for (_ of [1,2,3,4]; track $index) {

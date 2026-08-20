@@ -17,10 +17,14 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 import { RelativeTimePipe } from '../../../../shared/pipes';
 
+import { RouterLink } from '@angular/router';
+import { AuthStore } from '../../../../state/auth.store';
+
 @Component({
   selector: 'app-student-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    RouterLink,
     MatCardModule, MatIconModule, MatButtonModule,
     StatCardComponent, StatusBadgeComponent,
     MatchScoreBarComponent, SkeletonComponent, EmptyStateComponent,
@@ -31,8 +35,17 @@ import { RelativeTimePipe } from '../../../../shared/pipes';
 })
 export class StudentDashboardComponent {
   readonly router = inject(Router);
+  readonly authStore = inject(AuthStore);
   readonly notificationsStore = inject(NotificationsStore);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  readonly userInitials = computed(() => {
+    const p = this.authStore.profile();
+    if (p?.firstName && p?.lastName) {
+      return `${p.firstName[0]}${p.lastName[0]}`.toUpperCase();
+    }
+    return 'E';
+  });
 
   // --- httpResource data loading ---
   // Browser-only: the server has no auth token (localStorage doesn't exist during SSR),

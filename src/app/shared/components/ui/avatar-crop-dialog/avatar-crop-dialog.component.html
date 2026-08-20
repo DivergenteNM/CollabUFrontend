@@ -1,0 +1,49 @@
+<div class="avatar-crop-dialog">
+  <h2 mat-dialog-title class="avatar-crop-dialog__title">
+    <mat-icon color="primary">crop</mat-icon> Recortar Foto de Perfil
+  </h2>
+
+  <mat-dialog-content class="avatar-crop-dialog__content">
+    <p class="avatar-crop-dialog__hint">
+      Arrastra la imagen para encuadrarla y usa la rueda del ratón o el deslizador para ajustar el zoom.
+    </p>
+
+    <div class="avatar-crop-dialog__canvas-container">
+      <canvas
+        #cropCanvas
+        width="320"
+        height="320"
+        class="avatar-crop-dialog__canvas"
+        (mousedown)="onMouseDown($event)"
+        (mousemove)="onMouseMove($event)"
+        (mouseup)="onMouseUp()"
+        (mouseleave)="onMouseUp()"
+        (wheel)="onWheel($event)"
+        (touchstart)="onTouchStart($event)"
+        (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd()"
+      ></canvas>
+    </div>
+
+    <div class="avatar-crop-dialog__zoom-controls">
+      <mat-icon>zoom_out</mat-icon>
+      <input
+        type="range"
+        min="1"
+        max="3"
+        step="0.05"
+        [ngModel]="zoomLevel()"
+        (ngModelChange)="onZoomChange($event)"
+        class="avatar-crop-dialog__slider"
+      />
+      <mat-icon>zoom_in</mat-icon>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="avatar-crop-dialog__actions">
+    <button mat-button (click)="cancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="cropAndSave()">
+      <mat-icon>check</mat-icon> Guardar y Recortar
+    </button>
+  </mat-dialog-actions>
+</div>

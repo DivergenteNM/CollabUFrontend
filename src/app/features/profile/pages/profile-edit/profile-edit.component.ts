@@ -28,6 +28,8 @@ import { UserProfileService } from '../../../../core/services/user-profile.servi
 import { FacultyService } from '../../../faculty/services/faculty.service';
 import { AdminService } from '../../../admin/services/admin.service';
 
+import { AvatarUploadComponent } from '../../../../shared/components/ui/avatar-upload/avatar-upload.component';
+
 @Component({
   selector: 'app-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +38,7 @@ import { AdminService } from '../../../admin/services/admin.service';
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatSnackBarModule, MatTabsModule,
+    AvatarUploadComponent,
   ],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.scss',

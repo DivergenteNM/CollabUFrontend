@@ -18,6 +18,9 @@
         </ng-template>
         <div class="tab-content">
           <p class="tab-description">Información personal visible en tu cuenta.</p>
+          <div class="profile-edit__avatar-section">
+            <app-avatar-upload [currentAvatarUrl]="authStore.profile()?.avatarUrl" />
+          </div>
           <form [formGroup]="userForm">
             <div class="form-row">
               <mat-form-field appearance="outline">

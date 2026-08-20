@@ -30,6 +30,7 @@ import { StudentService } from '../../../students/services/student.service';
 import { AdminService } from '../../../admin/services/admin.service';
 import { AuthStore } from '../../../../state/auth.store';
 import { FacultyService } from '../../../faculty/services/faculty.service';
+import { AvatarUploadComponent } from '../../../../shared/components/ui/avatar-upload/avatar-upload.component';
 
 interface SelectedSkill {
   name: string;
@@ -57,13 +58,14 @@ const MIN_ONBOARDING_SKILLS = 3;
     MatSnackBarModule,
     MatChipsModule,
     MatSlideToggleModule,
+    AvatarUploadComponent,
   ],
   templateUrl: './onboarding-flow.component.html',
   styleUrl: './onboarding-flow.component.scss',
 })
 export class OnboardingFlowComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly authStore = inject(AuthStore);
+  readonly authStore = inject(AuthStore);
   private readonly userProfileService = inject(UserProfileService);
   private readonly studentService = inject(StudentService);
   private readonly adminService = inject(AdminService);

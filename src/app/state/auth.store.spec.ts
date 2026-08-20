@@ -80,6 +80,7 @@ describe('AuthStore', () => {
     expect(store.isCompany()).toBe(false);
     expect(store.isFaculty()).toBe(false);
     expect(store.isAdmin()).toBe(false);
+    expect(store.isFacultyAdmin()).toBe(false);
     expect(store.role()).toBe(UserRole.STUDENT);
   });
 
@@ -89,6 +90,19 @@ describe('AuthStore', () => {
 
     expect(store.isStudent()).toBe(false);
     expect(store.isCompany()).toBe(true);
+    expect(store.isFacultyAdmin()).toBe(false);
+  });
+
+  it('should compute role-specific flags for faculty and admin', () => {
+    const facultyUser = { ...mockUser, role: UserRole.FACULTY } as AuthUser;
+    store.setAuth(facultyUser, 'token', 'refresh');
+    expect(store.isFaculty()).toBe(true);
+    expect(store.isFacultyAdmin()).toBe(true);
+
+    const adminUser = { ...mockUser, role: UserRole.ADMIN } as AuthUser;
+    store.setAuth(adminUser, 'token', 'refresh');
+    expect(store.isAdmin()).toBe(true);
+    expect(store.isFacultyAdmin()).toBe(true);
   });
 
   it('should compute displayName falling back to email', () => {

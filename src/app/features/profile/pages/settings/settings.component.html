@@ -67,16 +67,6 @@
                 [ngModel]="prefs().evaluationAlerts"
                 (ngModelChange)="updatePref('evaluationAlerts', $event)" />
             </div>
-
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <strong>Resumen semanal</strong>
-                <span>Recibe un resumen de actividad cada lunes</span>
-              </div>
-              <mat-slide-toggle
-                [ngModel]="prefs().weeklyDigest"
-                (ngModelChange)="updatePref('weeklyDigest', $event)" />
-            </div>
           </mat-card-content>
         </mat-card>
       </div>
@@ -107,10 +97,17 @@
 
             <h3 class="danger-section">Zona de peligro</h3>
 
-            <button mat-stroked-button color="warn" (click)="deactivateAccount()">
-              <mat-icon>person_off</mat-icon>
-              Desactivar cuenta
-            </button>
+            @if (!authStore.isFacultyAdmin()) {
+              <button mat-stroked-button color="warn" (click)="deactivateAccount()">
+                <mat-icon>person_off</mat-icon>
+                Desactivar cuenta
+              </button>
+            } @else {
+              <p class="deactivate-disabled-info">
+                <mat-icon>info</mat-icon>
+                La opción de desactivar cuenta está deshabilitada para usuarios con rol de docente o administrador.
+              </p>
+            }
           </mat-card-content>
         </mat-card>
       </div>

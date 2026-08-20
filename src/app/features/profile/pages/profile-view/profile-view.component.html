@@ -17,7 +17,11 @@
         <mat-card-content>
           <div class="profile-header">
             <div class="avatar">
-              <mat-icon>person</mat-icon>
+              @if (authStore.profile()?.avatarUrl) {
+                <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" class="avatar__img" />
+              } @else {
+                <mat-icon>person</mat-icon>
+              }
             </div>
             <div>
               <h2>{{ authStore.displayName() }}</h2>
@@ -205,8 +209,8 @@
         <mat-card-content>
           <div class="profile-header">
             <div class="avatar company-avatar">
-              @if (c.logoUrl) {
-                <img [src]="c.logoUrl" [alt]="c.companyName" />
+              @if (authStore.profile()?.avatarUrl || c.logoUrl) {
+                <img [src]="authStore.profile()?.avatarUrl || c.logoUrl" [alt]="c.companyName" class="avatar__img" />
               } @else {
                 <mat-icon>business</mat-icon>
               }
@@ -263,7 +267,11 @@
         <mat-card-content>
           <div class="profile-header">
             <div class="avatar">
-              <mat-icon>person</mat-icon>
+              @if (authStore.profile()?.avatarUrl) {
+                <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" class="avatar__img" />
+              } @else {
+                <mat-icon>person</mat-icon>
+              }
             </div>
             <div>
               <h2>{{ authStore.displayName() }}</h2>
@@ -303,7 +311,11 @@
       <mat-card-content>
         <div class="profile-header">
           <div class="avatar">
-            <mat-icon>person</mat-icon>
+            @if (authStore.profile()?.avatarUrl) {
+              <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" class="avatar__img" />
+            } @else {
+              <mat-icon>person</mat-icon>
+            }
           </div>
           <div>
             <h2>{{ authStore.displayName() }}</h2>

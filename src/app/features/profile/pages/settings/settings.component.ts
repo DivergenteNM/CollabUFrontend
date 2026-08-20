@@ -81,6 +81,10 @@ export class SettingsComponent implements OnInit {
   }
 
   deactivateAccount(): void {
+    if (this.authStore.isFacultyAdmin()) {
+      return;
+    }
+
     const ref = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Desactivar Cuenta',
