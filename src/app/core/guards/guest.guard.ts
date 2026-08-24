@@ -4,7 +4,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs';
 import { AuthStore } from '../../state/auth.store';
-import { UserRole } from '../enums';
 
 export const guestGuard: CanActivateFn = () => {
   const platformId = inject(PLATFORM_ID);
@@ -24,13 +23,6 @@ export const guestGuard: CanActivateFn = () => {
     map(() => {
       if (!authStore.isAuthenticated()) {
         return true;
-      }
-
-      const role = authStore.role();
-      const requiresOnboarding = role === UserRole.STUDENT || role === UserRole.COMPANY;
-
-      if (requiresOnboarding && authStore.profileLoaded() && authStore.onboardingRequired()) {
-        return router.createUrlTree(['/onboarding']);
       }
 
       return router.createUrlTree(['/dashboard']);

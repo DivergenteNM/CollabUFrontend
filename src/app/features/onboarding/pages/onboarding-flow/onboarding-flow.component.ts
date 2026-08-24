@@ -104,7 +104,14 @@ export class OnboardingFlowComponent implements OnInit {
   readonly existingBusinessAreas = signal(0);
 
   readonly onboardingCompleted = computed(() => {
-    return this.authStore.profileLoaded() && !this.authStore.onboardingRequired();
+    const profile = this.authStore.profile();
+    if (!profile) return false;
+    return (
+      profile.isOnboardingComplete ||
+      Boolean(profile.firstName?.trim() && profile.lastName?.trim()) ||
+      this.roleProfileExists() ||
+      !this.authStore.onboardingRequired()
+    );
   });
 
   readonly userForm = this.fb.nonNullable.group({
@@ -203,10 +210,16 @@ export class OnboardingFlowComponent implements OnInit {
       const payload = this.buildUserPayload();
 
       if (this.userProfileExists()) {
-        await firstValueFrom(this.userProfileService.updateProfile(payload));
+        const res = await firstValueFrom(this.userProfileService.updateProfile(payload));
+        if (res?.data) {
+          this.authStore.setProfile(res.data);
+        }
       } else {
-        await firstValueFrom(this.userProfileService.createProfile({ userId, role, ...payload }));
+        const res = await firstValueFrom(this.userProfileService.createProfile({ userId, role, ...payload }));
         this.userProfileExists.set(true);
+        if (res?.data) {
+          this.authStore.setProfile(res.data);
+        }
       }
 
       this.authStore.refreshProfile();
@@ -254,6 +267,10 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   goToDashboard(): void {
+    const profile = this.authStore.profile();
+    if (profile) {
+      this.authStore.setProfile({ ...profile, isOnboardingComplete: true });
+    }
     this.router.navigate(['/dashboard']);
   }
 
