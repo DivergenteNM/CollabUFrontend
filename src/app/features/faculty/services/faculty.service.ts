@@ -138,7 +138,10 @@ export interface Deliverable {
   feedback: string | null;
   grade: number | null;
   reviewedBy: string | null;
+  reviewedByRole?: string | null;
   reviewedAt: string | null;
+  reviewerName?: string | null;
+  reviewerRole?: string | null;
   revisionNumber: number;
   createdAt: string;
   updatedAt: string;

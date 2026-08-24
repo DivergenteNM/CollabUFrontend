@@ -408,9 +408,10 @@ export class ProjectWorkspaceComponent {
         this.snackBar.open('Revisión guardada', 'OK', { duration: 3000 });
         this.reloadAll();
       },
-      error: () => {
+      error: (err) => {
         this.submitting.set(false);
-        this.snackBar.open('Error al guardar revisión', 'Cerrar', { duration: 4000 });
+        const msg = err?.error?.message ?? 'Error al guardar revisión';
+        this.snackBar.open(Array.isArray(msg) ? msg.join('; ') : msg, 'Cerrar', { duration: 4000 });
       },
     });
   }

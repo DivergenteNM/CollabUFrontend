@@ -32,12 +32,25 @@ const ICON_BY_MIME: { match: (mime: string) => boolean; icon: string }[] = [
   { match: (m) => m.includes('zip') || m.includes('rar') || m.includes('gzip'), icon: 'folder_zip' },
 ];
 
+export function extractFileId(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const uuidMatch = trimmed.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  if (uuidMatch) {
+    return uuidMatch[0];
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return null;
+  }
+
+  return trimmed;
+}
+
 /**
  * Punto único del frontend para mostrar un archivo de Storage Service.
- *
- * Antes ningún componente del flujo académico renderizaba los archivos: el
- * anteproyecto guardaba `currentFileId` y nunca se mostraba, y los documentos
- * requeridos solo ofrecían subir. Quien tenía que revisar no podía leer nada.
  *
  * Distingue los cuatro fallos posibles — no existe, sin permiso, ausente en
  * disco, error de red — porque cada uno significa algo distinto para el usuario.
@@ -154,7 +167,7 @@ const ICON_BY_MIME: { match: (mime: string) => boolean; icon: string }[] = [
   ],
 })
 export class FileLinkComponent implements OnDestroy {
-  /** Identificador en Storage Service. Si es `null`, el componente no pinta nada. */
+  /** Identificador en Storage Service o URL del archivo. Si es `null`, el componente no pinta nada. */
   readonly fileId = input.required<string | null>();
   /** Nombre a usar al guardar; por defecto, el nombre original del archivo. */
   readonly downloadName = input<string | null>(null);
@@ -165,15 +178,12 @@ export class FileLinkComponent implements OnDestroy {
   readonly busy = signal(false);
   private objectUrls: string[] = [];
 
+  readonly resolvedId = computed(() => extractFileId(this.fileId()));
+
   readonly resource = rxResource({
-    params: () => this.fileId(),
+    params: () => this.resolvedId(),
     stream: ({ params: id }) => {
-      // Storage exige UUID v4; si nos llega una URL o valor no-UUID (datos
-      // legacy/seed), fallaría con 404 en /storage/files/<url>. Se corta
-      // antes de la llamada y el template renderiza fallback silencioso.
       if (!id) return of(null);
-      const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRe.test(id)) return of(null);
       return this.storage.getFileInfo(id);
     },
   });
@@ -206,9 +216,6 @@ export class FileLinkComponent implements OnDestroy {
   }
 
   formatSize(bytes: number | string | null | undefined): string {
-    // Storage devuelve fileSizeBytes como bigint → string en algunos flujos;
-    // hay que coaccionar antes de operar aritméticamente para evitar
-    // TypeError: value.toFixed is not a function.
     const n = typeof bytes === 'number' ? bytes : Number(bytes);
     if (!n || Number.isNaN(n)) return '—';
     const units = ['B', 'KB', 'MB', 'GB'];
@@ -222,7 +229,7 @@ export class FileLinkComponent implements OnDestroy {
   }
 
   preview(): void {
-    const id = this.fileId();
+    const id = this.resolvedId();
     if (!id || this.busy()) return;
     this.busy.set(true);
 
@@ -240,7 +247,7 @@ export class FileLinkComponent implements OnDestroy {
   }
 
   download(): void {
-    const id = this.fileId();
+    const id = this.resolvedId();
     const file = this.info();
     if (!id || this.busy()) return;
     this.busy.set(true);

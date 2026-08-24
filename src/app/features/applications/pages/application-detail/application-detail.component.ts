@@ -173,6 +173,45 @@ export class ApplicationDetailComponent {
     return registryLabel('deliverable', status);
   }
 
+  reviewerDisplay(del: any): string | null {
+    if (!del) return null;
+    const role = (del.reviewerRole || del.reviewedByRole || '').toLowerCase();
+    const name = del.reviewerName;
+
+    let roleLabel = '';
+    if (role === 'company') {
+      roleLabel = 'Empresa';
+    } else if (
+      role === 'faculty' ||
+      role === 'faculty_supervisor' ||
+      role === 'asesor' ||
+      role === 'academic' ||
+      role === 'jury'
+    ) {
+      roleLabel = 'Asesor';
+    } else if (role === 'admin') {
+      roleLabel = 'Administrador';
+    } else if (role) {
+      roleLabel = role;
+    }
+
+    if (name && roleLabel) {
+      return `${name} (${roleLabel})`;
+    } else if (name) {
+      return name;
+    } else if (roleLabel) {
+      return roleLabel;
+    }
+    return null;
+  }
+
+  reviewStatusActionLabel(status: string): string | null {
+    if (status === 'approved') return 'Aprobado';
+    if (status === 'rejected') return 'Rechazado';
+    if (status === 'needs_revision') return 'Corrección solicitada';
+    return null;
+  }
+
   startChat(): void {
     const app = this.application();
     const companyUserId = (app?.project as any)?.createdByUserId;

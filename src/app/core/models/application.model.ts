@@ -78,4 +78,9 @@ export interface Deliverable {
   assignedAt?: string;
   isOverdue?: boolean;
   attachments?: any[];
+  reviewedBy?: string | null;
+  reviewedByRole?: string | null;
+  reviewedAt?: string | null;
+  reviewerName?: string | null;
+  reviewerRole?: string | null;
 }

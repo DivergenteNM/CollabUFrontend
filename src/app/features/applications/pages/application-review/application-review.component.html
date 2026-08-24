@@ -393,6 +393,11 @@
                         @if (del.grade != null) {
                           <span class="review__deliverable-grade">Nota: {{ del.grade }}/5</span>
                         }
+                        @if (del.fileUrl) {
+                          <div class="review__deliverable-file" style="margin: 8px 0;">
+                            <app-file-link [fileId]="del.fileUrl" />
+                          </div>
+                        }
                         @if (del.status === 'submitted') {
                           <div class="review__deliverable-review">
                             <h5>Revisar Entregable</h5>

@@ -18,6 +18,7 @@ import { FacultyService, AssignmentDetail, Deliverable, EvaluationItem } from '.
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
+import { FileLinkComponent } from '../../../../shared/components/ui/file-link/file-link.component';
 import { ApplicationService, AcademicSubmission, SubmissionHistoryItem, ProgressData } from '../../../applications/services/application.service';
 import { ProgressBarComponent } from '../../../../shared/components/academic/progress-bar/progress-bar.component';
 
@@ -28,7 +29,7 @@ import { ProgressBarComponent } from '../../../../shared/components/academic/pro
     RouterLink, MatIconModule, MatButtonModule, MatCardModule,
     MatTabsModule, MatChipsModule, MatFormFieldModule, MatInputModule,
     MatSliderModule, MatSnackBarModule, DatePipe,
-    StatusBadgeComponent, SkeletonComponent, StarRatingComponent, ProgressBarComponent,
+    StatusBadgeComponent, SkeletonComponent, StarRatingComponent, ProgressBarComponent, FileLinkComponent,
   ],
   templateUrl: './student-supervision.component.html',
   styleUrl: './student-supervision.component.scss',
@@ -184,6 +185,38 @@ export class StudentSupervisionComponent implements OnDestroy {
     return registryLabel('deliverable', status);
   }
 
+  reviewerDisplay(del: any): string | null {
+    if (!del) return null;
+    const role = (del.reviewerRole || del.reviewedByRole || '').toLowerCase();
+    const name = del.reviewerName;
+
+    let roleLabel = '';
+    if (role === 'company') {
+      roleLabel = 'Empresa';
+    } else if (
+      role === 'faculty' ||
+      role === 'faculty_supervisor' ||
+      role === 'asesor' ||
+      role === 'academic' ||
+      role === 'jury'
+    ) {
+      roleLabel = 'Asesor';
+    } else if (role === 'admin') {
+      roleLabel = 'Administrador';
+    } else if (role) {
+      roleLabel = role;
+    }
+
+    if (name && roleLabel) {
+      return `${name} (${roleLabel})`;
+    } else if (name) {
+      return name;
+    } else if (roleLabel) {
+      return roleLabel;
+    }
+    return null;
+  }
+
   evalTypeLabel(type: string): string {
     const labels: Record<string, string> = {
       company_evaluates_student: 'Empresa → Estudiante',
@@ -196,9 +229,13 @@ export class StudentSupervisionComponent implements OnDestroy {
   }
 
   reviewDeliverable(appId: string, delId: string, status: 'approved' | 'rejected' | 'needs_revision'): void {
+    if (status === 'rejected' && (!this.reviewFeedback() || !this.reviewFeedback().trim())) {
+      this.snackBar.open('El comentario es obligatorio para rechazar el entregable', 'Cerrar', { duration: 4000 });
+      return;
+    }
     this.facultyService.reviewDeliverable(appId, delId, status, {
       grade: this.reviewGrade(),
-      feedback: this.reviewFeedback(),
+      feedback: this.reviewFeedback().trim() || undefined,
     }).subscribe({
       next: () => {
         this.snackBar.open('Entregable revisado', 'OK', { duration: 3000 });
@@ -206,7 +243,10 @@ export class StudentSupervisionComponent implements OnDestroy {
         this.reviewGrade.set(3);
         this.loadAssignment();
       },
-      error: () => this.snackBar.open('Error al revisar entregable', 'Cerrar', { duration: 4000 }),
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Error al revisar entregable';
+        this.snackBar.open(Array.isArray(msg) ? msg.join('; ') : msg, 'Cerrar', { duration: 4000 });
+      },
     });
   }
 }

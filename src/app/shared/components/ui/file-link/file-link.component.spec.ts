@@ -63,6 +63,11 @@ describe('FileLinkComponent', () => {
     expect(el.querySelector('.file-link__meta')?.textContent).toContain('300.0 KB');
   });
 
+  it('extrae el UUID y consulta el archivo cuando recibe una URL relativa de storage', async () => {
+    await setup('/api/v1/storage/files/3fa85f64-5717-4562-b3fc-2c963f66afa6/download');
+    expect(storage.getFileInfo).toHaveBeenCalledWith('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+  });
+
   it('ofrece vista previa para PDF y descarga siempre', async () => {
     await setup();
     const buttons = fixture.nativeElement.querySelectorAll('.file-link__actions button');
