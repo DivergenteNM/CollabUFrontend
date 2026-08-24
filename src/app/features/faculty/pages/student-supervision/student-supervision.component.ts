@@ -50,6 +50,7 @@ export class StudentSupervisionComponent implements OnDestroy {
   readonly reviewFeedback = signal('');
 
   readonly progress = signal<ProgressData | null>(null);
+  readonly academicRecord = signal<any | null>(null);
   readonly anteproyecto = signal<AcademicSubmission | null>(null);
   readonly anteproyectoHistory = signal<SubmissionHistoryItem[]>([]);
   readonly anteproyectoComment = signal('');
@@ -107,6 +108,9 @@ export class StudentSupervisionComponent implements OnDestroy {
         this.isLoading.set(false);
         this.loadAnteproyecto();
         this.loadProgress();
+        this.applicationService.getAcademicRecord(this.applicationId())
+          .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+          .subscribe(r => this.academicRecord.set(r));
       },
       error: () => {
         this.error.set('Error al cargar los detalles del estudiante.');

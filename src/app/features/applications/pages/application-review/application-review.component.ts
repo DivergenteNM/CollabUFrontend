@@ -126,6 +126,13 @@ export class ApplicationReviewComponent {
     stream: ({ params: id }) => this.applicationService.getProgress(id).pipe(catchError(() => of(null))),
   });
 
+  readonly contextResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getContext(id).pipe(catchError(() => of(null))),
+  });
+
+  readonly academicRecord = computed(() => this.contextResource.value()?.academicRecord ?? null);
+
   private notesSeeded = false;
   constructor() {
     effect(() => {

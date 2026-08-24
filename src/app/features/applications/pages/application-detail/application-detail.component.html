@@ -87,6 +87,18 @@
                         <span>{{ app.acceptedAt | date:'d MMMM yyyy' }}</span>
                       </div>
                     }
+                    @if (academicRecord()?.finalGradeValue; as grade) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Calificación final</span>
+                        <span class="detail__score" style="color: #2e7d32; font-weight: 700;">{{ grade }}/100</span>
+                      </div>
+                    }
+                    @if (academicRecord()?.finalGradeFileId; as fileId) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Acta final</span>
+                        <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
+                      </div>
+                    }
                   </mat-card-content>
                 </mat-card>
 

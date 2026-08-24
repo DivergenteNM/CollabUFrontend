@@ -67,6 +67,12 @@
               <span>Finalizado el {{ endDate | date:'d MMMM yyyy' }}.</span>
             }
           </div>
+          @if (academicRecord()?.finalGradeValue; as grade) {
+            <div class="ws__completed-grade">
+              <span class="ws__grade-label">Calificación final:</span>
+              <span class="ws__grade-badge">{{ grade }}/100</span>
+            </div>
+          }
           @if (finalGradeFileId(); as fileId) {
             <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
           }
@@ -163,6 +169,12 @@
                       <div class="ws__info-row">
                         <span class="ws__label">Fecha de finalización</span>
                         <span>{{ endDate | date:'d MMMM yyyy' }}</span>
+                      </div>
+                    }
+                    @if (academicRecord()?.finalGradeValue; as grade) {
+                      <div class="ws__info-row">
+                        <span class="ws__label">Nota final</span>
+                        <span><strong>{{ grade }}/100</strong></span>
                       </div>
                     }
                     @if (finalGradeFileId(); as fileId) {
