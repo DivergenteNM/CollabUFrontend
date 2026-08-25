@@ -152,9 +152,7 @@
                       <mat-icon color="primary">description</mat-icon>
                       <span style="font-weight: 500;">Curriculum Vitae (CV) adjunto</span>
                     </div>
-                    <a [href]="app.resumeUrl" target="_blank" rel="noopener" mat-flat-button color="primary">
-                      <mat-icon>download</mat-icon> Ver / Descargar
-                    </a>
+                    <app-file-link [fileId]="app.resumeUrl" downloadName="cv.pdf" />
                   </div>
                 }
 

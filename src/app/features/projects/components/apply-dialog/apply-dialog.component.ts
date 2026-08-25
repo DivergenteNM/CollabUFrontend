@@ -71,10 +71,9 @@ export class ApplyDialogComponent {
     if (this.selectedFile) {
       this.storageService.upload(this.selectedFile, 'cv', true).subscribe({
         next: (uploadRes: any) => {
-          console.log('[ApplyDialog] Upload success:', uploadRes);
           const fileData = uploadRes.data || uploadRes;
           const fileId = fileData.id || fileData.fileId;
-          const resumeUrl = fileData.url || fileData.publicUrl || `${environment.apiUrl}/storage/files/${fileId}/download`;
+          const resumeUrl = fileData.url || fileData.publicUrl || (fileId ? `/api/v1/storage/files/${fileId}/download` : '');
           
           payload.resumeUrl = resumeUrl;
           this.submitApplication(payload);

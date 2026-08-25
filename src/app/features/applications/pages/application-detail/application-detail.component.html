@@ -139,6 +139,15 @@
                   <mat-card-content>
                     <h3>Carta de Motivación</h3>
                     <p class="detail__cover-letter">{{ app.coverLetter || 'Sin carta de motivación' }}</p>
+                    @if (app.resumeUrl) {
+                      <div class="detail__resume-attachment" style="margin-top: 16px; padding: 12px; border: 1px dashed var(--mat-sys-outline, #ccc); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background-color: var(--mat-sys-surface-container-low, #fafafa);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <mat-icon color="primary">description</mat-icon>
+                          <span style="font-weight: 500;">Curriculum Vitae (CV) adjunto</span>
+                        </div>
+                        <app-file-link [fileId]="app.resumeUrl" downloadName="cv.pdf" />
+                      </div>
+                    }
                   </mat-card-content>
                 </mat-card>
               </div>
