@@ -2,15 +2,6 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export class CustomValidators {
   /**
-   * Validates that the email ends with @udenar.edu.co
-   */
-  static udenarEmail(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-    const valid = /^[a-zA-Z0-9._%+-]+@udenar\.edu\.co$/i.test(control.value);
-    return valid ? null : { udenarEmail: true };
-  }
-
-  /**
    * Strong password: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
    */
   static strongPassword(control: AbstractControl): ValidationErrors | null {
