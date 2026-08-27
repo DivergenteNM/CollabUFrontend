@@ -53,7 +53,7 @@ export class StorageService extends BaseApiService {
         const url =
           raw.publicUrl
           ?? raw.url
-          ?? (fileId ? `/api/v1/storage/files/${fileId}/download` : '');
+          ?? (fileId ? `${this.apiUrl}/files/${fileId}/download` : '');
         return { data: { fileId, url } } as ApiResponse<{ fileId: string; url: string }>;
       }),
     );

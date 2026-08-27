@@ -22,6 +22,7 @@ import { ChatUnreadStore } from '../../../../state/chat-unread.store';
 import { AuthStore } from '../../../../state/auth.store';
 import { RelativeTimePipe } from '../../../pipes/relative-time.pipe';
 import { ChatMessageAttachment } from '../../../../core/models';
+import { environment } from '../../../../../environments/environment';
 
 interface PendingMessage {
   tempId: string;
@@ -549,7 +550,7 @@ export class ProjectChatPanelComponent implements OnInit, OnDestroy {
     // devolvemos el fileId directo para que el navegador dispare el intercept.
     if (!att.fileUrl) return '#';
     // Enlace a la ruta de descarga; el interceptor añadirá el bearer.
-    return `/api/v1/storage/files/${att.fileUrl}/download`;
+    return `${environment.apiUrl}/storage/files/${att.fileUrl}/download`;
   }
 
   iconForMime(mime?: string | null): string {

@@ -73,7 +73,7 @@ export class ApplyDialogComponent {
         next: (uploadRes: any) => {
           const fileData = uploadRes.data || uploadRes;
           const fileId = fileData.id || fileData.fileId;
-          const resumeUrl = fileData.url || fileData.publicUrl || (fileId ? `/api/v1/storage/files/${fileId}/download` : '');
+          const resumeUrl = fileData.url || fileData.publicUrl || (fileId ? `${environment.apiUrl}/storage/files/${fileId}/download` : '');
           
           payload.resumeUrl = resumeUrl;
           this.submitApplication(payload);
