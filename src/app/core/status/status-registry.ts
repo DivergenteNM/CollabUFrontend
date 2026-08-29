@@ -117,11 +117,11 @@ export function statusLabel(domain: StatusDomain, value: string): string {
 }
 
 const TONE_COLORS: Record<StatusConfig['tone'], { color: string; bg: string }> = {
-  success: { color: '#2e7d32', bg: '#e8f5e9' },
-  warning: { color: '#f57c00', bg: '#fff3e0' },
-  error:   { color: '#c62828', bg: '#ffebee' },
-  info:    { color: '#1565c0', bg: '#e3f2fd' },
-  neutral: { color: '#616161', bg: '#f5f5f5' },
+  success: { color: '#18572F', bg: '#E6F5EB' },
+  warning: { color: '#834D09', bg: '#FEF5E7' },
+  error:   { color: '#8C1E1E', bg: '#FDF0F0' },
+  info:    { color: '#154D6F', bg: '#E6F2FA' },
+  neutral: { color: '#4A584C', bg: '#EEF2EC' },
 };
 
 export function statusColors(tone: StatusConfig['tone']): { color: string; bg: string } {

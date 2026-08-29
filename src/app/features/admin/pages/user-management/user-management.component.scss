@@ -85,10 +85,10 @@
   flex-shrink: 0;
   color: #fff;
 
-  &[data-role='student']  { background: #1565c0; }
+  &[data-role='student']  { background: var(--color-accent-600); }
   &[data-role='company']  { background: #6a1b9a; }
-  &[data-role='faculty']  { background: #2e7d32; }
-  &[data-role='admin']    { background: #e65100; }
+  &[data-role='faculty']  { background: var(--color-primary-600); }
+  &[data-role='admin']    { background: var(--color-warning); }
 }
 
 .user-email-text {
@@ -101,16 +101,16 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-xs);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 
-  &--student { background: #e3f2fd; color: #1565c0; }
+  &--student { background: var(--color-info-bg); color: var(--color-info-text); }
   &--company { background: #f3e5f5; color: #6a1b9a; }
-  &--faculty { background: #e8f5e9; color: #2e7d32; }
-  &--admin   { background: #fff3e0; color: #e65100; }
+  &--faculty { background: var(--color-success-bg); color: var(--color-success-text); }
+  &--admin   { background: var(--color-warning-bg); color: var(--color-warning-text); }
 }
 
 // ── Status pill ───────────────────────────────────────────────
@@ -119,12 +119,12 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--border-radius-pill);
   font-size: 0.78rem;
   font-weight: 600;
 
-  &--on  { background: #e8f5e9; color: #2e7d32; .status-dot { background: #43a047; } }
-  &--off { background: #fce4ec; color: #c62828; .status-dot { background: #e53935; } }
+  &--on  { background: var(--color-success-bg); color: var(--color-success-text); .status-dot { background: var(--color-success); } }
+  &--off { background: var(--color-error-bg); color: var(--color-error-text); .status-dot { background: var(--color-error); } }
 }
 
 .status-dot {
@@ -147,8 +147,8 @@
     height: 1rem;
   }
 
-  &--yes { color: #2e7d32; }
-  &--no  { color: #9e9e9e; }
+  &--yes { color: var(--color-success); }
+  &--no  { color: var(--text-disabled); }
 }
 
 // ── Date cells ────────────────────────────────────────────────

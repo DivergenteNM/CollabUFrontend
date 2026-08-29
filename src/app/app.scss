@@ -22,22 +22,22 @@
     width: 64px;
     height: 64px;
     border-radius: 16px;
-    background: linear-gradient(135deg, var(--color-primary, #2e7d32), var(--color-accent, #1976d2));
-    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.25);
+    background: linear-gradient(135deg, var(--color-primary-600, #3F6B49), var(--color-accent-600, #496979));
+    box-shadow: 0 8px 24px rgba(49, 86, 59, 0.2);
     animation: splashPulse 2s infinite ease-in-out;
   }
 
   &__logo-symbol {
     font-size: 28px;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--text-on-primary, #F8FAF8);
     letter-spacing: -1px;
   }
 
   &__logo-accent {
     font-size: 28px;
     font-weight: 800;
-    color: #a5d6a7;
+    color: var(--color-primary-200, #C7DDC9);
     letter-spacing: -1px;
   }
 
@@ -46,13 +46,13 @@
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--text-primary, #1b5e20);
+    color: var(--text-primary, #202722);
   }
 
   &__loader {
     width: 140px;
     height: 4px;
-    background-color: var(--bg-tertiary, #e0e0e0);
+    background-color: var(--bg-tertiary, #E7EBE6);
     border-radius: 4px;
     overflow: hidden;
     position: relative;
@@ -64,7 +64,7 @@
     left: 0;
     bottom: 0;
     width: 50%;
-    background: linear-gradient(90deg, var(--color-primary, #2e7d32), var(--color-accent, #1976d2));
+    background: linear-gradient(90deg, var(--color-primary-600, #3F6B49), var(--color-accent-500, #5C7D8F));
     border-radius: 4px;
     animation: splashIndeterminate 1.2s infinite ease-in-out;
   }
@@ -73,11 +73,11 @@
 @keyframes splashPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.25);
+    box-shadow: 0 8px 24px rgba(49, 86, 59, 0.2);
   }
   50% {
     transform: scale(1.04);
-    box-shadow: 0 12px 28px rgba(46, 125, 50, 0.4);
+    box-shadow: 0 12px 28px rgba(49, 86, 59, 0.35);
   }
 }
 

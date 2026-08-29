@@ -10,7 +10,8 @@
   flex-direction: column;
   height: 100%;
   width: var(--sidebar-width);
-  background: var(--mat-sys-surface-container);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-subtle);
   overflow-y: auto;
 }
 
@@ -28,7 +29,7 @@
 .sidebar__brand-text {
   font-size: 20px;
   font-weight: 700;
-  color: var(--mat-sys-on-surface);
+  color: var(--text-primary);
 }
 
 .sidebar__nav {
@@ -37,16 +38,24 @@
 }
 
 .sidebar__item {
-  border-radius: 12px;
+  border-radius: var(--border-radius-sm);
   margin-bottom: 2px;
+  color: var(--text-secondary);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: var(--state-hover);
+    color: var(--text-primary);
+  }
 }
 
 .sidebar__item.sidebar__item--active {
-  background: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
+  background: var(--color-primary-100);
+  color: var(--color-primary-800);
+  font-weight: 600;
 
   mat-icon {
-    color: var(--mat-sys-on-primary-container);
+    color: var(--color-primary-800);
   }
 }
 

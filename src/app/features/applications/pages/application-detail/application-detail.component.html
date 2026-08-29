@@ -90,7 +90,7 @@
                     @if (academicRecord()?.finalGradeValue; as grade) {
                       <div class="detail__info-row">
                         <span class="detail__label">Calificación final</span>
-                        <span class="detail__score" style="color: #2e7d32; font-weight: 700;">{{ grade }}/100</span>
+                        <span class="detail__score" style="color: var(--color-success-text); font-weight: 700;">{{ grade }}/100</span>
                       </div>
                     }
                     @if (academicRecord()?.finalGradeFileId; as fileId) {

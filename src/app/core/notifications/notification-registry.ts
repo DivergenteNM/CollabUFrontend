@@ -273,15 +273,15 @@ export function notificationConfig(type: NotificationType): NotificationConfig {
   };
 }
 
-/** Devuelve el color CSS para un tono, basado en tokens Material. */
+/** Devuelve el color CSS para un tono, basado en los tokens semánticos unificados v2.0. */
 export function toneColor(tone: NotificationTone): { bg: string; color: string } {
   switch (tone) {
-    case 'success': return { bg: '#d1fae5', color: '#065f46' };
-    case 'warning': return { bg: '#fef3c7', color: '#92400e' };
-    case 'danger': return { bg: '#fee2e2', color: '#991b1b' };
-    case 'info': return { bg: '#dbeafe', color: '#1e40af' };
+    case 'success': return { bg: '#E6F5EB', color: '#18572F' };
+    case 'warning': return { bg: '#FEF5E7', color: '#834D09' };
+    case 'danger':  return { bg: '#FDF0F0', color: '#8C1E1E' };
+    case 'info':    return { bg: '#E6F2FA', color: '#154D6F' };
     case 'neutral':
-    default: return { bg: '#f3f4f6', color: '#6b7280' };
+    default:        return { bg: '#EEF2EC', color: '#4A584C' };
   }
 }
 

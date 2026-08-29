@@ -15,26 +15,26 @@ mat-dialog-content p {
 }
 
 .confirm-btn--info {
-  background-color: var(--mat-sys-primary);
-  color: var(--mat-sys-on-primary);
+  background-color: var(--color-primary-600);
+  color: var(--text-on-primary);
 }
 
 .confirm-btn--warning {
-  background-color: #f57c00;
-  color: #fff;
+  background-color: var(--color-warning);
+  color: var(--text-on-primary);
 }
 
 .confirm-btn--danger {
-  background-color: #c62828;
-  color: #fff;
+  background-color: var(--color-error);
+  color: var(--text-on-primary);
 }
 
 .confirm-dialog__context {
   display: flex;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--mat-sys-surface-container-low, #f5f5f5);
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
   margin-bottom: 12px;
 
   mat-icon {

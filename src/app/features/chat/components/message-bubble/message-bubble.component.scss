@@ -120,7 +120,7 @@
   color: var(--mat-sys-on-surface-variant);
 
   &.read {
-    color: #4caf50;
+    color: var(--color-success);
   }
 }
 
@@ -130,9 +130,4 @@
   height: 14px;
   color: var(--mat-sys-on-surface-variant);
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }

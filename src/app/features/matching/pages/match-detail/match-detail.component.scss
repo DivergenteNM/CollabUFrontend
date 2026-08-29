@@ -43,21 +43,21 @@
     }
 
     .detail__skills-col--match {
-      h4 mat-icon { color: #4caf50; }
+      h4 mat-icon { color: var(--color-success); }
     }
 
     .detail__skills-col--missing {
-      h4 mat-icon { color: #f44336; }
+      h4 mat-icon { color: var(--color-error); }
     }
 
     .chip--match {
-      --mdc-chip-elevated-container-color: #e8f5e9;
-      --mdc-chip-label-text-color: #2e7d32;
+      --mdc-chip-elevated-container-color: var(--color-success-bg);
+      --mdc-chip-label-text-color: var(--color-success-text);
     }
 
     .chip--missing {
-      --mdc-chip-elevated-container-color: #ffebee;
-      --mdc-chip-label-text-color: #c62828;
+      --mdc-chip-elevated-container-color: var(--color-error-bg);
+      --mdc-chip-label-text-color: var(--color-error-text);
     }
 
     .detail__no-skills {

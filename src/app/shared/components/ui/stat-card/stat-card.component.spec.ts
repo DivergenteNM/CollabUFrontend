@@ -42,7 +42,7 @@ describe('StatCardComponent', () => {
     fixture.detectChanges();
     const trendEl = fixture.nativeElement.querySelector('.stat-card__trend');
     expect(trendEl).toBeTruthy();
-    expect(trendEl.classList).toContain('positive');
+    expect(trendEl.classList).toContain('stat-card__trend--positive');
     expect(trendEl.textContent).toContain('+');
   });
 
@@ -51,7 +51,7 @@ describe('StatCardComponent', () => {
     fixture.detectChanges();
     const trendEl = fixture.nativeElement.querySelector('.stat-card__trend');
     expect(trendEl).toBeTruthy();
-    expect(trendEl.classList).toContain('negative');
+    expect(trendEl.classList).toContain('stat-card__trend--negative');
   });
 
   it('should not emit clicked if not clickable', () => {

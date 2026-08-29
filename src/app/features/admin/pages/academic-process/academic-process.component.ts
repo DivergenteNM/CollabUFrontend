@@ -221,7 +221,7 @@ const PRE_ASSIGNMENT_STATUSES = new Set(['accepted', 'pending_supervisor']);
     }
 
     .aq__signal { font-size: 18px; width: 18px; height: 18px; }
-    .aq__signal--ok { color: #2e7d32; }
+    .aq__signal--ok { color: var(--color-success); }
 
     .aq__paginator {
       margin-top: 4px;
@@ -231,7 +231,7 @@ const PRE_ASSIGNMENT_STATUSES = new Set(['accepted', 'pending_supervisor']);
 
     .aq__empty {
       text-align: center; padding: 48px 16px; color: var(--text-secondary);
-      mat-icon { font-size: 48px; width: 48px; height: 48px; color: #2e7d32; }
+      mat-icon { font-size: 48px; width: 48px; height: 48px; color: var(--color-primary-600); }
       p { margin: 8px 0 0; }
     }
 

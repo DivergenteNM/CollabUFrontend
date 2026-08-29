@@ -118,18 +118,18 @@
     }
 
     .action--accept.mat-mdc-unelevated-button {
-      background-color: #2e7d32;
-      color: #fff;
+      background-color: var(--color-primary-600);
+      color: var(--text-on-primary);
     }
 
     .action--reject.mat-mdc-outlined-button {
-      color: #c62828;
-      border-color: #c62828;
+      color: var(--color-error);
+      border-color: var(--color-error);
     }
 
     .action--reject.mat-mdc-unelevated-button {
-      background-color: #c62828;
-      color: #fff;
+      background-color: var(--color-error);
+      color: var(--text-on-primary);
     }
 
     .review__inline-form {
@@ -191,13 +191,13 @@
       font-size: 0.75rem;
       font-weight: 600;
       padding: 2px 8px;
-      border-radius: 12px;
+      border-radius: var(--border-radius-pill);
 
-      &.del-status--pending { background: #fff3e0; color: #e65100; }
-      &.del-status--submitted { background: #e3f2fd; color: #1565c0; }
-      &.del-status--approved { background: #e8f5e9; color: #2e7d32; }
-      &.del-status--rejected { background: #fce4ec; color: #c62828; }
-      &.del-status--revision-requested { background: #fff8e1; color: #f57f17; }
+      &.del-status--pending { background: var(--color-warning-bg); color: var(--color-warning-text); }
+      &.del-status--submitted { background: var(--color-info-bg); color: var(--color-info-text); }
+      &.del-status--approved { background: var(--color-success-bg); color: var(--color-success-text); }
+      &.del-status--rejected { background: var(--color-error-bg); color: var(--color-error-text); }
+      &.del-status--revision-requested { background: var(--color-warning-bg); color: var(--color-warning-text); }
     }
 
     .review__deliverable-due,

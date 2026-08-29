@@ -38,44 +38,44 @@
 }
 
 .stepper__step--completed .stepper__circle {
-  background: var(--mat-sys-primary);
-  border-color: var(--mat-sys-primary);
+  background: var(--color-primary-600);
+  border-color: var(--color-primary-600);
 
   mat-icon {
-    color: var(--mat-sys-on-primary);
+    color: var(--text-on-primary);
   }
 }
 
 .stepper__step--active .stepper__circle {
-  border-color: var(--mat-sys-primary);
-  background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+  border-color: var(--color-primary-600);
+  background: var(--color-primary-50);
 
   mat-icon {
-    color: var(--mat-sys-primary);
+    color: var(--color-primary-700);
   }
 }
 
 .stepper__label {
   font-size: 0.6875rem;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--text-secondary);
   text-align: center;
   max-width: 72px;
 }
 
 .stepper__step--active .stepper__label {
-  color: var(--mat-sys-primary);
+  color: var(--color-primary-700);
   font-weight: 600;
 }
 
 .stepper__line {
   flex: 1;
   height: 2px;
-  background-color: var(--mat-sys-outline-variant);
+  background-color: var(--border-color);
   margin-top: 18px;
   min-width: 32px;
   transition: background-color 300ms ease;
 }
 
 .stepper__line--filled {
-  background-color: var(--mat-sys-primary);
+  background-color: var(--color-primary-600);
 }

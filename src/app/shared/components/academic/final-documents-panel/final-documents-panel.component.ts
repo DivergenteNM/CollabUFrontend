@@ -169,14 +169,14 @@ const ACTOR_LABEL: Record<FinalDocActor, { label: string; icon: string }> = {
     .fdp__row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
     .fdp__chip {
-      font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 500;
+      font-size: 0.75rem; padding: 2px 8px; border-radius: var(--border-radius-pill); font-weight: 500;
     }
-    .fdp__chip--mand { background: #fff3e0; color: #e65100; }
-    .fdp__chip--opt { background: #e8f5e9; color: #2e7d32; }
-    .fdp__chip--pending { background: #e0e0e0; color: #424242; }
-    .fdp__chip--submitted { background: #e3f2fd; color: #1565c0; }
-    .fdp__chip--approved { background: #c8e6c9; color: #1b5e20; }
-    .fdp__chip--rejected { background: #ffcdd2; color: #b71c1c; }
+    .fdp__chip--mand { background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .fdp__chip--opt { background: var(--color-success-bg); color: var(--color-success-text); }
+    .fdp__chip--pending { background: var(--bg-secondary); color: var(--text-secondary); }
+    .fdp__chip--submitted { background: var(--color-info-bg); color: var(--color-info-text); }
+    .fdp__chip--approved { background: var(--color-success-bg); color: var(--color-success-text); }
+    .fdp__chip--rejected { background: var(--color-error-bg); color: var(--color-error-text); }
   `],
 })
 export class FinalDocumentsPanelComponent {

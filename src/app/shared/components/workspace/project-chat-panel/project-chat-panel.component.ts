@@ -197,12 +197,12 @@ interface DisplayMessage {
       background: var(--mat-sys-surface-variant, #eee);
     }
     .pcp__status-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: #9e9e9e;
+      width: 8px; height: 8px; border-radius: 50%; background: var(--text-disabled);
     }
-    .pcp__status--connected .pcp__status-dot { background: #2e7d32; }
-    .pcp__status--connecting .pcp__status-dot { background: #f57c00; animation: pulse 1s infinite; }
+    .pcp__status--connected .pcp__status-dot { background: var(--color-success); }
+    .pcp__status--connecting .pcp__status-dot { background: var(--color-warning); animation: pulse 1s infinite; }
     .pcp__status--disconnected .pcp__status-dot,
-    .pcp__status--error .pcp__status-dot { background: #c62828; }
+    .pcp__status--error .pcp__status-dot { background: var(--color-error); }
 
     .pcp__body { display: flex; flex-direction: column; gap: 12px; min-height: 240px; }
     .pcp__center {
@@ -212,7 +212,7 @@ interface DisplayMessage {
       mat-icon { font-size: 32px; width: 32px; height: 32px; }
       button { margin-top: 8px; }
     }
-    .pcp__center--error mat-icon { color: #c62828; }
+    .pcp__center--error mat-icon { color: var(--color-error); }
 
     .pcp__messages {
       display: flex; flex-direction: column; gap: 10px;

@@ -31,13 +31,13 @@
 .ap-panel__jurados-list { display: flex; flex-direction: column; gap: var(--space-1); }
 .ap-panel__jurado-row { display: flex; align-items: center; gap: var(--space-2); font-size: .8125rem; }
 .ap-panel__jurado-row mat-icon { font-size: 18px; width: 18px; height: 18px; }
-.ap-panel__jurado-icon--approve { color: var(--color-success, #2e7d32); }
-.ap-panel__jurado-icon--reject { color: var(--color-error, #c62828); }
+.ap-panel__jurado-icon--approve { color: var(--color-success); }
+.ap-panel__jurado-icon--reject { color: var(--color-error); }
 .ap-panel__jurado-icon--pending { color: var(--text-secondary); }
 .ap-panel__jurado-status { margin-left: auto; color: var(--text-secondary); }
 .ap-panel__jurados-accepted {
   display: flex; align-items: center; gap: 6px; margin-top: var(--space-2);
-  color: var(--color-success, #2e7d32); font-weight: 600; font-size: .8125rem;
+  color: var(--color-success-text); font-weight: 600; font-size: .8125rem;
 }
 
 .ap-panel__comment-form, .ap-panel__review-form {

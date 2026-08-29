@@ -48,7 +48,13 @@ describe('DeliverableCardComponent', () => {
         { provide: StorageService, useValue: storageMock },
         { provide: MatSnackBar, useValue: snackBarMock },
       ],
-    }).compileComponents();
+    })
+    .overrideComponent(DeliverableCardComponent, {
+      set: {
+        providers: [{ provide: MatSnackBar, useValue: snackBarMock }],
+      },
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(DeliverableCardComponent);
     component = fixture.componentInstance;

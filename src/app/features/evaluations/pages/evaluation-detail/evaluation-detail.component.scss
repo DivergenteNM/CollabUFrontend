@@ -228,8 +228,8 @@
   }
 }
 
-.section--strengths h4 { color: #2e7d32; }
-.section--improve h4   { color: #ef6c00; }
+.section--strengths h4 { color: var(--color-success); }
+.section--improve h4   { color: var(--color-warning); }
 
 .edetail__placeholder mat-card-content {
   text-align: center;
