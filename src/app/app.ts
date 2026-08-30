@@ -14,8 +14,7 @@ import { AuthStore } from './state/auth.store';
       <div class="app-splash" aria-live="polite" aria-busy="true">
         <div class="app-splash__brand">
           <div class="app-splash__logo">
-            <span class="app-splash__logo-symbol">C</span>
-            <span class="app-splash__logo-accent">U</span>
+            <img src="Logo_CollabU_Color_Sin_texto.png" alt="Collab-U" class="app-splash__logo-img" />
           </div>
           <h1 class="app-splash__title">Collab-U</h1>
           <div class="app-splash__loader">

@@ -19,26 +19,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, var(--color-primary-600, #3F6B49), var(--color-accent-600, #496979));
-    box-shadow: 0 8px 24px rgba(49, 86, 59, 0.2);
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(49, 86, 59, 0.15);
     animation: splashPulse 2s infinite ease-in-out;
   }
 
-  &__logo-symbol {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--text-on-primary, #F8FAF8);
-    letter-spacing: -1px;
-  }
-
-  &__logo-accent {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--color-primary-200, #C7DDC9);
-    letter-spacing: -1px;
+  &__logo-img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    display: block;
   }
 
   &__title {
