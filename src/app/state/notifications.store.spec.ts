@@ -22,7 +22,7 @@ describe('NotificationsStore', () => {
       providers: [
         {
           provide: NotificationRealtimeService,
-          useValue: { connect: () => {}, onNotification: () => NEVER },
+          useValue: { connect: () => {}, onNotification: () => NEVER, onUnreadCount: () => NEVER },
         },
       ],
     });
