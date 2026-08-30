@@ -42,9 +42,12 @@
 }
 
 .auth-logo__icon {
-  font-size: 48px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
   display: block;
-  margin-bottom: 8px;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.06));
 }
 
 .auth-logo__title {

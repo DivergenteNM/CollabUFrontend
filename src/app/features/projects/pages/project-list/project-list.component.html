@@ -1,80 +1,322 @@
-<div class="project-list">
-  <header class="project-list__header">
-    <div class="project-list__title-block">
-      <h1>Proyectos Disponibles</h1>
-      <p class="project-list__subtitle">
-        @if (totalProjects() > 0) {
-          {{ totalProjects() }} proyecto{{ totalProjects() === 1 ? '' : 's' }} publicado{{ totalProjects() === 1 ? '' : 's' }} para postularte
-        } @else {
-          Explora las oportunidades publicadas por las empresas
-        }
-      </p>
-    </div>
+<div class="explorer-page">
+  <!-- Page Header -->
+  <header class="explorer-header">
+    <h1 class="explorer-title">Explorador de Proyectos Avanzado V2.</h1>
   </header>
 
-  @if (!uiStore.isMobile()) {
-    <app-search-filter-bar
-      class="project-list__filters"
-      [filters]="filterConfigs"
-      (filtersChanged)="onFiltersChanged($event)" />
-  } @else {
-    <button mat-stroked-button class="project-list__mobile-filters-toggle" (click)="showMobileFilters.set(true)">
-      <mat-icon>filter_list</mat-icon> Filtros
+  <!-- Mobile filter button -->
+  <div class="mobile-filter-bar">
+    <button type="button" class="btn-mobile-filter" (click)="showMobileFilters.set(true)">
+      <mat-icon>tune</mat-icon>
+      <span>Filtros Avanzados</span>
     </button>
+  </div>
 
-    <mat-drawer-container class="project-list__drawer-container" [hasBackdrop]="true">
-      <mat-drawer #filterDrawer
-                  mode="over"
-                  position="end"
-                  [opened]="showMobileFilters()"
-                  (closed)="showMobileFilters.set(false)">
-        <div class="project-list__mobile-filters">
-          <div class="project-list__mobile-filters-header">
-            <h3>Filtros</h3>
-            <button mat-icon-button aria-label="Cerrar filtros" (click)="showMobileFilters.set(false)">
-              <mat-icon>close</mat-icon>
+  <!-- Main Explorer Grid (Sidebar + Content) -->
+  <div class="explorer-layout">
+    <!-- 1. Left Sidebar: Filtros Avanzados -->
+    <aside class="sidebar-filters desktop-only">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Filtros Avanzados</h2>
+        @if (selectedCategory() || selectedDuration() || selectedSkill() || searchText()) {
+          <button type="button" class="btn-clear-filters" (click)="clearFilters()">
+            Limpiar
+          </button>
+        }
+      </div>
+
+      <!-- Section: Categoría -->
+      <div class="filter-section">
+        <button
+          type="button"
+          class="filter-section-header"
+          (click)="categoryOpen.update(v => !v)"
+          [attr.aria-expanded]="categoryOpen()">
+          <span class="section-title">Categoría</span>
+          <mat-icon class="section-chevron">{{ categoryOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+
+        @if (categoryOpen()) {
+          <div class="filter-options">
+            @for (cat of categories; track cat.id) {
+              <label class="custom-checkbox-label">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox-input"
+                  [checked]="selectedCategory() === cat.id"
+                  (change)="toggleCategory(cat.id)" />
+                <span class="custom-checkbox-box"></span>
+                <span class="option-text">{{ cat.label }}</span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Section: Duración -->
+      <div class="filter-section">
+        <button
+          type="button"
+          class="filter-section-header"
+          (click)="durationOpen.update(v => !v)"
+          [attr.aria-expanded]="durationOpen()">
+          <span class="section-title">Duración</span>
+          <mat-icon class="section-chevron">{{ durationOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+
+        @if (durationOpen()) {
+          <div class="filter-options">
+            @for (dur of durationOptions; track dur.id) {
+              <label class="custom-radio-label">
+                <input
+                  type="radio"
+                  name="durationFilter"
+                  class="custom-radio-input"
+                  [checked]="selectedDuration() === dur.id"
+                  (change)="toggleDuration(dur.id)" />
+                <span class="custom-radio-circle"></span>
+                <span class="option-text">{{ dur.label }}</span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Section: Habilidades Requeridas -->
+      <div class="filter-section">
+        <button
+          type="button"
+          class="filter-section-header"
+          (click)="skillsOpen.update(v => !v)"
+          [attr.aria-expanded]="skillsOpen()">
+          <span class="section-title">Habilidades Requeridas</span>
+          <mat-icon class="section-chevron">{{ skillsOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+
+        @if (skillsOpen()) {
+          <div class="skills-filter-content">
+            <!-- Search Skills Input -->
+            <div class="skill-search-wrapper">
+              <mat-icon class="skill-search-icon">search</mat-icon>
+              <input
+                type="text"
+                class="skill-search-input"
+                placeholder="Buscar..."
+                [ngModel]="skillSearchQuery()"
+                (ngModelChange)="skillSearchQuery.set($event)" />
+            </div>
+
+            <!-- Skill Tag Cloud -->
+            <div class="skill-chips-cloud">
+              @for (skill of filteredSkills(); track skill) {
+                <button
+                  type="button"
+                  class="skill-chip"
+                  [class.skill-chip--active]="selectedSkill() === skill"
+                  (click)="toggleSkill(skill)">
+                  {{ skill }}
+                </button>
+              }
+              @empty {
+                <span class="no-skills-text">No se encontraron habilidades</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <!-- 2. Right Content Area: Top Controls + Grid + Pagination -->
+    <main class="explorer-main">
+      <!-- Top Search & Sort Row -->
+      <div class="top-controls-row">
+        <!-- Search bar -->
+        <div class="main-search-wrapper">
+          <mat-icon class="main-search-icon">search</mat-icon>
+          <input
+            type="text"
+            class="main-search-input"
+            placeholder="Buscar proyectos..."
+            [ngModel]="searchText()"
+            (ngModelChange)="onSearchInput($event)" />
+        </div>
+
+        <!-- Sort dropdown -->
+        <div class="sort-select-wrapper">
+          <select
+            class="sort-select"
+            [ngModel]="selectedSort()"
+            (ngModelChange)="onSortChange($event)"
+            aria-label="Ordenar proyectos">
+            <option value="createdAt">Ordenar por: Más recientes</option>
+            <option value="deadline">Ordenar por: Fecha límite</option>
+            <option value="applications">Ordenar por: Más aplicaciones</option>
+            <option value="views">Ordenar por: Más vistos</option>
+          </select>
+          <mat-icon class="sort-chevron">expand_more</mat-icon>
+        </div>
+      </div>
+
+      <!-- Results Subtitle -->
+      <div class="results-info">
+        <p class="results-subtitle">{{ resultsSubtitle() }}</p>
+      </div>
+
+      <!-- Project Cards Grid -->
+      <section class="projects-grid">
+        @if (projectsResource.isLoading()) {
+          @for (_ of skeletonArray; track $index) {
+            <div class="project-skeleton-card">
+              <app-skeleton width="100%" height="340px" />
+            </div>
+          }
+        } @else if (projects().length === 0) {
+          <div class="projects-empty-state">
+            <app-empty-state
+              icon="search_off"
+              title="Sin resultados"
+              message="No se encontraron proyectos con los filtros seleccionados."
+              actionLabel="Limpiar filtros"
+              (actionClicked)="clearFilters()" />
+          </div>
+        } @else {
+          @for (project of projects(); track project.id) {
+            <app-project-card
+              [project]="project"
+              [matchScore]="matchScoreFor(project.id)"
+              [showActions]="true"
+              [canApply]="authStore.isStudent()"
+              (viewDetail)="router.navigate(['/projects', $event])"
+              (apply)="router.navigate(['/projects', $event])" />
+          }
+        }
+      </section>
+
+      <!-- Bottom Pagination -->
+      @if (totalProjects() > 0) {
+        <footer class="pagination-footer">
+          <div class="pagination-controls">
+            <span class="pagination-info">
+              {{ page() }} de {{ totalPages() }} Páginas
+            </span>
+            <button
+              type="button"
+              class="btn-page-nav"
+              [disabled]="page() <= 1"
+              (click)="prevPage()"
+              aria-label="Página anterior">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn-page-nav"
+              [disabled]="page() >= totalPages()"
+              (click)="nextPage()"
+              aria-label="Página siguiente">
+              <mat-icon>chevron_right</mat-icon>
             </button>
           </div>
-          <app-search-filter-bar
-            [filters]="filterConfigs"
-            (filtersChanged)="onFiltersChanged($event)" />
-        </div>
-      </mat-drawer>
-    </mat-drawer-container>
-  }
-
-  <section class="project-list__grid">
-    @if (projectsResource.isLoading()) {
-      @for (_ of skeletonArray; track $index) {
-        <app-skeleton width="100%" height="320px" />
+        </footer>
       }
-    } @else if (projects().length === 0) {
-      <div class="project-list__empty">
-        <app-empty-state
-          icon="search_off"
-          title="Sin resultados"
-          message="No se encontraron proyectos con los filtros seleccionados."
-          actionLabel="Limpiar filtros"
-          (actionClicked)="clearFilters()" />
+    </main>
+  </div>
+
+  <!-- Mobile Filters Drawer -->
+  @if (showMobileFilters()) {
+    <div class="mobile-drawer-backdrop" (click)="showMobileFilters.set(false)"></div>
+    <aside class="mobile-drawer" role="dialog" aria-modal="true" aria-label="Filtros Avanzados">
+      <div class="mobile-drawer-header">
+        <h3>Filtros Avanzados</h3>
+        <button
+          type="button"
+          class="btn-close-drawer"
+          (click)="showMobileFilters.set(false)"
+          aria-label="Cerrar filtros">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
-    } @else {
-      @for (project of projects(); track project.id) {
-        <app-project-card
-          [project]="project"
-          [matchScore]="matchScoreFor(project.id)"
-          [showActions]="true"
-          [canApply]="authStore.isStudent()"
-          (viewDetail)="router.navigate(['/projects', $event])"
-          (apply)="router.navigate(['/projects', $event])" />
-      }
-    }
-  </section>
 
-  @if (totalProjects() > 0) {
-    <app-paginator
-      [totalItems]="totalProjects()"
-      [pageSize]="12"
-      [pageSizeOptions]="[12, 24, 48]"
-      (pageChanged)="onPageChanged($event)" />
+      <div class="mobile-drawer-body">
+        <!-- Section: Categoría -->
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <span class="section-title">Categoría</span>
+          </div>
+          <div class="filter-options">
+            @for (cat of categories; track cat.id) {
+              <label class="custom-checkbox-label">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox-input"
+                  [checked]="selectedCategory() === cat.id"
+                  (change)="toggleCategory(cat.id)" />
+                <span class="custom-checkbox-box"></span>
+                <span class="option-text">{{ cat.label }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Section: Duración -->
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <span class="section-title">Duración</span>
+          </div>
+          <div class="filter-options">
+            @for (dur of durationOptions; track dur.id) {
+              <label class="custom-radio-label">
+                <input
+                  type="radio"
+                  name="mobileDurationFilter"
+                  class="custom-radio-input"
+                  [checked]="selectedDuration() === dur.id"
+                  (change)="toggleDuration(dur.id)" />
+                <span class="custom-radio-circle"></span>
+                <span class="option-text">{{ dur.label }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Section: Habilidades Requeridas -->
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <span class="section-title">Habilidades Requeridas</span>
+          </div>
+          <div class="skills-filter-content">
+            <div class="skill-search-wrapper">
+              <mat-icon class="skill-search-icon">search</mat-icon>
+              <input
+                type="text"
+                class="skill-search-input"
+                placeholder="Buscar..."
+                [ngModel]="skillSearchQuery()"
+                (ngModelChange)="skillSearchQuery.set($event)" />
+            </div>
+            <div class="skill-chips-cloud">
+              @for (skill of filteredSkills(); track skill) {
+                <button
+                  type="button"
+                  class="skill-chip"
+                  [class.skill-chip--active]="selectedSkill() === skill"
+                  (click)="toggleSkill(skill)">
+                  {{ skill }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="mobile-drawer-footer">
+          <button type="button" class="btn-clear-all" (click)="clearFilters(); showMobileFilters.set(false)">
+            Limpiar Todo
+          </button>
+          <button type="button" class="btn-apply-filters" (click)="showMobileFilters.set(false)">
+            Ver Resultados
+          </button>
+        </div>
+      </div>
+    </aside>
   }
 </div>
+
