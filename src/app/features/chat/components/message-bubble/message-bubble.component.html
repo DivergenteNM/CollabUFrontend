@@ -22,7 +22,15 @@
     <div class="bubble__meta">
       <span class="bubble__time">{{ message().createdAt | date:'HH:mm' }}</span>
       @if (isMine()) {
-        @if (sending()) {
+        @if (failed()) {
+          <button
+            type="button"
+            class="bubble__retry-btn"
+            matTooltip="No se pudo enviar. Clic para reintentar"
+            (click)="retry.emit()">
+            <mat-icon>error_outline</mat-icon>
+          </button>
+        } @else if (sending()) {
           <mat-icon class="bubble__status-icon sending">schedule</mat-icon>
         } @else {
           <mat-icon class="bubble__status-icon" [class.read]="message().isRead">

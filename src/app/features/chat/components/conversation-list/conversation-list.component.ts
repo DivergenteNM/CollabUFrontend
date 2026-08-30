@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { SlicePipe, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -53,8 +53,17 @@ export class ConversationListComponent {
     return getConversationTitle(conv, this.currentUserId(), projectTitle);
   }
 
+  displayName(conv: Conversation): string {
+    return this.title(conv);
+  }
+
   subtitle(conv: Conversation): string {
     return getConversationSubtitle(conv, this.currentUserId());
+  }
+
+  participantsSummary(conv: Conversation): string {
+    const count = (conv.participants ?? []).length;
+    return `${count} participante${count === 1 ? '' : 's'}`;
   }
 
   avatarUrl(conv: Conversation): string | undefined {

@@ -28,6 +28,8 @@ import { TypingIndicatorComponent } from '../../components/typing-indicator/typi
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { InitialsPipe } from '../../../../shared/pipes/initials.pipe';
 
+const MESSAGE_SEND_TIMEOUT_MS = 10000;
+
 @Component({
   selector: 'app-chat-room',
   changeDetection: ChangeDetectionStrategy.OnPush,

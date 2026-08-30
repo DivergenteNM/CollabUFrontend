@@ -40,15 +40,15 @@
   </header>
 
   @if (connectionStatus() === 'disconnected' || connectionStatus() === 'error') {
-    <div class="room__connection-banner">
-      <mat-icon>wifi_off</mat-icon>
-      Sin conexión — tus mensajes se reintentarán al reconectar.
-    </div>
+  <div class="room__connection-banner">
+    <mat-icon>wifi_off</mat-icon>
+    Sin conexión — tus mensajes se reintentarán al reconectar.
+  </div>
   } @else if (connectionStatus() === 'connecting') {
-    <div class="room__connection-banner room__connection-banner--info">
-      <mat-icon>sync</mat-icon>
-      Conectando...
-    </div>
+  <div class="room__connection-banner room__connection-banner--info">
+    <mat-icon>sync</mat-icon>
+    Conectando...
+  </div>
   }
 
   <div class="room__messages" #messagesContainer>
@@ -76,7 +76,8 @@
     }
 
     @for (msg of allMessages(); track msg.id) {
-    <app-message-bubble [message]="msg" [currentUserId]="currentUserId()" [sending]="isSending(msg.id)" />
+    <app-message-bubble [message]="msg" [currentUserId]="currentUserId()" [sending]="isSending(msg.id)"
+      [failed]="isFailed(msg.id)" (retry)="retryMessage(msg.id)" />
     }
     }
 

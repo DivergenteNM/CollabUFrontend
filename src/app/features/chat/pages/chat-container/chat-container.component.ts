@@ -4,7 +4,6 @@ import {
 } from '@angular/core';
 import { Router, RouterOutlet, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { httpResource } from '@angular/common/http';
-import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';

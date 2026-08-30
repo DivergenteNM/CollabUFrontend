@@ -114,6 +114,28 @@
   font-weight: 400;
 }
 
+.bubble__retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-error, #C93B3B);
+  transition: transform var(--transition-fast, 150ms ease);
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
 .bubble__status-icon {
   font-size: 14px;
   width: 14px;
