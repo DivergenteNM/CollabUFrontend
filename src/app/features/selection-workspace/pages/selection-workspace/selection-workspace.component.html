@@ -160,15 +160,37 @@
         }
       </div>
 
-      <!-- Columna lateral: chat -->
-      @if (can('chat') && !isTerminal()) {
-        <div class="sw__side">
-          <app-project-chat-panel
-            [applicationId]="applicationId()"
-            [projectId]="project()?.id ?? null"
-            [participantIds]="participantUserIds()" />
-        </div>
-      }
+      <!-- Columna lateral: estado y trazabilidad del proceso. El chat ya
+           tiene su propia vista (botón "Mensaje" del encabezado, igual que en
+           el workspace de desarrollo) — este espacio se dedica a que el
+           estado actual (p. ej. "esperando asesor", "esperando aprobación de
+           anteproyecto") sea visible sin depender solo del badge pequeño del
+           encabezado. -->
+      <div class="sw__side">
+        <mat-card class="sw__status-card">
+          <mat-card-header>
+            <mat-card-title>Estado del proceso</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="sw__status-row">
+              <span class="sw__status-label">Postulación</span>
+              <app-status-badge [status]="application()!.status" domain="application" />
+            </div>
+            @if (academicRecord(); as record) {
+              <div class="sw__status-row">
+                <span class="sw__status-label">Proceso académico</span>
+                <app-status-badge [status]="record.status" domain="academicRecord" />
+              </div>
+            }
+            @if (nextStep()) {
+              <div class="sw__status-next" [class.sw__status-next--terminal]="isTerminal()">
+                <mat-icon>{{ isTerminal() ? 'info' : 'arrow_forward' }}</mat-icon>
+                <span>{{ nextStep() }}</span>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
   }
 

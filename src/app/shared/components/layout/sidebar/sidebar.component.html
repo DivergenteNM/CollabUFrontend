@@ -5,9 +5,11 @@
   </div>
 
   <mat-nav-list class="sidebar__nav">
-    @for (item of menuItems(); track item.label ?? $index) {
+    @for (item of menuItems(); track item.label ?? item.sectionLabel ?? $index) {
       @if (item.divider) {
         <mat-divider class="sidebar__divider"></mat-divider>
+      } @else if (item.sectionLabel) {
+        <h3 matSubheader class="sidebar__section-label">{{ item.sectionLabel }}</h3>
       } @else {
         <a
           mat-list-item

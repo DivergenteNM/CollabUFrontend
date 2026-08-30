@@ -70,6 +70,18 @@ describe('StatCardComponent', () => {
     expect(spy).toHaveBeenCalledOnce();
   });
 
+  it('no muestra el ícono de ayuda cuando no se provee hint', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.stat-card__hint')).toBeNull();
+  });
+
+  it('muestra un ícono de ayuda cuando se provee hint', () => {
+    fixture.componentRef.setInput('hint', 'Explicación del indicador');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.stat-card__hint')).toBeTruthy();
+    expect(component.hint()).toBe('Explicación del indicador');
+  });
+
   it('should have correct host attributes when clickable', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();

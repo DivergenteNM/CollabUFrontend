@@ -15,6 +15,7 @@
       [conversations]="filteredConversations()"
       [activeId]="activeConversationId()"
       [currentUserId]="authStore.user()?.id ?? ''"
+      [projectTitles]="projectTitles()"
       (select)="onSelectConversation($event)" />
   </aside>
 

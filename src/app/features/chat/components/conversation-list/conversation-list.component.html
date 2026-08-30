@@ -55,6 +55,22 @@
       <mat-icon>forum</mat-icon>
       <p>No hay conversaciones</p>
     </div>
+  } @else {
+    @if (individualConversations().length > 0) {
+      <h3 class="conv-section-label">Conversaciones</h3>
+      @for (conv of individualConversations(); track conv.id) {
+        <ng-container [ngTemplateOutlet]="convItem" [ngTemplateOutletContext]="{ $implicit: conv }" />
+      }
+    }
+
+    @if (groupConversations().length > 0) {
+      <h3 class="conv-section-label conv-section-label--group">
+        <mat-icon>groups</mat-icon> Grupos
+      </h3>
+      @for (conv of groupConversations(); track conv.id) {
+        <ng-container [ngTemplateOutlet]="convItem" [ngTemplateOutletContext]="{ $implicit: conv }" />
+      }
+    }
   }
 </div>
 

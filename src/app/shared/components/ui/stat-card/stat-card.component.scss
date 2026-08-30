@@ -98,4 +98,15 @@ mat-card {
   font-size: 0.875rem;
   color: var(--mat-sys-on-surface-variant);
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-card__hint {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: help;
 }

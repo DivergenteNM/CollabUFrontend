@@ -18,6 +18,12 @@
       }
     </div>
     <div class="stat-card__value">{{ value() }}</div>
-    <div class="stat-card__label">{{ label() }}</div>
+    <div class="stat-card__label">
+      {{ label() }}
+      @if (hint(); as h) {
+        <mat-icon class="stat-card__hint" [matTooltip]="h" matTooltipPosition="above"
+          (click)="$event.stopPropagation()">info_outline</mat-icon>
+      }
+    </div>
   </mat-card-content>
 </mat-card>

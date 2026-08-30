@@ -104,6 +104,12 @@
   &.offline {
     background: #94A3B8;
   }
+
+  &.group {
+    border-radius: 12px;
+    background: var(--mat-sys-secondary-container, #e0e7ff);
+    color: var(--mat-sys-on-secondary-container, #1e3a8a);
+  }
 }
 
 .room__header-info {

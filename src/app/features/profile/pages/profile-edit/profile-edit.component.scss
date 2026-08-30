@@ -46,6 +46,15 @@
   font-size: 0.875rem;
 }
 
+.profile-edit__quick-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+
+  a { display: inline-flex; align-items: center; gap: 6px; }
+}
+
 // ── Shared form utilities ──────────────────────────────
 .full-width {
   width: 100%;

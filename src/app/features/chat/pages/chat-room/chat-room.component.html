@@ -39,6 +39,18 @@
     </div>
   </header>
 
+  @if (connectionStatus() === 'disconnected' || connectionStatus() === 'error') {
+    <div class="room__connection-banner">
+      <mat-icon>wifi_off</mat-icon>
+      Sin conexión — tus mensajes se reintentarán al reconectar.
+    </div>
+  } @else if (connectionStatus() === 'connecting') {
+    <div class="room__connection-banner room__connection-banner--info">
+      <mat-icon>sync</mat-icon>
+      Conectando...
+    </div>
+  }
+
   <div class="room__messages" #messagesContainer>
     @if (messagesResource.isLoading() && allMessages().length === 0) {
     @for (_ of [1,2,3,4]; track $index) {
