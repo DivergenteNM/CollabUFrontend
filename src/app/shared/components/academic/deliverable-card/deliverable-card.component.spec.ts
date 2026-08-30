@@ -46,15 +46,14 @@ describe('DeliverableCardComponent', () => {
       providers: [
         provideAnimationsAsync(),
         { provide: StorageService, useValue: storageMock },
-        { provide: MatSnackBar, useValue: snackBarMock },
       ],
     })
-    .overrideComponent(DeliverableCardComponent, {
-      set: {
-        providers: [{ provide: MatSnackBar, useValue: snackBarMock }],
-      },
-    })
-    .compileComponents();
+      // `providedIn: 'root'` en MatSnackBar no se sobreescribe de forma fiable
+      // vía `providers` en configureTestingModule bajo el unit-test builder de
+      // Angular 21 + Vitest (el componente sigue resolviendo la instancia real) —
+      // overrideProvider sí fuerza el reemplazo en el injector raíz de TestBed.
+      .overrideProvider(MatSnackBar, { useValue: snackBarMock })
+      .compileComponents();
 
     fixture = TestBed.createComponent(DeliverableCardComponent);
     component = fixture.componentInstance;
