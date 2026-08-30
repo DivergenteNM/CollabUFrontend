@@ -1,6 +1,11 @@
 <div class="notif-center">
   <header class="notif-center__header">
-    <h1>Notificaciones</h1>
+    <div class="notif-center__header-title">
+      <h1>Notificaciones</h1>
+      @if (notificationsStore.unreadCount() > 0) {
+        <span class="notif-center__header-badge">{{ notificationsStore.unreadCount() }} no leídas</span>
+      }
+    </div>
     <div class="notif-center__toolbar">
       <mat-button-toggle-group [value]="groupMode()" (change)="groupMode.set($event.value)" aria-label="Agrupar por">
         <mat-button-toggle value="day">
@@ -12,7 +17,7 @@
       </mat-button-toggle-group>
 
       @if (notificationsStore.hasUnread()) {
-        <button mat-stroked-button (click)="markAllAsRead()">
+        <button mat-stroked-button (click)="markAllAsRead()" class="notif-center__mark-all-btn">
           <mat-icon>done_all</mat-icon> Marcar todas como leídas
         </button>
       }
@@ -31,7 +36,7 @@
           @if (groupMode() === 'project') {
             <mat-icon>folder</mat-icon>
           }
-          {{ group.label }}
+          <span>{{ group.label }}</span>
           <span class="notif-center__group-count">{{ group.items.length }}</span>
         </h3>
         <div class="notif-center__group-list">
@@ -42,7 +47,7 @@
               (keydown.enter)="onNotificationClick(notif)"
               tabindex="0"
               role="button">
-              <div class="notif-center__indicator">
+              <div class="notif-center__indicator" aria-hidden="true">
                 <span class="notif-center__dot" [class.read]="notif.isRead"></span>
               </div>
               <div class="notif-center__icon"
@@ -74,3 +79,4 @@
     }
   }
 </div>
+
