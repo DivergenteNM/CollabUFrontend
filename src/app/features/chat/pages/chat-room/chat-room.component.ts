@@ -25,6 +25,7 @@ import { ChatService } from '../../services/chat.service';
 import { MessageBubbleComponent } from '../../components/message-bubble/message-bubble.component';
 import { TypingIndicatorComponent } from '../../components/typing-indicator/typing-indicator.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
+import { InitialsPipe } from '../../../../shared/pipes/initials.pipe';
 
 @Component({
   selector: 'app-chat-room',
@@ -32,7 +33,7 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
   imports: [
     FormsModule, ScrollingModule,
     MatButtonModule, MatIconModule, MatInputModule, MatFormFieldModule, MatProgressSpinnerModule,
-    MessageBubbleComponent, TypingIndicatorComponent, SkeletonComponent,
+    MessageBubbleComponent, TypingIndicatorComponent, SkeletonComponent, InitialsPipe,
   ],
   templateUrl: './chat-room.component.html',
   styleUrl: './chat-room.component.scss',
@@ -53,6 +54,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   readonly typingUserName = signal<string | null>(null);
   readonly otherParticipantName = signal('Usuario');
   readonly otherParticipantOnline = signal(false);
+  readonly otherParticipantAvatar = signal<string | undefined>(undefined);
 
   // Optimistic: messages being sent (temporary ids)
   readonly pendingMessageIds = signal<Set<string>>(new Set());
@@ -259,6 +261,28 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     }, 50);
   }
 
+  getDateLabel(dateStr?: string): string {
+    if (!dateStr) return 'Hoy';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'Hoy';
+      const now = new Date();
+      const isToday = d.getDate() === now.getDate() &&
+                      d.getMonth() === now.getMonth() &&
+                      d.getFullYear() === now.getFullYear();
+      if (isToday) return 'Hoy';
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = d.getDate() === yesterday.getDate() &&
+                          d.getMonth() === yesterday.getMonth() &&
+                          d.getFullYear() === yesterday.getFullYear();
+      if (isYesterday) return 'Ayer';
+      return d.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return 'Hoy';
+    }
+  }
+
   private loadConversationInfo(): void {
     // Extract participant info from the conversations API
     this.chatService.getConversations().subscribe(res => {
@@ -269,6 +293,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         if (other) {
           this.otherParticipantName.set(other.displayName);
           this.otherParticipantOnline.set(other.isOnline);
+          this.otherParticipantAvatar.set(other.avatarUrl);
         }
       }
     });

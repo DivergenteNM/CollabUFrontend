@@ -22,8 +22,11 @@
   padding: 20px 16px 12px;
 }
 
-.sidebar__brand-icon {
-  font-size: 28px;
+.sidebar__brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
 }
 
 .sidebar__brand-text {

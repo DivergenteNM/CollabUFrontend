@@ -1,6 +1,15 @@
 <div class="chat-layout" [class.mobile]="uiStore.isMobile()">
   <aside class="chat-layout__sidebar"
     [class.hidden-mobile]="uiStore.isMobile() && hasActiveConversation()">
+    <div class="chat-layout__sidebar-header">
+      <h1 class="chat-layout__sidebar-title">Conversaciones</h1>
+      <button
+        type="button"
+        class="chat-layout__compose-btn"
+        aria-label="Nueva conversación">
+        <mat-icon>edit_square</mat-icon>
+      </button>
+    </div>
     <app-chat-search (searchChange)="searchQuery.set($event)" />
     <app-conversation-list
       [conversations]="filteredConversations()"
@@ -14,3 +23,4 @@
     <router-outlet />
   </section>
 </div>
+

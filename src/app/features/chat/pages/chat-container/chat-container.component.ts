@@ -2,9 +2,12 @@ import {
   Component, ChangeDetectionStrategy, inject, signal, computed,
   OnInit, OnDestroy,
 } from '@angular/core';
-import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
+import { Router, RouterOutlet, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Conversation } from '../../../../core/models';
@@ -17,7 +20,7 @@ import { ConversationListComponent } from '../../components/conversation-list/co
 @Component({
   selector: 'app-chat-container',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, ChatSearchComponent, ConversationListComponent],
+  imports: [RouterOutlet, MatIconModule, MatButtonModule, ChatSearchComponent, ConversationListComponent],
   templateUrl: './chat-container.component.html',
   styleUrl: './chat-container.component.scss',
 })
@@ -67,13 +70,23 @@ export class ChatContainerComponent implements OnInit, OnDestroy {
     });
 
     // Extract active conversation from child route
-    const childRoute = this.route.firstChild;
-    if (childRoute) {
-      const params = childRoute.snapshot.params;
-      if (params['conversationId']) {
-        this.activeConversationId.set(params['conversationId']);
+    const updateActiveFromRoute = () => {
+      const childRoute = this.route.firstChild;
+      if (childRoute) {
+        const params = childRoute.snapshot.params;
+        this.activeConversationId.set(params['conversationId'] ?? '');
+      } else {
+        this.activeConversationId.set('');
       }
-    }
+    };
+
+    updateActiveFromRoute();
+
+    this.realtimeSub?.add(
+      this.router.events
+        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .subscribe(() => updateActiveFromRoute())
+    );
   }
 
   ngOnDestroy(): void {
