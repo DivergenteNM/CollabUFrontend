@@ -6,16 +6,37 @@
       </button>
     }
 
-    <div class="room__header-avatar" [class.online]="otherParticipantOnline()">
-      <mat-icon>person</mat-icon>
+    <div class="room__header-avatar" [class.online]="otherParticipantOnline()" [class.group]="isGroupChat()">
+      <mat-icon>{{ isGroupChat() ? 'groups' : 'person' }}</mat-icon>
     </div>
     <div class="room__header-info">
-      <span class="room__header-name">{{ otherParticipantName() }}</span>
+      <div class="room__header-title-row">
+        <span class="room__header-name">{{ roomTitle() }}</span>
+        @if (isGroupChat()) {
+          <span class="room__header-group-tag">Grupo</span>
+        }
+      </div>
       <span class="room__header-status">
-        {{ otherParticipantOnline() ? 'En línea' : 'Desconectado' }}
+        @if (isGroupChat()) {
+          {{ roomSubtitle() }}
+        } @else {
+          {{ roomSubtitle() }}{{ roomSubtitle() ? ' · ' : '' }}{{ otherParticipantOnline() ? 'En línea' : 'Desconectado' }}
+        }
       </span>
     </div>
   </header>
+
+  @if (connectionStatus() === 'disconnected' || connectionStatus() === 'error') {
+    <div class="room__connection-banner">
+      <mat-icon>wifi_off</mat-icon>
+      Sin conexión — tus mensajes se reintentarán al reconectar.
+    </div>
+  } @else if (connectionStatus() === 'connecting') {
+    <div class="room__connection-banner room__connection-banner--info">
+      <mat-icon>sync</mat-icon>
+      Conectando...
+    </div>
+  }
 
   <div class="room__messages" #messagesContainer>
     @if (messagesResource.isLoading() && allMessages().length === 0) {
@@ -39,7 +60,9 @@
         <app-message-bubble
           [message]="msg"
           [currentUserId]="currentUserId()"
-          [sending]="isSending(msg.id)" />
+          [sending]="isSending(msg.id)"
+          [failed]="isFailed(msg.id)"
+          (retry)="retryMessage(msg.id)" />
       }
     }
 

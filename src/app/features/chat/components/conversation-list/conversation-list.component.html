@@ -1,46 +1,71 @@
-<mat-nav-list>
-  @for (conv of conversations(); track conv.id) {
-    <a mat-list-item
-      [class.active]="conv.id === activeId()"
-      [class.unread]="conv.unreadCount > 0"
-      (click)="select.emit(conv.id)">
-
-      <div class="conv-item">
-        <div class="conv-item__avatar"
-          [class.online]="isOnline(conv)"
-          [class.group]="kind(conv) !== 'direct'">
-          <mat-icon>{{ avatarIcon(conv) }}</mat-icon>
-        </div>
-
-        <div class="conv-item__info">
-          <div class="conv-item__top">
-            <span class="conv-item__name">{{ displayName(conv) }}</span>
-            @if (conv.lastMessage) {
-              <span class="conv-item__time">{{ conv.lastMessage.createdAt | relativeTime }}</span>
-            }
-          </div>
-          <div class="conv-item__bottom">
-            <span class="conv-item__preview">
-              @if (kind(conv) !== 'direct') {
-                <mat-icon class="conv-item__type-icon">{{ avatarIcon(conv) }}</mat-icon>
-              }
-              @if (conv.lastMessage) {
-                {{ conv.lastMessage.content | slice:0:50 }}{{ conv.lastMessage.content.length > 50 ? '...' : '' }}
-              } @else {
-                {{ kind(conv) !== 'direct' ? participantsSummary(conv) : 'Sin mensajes aún' }}
-              }
-            </span>
-            @if (conv.unreadCount > 0) {
-              <span class="conv-item__badge" [matBadge]="conv.unreadCount" matBadgeSize="small" matBadgeColor="primary"></span>
-            }
-          </div>
-        </div>
-      </div>
-    </a>
-  } @empty {
+<div class="conv-list">
+  @if (conversations().length === 0) {
     <div class="conv-empty">
       <mat-icon>forum</mat-icon>
       <p>No hay conversaciones</p>
     </div>
+  } @else {
+    @if (individualConversations().length > 0) {
+      <h3 class="conv-section-label">Conversaciones</h3>
+      @for (conv of individualConversations(); track conv.id) {
+        <ng-container [ngTemplateOutlet]="convItem" [ngTemplateOutletContext]="{ $implicit: conv }" />
+      }
+    }
+
+    @if (groupConversations().length > 0) {
+      <h3 class="conv-section-label conv-section-label--group">
+        <mat-icon>groups</mat-icon> Grupos
+      </h3>
+      @for (conv of groupConversations(); track conv.id) {
+        <ng-container [ngTemplateOutlet]="convItem" [ngTemplateOutletContext]="{ $implicit: conv }" />
+      }
+    }
   }
-</mat-nav-list>
+</div>
+
+<ng-template #convItem let-conv>
+  <a class="conv-link" matRipple
+    [class.active]="conv.id === activeId()"
+    [class.unread]="conv.unreadCount > 0"
+    (click)="select.emit(conv.id)">
+
+    <div class="conv-item">
+      <div class="conv-item__avatar"
+        [class.online]="isOnline(conv)"
+        [class.group]="isGroup(conv)">
+        <mat-icon>{{ avatarIcon(conv) }}</mat-icon>
+      </div>
+
+      <div class="conv-item__info">
+        <div class="conv-item__top">
+          <span class="conv-item__name">{{ title(conv) }}</span>
+          @if (conv.lastMessage) {
+            <span class="conv-item__time">{{ conv.lastMessage.createdAt | relativeTime }}</span>
+          }
+        </div>
+        @if (isGroup(conv) || subtitle(conv)) {
+          <div class="conv-item__subtitle">
+            @if (isGroup(conv)) {
+              <span class="conv-item__group-tag">Grupo</span>
+            }
+            @if (subtitle(conv)) {
+              <span>{{ subtitle(conv) }}</span>
+            }
+          </div>
+        }
+        <div class="conv-item__bottom">
+          <span class="conv-item__preview">
+            @if (conv.lastMessage) {
+              {{ conv.lastMessage.content | slice:0:50 }}{{ conv.lastMessage.content.length > 50 ? '...' : '' }}
+            } @else {
+              Sin mensajes aún
+            }
+          </span>
+          @if (conv.unreadCount > 0) {
+            <span class="conv-item__badge" [matBadge]="conv.unreadCount" matBadgeSize="small" matBadgeColor="primary"></span>
+          }
+        </div>
+      </div>
+    </div>
+  </a>
+</ng-template>

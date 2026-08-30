@@ -131,3 +131,19 @@
   color: var(--mat-sys-on-surface-variant);
   animation: spin 1s linear infinite;
 }
+
+.bubble__retry {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.bubble__failed {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--color-error);
+}

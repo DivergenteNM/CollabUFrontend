@@ -32,7 +32,11 @@
             {{ message().isRead ? 'done_all' : 'done' }}
           </mat-icon>
         }
-        @if (sending()) {
+        @if (failed()) {
+          <button type="button" class="bubble__retry" (click)="retry.emit()" matTooltip="No se pudo enviar — reintentar">
+            <mat-icon class="bubble__failed">error_outline</mat-icon>
+          </button>
+        } @else if (sending()) {
           <mat-icon class="bubble__sending">schedule</mat-icon>
         }
       </div>

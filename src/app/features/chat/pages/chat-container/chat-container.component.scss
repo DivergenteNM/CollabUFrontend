@@ -5,8 +5,12 @@
 
 .chat-layout {
   display: flex;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 96px);
   overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: var(--mat-sys-surface);
 }
 
 .chat-layout__sidebar {
@@ -18,11 +22,36 @@
   background: var(--mat-sys-surface);
 }
 
+.chat-layout__sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px 8px;
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
 .chat-layout__main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background: var(--mat-sys-surface-container-lowest);
+}
+
+.chat-layout.mobile {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .chat-layout.mobile .chat-layout__sidebar {
