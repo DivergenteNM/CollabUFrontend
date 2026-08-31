@@ -44,15 +44,15 @@ mat-card {
 }
 
 .stat-card__icon--primary {
-  background-color: var(--mat-sys-primary);
+  background-color: var(--color-primary-600);
 }
 
 .stat-card__icon--accent {
-  background-color: var(--mat-sys-tertiary);
+  background-color: var(--color-accent-600);
 }
 
 .stat-card__icon--warn {
-  background-color: var(--mat-sys-error);
+  background-color: var(--color-error);
 }
 
 .stat-card__trend {
@@ -62,7 +62,7 @@ mat-card {
   font-size: 13px;
   font-weight: 500;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--border-radius-pill);
 
   mat-icon {
     font-size: 16px;
@@ -72,13 +72,13 @@ mat-card {
 }
 
 .stat-card__trend--positive {
-  color: #2e7d32;
-  background-color: #e8f5e9;
+  color: var(--color-success-text);
+  background-color: var(--color-success-bg);
 }
 
 .stat-card__trend--negative {
-  color: #c62828;
-  background-color: #ffebee;
+  color: var(--color-error-text);
+  background-color: var(--color-error-bg);
 }
 
 .stat-card__trend-label {
@@ -98,4 +98,15 @@ mat-card {
   font-size: 0.875rem;
   color: var(--mat-sys-on-surface-variant);
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-card__hint {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: help;
 }

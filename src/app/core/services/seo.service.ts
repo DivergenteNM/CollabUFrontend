@@ -31,7 +31,7 @@ export class SeoService {
   private readonly defaultTitle = 'Collab-U — Plataforma de Prácticas Profesionales';
   private readonly defaultDescription =
     'Collab-U facilita la gestión de prácticas profesionales, pasantías y proyectos de investigación de la Universidad de Nariño conectando estudiantes y empresas.';
-  private readonly defaultOgImage = '/assets/images/og-default.png';
+  private readonly defaultOgImage = '/Logo_CollabU_Color_texto.png';
 
   /**
    * Sets or updates the page title with branding suffix.

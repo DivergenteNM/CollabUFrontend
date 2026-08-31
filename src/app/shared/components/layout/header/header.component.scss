@@ -28,13 +28,16 @@
 .header__brand {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   text-decoration: none;
   color: var(--mat-sys-on-surface);
 }
 
-.header__brand-icon {
-  font-size: 24px;
+.header__brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
 }
 
 .header__brand-text {

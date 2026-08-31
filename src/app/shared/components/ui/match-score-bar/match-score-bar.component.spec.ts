@@ -50,25 +50,25 @@ describe('MatchScoreBarComponent', () => {
   it('should return green for score >= 90', () => {
     fixture.componentRef.setInput('score', 95);
     fixture.detectChanges();
-    expect(component.barColor()).toBe('#4caf50');
+    expect(component.barColor()).toBe('#388E53');
   });
 
   it('should return blue for score >= 70', () => {
     fixture.componentRef.setInput('score', 75);
     fixture.detectChanges();
-    expect(component.barColor()).toBe('#2196f3');
+    expect(component.barColor()).toBe('#3282B2');
   });
 
   it('should return orange for score >= 50', () => {
     fixture.componentRef.setInput('score', 55);
     fixture.detectChanges();
-    expect(component.barColor()).toBe('#ff9800');
+    expect(component.barColor()).toBe('#C2781B');
   });
 
   it('should return red for score < 50', () => {
     fixture.componentRef.setInput('score', 30);
     fixture.detectChanges();
-    expect(component.barColor()).toBe('#f44336');
+    expect(component.barColor()).toBe('#C93B3B');
   });
 
   it('should display label when provided', () => {

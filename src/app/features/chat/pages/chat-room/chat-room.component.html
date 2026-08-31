@@ -1,71 +1,106 @@
 <div class="room">
   <header class="room__header">
-    @if (uiStore.isMobile()) {
-      <button mat-icon-button aria-label="Volver" (click)="goBack()">
+    <div class="room__header-left">
+      @if (uiStore.isMobile()) {
+      <button type="button" class="room__back-btn" aria-label="Volver" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-    }
+      }
 
-    <div class="room__header-avatar" [class.online]="otherParticipantOnline()">
-      <mat-icon>person</mat-icon>
+      <div class="room__header-avatar">
+        @if (otherParticipantAvatar()) {
+        <img [src]="otherParticipantAvatar()" [alt]="otherParticipantName()" class="room__avatar-img" />
+        } @else {
+        <span class="room__avatar-initials">{{ otherParticipantName() | initials:2 }}</span>
+        }
+        <span class="room__status-dot" [class.online]="otherParticipantOnline()"
+          [class.offline]="!otherParticipantOnline()">
+        </span>
+      </div>
+
+      <div class="room__header-info">
+        <span class="room__header-name">{{ otherParticipantName() }}</span>
+        <span class="room__header-status">
+          {{ otherParticipantOnline() ? 'En línea' : 'Desconectado' }}
+        </span>
+      </div>
     </div>
-    <div class="room__header-info">
-      <span class="room__header-name">{{ otherParticipantName() }}</span>
-      <span class="room__header-status">
-        {{ otherParticipantOnline() ? 'En línea' : 'Desconectado' }}
-      </span>
+
+    <div class="room__header-actions">
+      <button type="button" class="room__action-btn" aria-label="Llamada de voz">
+        <mat-icon>call</mat-icon>
+      </button>
+      <button type="button" class="room__action-btn" aria-label="Videollamada">
+        <mat-icon>videocam</mat-icon>
+      </button>
+      <button type="button" class="room__action-btn" aria-label="Información">
+        <mat-icon>info</mat-icon>
+      </button>
     </div>
   </header>
 
+  @if (connectionStatus() === 'disconnected' || connectionStatus() === 'error') {
+  <div class="room__connection-banner">
+    <mat-icon>wifi_off</mat-icon>
+    Sin conexión — tus mensajes se reintentarán al reconectar.
+  </div>
+  } @else if (connectionStatus() === 'connecting') {
+  <div class="room__connection-banner room__connection-banner--info">
+    <mat-icon>sync</mat-icon>
+    Conectando...
+  </div>
+  }
+
   <div class="room__messages" #messagesContainer>
     @if (messagesResource.isLoading() && allMessages().length === 0) {
-      @for (_ of [1,2,3,4]; track $index) {
-        <app-skeleton width="60%" height="48px" />
-      }
+    @for (_ of [1,2,3,4]; track $index) {
+    <app-skeleton width="50%" height="52px" />
+    }
     } @else {
-      @if (hasMorePages()) {
-        <div class="room__load-more">
-          <button mat-button (click)="loadMore()" [disabled]="loadingMore()">
-            @if (loadingMore()) {
-              <mat-spinner diameter="18" />
-            } @else {
-              Cargar mensajes anteriores
-            }
-          </button>
-        </div>
-      }
+    @if (hasMorePages()) {
+    <div class="room__load-more">
+      <button mat-button (click)="loadMore()" [disabled]="loadingMore()">
+        @if (loadingMore()) {
+        <mat-spinner diameter="18" />
+        } @else {
+        Cargar mensajes anteriores
+        }
+      </button>
+    </div>
+    }
 
-      @for (msg of allMessages(); track msg.id) {
-        <app-message-bubble
-          [message]="msg"
-          [currentUserId]="currentUserId()"
-          [sending]="isSending(msg.id)" />
-      }
+    @if (allMessages().length > 0) {
+    <div class="room__date-divider">
+      <span>{{ getDateLabel(allMessages()[0].createdAt) }}</span>
+    </div>
+    }
+
+    @for (msg of allMessages(); track msg.id) {
+    <app-message-bubble [message]="msg" [currentUserId]="currentUserId()" [sending]="isSending(msg.id)"
+      [failed]="isFailed(msg.id)" (retry)="retryMessage(msg.id)" />
+    }
     }
 
     @if (typingUserName()) {
-      <app-typing-indicator [userName]="typingUserName()!" />
+    <app-typing-indicator [userName]="typingUserName()!" />
     }
   </div>
 
-  <footer class="room__input">
-    <div class="room__input-row">
-      <mat-form-field appearance="outline" class="room__input-field">
-        <mat-label>Mensaje</mat-label>
-        <textarea
-          matInput
-          placeholder="Escribe un mensaje..."
-          [ngModel]="messageText()"
-          (ngModelChange)="onTextChange($event)"
-          (keydown.enter)="onEnter($event)"
-          cdkTextareaAutosize
-          cdkAutosizeMinRows="1"
-          cdkAutosizeMaxRows="4">
-        </textarea>
-      </mat-form-field>
+  <footer class="room__footer">
+    <div class="room__input-bar">
+      <button type="button" class="room__tool-btn" aria-label="Seleccionar emoji">
+        <mat-icon>sentiment_satisfied_alt</mat-icon>
+      </button>
 
-      <button mat-icon-button class="room__send-btn" aria-label="Enviar mensaje"
-        [disabled]="!messageText().trim()"
+      <textarea class="room__input-control" placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje"
+        [ngModel]="messageText()" (ngModelChange)="onTextChange($event)" (keydown.enter)="onEnter($event)" rows="1">
+      </textarea>
+
+      <button type="button" class="room__tool-btn" aria-label="Adjuntar archivo">
+        <mat-icon>attach_file</mat-icon>
+      </button>
+
+      <button type="button" class="room__send-btn" aria-label="Enviar mensaje" [disabled]="!messageText().trim()"
         (click)="sendMessage()">
         <mat-icon>send</mat-icon>
       </button>

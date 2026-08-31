@@ -76,6 +76,19 @@
         </ng-template>
         <div class="tab-content">
           <p class="tab-description">Datos académicos y preferencias de trabajo.</p>
+
+          <!-- Habilidades y documentos se editan en sus propias vistas — sin este
+               acceso directo, un estudiante en esta pantalla no tenía forma de
+               llegar a ellas salvo volviendo primero a "Ver perfil". -->
+          <div class="profile-edit__quick-links">
+            <a mat-stroked-button routerLink="/profile/skills">
+              <mat-icon>psychology</mat-icon> Editar habilidades
+            </a>
+            <a mat-stroked-button routerLink="/profile/documents">
+              <mat-icon>description</mat-icon> Editar documentos
+            </a>
+          </div>
+
           <form [formGroup]="studentForm" (ngSubmit)="saveStudent()">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Biografía</mat-label>

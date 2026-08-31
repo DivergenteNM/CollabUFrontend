@@ -46,12 +46,28 @@
                   <app-match-score-bar [score]="rec.matchResult.languageScore ?? 0" label="Idioma" size="sm" />
                 </div>
 
+                <!-- Desglose de afinidad: qué coincide y qué falta frente al proyecto,
+                     visible desde la tarjeta y no solo en el detalle — el estudiante
+                     debe poder entender el puntaje sin tener que abrir "Ver Match". -->
                 @if (rec.matchResult.skillsBreakdown?.matched?.length) {
-                  <mat-chip-set class="recs__tags">
-                    @for (skill of rec.matchResult.skillsBreakdown!.matched.slice(0, 4); track skill.name) {
-                      <mat-chip>{{ skill.name }}</mat-chip>
-                    }
-                  </mat-chip-set>
+                  <div class="recs__skills-row">
+                    <mat-icon class="recs__skills-icon recs__skills-icon--match">check_circle</mat-icon>
+                    <mat-chip-set class="recs__tags">
+                      @for (skill of rec.matchResult.skillsBreakdown!.matched.slice(0, 4); track skill.name) {
+                        <mat-chip class="recs__chip--match">{{ skill.name }}</mat-chip>
+                      }
+                    </mat-chip-set>
+                  </div>
+                }
+                @if (rec.matchResult.skillsBreakdown?.missing?.length) {
+                  <div class="recs__skills-row">
+                    <mat-icon class="recs__skills-icon recs__skills-icon--missing">cancel</mat-icon>
+                    <mat-chip-set class="recs__tags">
+                      @for (skill of rec.matchResult.skillsBreakdown!.missing.slice(0, 3); track skill.name) {
+                        <mat-chip class="recs__chip--missing">{{ skill.name }}</mat-chip>
+                      }
+                    </mat-chip-set>
+                  </div>
                 }
 
                 <!-- Reason -->

@@ -10,7 +10,8 @@
   flex-direction: column;
   height: 100%;
   width: var(--sidebar-width);
-  background: var(--mat-sys-surface-container);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-subtle);
   overflow-y: auto;
 }
 
@@ -21,14 +22,17 @@
   padding: 20px 16px 12px;
 }
 
-.sidebar__brand-icon {
-  font-size: 28px;
+.sidebar__brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
 }
 
 .sidebar__brand-text {
   font-size: 20px;
   font-weight: 700;
-  color: var(--mat-sys-on-surface);
+  color: var(--text-primary);
 }
 
 .sidebar__nav {
@@ -37,16 +41,24 @@
 }
 
 .sidebar__item {
-  border-radius: 12px;
+  border-radius: var(--border-radius-sm);
   margin-bottom: 2px;
+  color: var(--text-secondary);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: var(--state-hover);
+    color: var(--text-primary);
+  }
 }
 
 .sidebar__item.sidebar__item--active {
-  background: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
+  background: var(--color-primary-100);
+  color: var(--color-primary-800);
+  font-weight: 600;
 
   mat-icon {
-    color: var(--mat-sys-on-primary-container);
+    color: var(--color-primary-800);
   }
 }
 
@@ -56,6 +68,22 @@
 
 .sidebar__divider {
   margin: 8px 16px;
+}
+
+.sidebar__section-label {
+  margin: 12px 16px 4px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-secondary);
+
+  // Primer encabezado de sección pegado justo debajo del Dashboard: sin
+  // margen superior extra para no duplicar el espaciado del ítem anterior.
+  &:first-child {
+    margin-top: 4px;
+  }
 }
 
 .sidebar__badge {

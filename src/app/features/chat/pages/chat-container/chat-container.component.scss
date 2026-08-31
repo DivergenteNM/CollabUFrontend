@@ -5,17 +5,84 @@
 
 .chat-layout {
   display: flex;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 105px);
+  min-height: 520px;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-subtle, #E2E9E3);
+  border-radius: var(--border-radius-lg, 16px);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
   overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: var(--mat-sys-surface);
 }
 
 .chat-layout__sidebar {
-  width: 340px;
+  width: 360px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--mat-sys-outline-variant);
-  background: var(--mat-sys-surface);
+  border-right: 1px solid var(--border-subtle, #E2E9E3);
+  background: var(--bg-card, #FFFFFF);
+}
+
+.chat-layout__sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 8px;
+}
+
+.chat-layout__sidebar-title {
+  font-size: 1.3125rem;
+  font-weight: 700;
+  color: var(--text-primary, #1A241C);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.chat-layout__compose-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-sm, 8px);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #4A584C);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+
+  &:hover {
+    background: var(--bg-hover, #E6EFE8);
+    color: var(--color-primary, #388E53);
+  }
+}
+
+.chat-layout__sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px 8px;
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--mat-sys-on-surface);
+  }
 }
 
 .chat-layout__main {
@@ -23,16 +90,26 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background: var(--bg-card, #FFFFFF);
 }
 
-.chat-layout.mobile .chat-layout__sidebar {
-  width: 100%;
+.chat-layout.mobile {
+  height: calc(100vh - 75px);
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+
+  .chat-layout__sidebar {
+    width: 100%;
+    border-right: none;
+  }
+
+  .chat-layout__main {
+    width: 100%;
+  }
+
+  .hidden-mobile {
+    display: none !important;
+  }
 }
 
-.chat-layout.mobile .chat-layout__main {
-  width: 100%;
-}
-
-.chat-layout.mobile .hidden-mobile {
-  display: none;
-}

@@ -85,40 +85,40 @@ import { StartFinalizationDialogComponent } from './start-finalization-dialog.co
             </div>
           }
 
-          <!-- Estado: finalizing ─ subir acta + nota numérica opcional -->
-          @if (r.status === 'finalizing') {
-            <div class="fin-action">
-              <div class="fin-row">
-                <button mat-stroked-button (click)="fileInput.click()" [disabled]="loading()">
-                  <mat-icon>upload_file</mat-icon>
-                  {{ fileName() || 'Seleccionar acta / documento de nota final' }}
-                </button>
-                <input #fileInput type="file" hidden accept=".pdf" (change)="onFileSelected($event)" />
-              </div>
-              <div class="fin-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Nota numérica (opcional, 0-5)</mat-label>
-                  <input matInput type="number" min="0" max="5" step="0.1" [(ngModel)]="gradeValue" />
-                </mat-form-field>
-                <mat-checkbox [(ngModel)]="notifyByEmail">Enviar correo al estudiante</mat-checkbox>
-              </div>
-              <button mat-flat-button color="primary" [disabled]="!selectedFile() || loading()" (click)="uploadGrade()">
-                <mat-icon>save</mat-icon> Cargar nota y completar
-              </button>
-            </div>
-          }
+              <!-- Estado: finalizing ─ subir acta + nota numérica opcional -->
+              @if (r.status === 'finalizing') {
+                <div class="fin-action">
+                  <div class="fin-row">
+                    <button mat-stroked-button (click)="fileInput.click()" [disabled]="loading()">
+                      <mat-icon>upload_file</mat-icon>
+                      {{ fileName() || 'Seleccionar acta / documento de nota final' }}
+                    </button>
+                    <input #fileInput type="file" hidden accept=".pdf" (change)="onFileSelected($event)" />
+                  </div>
+                  <div class="fin-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Nota numérica (opcional, 0-100)</mat-label>
+                      <input matInput type="number" min="0" max="100" step="0.1" [(ngModel)]="gradeValue" />
+                    </mat-form-field>
+                    <mat-checkbox [(ngModel)]="notifyByEmail">Enviar correo al estudiante</mat-checkbox>
+                  </div>
+                  <button mat-flat-button color="primary" [disabled]="!selectedFile() || loading()" (click)="uploadGrade()">
+                    <mat-icon>save</mat-icon> Cargar nota y completar
+                  </button>
+                </div>
+              }
 
-          @if (r.status === 'completed') {
-            <div class="fin-done">
-              <mat-icon>check_circle</mat-icon>
-              <div>
-                <strong>Proyecto completado el {{ r.actualEndDate }}</strong>
-                @if (r.finalGradeValue) {
-                  <p>Nota final: {{ r.finalGradeValue }}/5</p>
-                }
-              </div>
-            </div>
-          }
+              @if (r.status === 'completed') {
+                <div class="fin-done">
+                  <mat-icon>check_circle</mat-icon>
+                  <div>
+                    <strong>Proyecto completado el {{ r.actualEndDate }}</strong>
+                    @if (r.finalGradeValue) {
+                      <p>Nota final: {{ r.finalGradeValue }}/100</p>
+                    }
+                  </div>
+                </div>
+              }
 
           @if (r.status === 'cancelled') {
             <div class="fin-cancelled">
@@ -265,6 +265,14 @@ export class FinalizationComponent {
   uploadGrade() {
     const file = this.selectedFile();
     if (!file) return;
+
+    if (this.gradeValue !== undefined && this.gradeValue !== null) {
+      if (this.gradeValue < 0 || this.gradeValue > 100) {
+        this.snackBar.open('La nota numérica debe estar entre 0 y 100', 'Cerrar', { duration: 4000 });
+        return;
+      }
+    }
+
     this.loading.set(true);
     this.applicationService.uploadFinalGrade(
       this.applicationId(),

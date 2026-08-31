@@ -50,8 +50,8 @@
     }
 
     .mat-mdc-chip.chip-active {
-      background-color: #e8f5e9;
-      color: #2e7d32;
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
     }
 
     .empty {

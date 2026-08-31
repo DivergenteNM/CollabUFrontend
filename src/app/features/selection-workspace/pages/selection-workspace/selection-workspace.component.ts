@@ -33,7 +33,6 @@ import { CompanyProfileCardComponent } from '../../../../shared/components/selec
 import { CandidateProfileCardComponent } from '../../../../shared/components/selection/candidate-profile-card/candidate-profile-card.component';
 import { InterviewPanelComponent } from '../../../../shared/components/selection/interview-panel/interview-panel.component';
 import { SelectionDocumentsPanelComponent } from '../../../../shared/components/selection/selection-documents-panel/selection-documents-panel.component';
-import { ProjectChatPanelComponent } from '../../../../shared/components/workspace/project-chat-panel/project-chat-panel.component';
 import { AnteproyectoPanelComponent } from '../../../../shared/components/academic/anteproyecto-panel/anteproyecto-panel.component';
 import { RejectAssignmentDialogComponent } from '../../components/reject-assignment-dialog/reject-assignment-dialog.component';
 
@@ -59,7 +58,7 @@ import { ProjectInfoCardComponent } from '../../../../shared/components/project/
     MatSnackBarModule, MatProgressSpinnerModule, MatTooltipModule,
     SkeletonComponent, StatusBadgeComponent,
     CompanyProfileCardComponent, CandidateProfileCardComponent,
-    InterviewPanelComponent, SelectionDocumentsPanelComponent, ProjectChatPanelComponent,
+    InterviewPanelComponent, SelectionDocumentsPanelComponent,
     AnteproyectoPanelComponent, ProjectInfoCardComponent,
   ],
   templateUrl: './selection-workspace.component.html',
@@ -167,11 +166,6 @@ export class SelectionWorkspaceComponent {
   });
   readonly candidateProfile = computed(() => this.candidateResource.value() ?? null);
   readonly candidateName = computed(() => this.participants().find((p) => p.role === 'student')?.fullName ?? null);
-
-  readonly participantUserIds = computed<string[]>(() => {
-    const currentUserId = this.viewer()?.userId;
-    return this.participants().map((p) => p.userId).filter((id): id is string => !!id && id !== currentUserId);
-  });
 
   /** "¿Qué sigue?" — calculado en frontend porque es específico de esta etapa. */
   readonly nextStep = computed<string>(() => {
@@ -416,7 +410,7 @@ export class SelectionWorkspaceComponent {
     if (role === 'student') this.router.navigate(['/my-applications']);
     else if (role === 'company') this.router.navigate(['/received-applications']);
     else if (role === 'faculty') this.router.navigate(['/my-students']);
-    else this.router.navigate(['/admin/supervisor-assignments']);
+    else this.router.navigate(['/admin/supervisors']);
   }
 
   acceptAsesorAssignment(): void {
@@ -444,7 +438,7 @@ export class SelectionWorkspaceComponent {
   }
 
   goToSupervisorAssignment(): void {
-    this.router.navigate(['/admin/supervisor-assignments'], { queryParams: { applicationId: this.applicationId() } });
+    this.router.navigate(['/admin/supervisors'], { queryParams: { applicationId: this.applicationId() } });
   }
 
   startChat(): void {

@@ -102,17 +102,17 @@
 .match-badge {
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--border-radius-pill);
   font-size: 13px;
   font-weight: 600;
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
 
-  &.match-high { background: #e8f5e9; color: #2e7d32; }
-  &.match-mid  { background: #fff8e1; color: #f57f17; }
+  &.match-high { background: var(--color-success-bg); color: var(--color-success-text); }
+  &.match-mid  { background: var(--color-warning-bg); color: var(--color-warning-text); }
 }
 
-.match-na { color: #aaa; }
+.match-na { color: var(--text-disabled); }
 
 .assign-btn {
   font-size: 13px;

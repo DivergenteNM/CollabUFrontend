@@ -20,6 +20,13 @@ export interface MenuItem {
   badgeKind?: 'notifications' | 'chat' | null;
   children?: MenuItem[];
   divider?: boolean;
+  /**
+   * Encabezado de agrupación (sin ícono ni ruta) para separar dominios dentro
+   * de un mismo menú. Introducido a partir de las pruebas con usuarios
+   * finales (rol Administración/Facultad): el menú administrativo, al ser el
+   * más extenso, se percibía como desordenado sin agrupación visible.
+   */
+  sectionLabel?: string;
 }
 
 @Component({
@@ -112,17 +119,24 @@ export class SidebarComponent implements OnInit {
         { icon: 'settings', label: 'Configuración', route: '/settings' },
       ],
       [UserRole.ADMIN]: [
-        { icon: 'analytics', label: 'Panel Analítico', route: '/admin/dashboard' },
-        { icon: 'verified', label: 'Verificaciones', route: '/admin/verifications' },
-        { icon: 'rule', label: 'Categorías de rechazo', route: '/admin/rejection-categories' },
-        { icon: 'description', label: 'Plantillas académicas', route: '/admin/templates' },
-        { icon: 'rule_folder', label: 'Documentos requeridos', route: '/admin/document-requirements' },
+        { icon: 'dashboard', label: 'Dashboard', route: '/admin/dashboard' },
+
+        { sectionLabel: 'Verificación y configuración académica' },
+        { icon: 'verified', label: 'Verificación de empresas', route: '/admin/verifications' },
         { icon: 'psychology', label: 'Catálogo de habilidades', route: '/admin/skills' },
-        { icon: 'supervisor_account', label: 'Supervisores', route: '/admin/supervisors' },
-        { icon: 'assignment_turned_in', label: 'Proceso académico', route: '/admin/academic-process' },
-        { icon: 'date_range', label: 'Periodos', route: '/admin/periods' },
+        { icon: 'rule_folder', label: 'Documentos requeridos', route: '/admin/document-requirements' },
+        { icon: 'description', label: 'Plantillas académicas', route: '/admin/templates' },
+        { icon: 'rule', label: 'Categorías de rechazo', route: '/admin/rejection-categories' },
+
+        { sectionLabel: 'Seguimiento académico' },
+        { icon: 'assignment_turned_in', label: 'Cola de trabajo académico', route: '/admin/academic-process' },
+        { icon: 'supervisor_account', label: 'Asesores y jurados', route: '/admin/supervisors' },
+        { icon: 'date_range', label: 'Periodos académicos', route: '/admin/periods' },
+
+        { sectionLabel: 'Administración institucional' },
         { icon: 'group', label: 'Usuarios', route: '/admin/users' },
         { icon: 'description', label: 'Reportes', route: '/admin/reports' },
+
         { divider: true },
         { icon: 'insights', label: 'Tendencias de Skills', route: '/skills' },
         { icon: 'folder_open', label: 'Proyectos', route: '/projects' },

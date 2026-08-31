@@ -22,9 +22,13 @@ import { AuthStore } from '../../../../state/auth.store';
 import { UiStore } from '../../../../state/ui.store';
 import { ChatRealtimeService } from '../../../../core/services/chat-realtime.service';
 import { ChatService } from '../../services/chat.service';
+import { ProjectService } from '../../../projects/services/project.service';
 import { MessageBubbleComponent } from '../../components/message-bubble/message-bubble.component';
 import { TypingIndicatorComponent } from '../../components/typing-indicator/typing-indicator.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
+import { InitialsPipe } from '../../../../shared/pipes/initials.pipe';
+
+const MESSAGE_SEND_TIMEOUT_MS = 10000;
 
 @Component({
   selector: 'app-chat-room',
@@ -32,7 +36,7 @@ import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/ske
   imports: [
     FormsModule, ScrollingModule,
     MatButtonModule, MatIconModule, MatInputModule, MatFormFieldModule, MatProgressSpinnerModule,
-    MessageBubbleComponent, TypingIndicatorComponent, SkeletonComponent,
+    MessageBubbleComponent, TypingIndicatorComponent, SkeletonComponent, InitialsPipe,
   ],
   templateUrl: './chat-room.component.html',
   styleUrl: './chat-room.component.scss',
@@ -41,6 +45,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly chatRealtime = inject(ChatRealtimeService);
   private readonly chatService = inject(ChatService);
+  private readonly projectService = inject(ProjectService);
   readonly authStore = inject(AuthStore);
   readonly uiStore = inject(UiStore);
 
@@ -53,15 +58,28 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   readonly typingUserName = signal<string | null>(null);
   readonly otherParticipantName = signal('Usuario');
   readonly otherParticipantOnline = signal(false);
+  readonly otherParticipantAvatar = signal<string | undefined>(undefined);
 
   // Optimistic: messages being sent (temporary ids)
   readonly pendingMessageIds = signal<Set<string>>(new Set());
+  /**
+   * Mensajes optimistas que no fueron confirmados por el servidor dentro de
+   * `MESSAGE_SEND_TIMEOUT_MS`. Antes de este ajuste, un mensaje sin
+   * confirmación quedaba mostrando el ícono de "enviando" para siempre, sin
+   * ninguna señal de error (hallazgo H7, pruebas con usuarios finales — rol
+   * Estudiante). No cambia el transporte ni el protocolo del chat: solo hace
+   * visible al estudiante un estado que antes era indistinguible de "colgado".
+   */
+  readonly failedMessageIds = signal<Set<string>>(new Set());
+  private readonly pendingTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
   // Accumulated messages from pages + realtime
   readonly historicalMessages = signal<ChatMessage[]>([]);
   readonly realtimeMessages = signal<ChatMessage[]>([]);
 
   readonly currentUserId = computed(() => this.authStore.user()?.id ?? '');
+  /** Expuesto para que la plantilla muestre un aviso cuando el socket no está conectado. */
+  readonly connectionStatus = this.chatRealtime.connectionStatus;
 
   readonly allMessages = computed(() => [
     ...this.historicalMessages(),
@@ -123,6 +141,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       this.chatRealtime.onMessage().subscribe(msg => {
         if (msg.conversationId === convId) {
           // Remove from pending if it was our optimistic message
+          const confirmedIds: string[] = [];
           this.pendingMessageIds.update(ids => {
             const next = new Set(ids);
             // Match by content for optimistic removal
@@ -130,10 +149,26 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
               const pending = this.realtimeMessages().find(m => m.id === id);
               if (pending && pending.content === msg.content && pending.senderId === msg.senderId) {
                 next.delete(id);
+                confirmedIds.push(id);
               }
             });
             return next;
           });
+          // La confirmación llegó — ya no hace falta el timeout de fallo, y si
+          // había llegado a marcarse como fallido (confirmación tardía), deja
+          // de estarlo.
+          if (confirmedIds.length > 0) {
+            confirmedIds.forEach(id => {
+              const timeout = this.pendingTimeouts.get(id);
+              if (timeout) clearTimeout(timeout);
+              this.pendingTimeouts.delete(id);
+            });
+            this.failedMessageIds.update(ids => {
+              const next = new Set(ids);
+              confirmedIds.forEach(id => next.delete(id));
+              return next;
+            });
+          }
 
           // Replace optimistic or push real message
           this.realtimeMessages.update(msgs => {
@@ -197,6 +232,8 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.chatRealtime.leaveConversation(this.conversationId());
     this.subs.forEach(s => s.unsubscribe());
     if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.pendingTimeouts.forEach(t => clearTimeout(t));
+    this.pendingTimeouts.clear();
   }
 
   onTextChange(text: string): void {
@@ -212,9 +249,30 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   sendMessage(): void {
     const content = this.messageText().trim();
     if (!content) return;
+    this.messageText.set('');
+    this.sendOptimistic(content);
+  }
 
-    // Optimistic update
-    const tempId = `temp-${Date.now()}`;
+  /** Reintenta un mensaje que quedó marcado como fallido, con el mismo contenido. */
+  retryMessage(failedId: string): void {
+    const failedMsg = this.realtimeMessages().find(m => m.id === failedId);
+    if (!failedMsg) return;
+
+    this.realtimeMessages.update(msgs => msgs.filter(m => m.id !== failedId));
+    this.failedMessageIds.update(ids => {
+      const next = new Set(ids);
+      next.delete(failedId);
+      return next;
+    });
+    this.sendOptimistic(failedMsg.content);
+  }
+
+  isFailed(msgId: string): boolean {
+    return this.failedMessageIds().has(msgId);
+  }
+
+  private sendOptimistic(content: string): void {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const optimisticMsg: ChatMessage = {
       id: tempId,
       conversationId: this.conversationId(),
@@ -228,11 +286,19 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
     this.realtimeMessages.update(msgs => [...msgs, optimisticMsg]);
     this.pendingMessageIds.update(ids => new Set([...ids, tempId]));
-    this.messageText.set('');
 
     // Send via WebSocket
     this.chatRealtime.sendMessage(this.conversationId(), content);
     this.chatRealtime.sendTyping(this.conversationId(), false);
+
+    // Si el servidor nunca confirma este mensaje (socket caído, reconectando,
+    // evento perdido), antes quedaba "enviando" para siempre sin ningún aviso.
+    this.pendingTimeouts.set(tempId, setTimeout(() => {
+      this.pendingTimeouts.delete(tempId);
+      if (this.pendingMessageIds().has(tempId)) {
+        this.failedMessageIds.update(ids => new Set([...ids, tempId]));
+      }
+    }, MESSAGE_SEND_TIMEOUT_MS));
 
     this.scrollToBottom();
   }
@@ -259,6 +325,28 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     }, 50);
   }
 
+  getDateLabel(dateStr?: string): string {
+    if (!dateStr) return 'Hoy';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'Hoy';
+      const now = new Date();
+      const isToday = d.getDate() === now.getDate() &&
+                      d.getMonth() === now.getMonth() &&
+                      d.getFullYear() === now.getFullYear();
+      if (isToday) return 'Hoy';
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = d.getDate() === yesterday.getDate() &&
+                          d.getMonth() === yesterday.getMonth() &&
+                          d.getFullYear() === yesterday.getFullYear();
+      if (isYesterday) return 'Ayer';
+      return d.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return 'Hoy';
+    }
+  }
+
   private loadConversationInfo(): void {
     // Extract participant info from the conversations API
     this.chatService.getConversations().subscribe(res => {
@@ -269,6 +357,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         if (other) {
           this.otherParticipantName.set(other.displayName);
           this.otherParticipantOnline.set(other.isOnline);
+          this.otherParticipantAvatar.set(other.avatarUrl);
         }
       }
     });

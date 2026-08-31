@@ -87,6 +87,18 @@
                         <span>{{ app.acceptedAt | date:'d MMMM yyyy' }}</span>
                       </div>
                     }
+                    @if (academicRecord()?.finalGradeValue; as grade) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Calificación final</span>
+                        <span class="detail__score" style="color: var(--color-success-text); font-weight: 700;">{{ grade }}/100</span>
+                      </div>
+                    }
+                    @if (academicRecord()?.finalGradeFileId; as fileId) {
+                      <div class="detail__info-row">
+                        <span class="detail__label">Acta final</span>
+                        <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
+                      </div>
+                    }
                   </mat-card-content>
                 </mat-card>
 
@@ -127,6 +139,15 @@
                   <mat-card-content>
                     <h3>Carta de Motivación</h3>
                     <p class="detail__cover-letter">{{ app.coverLetter || 'Sin carta de motivación' }}</p>
+                    @if (app.resumeUrl) {
+                      <div class="detail__resume-attachment" style="margin-top: 16px; padding: 12px; border: 1px dashed var(--mat-sys-outline, #ccc); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background-color: var(--mat-sys-surface-container-low, #fafafa);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <mat-icon color="primary">description</mat-icon>
+                          <span style="font-weight: 500;">Curriculum Vitae (CV) adjunto</span>
+                        </div>
+                        <app-file-link [fileId]="app.resumeUrl" downloadName="cv.pdf" />
+                      </div>
+                    }
                   </mat-card-content>
                 </mat-card>
               </div>
@@ -258,6 +279,9 @@
                               <span class="detail__deliverable-status"
                                 [class]="'del-status--' + del.status.replace('_', '-')">
                                 {{ deliverableStatusLabel(del.status) }}
+                                @if (reviewerDisplay(del)) {
+                                  por {{ reviewerDisplay(del) }}
+                                }
                               </span>
                               @if (del.grade != null) {
                                 <span class="detail__deliverable-grade">Nota: {{ del.grade }}/5</span>
@@ -268,9 +292,32 @@
                             <p class="detail__deliverable-desc">{{ del.description }}</p>
                           }
                           @if (del.feedback) {
-                            <p class="detail__deliverable-feedback">
-                              <mat-icon>comment</mat-icon> {{ del.feedback }}
-                            </p>
+                            <div class="detail__deliverable-feedback">
+                              <div class="detail__deliverable-feedback-header">
+                                <mat-icon>comment</mat-icon>
+                                <strong>Retroalimentación</strong>
+                                @if (reviewerDisplay(del)) {
+                                  <span class="detail__deliverable-feedback-author">
+                                    (por {{ reviewerDisplay(del) }})
+                                  </span>
+                                }
+                              </div>
+                              <p class="detail__deliverable-feedback-text">{{ del.feedback }}</p>
+                            </div>
+                          }
+                          @if (del.fileUrl) {
+                            <div class="detail__deliverable-file">
+                              <app-file-link [fileId]="del.fileUrl" />
+                            </div>
+                          }
+                          @if (del.attachments && del.attachments.length > 0) {
+                            <div class="detail__deliverable-file">
+                              @for (att of del.attachments; track att.id || att.fileUrl) {
+                                @if (att.fileUrl) {
+                                  <app-file-link [fileId]="att.fileUrl" [downloadName]="att.fileName" />
+                                }
+                              }
+                            </div>
                           }
                           @if (del.status === 'pending' || del.status === 'needs_revision') {
                             <div class="detail__deliverable-upload">

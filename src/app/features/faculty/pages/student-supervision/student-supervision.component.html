@@ -81,6 +81,20 @@
             <span class="detail-label">Estado</span>
             <span class="detail-value"><app-status-badge [status]="d.status" size="sm" /></span>
           </div>
+          @if (academicRecord()?.finalGradeValue; as grade) {
+            <div class="detail-item">
+              <span class="detail-label">Calificación Final</span>
+              <span class="detail-value" style="font-weight: 700; color: var(--mat-sys-primary, #1976d2); font-size: 1.125rem;">
+                {{ grade }}/100
+              </span>
+            </div>
+          }
+          @if (academicRecord()?.finalGradeFileId; as fileId) {
+            <div class="detail-item detail-item--full">
+              <span class="detail-label">Acta y Nota Final</span>
+              <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
+            </div>
+          }
           @if (d.notes) {
             <div class="detail-item detail-item--full">
               <span class="detail-label">Notas</span>
@@ -122,8 +136,23 @@
                     <mat-chip-set>
                       <mat-chip [class]="'status-' + d.status">
                         {{ deliverableStatusLabel(d.status) }}
+                        @if (reviewerDisplay(d)) {
+                          por {{ reviewerDisplay(d) }}
+                        }
                       </mat-chip>
                     </mat-chip-set>
+                    @if (d.feedback) {
+                      <div class="deliverable-feedback" style="margin-top: 8px; padding: 8px 12px; background: rgba(0,0,0,0.04); border-radius: 8px; font-size: 0.8125rem;">
+                        <div style="display: flex; align-items: center; gap: 4px; font-weight: 600; margin-bottom: 2px;">
+                          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">comment</mat-icon>
+                          <span>Retroalimentación</span>
+                          @if (reviewerDisplay(d)) {
+                            <span style="font-size: 0.75rem; font-weight: normal; color: var(--mat-sys-primary);">(por {{ reviewerDisplay(d) }})</span>
+                          }
+                        </div>
+                        <p style="margin: 0; white-space: pre-wrap;">{{ d.feedback }}</p>
+                      </div>
+                    }
                     @if (d.status === 'submitted') {
                       <div class="review-form">
                         <mat-form-field appearance="outline" class="full-width">
@@ -147,9 +176,9 @@
                       </div>
                     }
                     @if (d.fileUrl) {
-                      <a mat-icon-button aria-label="Descargar entregable" [href]="d.fileUrl" target="_blank">
-                        <mat-icon>download</mat-icon>
-                      </a>
+                      <div style="margin: 8px 0;">
+                        <app-file-link [fileId]="d.fileUrl" />
+                      </div>
                     }
                   </div>
                 </mat-card-content>

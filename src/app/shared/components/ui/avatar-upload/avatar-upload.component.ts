@@ -42,6 +42,15 @@ export class AvatarUploadComponent {
 
   readonly uploading = signal<boolean>(false);
   readonly errorMsg = signal<string | null>(null);
+  readonly imgLoadError = signal<boolean>(false);
+
+  onImgError(): void {
+    this.imgLoadError.set(true);
+  }
+
+  onImgLoad(): void {
+    this.imgLoadError.set(false);
+  }
 
   get initials(): string {
     const profile = this.authStore.profile();
@@ -86,6 +95,7 @@ export class AvatarUploadComponent {
   private uploadCroppedAvatar(file: File): void {
     this.uploading.set(true);
     this.errorMsg.set(null);
+    this.imgLoadError.set(false);
 
     this.storageService.upload(file, 'avatar', true).subscribe({
       next: (res: any) => {

@@ -46,17 +46,36 @@ export const AuthStore = signalStore(
     }),
     onboardingRequired: computed(() => {
       const role = store.user()?.role;
-      const requiresOnboarding = role === UserRole.STUDENT || role === UserRole.COMPANY || role === UserRole.FACULTY;
+      const requiresOnboarding =
+        role === UserRole.STUDENT || role === UserRole.COMPANY || role === UserRole.FACULTY;
 
       if (!requiresOnboarding || !store.token() || !store.user() || !store.profileLoaded()) {
         return false;
       }
 
-      if (!store.profile()) {
+      const profile = store.profile();
+      if (!profile) {
         return true;
       }
 
-      return !store.profile()!.isOnboardingComplete;
+      // Si ya está explícitamente marcado como completo
+      if (profile.isOnboardingComplete) {
+        return false;
+      }
+
+      // Si el perfil ya cuenta con datos básicos (nombres o completitud > 0),
+      // el usuario no debe ser forzado al onboarding.
+      const hasBaseData = Boolean(
+        (profile.firstName && profile.firstName.trim().length > 0) ||
+        (profile.lastName && profile.lastName.trim().length > 0) ||
+        (profile.profileCompleteness && profile.profileCompleteness > 0)
+      );
+
+      if (hasBaseData) {
+        return false;
+      }
+
+      return true;
     }),
     displayName: computed(() => {
       const profile = store.profile();
@@ -74,32 +93,13 @@ export const AuthStore = signalStore(
     const router = inject(Router);
     const userProfileService = inject(UserProfileService);
 
-    const enforceOnboardingNavigation = (): void => {
-      const role = store.user()?.role;
-      const requiresOnboardingRole = role === UserRole.STUDENT || role === UserRole.COMPANY || role === UserRole.FACULTY;
-
-      if (!requiresOnboardingRole || !store.profileLoaded()) {
-        return;
-      }
-
-      const needsOnboarding = !store.profile() || !store.profile()!.isOnboardingComplete;
-      const currentUrl = router.url;
-
-      if (needsOnboarding && !currentUrl.startsWith('/onboarding')) {
-        router.navigate(['/onboarding']);
-      }
-
-      if (!needsOnboarding && currentUrl.startsWith('/onboarding')) {
-        router.navigate(['/dashboard']);
-      }
-    };
-
     const loadUserProfile = (): void => {
       if (!store.isAuthenticated()) {
         patchState(store, {
           profile: null,
           profileLoaded: false,
           profileLoading: false,
+          authReady: true,
         });
         return;
       }
@@ -114,7 +114,6 @@ export const AuthStore = signalStore(
             profileLoading: false,
             authReady: true,
           });
-          enforceOnboardingNavigation();
         },
         error: (error: HttpErrorResponse) => {
           patchState(store, {
@@ -123,7 +122,6 @@ export const AuthStore = signalStore(
             profileLoading: false,
             authReady: true,
           });
-          enforceOnboardingNavigation();
 
           // 404 significa que el perfil base aún no existe y debe completarse en onboarding.
           if (error.status !== 404) {
@@ -159,6 +157,7 @@ export const AuthStore = signalStore(
           profileLoaded: false,
           profileLoading: false,
           isLoading: false,
+          authReady: true,
         });
         router.navigate(['/auth/login']);
       },
@@ -172,6 +171,7 @@ export const AuthStore = signalStore(
           profile,
           profileLoaded: true,
           profileLoading: false,
+          authReady: true,
         });
       },
 

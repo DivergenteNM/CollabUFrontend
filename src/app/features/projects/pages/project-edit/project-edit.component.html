@@ -4,9 +4,9 @@
   @if (isLoading()) {
     <mat-progress-bar mode="indeterminate" />
   } @else if (hasError()) {
-    <div style="padding: 24px; background: #fee2e2; border-radius: 8px; margin: 16px 0;">
-      <p style="color: #991b1b; font-weight: 600; margin: 0 0 8px;">No se pudo cargar el proyecto.</p>
-      <p style="color: #991b1b; margin: 0 0 12px; font-size: 0.875rem;">{{ errorMessage() }}</p>
+    <div class="project-edit__error-banner">
+      <p class="project-edit__error-banner-title">No se pudo cargar el proyecto.</p>
+      <p class="project-edit__error-banner-msg">{{ errorMessage() }}</p>
       <button mat-flat-button (click)="projectResource.reload()">Reintentar</button>
       <button mat-button (click)="router.navigate(['/my-projects'])">Volver</button>
     </div>

@@ -78,6 +78,34 @@
 
     .recs__tags { margin-bottom: 4px; }
 
+    .recs__skills-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .recs__skills-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .recs__skills-icon--match { color: var(--color-success); }
+    .recs__skills-icon--missing { color: var(--color-error); }
+
+    .recs__chip--match {
+      --mdc-chip-elevated-container-color: var(--color-success-bg);
+      --mdc-chip-label-text-color: var(--color-success-text);
+    }
+
+    .recs__chip--missing {
+      --mdc-chip-elevated-container-color: var(--color-error-bg);
+      --mdc-chip-label-text-color: var(--color-error-text);
+    }
+
     .recs__score-section { margin-bottom: 12px; }
 
     .recs__breakdown {

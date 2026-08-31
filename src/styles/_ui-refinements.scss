@@ -1,5 +1,5 @@
 // =============================================================================
-// FASE 14 — Refinamiento visual integral
+// FASE 14 — Refinamiento visual integral (Design System v2.0)
 //
 // Consolida reglas globales que cubren los 11 puntos del planning §14:
 //   14.1  Sistema de espaciado consistente
@@ -19,12 +19,12 @@
 // 14.2 Escala tipográfica canónica (usar en lugar de font-size ad-hoc)
 // -----------------------------------------------------------------------------
 
-.u-title-lg  { font-size: var(--font-size-2xl); font-weight: 700; line-height: 1.2; margin: 0; }
-.u-title-md  { font-size: var(--font-size-xl);  font-weight: 700; line-height: 1.25; margin: 0; }
-.u-title-sm  { font-size: var(--font-size-lg);  font-weight: 600; line-height: 1.3;  margin: 0; }
+.u-title-lg  { font-size: var(--font-size-2xl); font-weight: 700; line-height: 1.25; margin: 0; }
+.u-title-md  { font-size: var(--font-size-xl);  font-weight: 600; line-height: 1.3;  margin: 0; }
+.u-title-sm  { font-size: var(--font-size-lg);  font-weight: 600; line-height: 1.35; margin: 0; }
 .u-body      { font-size: var(--font-size-base); font-weight: 400; line-height: 1.5; }
-.u-body-sm   { font-size: var(--font-size-sm);  font-weight: 400; line-height: 1.4; }
-.u-caption   { font-size: var(--font-size-xs);  color: var(--text-secondary); }
+.u-body-sm   { font-size: var(--font-size-sm);  font-weight: 400; line-height: 1.45; }
+.u-caption   { font-size: var(--font-size-xs);  color: var(--text-tertiary); }
 .u-label     {
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -34,18 +34,22 @@
 }
 
 // -----------------------------------------------------------------------------
-// 14.4 Cards y contenedores — normalizamos padding, borde, sombra
+// 14.4 Cards y contenedores — radio 12px, borde perimetral sutil, sombra teñida
 // -----------------------------------------------------------------------------
 
-.mat-mdc-card {
-  border-radius: var(--border-radius-lg) !important;
+.mat-mdc-card,
+.card-base {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--border-radius-md) !important;
   box-shadow: var(--shadow-sm) !important;
-  transition: box-shadow var(--transition-fast);
+  transition: box-shadow var(--transition-normal), border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .mat-mdc-card.interactive:hover,
 .mat-mdc-card[role="button"]:hover,
 a.mat-mdc-card:hover {
+  border-color: var(--color-primary-200) !important;
   box-shadow: var(--shadow-md) !important;
   transform: translateY(-1px);
 }
@@ -54,8 +58,7 @@ a.mat-mdc-card:hover {
 .mat-mdc-card-content { padding: var(--card-padding) !important; }
 
 // -----------------------------------------------------------------------------
-// 14.5 Chips de estado — fuente única, sin duplicar por componente.
-//      Cada card SCSS que aún los redeclare debería migrar a estas clases.
+// 14.5 Chips de estado — fuente única con tokens semánticos
 // -----------------------------------------------------------------------------
 
 .u-chip {
@@ -63,44 +66,90 @@ a.mat-mdc-card:hover {
   align-items: center;
   gap: 4px;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--border-radius-pill);
   font-size: var(--font-size-xs);
   font-weight: 600;
   white-space: nowrap;
   line-height: 1.4;
-  background: #f3f4f6;
-  color: #6b7280;
+  border: 1px solid currentColor;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
 }
 
-.u-chip--info    { background: #dbeafe; color: #1e40af; }
-.u-chip--success { background: #d1fae5; color: #065f46; }
-.u-chip--warning { background: #fef3c7; color: #92400e; }
-.u-chip--danger  { background: #fee2e2; color: #991b1b; }
-.u-chip--neutral { background: #f3f4f6; color: #6b7280; }
+.u-chip--info {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: color-mix(in srgb, var(--color-info-border) 80%, transparent);
+}
+
+.u-chip--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: color-mix(in srgb, var(--color-success-border) 80%, transparent);
+}
+
+.u-chip--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: color-mix(in srgb, var(--color-warning-border) 80%, transparent);
+}
+
+.u-chip--danger {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-color: color-mix(in srgb, var(--color-error-border) 80%, transparent);
+}
+
+.u-chip--neutral {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
 
 // Sinónimos por estado del dominio (aplicables a mat-chip via [class])
 .u-chip.status-pending,
 .u-chip.status-pending_submission,
-.u-chip.status-pending_acceptance { background: #fef3c7; color: #92400e; }
+.u-chip.status-pending_acceptance {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: color-mix(in srgb, var(--color-warning-border) 80%, transparent);
+}
 
 .u-chip.status-under_review,
 .u-chip.status-submitted,
-.u-chip.status-revised { background: #dbeafe; color: #1e40af; }
+.u-chip.status-revised {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: color-mix(in srgb, var(--color-info-border) 80%, transparent);
+}
 
 .u-chip.status-accepted,
 .u-chip.status-approved,
 .u-chip.status-completed,
-.u-chip.status-active { background: #d1fae5; color: #065f46; }
+.u-chip.status-active {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: color-mix(in srgb, var(--color-success-border) 80%, transparent);
+}
 
 .u-chip.status-rejected,
 .u-chip.status-cancelled,
-.u-chip.status-declined { background: #fee2e2; color: #991b1b; }
+.u-chip.status-declined {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-color: color-mix(in srgb, var(--color-error-border) 80%, transparent);
+}
 
 .u-chip.status-needs_revision,
-.u-chip.status-correction_requested { background: #fef9c3; color: #854d0e; }
+.u-chip.status-correction_requested {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: color-mix(in srgb, var(--color-warning-border) 80%, transparent);
+}
 
 // -----------------------------------------------------------------------------
-// 14.6 Formularios — spacing consistente, textarea comfortable, subscript oculto
+// 14.6 Formularios — spacing consistente, textarea comfortable
 // -----------------------------------------------------------------------------
 
 .u-form-row {
@@ -132,8 +181,10 @@ a.mat-mdc-card:hover {
 
 .u-table-wrap {
   overflow-x: auto;
+  background: var(--bg-card);
   border-radius: var(--border-radius-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
 }
 
 .u-table-wrap table.mat-mdc-table {
@@ -142,12 +193,20 @@ a.mat-mdc-card:hover {
 }
 
 table.mat-mdc-table th.mat-mdc-header-cell {
-  font-weight: 700 !important;
-  color: var(--text-primary);
+  font-weight: 600 !important;
+  color: var(--text-secondary);
   background: var(--bg-secondary);
 }
 
 table.mat-mdc-table td.mat-mdc-cell { padding: var(--space-2) var(--space-3); }
+
+tr.mat-mdc-row {
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--state-hover);
+  }
+}
 
 // -----------------------------------------------------------------------------
 // 14.8 Empty states y skeletons — clase canónica
@@ -189,7 +248,6 @@ table.mat-mdc-table td.mat-mdc-cell { padding: var(--space-2) var(--space-3); }
 // 14.9 Responsive helpers
 // -----------------------------------------------------------------------------
 
-// Toda página envuelta en .u-page respeta el max-width y el padding lateral
 .u-page {
   max-width: var(--content-max-width);
   margin: 0 auto;
@@ -205,11 +263,10 @@ table.mat-mdc-table td.mat-mdc-cell { padding: var(--space-2) var(--space-3); }
   .u-hide-desktop { display: none !important; }
 }
 
-// Regla dura: ningún hijo debe forzar scroll horizontal
 body, .u-page { overflow-x: hidden; }
 
 // -----------------------------------------------------------------------------
-// 14.10 Micro-interacciones — hover, focus, transición homogénea
+// 14.10 Micro-interacciones y Botones
 // -----------------------------------------------------------------------------
 
 button,
@@ -223,21 +280,73 @@ a,
     transform var(--transition-fast);
 }
 
+.button-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-raised-button.mat-primary {
+  background-color: var(--color-primary-600) !important;
+  color: var(--text-on-primary) !important;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+
+  &:hover {
+    background-color: var(--color-primary-700) !important;
+  }
+
+  &:active {
+    background-color: var(--color-primary-800) !important;
+  }
+
+  &:disabled {
+    background-color: var(--color-primary-100) !important;
+    color: var(--text-disabled) !important;
+  }
+}
+
+.button-secondary,
+.mat-mdc-outlined-button {
+  background: var(--bg-card);
+  color: var(--color-primary-700);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--border-radius-sm);
+
+  &:hover {
+    background: var(--color-primary-50);
+    border-color: var(--color-primary-300);
+  }
+}
+
+.button-danger {
+  background-color: var(--color-error);
+  color: var(--text-on-primary);
+  border-radius: var(--border-radius-sm);
+
+  &:hover {
+    background-color: var(--color-error-text);
+  }
+}
+
 // -----------------------------------------------------------------------------
-// 14.11 Accesibilidad visual — focus ring, prefers-reduced-motion
+// 14.11 Accesibilidad visual — focus ring universal en accent
 // -----------------------------------------------------------------------------
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 3px;
   border-radius: var(--border-radius-sm);
 }
 
 button:focus-visible,
 a:focus-visible,
 .mat-mdc-list-item:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 3px;
+}
+
+.u-focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--bg-primary),
+    0 0 0 5px color-mix(in srgb, var(--color-accent-500) 65%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -269,3 +378,4 @@ a:focus-visible,
 .u-inline-2 { display: flex; gap: var(--space-2); align-items: center; }
 .u-inline-3 { display: flex; gap: var(--space-3); align-items: center; }
 .u-inline-4 { display: flex; gap: var(--space-4); align-items: center; }
+

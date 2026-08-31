@@ -29,6 +29,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, Application, Interview } from '../../../../core/models';
 import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
+import { FileLinkComponent } from '../../../../shared/components/ui/file-link/file-link.component';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
 import { ChatService } from '../../../chat/services/chat.service';
@@ -53,7 +54,7 @@ import { ProgressBarComponent } from '../../../../shared/components/academic/pro
     MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, StatusBadgeComponent, MatchScoreCardComponent,
     SkillChipListComponent, SkeletonComponent, CreateDeliverableDialogComponent, FileUploadComponent,
-    DocumentsPanelComponent, ProgressBarComponent,
+    FileLinkComponent, DocumentsPanelComponent, ProgressBarComponent,
   ],
   templateUrl: './application-review.component.html',
   styleUrl: './application-review.component.scss',
@@ -124,6 +125,13 @@ export class ApplicationReviewComponent {
     params: () => this.id(),
     stream: ({ params: id }) => this.applicationService.getProgress(id).pipe(catchError(() => of(null))),
   });
+
+  readonly contextResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getContext(id).pipe(catchError(() => of(null))),
+  });
+
+  readonly academicRecord = computed(() => this.contextResource.value()?.academicRecord ?? null);
 
   private notesSeeded = false;
   constructor() {
@@ -274,9 +282,13 @@ export class ApplicationReviewComponent {
   }
 
   reviewDeliverable(applicationId: string, deliverableId: string, status: 'approved' | 'rejected' | 'needs_revision'): void {
+    if (status === 'rejected' && (!this.reviewFeedback || !this.reviewFeedback.trim())) {
+      this.snackBar.open('El comentario es obligatorio para rechazar el entregable', 'Cerrar', { duration: 4000 });
+      return;
+    }
     this.applicationService.reviewDeliverable(applicationId, deliverableId, status, {
       grade: this.reviewGrade(),
-      feedback: this.reviewFeedback,
+      feedback: this.reviewFeedback.trim() || undefined,
     }).subscribe({
       next: () => {
         this.snackBar.open('Entregable revisado', 'OK', { duration: 3000 });
@@ -284,7 +296,10 @@ export class ApplicationReviewComponent {
         this.reviewGrade.set(3);
         this.applicationResource.reload();
       },
-      error: () => this.snackBar.open('Error al revisar entregable', 'Cerrar', { duration: 4000 }),
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Error al revisar entregable';
+        this.snackBar.open(Array.isArray(msg) ? msg.join('; ') : msg, 'Cerrar', { duration: 4000 });
+      },
     });
   }
 
