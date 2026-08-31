@@ -4,21 +4,9 @@
       <mat-icon>menu</mat-icon>
     </button>
     <a routerLink="/dashboard" class="header__brand">
-      <span class="header__brand-icon">🎓</span>
+      <img src="Logo_CollabU_Color_Sin_texto.png" alt="Collab-U" class="header__brand-logo" />
       <span class="header__brand-text">Collab-U</span>
     </a>
-  </div>
-
-  <div class="header__center">
-    <div class="header__search">
-      <mat-icon class="header__search-icon">search</mat-icon>
-      <input
-        type="text"
-        class="header__search-input"
-        placeholder="Buscar proyectos, estudiantes..."
-        aria-label="Buscar"
-      />
-    </div>
   </div>
 
   <div class="header__right">
@@ -64,13 +52,21 @@
       </button>
     </mat-menu>
 
-    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
-      <mat-icon>account_circle</mat-icon>
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario" class="header__user-btn">
+      @if (avatarUrl()) {
+        <img [src]="avatarUrl()" alt="Avatar" class="header__avatar-img" />
+      } @else {
+        <mat-icon>account_circle</mat-icon>
+      }
     </button>
 
     <mat-menu #userMenu="matMenu">
       <div class="header__user-info" (click)="$event.stopPropagation()">
-        <mat-icon class="header__user-avatar">account_circle</mat-icon>
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Avatar" class="header__user-avatar-img" />
+        } @else {
+          <mat-icon class="header__user-avatar">account_circle</mat-icon>
+        }
         <div>
           <div class="header__user-name">{{ displayName() }}</div>
           <div class="header__user-email">{{ authStore.user()?.email }}</div>

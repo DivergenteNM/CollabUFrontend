@@ -1,73 +1,128 @@
 <div class="my-projects">
   <header class="my-projects__header">
-    <h1>Mis Proyectos</h1>
-    <button mat-flat-button (click)="router.navigate(['/my-projects', 'create'])">
-      <mat-icon>add</mat-icon> Crear Proyecto
+    <div class="my-projects__title-block">
+      <h1>Mis Proyectos</h1>
+      <p class="my-projects__subtitle">Gestiona tus publicaciones y su ciclo de aprobación.</p>
+    </div>
+    <button mat-flat-button color="primary" class="my-projects__cta" (click)="router.navigate(['/my-projects', 'create'])">
+      <mat-icon>add</mat-icon> Crear proyecto
     </button>
   </header>
 
   <mat-chip-listbox class="my-projects__filters" (change)="statusFilter.set($event.value || '')">
     <mat-chip-option value="">Todos</mat-chip-option>
     <mat-chip-option value="draft">Borradores</mat-chip-option>
+    <mat-chip-option value="needs_changes">Requieren cambios</mat-chip-option>
+    <mat-chip-option value="pending_approval">En revisión</mat-chip-option>
     <mat-chip-option value="published">Publicados</mat-chip-option>
-    <mat-chip-option value="in_progress">En Progreso</mat-chip-option>
+    <mat-chip-option value="in_progress">En progreso</mat-chip-option>
     <mat-chip-option value="completed">Completados</mat-chip-option>
   </mat-chip-listbox>
 
-  <div class="my-projects__list">
+  <div class="my-projects__grid">
     @if (projectsResource.isLoading()) {
       @for (_ of [1,2,3]; track $index) {
-        <app-skeleton width="100%" height="120px" />
+        <app-skeleton width="100%" height="220px" />
       }
     } @else if (projects().length === 0) {
       <app-empty-state
         icon="create_new_folder"
         title="Sin proyectos"
-        message="Publica tu primer proyecto para empezar a recibir aplicaciones."
-        actionLabel="Crear Proyecto"
+        message="Publica tu primer proyecto para empezar a recibir postulaciones."
+        actionLabel="Crear proyecto"
         (actionClicked)="router.navigate(['/my-projects', 'create'])" />
     } @else {
       @for (project of projects(); track project.id) {
-        <mat-card class="my-projects__item">
-          <mat-card-content>
-            <div class="my-projects__item-main">
-              <div class="my-projects__item-info">
-                <h3 class="my-projects__item-title">{{ project.title }}</h3>
-                <div class="my-projects__item-meta">
-                  <app-status-badge [status]="project.status" size="sm" />
-                  <span>{{ project.positionsFilled }}/{{ project.positionsAvailable }} posiciones</span>
-                  <span>{{ project.applicationsCount }} aplicaciones</span>
-                  @if (project.applicationDeadline) {
-                    <span>Límite: {{ project.applicationDeadline | date:'d MMM yyyy' }}</span>
-                  }
+        <mat-card class="project-card"
+          [class]="'project-card--' + project.status"
+          (click)="router.navigate(['/my-projects', project.id, 'applicants'])"
+          (keydown.enter)="router.navigate(['/my-projects', project.id, 'applicants'])"
+          tabindex="0" role="button">
+          <div class="project-card__banner">
+            <div class="project-card__banner-icon">
+              <mat-icon>{{ project.status === 'completed' ? 'workspace_premium' : project.status === 'in_progress' ? 'engineering' : 'business_center' }}</mat-icon>
+            </div>
+            <app-status-badge [status]="project.status" size="sm" />
+          </div>
+
+          <mat-card-content class="project-card__body">
+            <h3 class="project-card__title">{{ project.title }}</h3>
+            @if (project.description) {
+              <p class="project-card__desc">{{ project.description }}</p>
+            }
+
+            <div class="project-card__stats">
+              <div class="project-card__stat">
+                <mat-icon>group</mat-icon>
+                <div>
+                  <strong>{{ project.applicationsCount ?? 0 }}</strong>
+                  <span>postulaciones</span>
                 </div>
               </div>
-              <div class="my-projects__item-actions">
-                <button mat-icon-button aria-label="Opciones del proyecto" [matMenuTriggerFor]="projectMenu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <mat-menu #projectMenu="matMenu">
-                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id])">
-                    <mat-icon>visibility</mat-icon> Ver Detalle
-                  </button>
-                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'edit'])">
-                    <mat-icon>edit</mat-icon> Editar
-                  </button>
-                  <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'applicants'])">
-                    <mat-icon>people</mat-icon> Ver Aplicantes
-                  </button>
-                  @if (project.status === projectStatusDraft) {
-                    <button mat-menu-item (click)="publishProject(project.id)">
-                      <mat-icon>publish</mat-icon> Publicar
-                    </button>
-                  }
-                  <button mat-menu-item (click)="deleteProject(project)" class="mat-error">
-                    <mat-icon color="warn">delete</mat-icon> <span class="text-error">Eliminar</span>
-                  </button>
-                </mat-menu>
+              <div class="project-card__stat">
+                <mat-icon>event_available</mat-icon>
+                <div>
+                  <strong>{{ project.positionsFilled ?? 0 }}/{{ project.positionsAvailable ?? 0 }}</strong>
+                  <span>posiciones</span>
+                </div>
               </div>
+              @if (project.applicationDeadline) {
+                <div class="project-card__stat">
+                  <mat-icon>schedule</mat-icon>
+                  <div>
+                    <strong>{{ project.applicationDeadline | date:'d MMM' }}</strong>
+                    <span>cierre</span>
+                  </div>
+                </div>
+              }
             </div>
+
+            @if (project.status === projectStatusNeedsChanges && project.facultyReviewNotes) {
+              <div class="project-card__banner-notice project-card__banner-notice--changes">
+                <mat-icon>edit_note</mat-icon>
+                <div>
+                  <strong>La Facultad solicitó cambios</strong>
+                  <p>{{ project.facultyReviewNotes }}</p>
+                </div>
+              </div>
+            }
+            @if (project.status === projectStatusDraft && project.facultyRejectionCategories?.length) {
+              <div class="project-card__banner-notice project-card__banner-notice--rejected">
+                <mat-icon>cancel</mat-icon>
+                <div>
+                  <strong>Rechazado por la Facultad</strong>
+                  <p>{{ project.facultyRejectionCategories?.join(', ') }}</p>
+                  @if (project.facultyReviewNotes) { <p>{{ project.facultyReviewNotes }}</p> }
+                </div>
+              </div>
+            }
           </mat-card-content>
+
+          <mat-card-actions class="project-card__actions" (click)="$event.stopPropagation()">
+            <button mat-button (click)="router.navigate(['/my-projects', project.id, 'applicants'])">
+              <mat-icon>people</mat-icon> Postulantes
+            </button>
+            <button mat-button (click)="router.navigate(['/my-projects', project.id, 'edit'])">
+              <mat-icon>edit</mat-icon> Editar
+            </button>
+            @if (project.status === projectStatusDraft || project.status === projectStatusNeedsChanges) {
+              <button mat-flat-button color="primary" (click)="publishProject(project.id)">
+                <mat-icon>send</mat-icon> Enviar a revisión
+              </button>
+            }
+            <button mat-icon-button [matMenuTriggerFor]="projectMenu" aria-label="Más opciones">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #projectMenu="matMenu">
+              <button mat-menu-item (click)="router.navigate(['/my-projects', project.id, 'applicants'])">
+                <mat-icon>visibility</mat-icon> Ver detalle
+              </button>
+              <button mat-menu-item (click)="deleteProject(project)">
+                <mat-icon color="warn">delete</mat-icon>
+                <span style="color: var(--mat-sys-error)">Eliminar</span>
+              </button>
+            </mat-menu>
+          </mat-card-actions>
         </mat-card>
       }
     }

@@ -3,63 +3,80 @@
     <button mat-icon-button aria-label="Volver" (click)="router.navigate(['/my-projects'])">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <h1>Aplicantes del Proyecto</h1>
+    <div class="applicants__title-block">
+      <h1>Postulantes del proyecto</h1>
+      <p class="applicants__subtitle">Revisa cada postulación y avanza al siguiente estado.</p>
+    </div>
   </header>
 
-  <app-data-table
-    [data]="applicants()"
-    [columns]="columns"
-    [totalItems]="totalItems()"
-    [pageSize]="10"
-    [loading]="applicantsResource.isLoading()"
-    (rowClicked)="onRowClicked($event)"
-    (pageChanged)="onPageChanged($event)"
-    (sortChanged)="onSortChanged($event)" />
-
-  <ng-template #studentTpl let-row>
-    <div class="applicants__student">
-      <span class="applicants__student-name">
-        {{ row.student?.user ? (row.student.user.firstName + ' ' + row.student.user.lastName) : ('Estudiante #' + row.studentId) }}
-      </span>
-    </div>
-  </ng-template>
-
-  <ng-template #scoreTpl let-row>
-    @if (row.matchScore != null) {
-      <span class="applicants__score"
-            [class.high]="row.matchScore >= 80"
-            [class.mid]="row.matchScore >= 50 && row.matchScore < 80"
-            [class.low]="row.matchScore < 50">
-        {{ row.matchScore }}%
-      </span>
-    } @else {
-      <span class="applicants__score">—</span>
-    }
-  </ng-template>
-
-  <ng-template #statusTpl let-row>
-    <app-status-badge [status]="row.status" size="sm" />
-  </ng-template>
-
-  <ng-template #actionsTpl let-row>
-    <button mat-icon-button aria-label="Acciones" [matMenuTriggerFor]="actionsMenu" (click)="$event.stopPropagation()">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #actionsMenu="matMenu">
-      @if (row.status === pendingStatus || row.status === underReviewStatus) {
-        <button mat-menu-item (click)="changeStatus(row.id, acceptedStatus)">
-          <mat-icon>check_circle</mat-icon> Aceptar
-        </button>
-        <button mat-menu-item (click)="changeStatus(row.id, interviewStatus)">
-          <mat-icon>event</mat-icon> Programar Entrevista
-        </button>
-        <button mat-menu-item (click)="changeStatus(row.id, rejectedStatus)">
-          <mat-icon>cancel</mat-icon> Rechazar
-        </button>
+  @if (isLoading()) {
+    <div class="applicants__grid">
+      @for (_ of [1,2,3]; track $index) {
+        <app-skeleton width="100%" height="140px" />
       }
-      <button mat-menu-item (click)="router.navigate(['/received-applications', row.id])">
-        <mat-icon>visibility</mat-icon> Ver Detalle
-      </button>
-    </mat-menu>
-  </ng-template>
+    </div>
+  } @else if (applicants().length === 0) {
+    <app-empty-state
+      icon="inbox"
+      title="Sin postulantes"
+      message="Aún no hay postulaciones a este proyecto." />
+  } @else {
+    <div class="applicants__grid">
+      @for (row of applicants(); track row.id) {
+        <mat-card class="applicant-card" (click)="openDetail(row)"
+          (keydown.enter)="openDetail(row)" tabindex="0" role="button">
+          <mat-card-content>
+            <div class="applicant-card__top">
+              <div class="applicant-card__avatar">
+                <mat-icon>person</mat-icon>
+              </div>
+              <div class="applicant-card__identity">
+                <h3 class="applicant-card__name">{{ studentName(row) }}</h3>
+                <span class="applicant-card__date">
+                  Postuló el {{ row.appliedAt | date:'d MMM yyyy' }}
+                </span>
+              </div>
+              <app-status-badge [status]="row.status" size="sm" />
+            </div>
+
+            @if (row.matchScore != null) {
+              <div class="applicant-card__score" [class]="'applicant-card__score--' + scoreClass(row.matchScore)">
+                <mat-icon>insights</mat-icon>
+                <span>Compatibilidad {{ row.matchScore }}%</span>
+              </div>
+            }
+
+            <div class="applicant-card__actions" (click)="$event.stopPropagation()">
+              @if (row.status === pendingStatus || row.status === underReviewStatus) {
+                <button mat-flat-button color="primary" (click)="changeStatus(row.id, acceptedStatus, $event)">
+                  <mat-icon>check_circle</mat-icon> Aceptar
+                </button>
+                <button mat-stroked-button (click)="changeStatus(row.id, interviewStatus, $event)">
+                  <mat-icon>event</mat-icon> Entrevista
+                </button>
+                <button mat-stroked-button color="warn" (click)="changeStatus(row.id, rejectedStatus, $event)">
+                  <mat-icon>cancel</mat-icon> Rechazar
+                </button>
+              }
+              <button mat-button (click)="openDetail(row)">
+                <mat-icon>visibility</mat-icon> Ver detalle
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    @if (totalItems() > 10) {
+      <div class="applicants__pagination">
+        <button mat-button [disabled]="page() <= 1" (click)="onPagePrev()">
+          <mat-icon>chevron_left</mat-icon> Anterior
+        </button>
+        <span class="applicants__page-info">Página {{ page() }}</span>
+        <button mat-button [disabled]="applicants().length < 10" (click)="onPageNext()">
+          Siguiente <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    }
+  }
 </div>

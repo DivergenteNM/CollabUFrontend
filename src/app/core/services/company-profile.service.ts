@@ -50,6 +50,13 @@ export class CompanyProfileService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<CompanyProfile>(res, 'Perfil de empresa obtenido')));
   }
 
+  /** Perfil público de otra empresa (p. ej. desde el detalle de un proyecto). */
+  getProfileByUserId(userId: string): Observable<ApiResponse<CompanyProfile>> {
+    return this.http
+      .get<ApiResponse<CompanyProfile> | CompanyProfile>(`${this.apiUrl}/profile/${userId}`)
+      .pipe(map((res) => normalizeApiResponse<CompanyProfile>(res, 'Perfil de empresa obtenido')));
+  }
+
   createProfile(data: CreateCompanyProfilePayload): Observable<ApiResponse<CompanyProfile>> {
     const payload = this.sanitizeCompanyPayload(data);
 

@@ -12,7 +12,7 @@
 .auth-background {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 30%, #43a047 60%, #e8f5e9 100%);
+  background: linear-gradient(135deg, var(--color-primary-900) 0%, var(--color-primary-700) 35%, var(--color-primary-500) 70%, var(--color-primary-100) 100%);
   z-index: 0;
 }
 
@@ -29,9 +29,10 @@
 
 .auth-card {
   width: 100%;
-  background: var(--mat-sys-surface);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgb(0 0 0 / 14%);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
   padding: 40px 32px;
 }
 
@@ -41,9 +42,12 @@
 }
 
 .auth-logo__icon {
-  font-size: 48px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
   display: block;
-  margin-bottom: 8px;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.06));
 }
 
 .auth-logo__title {

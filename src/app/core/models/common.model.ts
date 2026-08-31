@@ -12,15 +12,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 export function isApiResponse<T>(value: unknown): value is ApiResponse<T> {
-  if (!isObject(value) || !('data' in value)) {
-    return false;
-  }
-
-  return (
-    'statusCode' in value ||
-    'message' in value ||
-    'timestamp' in value
-  );
+  return isObject(value) && 'data' in value;
 }
 
 export function unwrapApiResponse<T>(value: ApiResponse<T> | T): T {

@@ -1,28 +1,32 @@
 import {
-  Component, ChangeDetectionStrategy, inject, computed,
+  Component, ChangeDetectionStrategy, inject, computed, PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, PaginatedResponse, StudentProfile, Recommendation, Application, normalizeApiResponse } from '../../../../core/models';
+import { ApiResponse, PaginatedResponse, StudentProfile, RecommendationsPage, Application, normalizeApiResponse } from '../../../../core/models';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
-import { ProjectCardComponent } from '../../../../shared/components/cards/project-card/project-card.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreBarComponent } from '../../../../shared/components/ui/match-score-bar/match-score-bar.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 import { RelativeTimePipe } from '../../../../shared/pipes';
 
+import { RouterLink } from '@angular/router';
+import { AuthStore } from '../../../../state/auth.store';
+
 @Component({
   selector: 'app-student-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    RouterLink,
     MatCardModule, MatIconModule, MatButtonModule,
-    StatCardComponent, ProjectCardComponent, StatusBadgeComponent,
+    StatCardComponent, StatusBadgeComponent,
     MatchScoreBarComponent, SkeletonComponent, EmptyStateComponent,
     RelativeTimePipe,
   ],
@@ -31,19 +35,38 @@ import { RelativeTimePipe } from '../../../../shared/pipes';
 })
 export class StudentDashboardComponent {
   readonly router = inject(Router);
+  readonly authStore = inject(AuthStore);
   readonly notificationsStore = inject(NotificationsStore);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  readonly userInitials = computed(() => {
+    const p = this.authStore.profile();
+    if (p?.firstName && p?.lastName) {
+      return `${p.firstName[0]}${p.lastName[0]}`.toUpperCase();
+    }
+    return 'E';
+  });
 
   // --- httpResource data loading ---
+  // Browser-only: the server has no auth token (localStorage doesn't exist during SSR),
+  // so these authenticated requests would 401 on the server and that error would get
+  // baked into the hydration transfer-state, leaving the dashboard stuck showing empty
+  // data after a hard reload until an unrelated client-side navigation refires them.
   readonly profileResource = httpResource<any>(
-    () => ({ url: `${environment.apiUrl}/students/profile` })
+    () => (this.isBrowser ? { url: `${environment.apiUrl}/students/profile` } : undefined)
   );
 
-  readonly recommendationsResource = httpResource<PaginatedResponse<Recommendation>>(
-    () => ({ url: `${environment.apiUrl}/matching/recommendations`, params: { limit: '3' } }),
+  // matching-service no envuelve la respuesta en {data,meta} — devuelve {data,total,page,limit} plano.
+  readonly recommendationsResource = httpResource<RecommendationsPage>(
+    () => (this.isBrowser
+      ? { url: `${environment.apiUrl}/matching/recommendations`, params: { limit: '3' } }
+      : undefined),
   );
 
   readonly applicationsResource = httpResource<PaginatedResponse<Application>>(
-    () => ({ url: `${environment.apiUrl}/applications/my`, params: { limit: '5' } }),
+    () => (this.isBrowser
+      ? { url: `${environment.apiUrl}/applications/my`, params: { limit: '5' } }
+      : undefined),
   );
 
   // --- Computed signals from resources ---
@@ -67,7 +90,7 @@ export class StudentDashboardComponent {
   );
 
   readonly recommendationsCount = computed(() =>
-    this.recommendationsResource.value()?.meta?.total ?? 0
+    this.recommendationsResource.value()?.total ?? 0
   );
 
   readonly applications = computed(() =>

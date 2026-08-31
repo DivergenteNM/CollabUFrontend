@@ -35,6 +35,7 @@ export class HeaderComponent {
   private readonly notificationsStore = inject(NotificationsStore);
   private readonly router = inject(Router);
 
+  readonly avatarUrl = computed(() => this.authStore.profile()?.avatarUrl || null);
   readonly displayName = this.authStore.displayName;
   readonly unreadCount = this.notificationsStore.unreadCount;
   readonly recentNotifications = this.notificationsStore.recentNotifications;

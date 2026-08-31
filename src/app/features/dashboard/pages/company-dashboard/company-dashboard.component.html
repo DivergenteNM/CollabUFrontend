@@ -1,4 +1,23 @@
 <div class="company-dashboard">
+  <div class="dashboard__welcome-banner">
+    <div class="dashboard__user-avatar">
+      @if (authStore.profile()?.avatarUrl) {
+        <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" />
+      } @else {
+        <div class="dashboard__user-avatar-placeholder">
+          <span>{{ userInitials() }}</span>
+        </div>
+      }
+    </div>
+    <div class="dashboard__user-info">
+      <h2>¡Hola, {{ authStore.displayName() }}! 👋</h2>
+      <p>Bienvenido a tu panel de empresa en Collab-U</p>
+    </div>
+    <a mat-stroked-button routerLink="/profile/edit" class="dashboard__edit-profile-btn">
+      <mat-icon>photo_camera</mat-icon> Editar Foto
+    </a>
+  </div>
+
   <section class="dashboard__stats">
     @if (projectsResource.isLoading()) {
       @for (_ of [1,2,3,4]; track $index) {
@@ -23,11 +42,13 @@
         icon="school"
         [value]="activeStudentsCount()"
         label="Estudiantes Activos"
+        hint="Estudiantes actualmente vinculados a alguno de tus proyectos en desarrollo"
         color="primary" />
       <app-stat-card
         icon="star"
         [value]="avgRating()"
         label="Rating Promedio"
+        hint="Promedio de las evaluaciones que los estudiantes te han dado al finalizar sus procesos"
         color="warn" />
       <app-stat-card
         icon="insights"
@@ -97,14 +118,14 @@
             <div class="dashboard__project-list">
               @for (proj of projects(); track proj.id) {
                 <div class="project-summary"
-                     (click)="router.navigate(['/my-projects', proj.id])"
-                     (keydown.enter)="router.navigate(['/my-projects', proj.id])"
+                     (click)="router.navigate(['/my-projects', proj.id, 'applicants'])"
+                     (keydown.enter)="router.navigate(['/my-projects', proj.id, 'applicants'])"
                      tabindex="0"
                      role="button">
                   <div class="project-summary__info">
                     <span class="project-summary__title">{{ proj.title }}</span>
                     <span class="project-summary__meta">
-                      <app-status-badge [status]="proj.status" size="sm" />
+                      <app-status-badge [status]="proj.status" domain="project" size="sm" />
                       <span>{{ proj.positionsFilled }}/{{ proj.positionsAvailable }} posiciones</span>
                     </span>
                   </div>

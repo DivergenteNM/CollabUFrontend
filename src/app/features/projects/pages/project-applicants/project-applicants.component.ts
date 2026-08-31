@@ -1,30 +1,28 @@
-import {
-  Component, ChangeDetectionStrategy, inject, input, signal, computed, TemplateRef, viewChild,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, input, signal, computed } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { httpResource } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-
-import { environment } from '../../../../../environments/environment';
-import { PaginatedResponse, Application, PaginationParams } from '../../../../core/models';
+import { Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../../applications/services/application.service';
-import { DataTableComponent, ColumnDef } from '../../../../shared/components/ui/data-table/data-table.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
+import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
+import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-project-applicants',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    DataTableComponent, StatusBadgeComponent, MatButtonModule,
-    MatIconModule, MatMenuModule, MatSnackBarModule,
+    DatePipe, MatButtonModule, MatIconModule, MatMenuModule, MatCardModule,
+    MatSnackBarModule, StatusBadgeComponent, EmptyStateComponent, SkeletonComponent,
   ],
   templateUrl: './project-applicants.component.html',
   styleUrl: './project-applicants.component.scss',
@@ -43,71 +41,55 @@ export class ProjectApplicantsComponent {
   readonly interviewStatus = ApplicationStatus.INTERVIEW;
 
   readonly page = signal(1);
-  readonly sortBy = signal<string>('');
-  readonly sortDir = signal<'asc' | 'desc'>('desc');
-
-  readonly studentTpl = viewChild<TemplateRef<any>>('studentTpl');
-  readonly scoreTpl = viewChild<TemplateRef<any>>('scoreTpl');
-  readonly statusTpl = viewChild<TemplateRef<any>>('statusTpl');
-  readonly actionsTpl = viewChild<TemplateRef<any>>('actionsTpl');
-
-  get columns(): ColumnDef<Application>[] {
-    return [
-      { key: 'student', header: 'Estudiante', template: this.studentTpl()!, sortable: false },
-      { key: 'matchScore', header: 'Match', template: this.scoreTpl()!, sortable: true, width: '100px' },
-      { key: 'status', header: 'Estado', template: this.statusTpl()!, sortable: true, width: '140px' },
-      { key: 'appliedAt', header: 'Fecha', type: 'date', sortable: true, width: '140px' },
-      { key: 'actions', header: '', template: this.actionsTpl()!, sortable: false, width: '60px' },
-    ];
-  }
 
   readonly applicantsResource = rxResource({
-    params: () => ({
-      projectId: this.id(),
-      page: this.page(),
-      limit: 10,
-      ...(this.sortBy() ? { sortBy: this.sortBy(), sortOrder: this.sortDir().toUpperCase() } : {}),
-    }),
+    params: () => ({ projectId: this.id(), page: this.page(), limit: 10 }),
     stream: ({ params }) => this.applicationService.getReceivedApplications(params as any).pipe(
-      switchMap(res => {
+      switchMap((res: any) => {
         if (!res.data || res.data.length === 0) return of(res);
-        return forkJoin(res.data.map(app => this.applicationService.enrichApplication(app))).pipe(
-          map(enrichedApps => ({ ...res, data: enrichedApps }))
+        const enrich$ = forkJoin(
+          (res.data as Application[]).map((app) => this.applicationService.enrichApplication(app)),
         );
-      })
-    )
+        return enrich$.pipe(map((enrichedApps) => ({ ...res, data: enrichedApps }))) as any;
+      }),
+    ),
   });
 
-  readonly applicants = computed(() =>
-    this.applicantsResource.value()?.data ?? [],
-  );
+  readonly applicants = computed<Application[]>(() => (this.applicantsResource.value() as any)?.data ?? []);
+  readonly totalItems = computed(() => (this.applicantsResource.value() as any)?.meta?.total ?? 0);
+  readonly isLoading = computed(() => this.applicantsResource.isLoading());
 
-  readonly totalItems = computed(() =>
-    this.applicantsResource.value()?.meta?.total ?? 0,
-  );
+  studentName(row: Application): string {
+    const s: any = (row as any).student;
+    return s?.user ? `${s.user.firstName ?? ''} ${s.user.lastName ?? ''}`.trim() : `Estudiante #${row.studentId}`;
+  }
 
-  onRowClicked(row: Application): void {
+  scoreClass(score: number | null | undefined): string {
+    if (score == null) return '';
+    if (score >= 80) return 'high';
+    if (score >= 50) return 'mid';
+    return 'low';
+  }
+
+  openDetail(row: Application): void {
     this.router.navigate(['/received-applications', row.id]);
   }
 
-  onPageChanged(event: PaginationParams): void {
-    this.page.set(event.page ?? 1);
-  }
-
-  onSortChanged(event: { column: string; direction: 'asc' | 'desc' }): void {
-    this.sortBy.set(event.column);
-    this.sortDir.set(event.direction);
-  }
-
-  changeStatus(applicationId: string, status: ApplicationStatus): void {
+  changeStatus(applicationId: string, status: ApplicationStatus, event?: Event): void {
+    event?.stopPropagation();
     this.applicationService.changeStatus(applicationId, status).subscribe({
       next: () => {
         this.snackBar.open('Estado actualizado', 'OK', { duration: 3000 });
         this.applicantsResource.reload();
       },
-      error: () => {
-        this.snackBar.open('Error al actualizar estado', 'Cerrar', { duration: 4000 });
+      error: (err: any) => {
+        const raw = err?.error?.message;
+        const msg = Array.isArray(raw) ? raw.join('; ') : raw ?? 'Error al actualizar estado';
+        this.snackBar.open(msg, 'Cerrar', { duration: 6000 });
       },
     });
   }
+
+  onPagePrev(): void { if (this.page() > 1) this.page.set(this.page() - 1); }
+  onPageNext(): void { if (this.applicants().length >= 10) this.page.set(this.page() + 1); }
 }

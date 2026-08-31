@@ -1,14 +1,20 @@
-<mat-form-field appearance="outline" class="chat-search__field">
-  <mat-label>Buscar conversación</mat-label>
-  <mat-icon matPrefix>search</mat-icon>
+<div class="chat-search__wrapper">
+  <mat-icon class="chat-search__icon">search</mat-icon>
   <input
-    matInput
+    type="text"
+    class="chat-search__input"
     placeholder="Buscar conversación..."
+    aria-label="Buscar conversación"
     [ngModel]="query()"
     (ngModelChange)="onSearch($event)" />
   @if (query()) {
-    <button matSuffix mat-icon-button aria-label="Limpiar búsqueda" (click)="onSearch('')">
+    <button
+      type="button"
+      class="chat-search__clear"
+      aria-label="Limpiar búsqueda"
+      (click)="onSearch('')">
       <mat-icon>close</mat-icon>
     </button>
   }
-</mat-form-field>
+</div>
+

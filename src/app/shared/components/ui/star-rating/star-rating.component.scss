@@ -17,7 +17,7 @@
 }
 
 .star-rating__star--filled {
-  color: #ffc107;
+  color: var(--color-warning, #A86F2A);
 }
 
 .star-rating__star--interactive {

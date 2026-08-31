@@ -1,0 +1,77 @@
+.avatar-crop-dialog {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding-top: 12px !important;
+  }
+
+  &__hint {
+    font-size: 0.875rem;
+    color: var(--mat-sys-on-surface-variant, #666);
+    text-align: center;
+    margin: 0;
+  }
+
+  &__canvas-container {
+    width: 320px;
+    height: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__canvas {
+    width: 320px;
+    height: 320px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 280px;
+    margin-top: 8px;
+
+    mat-icon {
+      color: var(--mat-sys-on-surface-variant, #666);
+    }
+  }
+
+  &__slider {
+    flex: 1;
+    accent-color: var(--color-primary-600);
+    cursor: pointer;
+  }
+
+  &__actions {
+    margin-top: 12px;
+    gap: 8px;
+  }
+}

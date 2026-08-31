@@ -1,75 +1,159 @@
+.evals {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
 
-    :host { display: block; padding: 24px; max-width: 1000px; margin: 0 auto; }
+  &__header {
+    margin-bottom: 24px;
 
-    .evals__header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      h1 { font-size: 1.75rem; font-weight: 700; margin: 0; color: var(--mat-sys-on-surface); }
-    }
-
-    .evals__list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding-top: 16px;
-    }
-
-    .evals__card {
-      cursor: pointer;
-      transition: box-shadow 200ms;
-      &:hover { box-shadow: var(--mat-sys-level2); }
-    }
-
-    .evals__card-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .evals__card-info { flex: 1; min-width: 0; }
-
-    .evals__card-top {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 4px;
-    }
-
-    .evals__date {
-      font-size: 0.75rem;
-      color: var(--mat-sys-on-surface-variant);
-    }
-
-    .evals__project {
-      font-size: 1rem;
-      font-weight: 600;
+    h1 {
       margin: 0 0 4px;
-      color: var(--mat-sys-on-surface);
+      font-size: 1.75rem;
+      font-weight: 700;
     }
+  }
 
-    .evals__evaluator {
-      font-size: 0.8125rem;
-      color: var(--mat-sys-on-surface-variant);
-    }
+  &__subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
 
-    .evals__excerpt {
-      font-size: 0.8125rem;
-      color: var(--mat-sys-on-surface-variant);
-      margin: 6px 0 0;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+  &__tabs {
+    margin-top: 16px;
+  }
 
-    .evals__arrow {
-      flex-shrink: 0;
-      color: var(--mat-sys-on-surface-variant);
-    }
+  &__tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+    border-radius: 10px;
+    background: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
 
-    @media (max-width: 600px) {
-      :host { padding: 16px; }
-      .evals__header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    }
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+}
+
+.eval-card {
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+
+  &--pending {
+    border-left: 4px solid #f57c00;
+  }
+}
+
+.eval-card__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.eval-card__icon {
+  color: var(--text-secondary);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.eval-card__type {
+  flex: 1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.eval-card__chip {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.chip-pending  { background: #fef3c7; color: #92400e; }
+.chip-progress { background: #dbeafe; color: #1e40af; }
+.chip-done     { background: #d1fae5; color: #065f46; }
+.chip-expired  { background: #f3f4f6; color: #6b7280; }
+
+.eval-card__title {
+  margin: 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.eval-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.eval-card__cta {
+  width: 100%;
+}
+
+.eval-card__score {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--mat-sys-surface-container, #f5f5f5);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+
+  mat-icon {
+    color: #f59e0b;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  strong { font-weight: 700; }
+}

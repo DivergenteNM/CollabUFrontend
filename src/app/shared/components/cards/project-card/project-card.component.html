@@ -1,58 +1,116 @@
-<mat-card class="project-card__container">
-  <mat-card-header>
-    <mat-icon mat-card-avatar class="project-card__company-icon">business</mat-icon>
-    <mat-card-title>{{ project().companyName }}</mat-card-title>
-    <mat-card-subtitle>
-      <app-status-badge [status]="project().status" size="sm" />
-    </mat-card-subtitle>
-  </mat-card-header>
+<div class="card-container">
+  <!-- Top row: Status Badge + Status Indicator -->
+  <div class="card-top">
+    <span class="status-badge" [class.status-badge--published]="isPublished()">
+      {{ statusLabel() }}
+    </span>
+    <span class="status-indicator" [class.status-indicator--active]="isPublished()">
+      <span class="status-indicator__dot"></span>
+    </span>
+  </div>
 
-  <mat-card-content class="project-card__content">
-    <h3 class="project-card__title">{{ project().title }}</h3>
+  <!-- Header: Icon + Project Title -->
+  <div class="card-header">
+    <div class="card-icon-box" [class]="theme().bgClass">
+      @if (project().companyLogoUrl) {
+        <img [src]="project().companyLogoUrl" class="card-icon-img" alt="Logo" />
+      } @else {
+        <mat-icon [class]="theme().colorClass">{{ theme().icon }}</mat-icon>
+      }
+    </div>
+    <h3 class="card-title" [title]="project().title">
+      {{ project().title }}
+    </h3>
+  </div>
 
-    <div class="project-card__meta">
-      <span><mat-icon>label</mat-icon> {{ projectTypeLabel() }}</span>
-      @if (project().location) {
-        <span><mat-icon>location_on</mat-icon> {{ project().location }}</span>
-      }
-      @if (project().isRemote) {
-        <span><mat-icon>laptop</mat-icon> Remoto</span>
-      }
-      @if (project().weeklyHours) {
-        <span><mat-icon>schedule</mat-icon> {{ project().weeklyHours }}h/sem</span>
-      }
-      <span><mat-icon>event</mat-icon> Hasta: {{ project().applicationDeadline | date:'d MMM yyyy' }}</span>
+  <!-- Description snippet -->
+  <p class="card-description">
+    {{ project().shortDescription || project().description }}
+  </p>
+
+  <!-- Info & Match Score Row -->
+  <div class="card-info-row">
+    <!-- Left: 4 Metadata lines -->
+    <div class="card-metadata">
+      <div class="meta-item">
+        <mat-icon class="meta-icon">bookmark_border</mat-icon>
+        <span class="meta-text">{{ projectTypeLabel() }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon class="meta-icon">schedule</mat-icon>
+        <span class="meta-text">Hasta: {{ project().applicationDeadline | date:'d MMM yyyy' }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon class="meta-icon">group</mat-icon>
+        <span class="meta-text">{{ project().positionsAvailable }} {{ project().positionsAvailable === 1 ? 'posición' : 'posiciones' }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon class="meta-icon">description</mat-icon>
+        <span class="meta-text">{{ project().applicationsCount || 0 }} {{ (project().applicationsCount || 0) === 1 ? 'aplicación' : 'aplicaciones' }}</span>
+      </div>
     </div>
 
-    <mat-chip-set class="project-card__tags">
-      @for (tag of project().tags.slice(0, 3); track tag) {
-        <mat-chip>{{ tag }}</mat-chip>
-      }
-      @if (project().tags.length > 3) {
-        <mat-chip>+{{ project().tags.length - 3 }}</mat-chip>
-      }
-    </mat-chip-set>
-
-    <div class="project-card__stats">
-      <span>{{ project().positionsAvailable }} posiciones</span>
-      <span>{{ project().applicationsCount }} aplicaciones</span>
+    <!-- Right: Circular Match Donut Gauge -->
+    <div class="card-match-gauge">
+      <div class="donut-chart-container">
+        <svg class="donut-chart" viewBox="0 0 72 72">
+          <!-- Background Track -->
+          <circle
+            class="donut-track"
+            cx="36"
+            cy="36"
+            r="30"
+            fill="none"
+            stroke-width="5.5" />
+          <!-- Progress Stroke -->
+          @if (normalizedMatchScore() !== null) {
+            <circle
+              class="donut-progress"
+              cx="36"
+              cy="36"
+              r="30"
+              fill="none"
+              stroke-width="5.5"
+              [style.strokeDasharray]="circumference"
+              [style.strokeDashoffset]="strokeDashoffset()" />
+          }
+        </svg>
+        <div class="donut-label">
+          @if (normalizedMatchScore() !== null) {
+            <span class="donut-percentage">{{ normalizedMatchScore() }}%</span>
+            <span class="donut-sub">Match</span>
+          } @else {
+            <span class="donut-percentage donut-percentage--empty">—</span>
+            <span class="donut-sub">Match</span>
+          }
+        </div>
+      </div>
     </div>
+  </div>
 
-    @if (matchScore() !== undefined) {
-      <app-match-score-bar [score]="matchScore()!" label="Match" size="sm" />
-    }
-  </mat-card-content>
-
+  <!-- Action Buttons -->
   @if (showActions()) {
-    <mat-card-actions align="end">
-      <button mat-button (click)="viewDetail.emit(project().id)">
-        <mat-icon>visibility</mat-icon> Ver Detalle
+    <div class="card-actions">
+      <button
+        type="button"
+        class="btn-action btn-action--detail"
+        (click)="viewDetail.emit(project().id)"
+        aria-label="Ver detalle del proyecto">
+        <mat-icon class="btn-icon">visibility</mat-icon>
+        <span>Ver Detalle</span>
       </button>
+
       @if (canApply()) {
-        <button mat-flat-button (click)="apply.emit(project().id)">
-          <mat-icon>send</mat-icon> Aplicar
+        <button
+          type="button"
+          class="btn-action btn-action--apply"
+          (click)="apply.emit(project().id)"
+          aria-label="Aplicar a este proyecto">
+          <mat-icon class="btn-icon">send</mat-icon>
+          <span>Aplicar</span>
         </button>
       }
-    </mat-card-actions>
+    </div>
   }
-</mat-card>
+</div>
+

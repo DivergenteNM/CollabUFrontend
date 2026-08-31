@@ -1,0 +1,72 @@
+<div class="avatar-upload" [style.--avatar-size.px]="size()">
+  <div class="avatar-upload__wrapper">
+    <div class="avatar-upload__circle">
+      @if (uploading()) {
+        <div class="avatar-upload__overlay">
+          <mat-spinner diameter="36" color="primary" />
+        </div>
+      }
+
+      @if (currentAvatarUrl() && !imgLoadError()) {
+        <img
+          [src]="currentAvatarUrl()"
+          alt="Foto de perfil"
+          class="avatar-upload__img"
+          (error)="onImgError()"
+          (load)="onImgLoad()"
+        />
+      } @else {
+        <div class="avatar-upload__placeholder">
+          <span>{{ initials }}</span>
+        </div>
+      }
+    </div>
+
+    <label class="avatar-upload__badge" title="Cambiar foto de perfil">
+      <mat-icon>photo_camera</mat-icon>
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        class="avatar-upload__input"
+        (change)="onFileSelected($event)"
+      />
+    </label>
+  </div>
+
+  <div class="avatar-upload__controls">
+    <label class="avatar-upload__btn-select">
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="uploading()"
+        (click)="fileInput.click()"
+      >
+        <mat-icon>upload</mat-icon>
+        {{ currentAvatarUrl() ? 'Cambiar Foto' : 'Subir Foto' }}
+      </button>
+      <input
+        #fileInput
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        class="avatar-upload__input"
+        (change)="onFileSelected($event)"
+      />
+    </label>
+
+    @if (currentAvatarUrl()) {
+      <button
+        mat-button
+        color="warn"
+        type="button"
+        [disabled]="uploading()"
+        (click)="removeAvatar()"
+      >
+        <mat-icon>delete</mat-icon> Eliminar
+      </button>
+    }
+  </div>
+
+  @if (errorMsg()) {
+    <p class="avatar-upload__error">{{ errorMsg() }}</p>
+  }
+</div>

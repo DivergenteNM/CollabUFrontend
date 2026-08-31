@@ -5,6 +5,28 @@
   margin: 0 auto;
 }
 
+.project-create__skill-suggestions {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--mat-sys-surface-container-low);
+  border-radius: 8px;
+
+  h4 {
+    margin: 0 0 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+}
+.project-create__hint {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+.project-create__skill-chip {
+  cursor: pointer;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
 h1 {
   font-size: 1.75rem;
   font-weight: 700;

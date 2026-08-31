@@ -10,7 +10,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { environment } from '../../../../../environments/environment';
-import { PaginatedResponse, Recommendation } from '../../../../core/models';
+import { RecommendationsPage } from '../../../../core/models';
 import { MatchScoreBarComponent } from '../../../../shared/components/ui/match-score-bar/match-score-bar.component';
 import { PaginatorComponent } from '../../../../shared/components/ui/paginator/paginator.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
@@ -36,7 +36,8 @@ export class RecommendationsListComponent {
 
   readonly page = signal(1);
 
-  readonly recommendationsResource = httpResource<PaginatedResponse<Recommendation>>(
+  // matching-service no envuelve la respuesta en {data,meta} — devuelve {data,total,page,limit} plano.
+  readonly recommendationsResource = httpResource<RecommendationsPage>(
     () => ({
       url: `${environment.apiUrl}/matching/recommendations`,
       params: { page: this.page(), limit: 10 },
@@ -48,7 +49,7 @@ export class RecommendationsListComponent {
   );
 
   readonly totalItems = computed(() =>
-    this.recommendationsResource.value()?.meta?.total ?? 0,
+    this.recommendationsResource.value()?.total ?? 0,
   );
 
   onPageChanged(event: { page: number; limit: number }): void {

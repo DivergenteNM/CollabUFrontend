@@ -13,6 +13,12 @@
       font-weight: 500;
     }
   }
+
+  &__avatar-section {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+  }
 }
 
 // ── Tab group ──────────────────────────────────────────
@@ -38,6 +44,15 @@
   margin: 0 0 20px;
   color: var(--mat-sys-on-surface-variant, #5f6368);
   font-size: 0.875rem;
+}
+
+.profile-edit__quick-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+
+  a { display: inline-flex; align-items: center; gap: 6px; }
 }
 
 // ── Shared form utilities ──────────────────────────────

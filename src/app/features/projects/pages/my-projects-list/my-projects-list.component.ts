@@ -8,7 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { environment } from '../../../../../environments/environment';
 import { PaginatedResponse, Project } from '../../../../core/models';
@@ -26,7 +28,7 @@ import { from } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule, MatMenuModule, MatChipsModule, DatePipe,
-    MatDialogModule,
+    MatDialogModule, MatSnackBarModule,
     StatusBadgeComponent, PaginatorComponent, SkeletonComponent, EmptyStateComponent,
   ],
   templateUrl: './my-projects-list.component.html',
@@ -36,12 +38,15 @@ export class MyProjectsListComponent {
   readonly router = inject(Router);
   private readonly projectService = inject(ProjectService);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   readonly statusFilter = signal('');
   readonly page = signal(1);
   readonly projectStatusDraft = ProjectStatus.DRAFT;
+  readonly projectStatusNeedsChanges = ProjectStatus.NEEDS_CHANGES;
+  readonly projectStatusPendingApproval = ProjectStatus.PENDING_APPROVAL;
 
   readonly projectsResource = httpResource<PaginatedResponse<Project>>(
     () => {
@@ -66,8 +71,18 @@ export class MyProjectsListComponent {
   }
 
   publishProject(id: string): void {
-    this.projectService.updateStatus(id, ProjectStatus.PENDING_APPROVAL).subscribe(() => {
-      this.projectsResource.reload();
+    this.projectService.updateStatus(id, ProjectStatus.PENDING_APPROVAL).subscribe({
+      next: () => {
+        this.snackBar.open('Proyecto enviado a revisión', 'OK', { duration: 3000 });
+        this.projectsResource.reload();
+      },
+      error: (err: HttpErrorResponse) => {
+        // Backend rechaza si faltan requirements, transición inválida, etc.
+        // El mensaje del backend es descriptivo — se muestra tal cual.
+        const raw = err?.error?.message;
+        const msg = Array.isArray(raw) ? raw.join('; ') : raw ?? 'No se pudo enviar el proyecto a revisión';
+        this.snackBar.open(msg, 'Cerrar', { duration: 6000 });
+      },
     });
   }
 

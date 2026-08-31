@@ -38,7 +38,7 @@ export class RegisterStudentComponent {
 
   accountForm = this.fb.nonNullable.group(
     {
-      email: ['', [Validators.required, CustomValidators.udenarEmail]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, CustomValidators.strongPassword]],
       confirmPassword: ['', [Validators.required]],
     },

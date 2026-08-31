@@ -1,4 +1,23 @@
 <div class="faculty-dashboard">
+  <div class="dashboard__welcome-banner">
+    <div class="dashboard__user-avatar">
+      @if (authStore.profile()?.avatarUrl) {
+        <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" />
+      } @else {
+        <div class="dashboard__user-avatar-placeholder">
+          <span>{{ userInitials() }}</span>
+        </div>
+      }
+    </div>
+    <div class="dashboard__user-info">
+      <h2>¡Hola, {{ authStore.displayName() }}! 👋</h2>
+      <p>Bienvenido a tu panel docente en Collab-U</p>
+    </div>
+    <a mat-stroked-button routerLink="/profile/edit" class="dashboard__edit-profile-btn">
+      <mat-icon>photo_camera</mat-icon> Editar Foto
+    </a>
+  </div>
+
   <section class="dashboard__stats">
     @if (isLoading()) {
       @for (_ of [1,2,3]; track $index) {
@@ -43,31 +62,26 @@
             title="Sin estudiantes asignados"
             message="Aún no tienes estudiantes bajo tu supervisión." />
         } @else {
-          <div class="students-table">
-            <div class="students-table__header">
-              <span>Estudiante</span>
-              <span>Proyecto</span>
-              <span>Empresa</span>
-              <span>Estado</span>
-            </div>
+          <div class="students-list">
             @for (a of assignments(); track a.id) {
-              <div class="students-table__row"
+              <div class="student-row"
                    (click)="navigateToStudent(a.applicationId)"
                    (keydown.enter)="navigateToStudent(a.applicationId)"
                    tabindex="0"
                    role="button">
-                <div class="students-table__student">
-                  <span class="students-table__name">{{ a.studentName }}</span>
+                <div class="student-row__avatar">
+                  <mat-icon>person</mat-icon>
                 </div>
-                <div class="students-table__project">
-                  <span class="truncate">{{ a.projectTitle }}</span>
+                <div class="student-row__info">
+                  <span class="student-row__name">{{ a.studentName }}</span>
+                  <span class="student-row__meta">
+                    <mat-icon>folder</mat-icon>
+                    <span class="truncate">{{ a.projectTitle }}</span>
+                    <span class="student-row__dot">·</span>
+                    <span class="truncate">{{ a.companyName }}</span>
+                  </span>
                 </div>
-                <div class="students-table__company">
-                  <span class="truncate">{{ a.companyName }}</span>
-                </div>
-                <div class="students-table__status">
-                  <app-status-badge [status]="a.status" size="sm" />
-                </div>
+                <app-status-badge [status]="a.status" domain="assignment" size="sm" />
               </div>
             }
           </div>

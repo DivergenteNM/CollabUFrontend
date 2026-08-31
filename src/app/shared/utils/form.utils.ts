@@ -27,7 +27,6 @@ export function getFormErrorMessage(control: AbstractControl | null, fieldLabel:
   if (errors['min']) return `El valor mínimo es ${errors['min'].min}`;
   if (errors['max']) return `El valor máximo es ${errors['max'].max}`;
   if (errors['pattern']) return `Formato no válido`;
-  if (errors['udenarEmail']) return `Debe ser un correo @udenar.edu.co`;
   if (errors['passwordsMismatch']) return `Las contraseñas no coinciden`;
   if (errors['nit']) return `NIT no válido`;
   if (errors['dateNotAfter']) return `La fecha debe ser posterior`;

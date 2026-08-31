@@ -5,3 +5,4 @@ export * from './project-type.enum';
 export * from './notification-type.enum';
 export * from './deliverable-type.enum';
 export * from './evaluation-type.enum';
+export * from './compensation-type.enum';

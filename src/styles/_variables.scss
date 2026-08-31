@@ -1,45 +1,139 @@
 // =============================================================================
-// Collab-U — CSS Custom Properties (Design Tokens)
+// Collab-U — CSS Custom Properties (Design Tokens v2.0)
 // =============================================================================
 
 :root {
-  // ---- Colores semánticos ----
-  --color-primary:       #2e7d32;
-  --color-primary-light: #66bb6a;
-  --color-primary-dark:  #1b5e20;
-  --color-accent:        #1976d2;
-  --color-accent-light:  #42a5f5;
-  --color-warn:          #d32f2f;
-  --color-success:       #2e7d32;
-  --color-info:          #1976d2;
-  --color-warning:       #ed6c02;
-  --color-error:         #d32f2f;
+  /* =========================================
+     BRAND / PRIMARY — COLLAB-U GREEN (VIBRANTE & PREMIUM)
+     ========================================= */
+  --color-primary:       #388E53;
+  --color-primary-light: #84C49B;
+  --color-primary-dark:  #245C36;
 
-  // ---- Background ----
-  --bg-primary:    #ffffff;
-  --bg-secondary:  #f5f5f5;
-  --bg-tertiary:   #eeeeee;
-  --bg-card:       #ffffff;
+  --color-primary-50:    #EEF7F0;
+  --color-primary-100:   #D7EDE0;
+  --color-primary-200:   #B2DBC1;
+  --color-primary-300:   #84C49B;
+  --color-primary-400:   #5AA874;
+  --color-primary-500:   #388E53;
+  --color-primary-600:   #2E7544;
+  --color-primary-700:   #245C36;
+  --color-primary-800:   #1B4529;
+  --color-primary-900:   #122E1B;
 
-  // ---- Texto ----
-  --text-primary:   rgba(0, 0, 0, 0.87);
-  --text-secondary: rgba(0, 0, 0, 0.60);
-  --text-disabled:  rgba(0, 0, 0, 0.38);
+  /* =========================================
+     ACCENT / SECONDARY — COLLAB-U BLUE
+     ========================================= */
+  --color-accent:        #276A93;
+  --color-accent-light:  #85BFDF;
 
-  // ---- Bordes ----
-  --border-color:      #e0e0e0;
-  --border-radius-sm:  4px;
-  --border-radius-md:  8px;
-  --border-radius-lg:  16px;
-  --border-radius-xl:  24px;
+  --color-accent-50:     #EFF6FB;
+  --color-accent-100:    #D9EBF6;
+  --color-accent-200:    #B4D7ED;
+  --color-accent-300:    #85BFDF;
+  --color-accent-400:    #549FCB;
+  --color-accent-500:    #3282B2;
+  --color-accent-600:    #276A93;
+  --color-accent-700:    #1F5374;
+  --color-accent-800:    #184059;
+  --color-accent-900:    #102B3D;
 
-  // ---- Sombras ----
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  /* =========================================
+     SURFACES
+     ========================================= */
+  --bg-primary:          #F6F8F5;
+  --bg-secondary:        #EEF2EC;
+  --bg-tertiary:         #E3E8E0;
+  --bg-card:             #FCFDFB;
+  --bg-elevated:         #FFFFFF;
 
-  // ---- Espaciado (escala de 4px) ----
+  --bg-hover:            #E6EFE8;
+  --bg-selected:         #DCEDE0;
+
+  --border-color:        #D3DDD4;
+  --border-subtle:       #E2E9E3;
+  --border-strong:       #B0C2B2;
+
+  /* =========================================
+     TEXT
+     ========================================= */
+  --text-primary:        #1A241C;
+  --text-secondary:      #4A584C;
+  --text-tertiary:       #6E7D70;
+  --text-disabled:       #95A397;
+
+  --text-on-primary:     #F8FAF8;
+  --text-on-dark:        #F4F7F4;
+  --text-link:           #276A93;
+
+  /* =========================================
+     SEMANTIC
+     ========================================= */
+  --color-success:        #2E854B;
+  --color-success-bg:     #E6F5EB;
+  --color-success-border: #A7DCB7;
+  --color-success-text:   #18572F;
+
+  --color-info:           #2576A8;
+  --color-info-bg:        #E6F2FA;
+  --color-info-border:    #A4CEE8;
+  --color-info-text:      #154D6F;
+
+  --color-warning:        #C2781B;
+  --color-warning-bg:     #FEF5E7;
+  --color-warning-border: #F5D298;
+  --color-warning-text:   #834D09;
+
+  --color-error:          #C93B3B;
+  --color-error-bg:       #FDF0F0;
+  --color-error-border:   #F4B8B8;
+  --color-error-text:     #8C1E1E;
+
+  --color-warn:           var(--color-warning);
+
+  /* =========================================
+     BORDER RADIUS
+     ========================================= */
+  --border-radius-xs:     6px;
+  --border-radius-sm:     8px;
+  --border-radius-md:     12px;
+  --border-radius-lg:     16px;
+  --border-radius-xl:     20px;
+
+  --border-radius-pill:   999px;
+  --border-radius-circle: 50%;
+
+  /* =========================================
+     SHADOWS (TEÑIDAS)
+     ========================================= */
+  --shadow-color:         24, 48, 30;
+
+  --shadow-sm:
+    0 1px 2px rgba(var(--shadow-color), 0.04),
+    0 2px 6px rgba(var(--shadow-color), 0.04);
+
+  --shadow-md:
+    0 4px 12px rgba(var(--shadow-color), 0.07),
+    0 2px 4px rgba(var(--shadow-color), 0.03);
+
+  --shadow-lg:
+    0 12px 28px rgba(var(--shadow-color), 0.10),
+    0 4px 10px rgba(var(--shadow-color), 0.04);
+
+  --shadow-xl:
+    0 24px 48px rgba(var(--shadow-color), 0.14),
+    0 8px 18px rgba(var(--shadow-color), 0.06);
+
+  /* =========================================
+     STATES
+     ========================================= */
+  --state-hover:          #E6EFE8;
+  --state-selected:       #DCEDE0;
+  --state-pressed:        #CFE4D4;
+
+  /* =========================================
+     ESPACIADO (ESCALA 4px)
+     ========================================= */
   --space-1:  4px;
   --space-2:  8px;
   --space-3:  12px;
@@ -51,21 +145,30 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  // ---- Layout ----
+  /* =========================================
+     LAYOUT & Z-INDEX
+     ========================================= */
   --sidebar-width:      260px;
   --sidebar-collapsed:  72px;
   --header-height:      64px;
   --content-max-width:  1200px;
 
-  // ---- Z-index ----
-  --z-sidebar:  100;
-  --z-header:   200;
-  --z-dropdown: 300;
-  --z-modal:    400;
-  --z-toast:    500;
+  --z-sidebar:    100;
+  --z-header:     200;
+  --z-base:       0;
+  --z-dropdown:   1000;
+  --z-sticky:     1020;
+  --z-fixed:      1030;
+  --z-modal-back: 1040;
+  --z-modal:      1050;
+  --z-popover:    1060;
+  --z-tooltip:    1070;
+  --z-toast:      1080;
 
-  // ---- Tipografía ----
-  --font-family:    'Inter', 'Roboto', sans-serif;
+  /* =========================================
+     TIPOGRAFÍA
+     ========================================= */
+  --font-family:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-size-xs:   0.75rem;   // 12px
   --font-size-sm:   0.875rem;  // 14px
   --font-size-base: 1rem;      // 16px
@@ -74,12 +177,16 @@
   --font-size-2xl:  1.5rem;    // 24px
   --font-size-3xl:  1.875rem;  // 30px
 
-  // ---- Transiciones ----
+  /* =========================================
+     TRANSICIONES
+     ========================================= */
   --transition-fast:   150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow:   400ms ease;
 
-  // ---- Tokens de componentes ----
+  /* =========================================
+     TOKENS DE COMPONENTES
+     ========================================= */
   --page-padding:   var(--space-6);
   --card-padding:   var(--space-4);
   --form-field-gap: var(--space-4);
@@ -89,12 +196,25 @@
 
 // ---- Tema oscuro ----
 .dark-theme {
-  --bg-primary:    #121212;
-  --bg-secondary:  #1e1e1e;
-  --bg-tertiary:   #2c2c2c;
-  --bg-card:       #1e1e1e;
-  --text-primary:   rgba(255, 255, 255, 0.87);
-  --text-secondary: rgba(255, 255, 255, 0.60);
-  --text-disabled:  rgba(255, 255, 255, 0.38);
-  --border-color:   #424242;
+  --bg-primary:    #151916;
+  --bg-secondary:  #1B211D;
+  --bg-tertiary:   #232B25;
+  --bg-card:       #1B211D;
+  --bg-elevated:   #232B25;
+
+  --bg-hover:      #263329;
+  --bg-selected:   #213E28;
+
+  --border-color:  #344337;
+  --border-subtle: #29352C;
+  --border-strong: #4D6151;
+
+  --text-primary:    #F0F5F0;
+  --text-secondary:  #B5C2B6;
+  --text-tertiary:   #8C9C8E;
+  --text-disabled:   #617063;
+
+  --text-on-primary: #F7FAF7;
+  --text-on-dark:    #F7FAF7;
+  --text-link:       #74B5DE;
 }

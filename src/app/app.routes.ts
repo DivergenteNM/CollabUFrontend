@@ -18,23 +18,6 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
-  {
-    path: 'projects',
-    loadComponent: () =>
-      import('./features/projects/pages/project-list/project-list.component').then(
-        (m) => m.ProjectListComponent
-      ),
-    data: { title: 'Proyectos Disponibles' },
-  },
-  {
-    path: 'projects/:id',
-    loadComponent: () =>
-      import('./features/projects/pages/project-detail/project-detail.component').then(
-        (m) => m.ProjectDetailComponent
-      ),
-    data: { title: 'Detalle de Proyecto' },
-  },
-
   // ============================================================
   // RUTAS AUTENTICADAS (cualquier rol) — MainLayout
   // ============================================================
@@ -83,6 +66,42 @@ export const routes: Routes = [
         path: 'chat',
         loadChildren: () =>
           import('./features/chat/chat.routes').then((m) => m.CHAT_ROUTES),
+      },
+
+      // ---- Proyectos disponibles (todos los roles) ----
+      {
+        path: 'projects',
+        loadComponent: () =>
+          import('./features/projects/pages/project-list/project-list.component').then(
+            (m) => m.ProjectListComponent
+          ),
+        data: { title: 'Proyectos Disponibles' },
+      },
+      {
+        path: 'projects/:id',
+        loadComponent: () =>
+          import('./features/projects/pages/project-detail/project-detail.component').then(
+            (m) => m.ProjectDetailComponent
+          ),
+        data: { title: 'Detalle de Proyecto' },
+      },
+
+      // ---- Workspace del proyecto (todos los roles) ----
+      {
+        path: 'workspace',
+        loadChildren: () =>
+          import('./features/workspace/workspace.routes').then(
+            (m) => m.WORKSPACE_ROUTES,
+          ),
+      },
+
+      // ---- Workspace de selección — aplicación/entrevista/asignación de asesor ----
+      {
+        path: 'selection',
+        loadChildren: () =>
+          import('./features/selection-workspace/selection-workspace.routes').then(
+            (m) => m.SELECTION_WORKSPACE_ROUTES,
+          ),
       },
 
       // ---- Rutas de ESTUDIANTE ----

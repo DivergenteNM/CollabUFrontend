@@ -1,5 +1,8 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthStore } from './auth.store';
 import { TokenService } from '../core/services/token.service';
 import { UserRole } from '../core/enums';
@@ -20,7 +23,11 @@ describe('AuthStore', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([{ path: '**', component: class {} }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     });
     store = TestBed.inject(AuthStore);
     tokenService = TestBed.inject(TokenService);
@@ -59,7 +66,11 @@ describe('AuthStore', () => {
     // Re-create the store to trigger onInit
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([{ path: '**', component: class {} }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     });
     const freshStore = TestBed.inject(AuthStore);
 
@@ -80,6 +91,7 @@ describe('AuthStore', () => {
     expect(store.isCompany()).toBe(false);
     expect(store.isFaculty()).toBe(false);
     expect(store.isAdmin()).toBe(false);
+    expect(store.isFacultyAdmin()).toBe(false);
     expect(store.role()).toBe(UserRole.STUDENT);
   });
 
@@ -89,6 +101,19 @@ describe('AuthStore', () => {
 
     expect(store.isStudent()).toBe(false);
     expect(store.isCompany()).toBe(true);
+    expect(store.isFacultyAdmin()).toBe(false);
+  });
+
+  it('should compute role-specific flags for faculty and admin', () => {
+    const facultyUser = { ...mockUser, role: UserRole.FACULTY } as AuthUser;
+    store.setAuth(facultyUser, 'token', 'refresh');
+    expect(store.isFaculty()).toBe(true);
+    expect(store.isFacultyAdmin()).toBe(true);
+
+    const adminUser = { ...mockUser, role: UserRole.ADMIN } as AuthUser;
+    store.setAuth(adminUser, 'token', 'refresh');
+    expect(store.isAdmin()).toBe(true);
+    expect(store.isFacultyAdmin()).toBe(true);
   });
 
   it('should compute displayName falling back to email', () => {
@@ -102,5 +127,61 @@ describe('AuthStore', () => {
     expect(store.isLoading()).toBe(true);
     store.setLoading(false);
     expect(store.isLoading()).toBe(false);
+  });
+
+  describe('onboardingRequired', () => {
+    it('should be false when not authenticated', () => {
+      expect(store.onboardingRequired()).toBe(false);
+    });
+
+    it('should be false for admin users', () => {
+      store.setAuth({ ...mockUser, role: UserRole.ADMIN }, 'token', 'refresh');
+      expect(store.onboardingRequired()).toBe(false);
+    });
+
+    it('should be true when student has no profile and profile is loaded', () => {
+      store.setAuth(mockUser, 'token', 'refresh');
+      store.setProfile(null);
+      expect(store.onboardingRequired()).toBe(true);
+    });
+
+    it('should be true when student has empty profile', () => {
+      store.setAuth(mockUser, 'token', 'refresh');
+      store.setProfile({
+        id: 'p1',
+        userId: '1',
+        firstName: '',
+        lastName: '',
+        profileCompleteness: 0,
+        isOnboardingComplete: false,
+      } as any);
+      expect(store.onboardingRequired()).toBe(true);
+    });
+
+    it('should be false when student has base names (partially or totally complete)', () => {
+      store.setAuth(mockUser, 'token', 'refresh');
+      store.setProfile({
+        id: 'p1',
+        userId: '1',
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        profileCompleteness: 50,
+        isOnboardingComplete: false,
+      } as any);
+      expect(store.onboardingRequired()).toBe(false);
+    });
+
+    it('should be false when student has isOnboardingComplete true', () => {
+      store.setAuth(mockUser, 'token', 'refresh');
+      store.setProfile({
+        id: 'p1',
+        userId: '1',
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        profileCompleteness: 100,
+        isOnboardingComplete: true,
+      } as any);
+      expect(store.onboardingRequired()).toBe(false);
+    });
   });
 });

@@ -117,3 +117,165 @@
   font-size: 0.9375rem;
   color: var(--mat-sys-on-surface);
 }
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.history-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-low, #f5f5f5);
+  font-size: 0.8125rem;
+}
+
+// Anteproyecto status chip variants
+.tab-content {
+  padding-top: 16px;
+
+  .deliverable-card {
+    margin-bottom: 12px;
+  }
+}
+
+mat-chip.status-pending_submission { background: #fef3c7 !important; color: #92400e !important; }
+mat-chip.status-submitted,
+mat-chip.status-revised { background: #dbeafe !important; color: #1e40af !important; }
+mat-chip.status-under_review { background: #e0f2fe !important; color: #0369a1 !important; }
+mat-chip.status-approved { background: #d1fae5 !important; color: #065f46 !important; }
+mat-chip.status-rejected { background: #fee2e2 !important; color: #991b1b !important; }
+mat-chip.status-needs_revision,
+mat-chip.status-correction { background: #fef9c3 !important; color: #854d0e !important; }
+mat-chip.status-expired { background: #f3f4f6 !important; color: #6b7280 !important; }
+
+// Deliverable status chips
+mat-chip.status-pending { background: #f3f4f6 !important; color: #6b7280 !important; }
+mat-chip.status-needs_revision { background: #fef9c3 !important; color: #854d0e !important; }
+
+// Review form spacing
+.review-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
+}
+
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    min-width: 80px;
+  }
+}
+
+.review-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Deliverable card improvements
+.deliverable-card {
+  margin-bottom: 12px;
+}
+
+.deliverable-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.deliverable-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deliverable-desc {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.deliverable-due {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Empty states
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+}
+
+// Eval card
+.eval-card {
+  margin-bottom: 12px;
+}
+
+.eval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.eval-date {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.eval-comment {
+  font-size: 0.875rem;
+  margin: 8px 0 0;
+}
+
+.eval-criteria {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.eval-criteria-item {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-variant, #e8e8e8);
+}

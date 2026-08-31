@@ -2,28 +2,6 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { CustomValidators } from './custom-validators';
 
 describe('CustomValidators', () => {
-  describe('udenarEmail', () => {
-    it('should return null for valid udenar email', () => {
-      const control = new FormControl('juan.perez@udenar.edu.co');
-      expect(CustomValidators.udenarEmail(control)).toBeNull();
-    });
-
-    it('should return error for non-udenar email', () => {
-      const control = new FormControl('juan@gmail.com');
-      expect(CustomValidators.udenarEmail(control)).toEqual({ udenarEmail: true });
-    });
-
-    it('should return null for empty value', () => {
-      const control = new FormControl('');
-      expect(CustomValidators.udenarEmail(control)).toBeNull();
-    });
-
-    it('should return null for null value', () => {
-      const control = new FormControl(null);
-      expect(CustomValidators.udenarEmail(control)).toBeNull();
-    });
-  });
-
   describe('strongPassword', () => {
     it('should return null for strong password', () => {
       const control = new FormControl('MyStr0ng!Pass');

@@ -1,41 +1,44 @@
 @if (message().messageType === 'system') {
   <div class="bubble__system">{{ message().content }}</div>
 } @else {
-  <div class="bubble__wrapper">
-    @if (!isMine()) {
-      <div class="bubble__avatar">
-        <mat-icon>person</mat-icon>
-      </div>
-    }
-
-    <div class="bubble__content">
-      @if (!isMine()) {
+  <div class="bubble__group" [class.bubble__group--mine]="isMine()" [class.bubble__group--other]="!isMine()">
+    <div class="bubble__bubble">
+      @if (!isMine() && message().senderName) {
         <span class="bubble__sender">{{ message().senderName }}</span>
       }
 
-      <div class="bubble__body">
-        @if (message().messageType === 'file') {
-          <a class="bubble__file" [href]="message().fileUrl" target="_blank" rel="noopener">
-            <mat-icon>attach_file</mat-icon>
-            {{ message().fileName ?? 'Archivo adjunto' }}
-          </a>
-        }
-        @if (message().content) {
-          <p class="bubble__text">{{ message().content }}</p>
-        }
-      </div>
+      @if (message().messageType === 'file') {
+        <a class="bubble__file" [href]="message().fileUrl" target="_blank" rel="noopener">
+          <mat-icon>attach_file</mat-icon>
+          <span>{{ message().fileName ?? 'Archivo adjunto' }}</span>
+        </a>
+      }
 
-      <div class="bubble__footer">
-        <span class="bubble__time">{{ message().createdAt | date:'HH:mm' }}</span>
-        @if (isMine()) {
-          <mat-icon class="bubble__status" [class.read]="message().isRead">
+      @if (message().content) {
+        <p class="bubble__text">{{ message().content }}</p>
+      }
+    </div>
+
+    <div class="bubble__meta">
+      <span class="bubble__time">{{ message().createdAt | date:'HH:mm' }}</span>
+      @if (isMine()) {
+        @if (failed()) {
+          <button
+            type="button"
+            class="bubble__retry-btn"
+            matTooltip="No se pudo enviar. Clic para reintentar"
+            (click)="retry.emit()">
+            <mat-icon>error_outline</mat-icon>
+          </button>
+        } @else if (sending()) {
+          <mat-icon class="bubble__status-icon sending">schedule</mat-icon>
+        } @else {
+          <mat-icon class="bubble__status-icon" [class.read]="message().isRead">
             {{ message().isRead ? 'done_all' : 'done' }}
           </mat-icon>
         }
-        @if (sending()) {
-          <mat-icon class="bubble__sending">schedule</mat-icon>
-        }
-      </div>
+      }
     </div>
   </div>
 }
+

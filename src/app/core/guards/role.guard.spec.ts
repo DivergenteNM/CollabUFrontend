@@ -1,10 +1,13 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { firstValueFrom, isObservable } from 'rxjs';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { roleGuard } from './role.guard';
 import { AuthStore } from '../../state/auth.store';
 import { UserRole } from '../enums';
 import { AuthUser } from '../models';
-import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 const mockStudent: AuthUser = {
   id: '1',
@@ -28,52 +31,86 @@ describe('roleGuard', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([{ path: '**', component: class {} }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     });
     authStore = TestBed.inject(AuthStore);
   });
 
-  it('should allow access for matching role (STUDENT)', () => {
+  it('should allow access for matching role (STUDENT)', async () => {
     authStore.setAuth(mockStudent, 'token', 'refresh');
+    authStore.setProfile({
+      id: 'p1',
+      userId: '1',
+      firstName: 'Juan',
+      lastName: 'Pérez',
+      isOnboardingComplete: true,
+    } as any);
+
     const guard = roleGuard(UserRole.STUDENT);
 
-    const result = TestBed.runInInjectionContext(() =>
+    const guardResult = TestBed.runInInjectionContext(() =>
       guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
     );
 
+    const result = isObservable(guardResult) ? await firstValueFrom(guardResult) : guardResult;
     expect(result).toBe(true);
   });
 
-  it('should allow access when role is in the allowed list', () => {
+  it('should allow access when role is in the allowed list', async () => {
     authStore.setAuth(mockAdmin, 'token', 'refresh');
+    authStore.setProfile({
+      id: 'p2',
+      userId: '2',
+      firstName: 'Admin',
+      lastName: 'UDENAR',
+      isOnboardingComplete: true,
+    } as any);
+
     const guard = roleGuard(UserRole.ADMIN, UserRole.FACULTY);
 
-    const result = TestBed.runInInjectionContext(() =>
+    const guardResult = TestBed.runInInjectionContext(() =>
       guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
     );
 
+    const result = isObservable(guardResult) ? await firstValueFrom(guardResult) : guardResult;
     expect(result).toBe(true);
   });
 
-  it('should deny access for non-matching role', () => {
+  it('should deny access and redirect to dashboard for non-matching role', async () => {
     authStore.setAuth(mockStudent, 'token', 'refresh');
+    authStore.setProfile({
+      id: 'p1',
+      userId: '1',
+      firstName: 'Juan',
+      lastName: 'Pérez',
+      isOnboardingComplete: true,
+    } as any);
+
     const guard = roleGuard(UserRole.ADMIN);
 
-    const result = TestBed.runInInjectionContext(() =>
+    const guardResult = TestBed.runInInjectionContext(() =>
       guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
     );
 
-    expect(result).not.toBe(true);
-    expect(result.toString()).toContain('dashboard');
+    const result = isObservable(guardResult) ? await firstValueFrom(guardResult) : guardResult;
+    expect(result instanceof UrlTree).toBe(true);
+    expect((result as UrlTree).toString()).toBe('/dashboard');
   });
 
-  it('should deny access when no user is set', () => {
+  it('should deny access when no user is set', async () => {
+    authStore.clearAuth();
     const guard = roleGuard(UserRole.STUDENT);
 
-    const result = TestBed.runInInjectionContext(() =>
+    const guardResult = TestBed.runInInjectionContext(() =>
       guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
     );
 
-    expect(result).not.toBe(true);
+    const result = isObservable(guardResult) ? await firstValueFrom(guardResult) : guardResult;
+    expect(result instanceof UrlTree).toBe(true);
+    expect((result as UrlTree).toString()).toBe('/dashboard');
   });
 });

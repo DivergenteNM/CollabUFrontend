@@ -25,9 +25,9 @@ export class MatchScoreBarComponent {
 
   readonly barColor = computed(() => {
     const s = this.clampedScore();
-    if (s >= 90) return '#4caf50';
-    if (s >= 70) return '#2196f3';
-    if (s >= 50) return '#ff9800';
-    return '#f44336';
+    if (s >= 90) return '#388E53';
+    if (s >= 70) return '#3282B2';
+    if (s >= 50) return '#C2781B';
+    return '#C93B3B';
   });
 }

@@ -20,12 +20,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ApiResponse, CompanyProfile, UserProfile } from '../../../../core/models';
+import { ApiResponse, CompanyProfile, UserProfile, AcademicProgram } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
 import { UserProfileService } from '../../../../core/services/user-profile.service';
 import { FacultyService } from '../../../faculty/services/faculty.service';
+import { AdminService } from '../../../admin/services/admin.service';
+
+import { AvatarUploadComponent } from '../../../../shared/components/ui/avatar-upload/avatar-upload.component';
 
 @Component({
   selector: 'app-profile-edit',
@@ -35,6 +38,7 @@ import { FacultyService } from '../../../faculty/services/faculty.service';
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatSnackBarModule, MatTabsModule,
+    AvatarUploadComponent,
   ],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.scss',
@@ -46,11 +50,18 @@ export class ProfileEditComponent implements OnInit {
   private readonly companyProfileService = inject(CompanyProfileService);
   private readonly userProfileService = inject(UserProfileService);
   private readonly facultyService = inject(FacultyService);
+  private readonly adminService = inject(AdminService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   readonly saving = signal(false);
   readonly userProfileExists = signal(false);
   readonly roleProfileExists = signal(false);
+
+  readonly programs = signal<AcademicProgram[]>([]);
+  /** programId real seleccionado — fuente de verdad al guardar, igual que en onboarding-flow. */
+  readonly selectedProgramId = signal<string | null>(null);
+  /** Texto de programa legacy que no matchea ningún programa del catálogo real. */
+  readonly unrecognizedLegacyProgram = signal<string | null>(null);
 
   readonly semesters = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -147,10 +158,19 @@ export class ProfileEditComponent implements OnInit {
     });
 
     if (this.authStore.isStudent()) {
+      this.adminService.getPrograms(true).subscribe({
+        next: (programs) => {
+          this.programs.set(programs);
+          this.resolveLegacyProgramIfNeeded();
+        },
+        error: () => {},
+      });
+
       this.studentService.getProfile().subscribe({
         next: (resp) => {
           this.roleProfileExists.set(true);
           const s = resp.data;
+          this.selectedProgramId.set(s.programId ?? null);
           this.studentForm.patchValue({
             studentCode: s.studentCode ?? '',
             bio: s.bio ?? '',
@@ -172,6 +192,7 @@ export class ProfileEditComponent implements OnInit {
             portfolioUrl: s.portfolioUrl ?? '',
             personalWebsiteUrl: s.personalWebsiteUrl ?? '',
           });
+          this.resolveLegacyProgramIfNeeded();
 
           // Load nested entities
           this.studentService.getLanguages().subscribe(res => this.languages.set(res.data));
@@ -231,6 +252,32 @@ export class ProfileEditComponent implements OnInit {
     }
   }
 
+  /**
+   * Resuelve programId por nombre normalizado cuando el perfil no trae uno (dato legacy) — mismo
+   * criterio que el backend (`student.service.ts:resolveProgramId`). Requiere que tanto el catálogo
+   * como el perfil ya hayan cargado; se llama desde ambos callbacks, es seguro llamarla dos veces.
+   */
+  private resolveLegacyProgramIfNeeded(): void {
+    if (this.selectedProgramId() || this.programs().length === 0) return;
+    const programText = this.studentForm.controls['program'].value as string;
+    if (!programText) return;
+
+    const norm = programText.toLowerCase().trim();
+    const match = this.programs().find((p) => p.name.toLowerCase().trim() === norm);
+    if (match) {
+      this.selectedProgramId.set(match.id);
+    } else {
+      this.unrecognizedLegacyProgram.set(programText);
+    }
+  }
+
+  /** Se dispara al cambiar el programa en el select — fija el programId real. */
+  onProgramChange(programName: string): void {
+    const programId = this.programs().find((p) => p.name === programName)?.id ?? null;
+    this.selectedProgramId.set(programId);
+    this.unrecognizedLegacyProgram.set(null);
+  }
+
   saveBaseProfile(): void {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -263,7 +310,7 @@ export class ProfileEditComponent implements OnInit {
 
     this.upsertUserProfile().pipe(
       switchMap(() => {
-        const payload = this.studentForm.getRawValue();
+        const payload = { ...this.studentForm.getRawValue(), programId: this.selectedProgramId() ?? undefined };
         return this.roleProfileExists()
           ? this.studentService.updateProfile(payload)
           : this.studentService.createProfile(payload).pipe(

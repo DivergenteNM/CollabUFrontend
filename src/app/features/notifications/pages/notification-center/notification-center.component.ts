@@ -7,9 +7,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { Notification } from '../../../../core/models';
 import { NotificationType } from '../../../../core/enums';
+import {
+  notificationConfig, toneColor,
+  NotificationCategory,
+} from '../../../../core/notifications/notification-registry';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { NotificationService } from '../../services/notification.service';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
@@ -17,14 +22,18 @@ import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
 
 interface GroupedNotifications {
   label: string;
+  key: string;
   items: Notification[];
 }
+
+type GroupMode = 'day' | 'project';
 
 @Component({
   selector: 'app-notification-center',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatButtonModule, MatIconModule, MatDividerModule, MatProgressSpinnerModule,
+    MatButtonToggleModule,
     EmptyStateComponent, RelativeTimePipe,
   ],
   templateUrl: './notification-center.component.html',
@@ -38,6 +47,7 @@ export class NotificationCenterComponent implements OnInit {
   readonly page = signal(1);
   readonly loadingMore = signal(false);
   readonly totalFromHttp = signal(0);
+  readonly groupMode = signal<GroupMode>('day');
 
   readonly notifications = computed(() => this.notificationsStore.notifications());
 
@@ -45,7 +55,11 @@ export class NotificationCenterComponent implements OnInit {
     this.notifications().length < this.totalFromHttp(),
   );
 
-  readonly groupedNotifications = computed<GroupedNotifications[]>(() => {
+  readonly groupedNotifications = computed<GroupedNotifications[]>(() =>
+    this.groupMode() === 'day' ? this.groupByDay() : this.groupByProject(),
+  );
+
+  private groupByDay(): GroupedNotifications[] {
     const notifs = this.notifications();
     const groups = new Map<string, Notification[]>();
 
@@ -58,23 +72,39 @@ export class NotificationCenterComponent implements OnInit {
       const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       let label: string;
 
-      if (dayStart.getTime() === today.getTime()) {
-        label = 'Hoy';
-      } else if (dayStart.getTime() === yesterday.getTime()) {
-        label = 'Ayer';
-      } else {
-        label = dayStart.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
-      }
+      if (dayStart.getTime() === today.getTime()) label = 'Hoy';
+      else if (dayStart.getTime() === yesterday.getTime()) label = 'Ayer';
+      else label = dayStart.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
 
       if (!groups.has(label)) groups.set(label, []);
       groups.get(label)!.push(n);
     }
 
-    return Array.from(groups.entries()).map(([label, items]) => ({ label, items }));
-  });
+    return Array.from(groups.entries()).map(([label, items]) => ({ label, key: label, items }));
+  }
+
+  /**
+   * Agrupa por proyecto usando `metadata.projectTitle` (fallback: projectId).
+   * Las que no referencian proyecto caen a un grupo "General".
+   */
+  private groupByProject(): GroupedNotifications[] {
+    const notifs = this.notifications();
+    const groups = new Map<string, { label: string; items: Notification[] }>();
+
+    for (const n of notifs) {
+      const projectId = n.metadata?.['projectId'] ?? n.metadata?.['project_id'] ?? null;
+      const projectTitle = n.metadata?.['projectTitle'] ?? n.metadata?.['project_title'] ?? null;
+      const key = projectId ?? '__general__';
+      const label = projectTitle ?? (projectId ? `Proyecto ${String(projectId).slice(0, 8)}` : 'General');
+
+      if (!groups.has(key)) groups.set(key, { label, items: [] });
+      groups.get(key)!.items.push(n);
+    }
+
+    return Array.from(groups.entries()).map(([key, { label, items }]) => ({ key, label, items }));
+  }
 
   ngOnInit(): void {
-    // Load initial batch from HTTP into the store
     this.notificationService.getAll({ page: 1, limit: 30 }).subscribe(res => {
       this.notificationsStore.setNotifications(res.data ?? [], res.meta?.total ?? 0);
       this.totalFromHttp.set(res.meta?.total ?? 0);
@@ -83,7 +113,6 @@ export class NotificationCenterComponent implements OnInit {
 
   async onNotificationClick(notif: Notification): Promise<void> {
     if (!notif.isRead) {
-      // Optimistic update
       this.notificationsStore.markAsRead(notif.id);
       try {
         await firstValueFrom(this.notificationService.markAsRead(notif.id));
@@ -92,9 +121,10 @@ export class NotificationCenterComponent implements OnInit {
       }
     }
 
-    if (notif.actionUrl) {
-      this.router.navigateByUrl(notif.actionUrl);
-    }
+    // El registry tiene prioridad sobre actionUrl del backend cuando pueda
+    // construir un deep link con anclas y tabs; si no, cae al actionUrl.
+    const url = notificationConfig(notif.type).buildActionUrl(notif.metadata) ?? notif.actionUrl;
+    if (url) this.router.navigateByUrl(url);
   }
 
   async markAllAsRead(): Promise<void> {
@@ -102,7 +132,7 @@ export class NotificationCenterComponent implements OnInit {
     try {
       await firstValueFrom(this.notificationService.markAllAsRead());
     } catch {
-      // Could revert, but for UX just leave as read
+      // No revertir: UX mejor si queda leído localmente aunque falle el server
     }
   }
 
@@ -128,16 +158,14 @@ export class NotificationCenterComponent implements OnInit {
   }
 
   getNotificationIcon(type: NotificationType): string {
-    const icons: Record<string, string> = {
-      [NotificationType.APPLICATION_RECEIVED]: 'description',
-      [NotificationType.APPLICATION_STATUS_CHANGED]: 'update',
-      [NotificationType.PROJECT_RECOMMENDATION]: 'recommend',
-      [NotificationType.EVALUATION_RECEIVED]: 'star',
-      [NotificationType.CHAT_MESSAGE]: 'chat',
-      [NotificationType.COMPANY_VERIFIED]: 'verified',
-      [NotificationType.SUPERVISOR_ASSIGNED]: 'person_add',
-      [NotificationType.SYSTEM]: 'info',
-    };
-    return icons[type] || 'notifications';
+    return notificationConfig(type).icon;
+  }
+
+  getNotificationColor(type: NotificationType): { bg: string; color: string } {
+    return toneColor(notificationConfig(type).tone);
+  }
+
+  getNotificationCategory(type: NotificationType): NotificationCategory {
+    return notificationConfig(type).category;
   }
 }

@@ -1,11 +1,12 @@
 import {
-  Component, ChangeDetectionStrategy, inject, input, computed, signal, PLATFORM_ID
+  Component, ChangeDetectionStrategy, inject, input, computed, signal, effect, PLATFORM_ID
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, catchError } from 'rxjs/operators';
+import { statusLabel as registryLabel } from '../../../../core/status/status-registry';
 import { httpResource } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
@@ -26,7 +27,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DatePipe, DecimalPipe } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, Application, MatchBreakdown } from '../../../../core/models';
+import { ApiResponse, Application, Interview } from '../../../../core/models';
+import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
+import { FileLinkComponent } from '../../../../shared/components/ui/file-link/file-link.component';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
 import { ChatService } from '../../../chat/services/chat.service';
@@ -37,6 +40,8 @@ import { SkillChipListComponent } from '../../../../shared/components/ui/skill-c
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 import { CreateDeliverableDialogComponent } from '../../components/create-deliverable-dialog/create-deliverable-dialog.component';
+import { DocumentsPanelComponent } from '../../../../shared/components/academic/documents-panel/documents-panel.component';
+import { ProgressBarComponent } from '../../../../shared/components/academic/progress-bar/progress-bar.component';
 
 @Component({
   selector: 'app-application-review',
@@ -48,7 +53,8 @@ import { CreateDeliverableDialogComponent } from '../../components/create-delive
     MatInputModule, MatSelectModule, MatDatepickerModule, MatSliderModule, DatePipe, DecimalPipe,
     MatProgressSpinnerModule,
     ApplicationProgressStepperComponent, StatusBadgeComponent, MatchScoreCardComponent,
-    SkillChipListComponent, SkeletonComponent,
+    SkillChipListComponent, SkeletonComponent, CreateDeliverableDialogComponent, FileUploadComponent,
+    FileLinkComponent, DocumentsPanelComponent, ProgressBarComponent,
   ],
   templateUrl: './application-review.component.html',
   styleUrl: './application-review.component.scss',
@@ -73,6 +79,14 @@ export class ApplicationReviewComponent {
   readonly showRejectForm = signal(false);
   readonly reviewGrade = signal(3);
   readonly loadingChat = signal(false);
+  readonly savingNotes = signal(false);
+  readonly notesText = signal('');
+  readonly resolvingInterviewId = signal<string | null>(null);
+  readonly resolutionChoice = signal<'passed' | 'failed'>('passed');
+  resolutionComment = '';
+  readonly briefFormInterviewId = signal<string | null>(null);
+  technicalTaskDescription = '';
+  technicalTaskDueDate = '';
   reviewFeedback = '';
 
   readonly interviewForm = this.fb.nonNullable.group({
@@ -106,6 +120,29 @@ export class ApplicationReviewComponent {
   readonly application = computed(() =>
     this.applicationResource.value() as Application | undefined,
   );
+
+  readonly progressResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getProgress(id).pipe(catchError(() => of(null))),
+  });
+
+  readonly contextResource = rxResource({
+    params: () => this.id(),
+    stream: ({ params: id }) => this.applicationService.getContext(id).pipe(catchError(() => of(null))),
+  });
+
+  readonly academicRecord = computed(() => this.contextResource.value()?.academicRecord ?? null);
+
+  private notesSeeded = false;
+  constructor() {
+    effect(() => {
+      const app = this.application();
+      if (app && !this.notesSeeded) {
+        this.notesText.set(app.notes ?? '');
+        this.notesSeeded = true;
+      }
+    });
+  }
 
   readonly studentSkillNames = computed(() =>
     this.application()?.student?.skills?.map((s: any) => s.name) ?? [],
@@ -220,14 +257,17 @@ export class ApplicationReviewComponent {
     const interviewData: any = {
       scheduledAt: date.toISOString(),
       durationMinutes: Number(data.durationMinutes),
-      interviewType: data.modality === 'virtual' ? 'video' : 'in_person',
+      interviewType:
+        data.modality === 'virtual' ? 'video' :
+        data.modality === 'phone' ? 'phone' :
+        data.modality === 'technical' ? 'technical' : 'in_person',
     };
 
     if (data.modality === 'virtual' && data.meetingUrl) {
       let url = data.meetingUrl;
       if (!url.startsWith('http')) url = 'https://' + url;
       interviewData.meetingLink = url;
-    } else if (data.modality === 'presencial' && data.meetingUrl) {
+    } else if ((data.modality === 'presencial' || data.modality === 'technical') && data.meetingUrl) {
       interviewData.location = data.meetingUrl;
     }
 
@@ -242,9 +282,13 @@ export class ApplicationReviewComponent {
   }
 
   reviewDeliverable(applicationId: string, deliverableId: string, status: 'approved' | 'rejected' | 'needs_revision'): void {
+    if (status === 'rejected' && (!this.reviewFeedback || !this.reviewFeedback.trim())) {
+      this.snackBar.open('El comentario es obligatorio para rechazar el entregable', 'Cerrar', { duration: 4000 });
+      return;
+    }
     this.applicationService.reviewDeliverable(applicationId, deliverableId, status, {
       grade: this.reviewGrade(),
-      feedback: this.reviewFeedback,
+      feedback: this.reviewFeedback.trim() || undefined,
     }).subscribe({
       next: () => {
         this.snackBar.open('Entregable revisado', 'OK', { duration: 3000 });
@@ -252,20 +296,75 @@ export class ApplicationReviewComponent {
         this.reviewGrade.set(3);
         this.applicationResource.reload();
       },
-      error: () => this.snackBar.open('Error al revisar entregable', 'Cerrar', { duration: 4000 }),
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Error al revisar entregable';
+        this.snackBar.open(Array.isArray(msg) ? msg.join('; ') : msg, 'Cerrar', { duration: 4000 });
+      },
     });
   }
 
   deliverableStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      pending: 'Pendiente',
-      submitted: 'Entregado',
-      approved: 'Aprobado',
-      rejected: 'Rechazado',
-      revision_requested: 'Revisión solicitada',
-      needs_revision: 'Revisión solicitada',
-    };
-    return labels[status] ?? status;
+    return registryLabel('deliverable', status);
+  }
+
+  saveNotes(): void {
+    if (this.savingNotes()) return;
+    this.savingNotes.set(true);
+    this.applicationService.updateNotes(this.id(), this.notesText()).subscribe({
+      next: () => {
+        this.savingNotes.set(false);
+        this.snackBar.open('Nota guardada', 'OK', { duration: 2000 });
+      },
+      error: () => {
+        this.savingNotes.set(false);
+        this.snackBar.open('Error al guardar la nota', 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
+
+  toggleResolveForm(interview: Interview): void {
+    this.resolvingInterviewId.set(this.resolvingInterviewId() === interview.id ? null : interview.id);
+    this.resolutionChoice.set('passed');
+    this.resolutionComment = '';
+  }
+
+  confirmResolveInterview(interview: Interview): void {
+    this.applicationService.completeInterview(this.id(), interview.id, {
+      resolution: this.resolutionChoice(),
+      resolutionComment: this.resolutionComment || undefined,
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Entrevista resuelta', 'OK', { duration: 3000 });
+        this.resolvingInterviewId.set(null);
+        this.applicationResource.reload();
+      },
+      error: () => this.snackBar.open('Error al resolver la entrevista', 'Cerrar', { duration: 4000 }),
+    });
+  }
+
+  toggleBriefForm(interview: Interview): void {
+    this.briefFormInterviewId.set(this.briefFormInterviewId() === interview.id ? null : interview.id);
+    this.technicalTaskDescription = interview.technicalTaskDescription ?? '';
+    this.technicalTaskDueDate = interview.technicalTaskDueDate ? interview.technicalTaskDueDate.substring(0, 10) : '';
+  }
+
+  saveBrief(interview: Interview, files: File[]): void {
+    this.applicationService.setInterviewBrief(this.id(), interview.id, {
+      file: files[0],
+      description: this.technicalTaskDescription || undefined,
+      dueDate: this.technicalTaskDueDate || undefined,
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Prueba técnica actualizada', 'OK', { duration: 3000 });
+        this.briefFormInterviewId.set(null);
+        this.applicationResource.reload();
+      },
+      error: () => this.snackBar.open('Error al guardar la prueba técnica', 'Cerrar', { duration: 4000 }),
+    });
+  }
+
+  interviewTypeLabel(type: string): string {
+    return ({ phone: 'Telefónica', video: 'Video', in_person: 'Presencial', technical: 'Prueba técnica' } as Record<string, string>)[type] ?? type;
   }
 
   openCreateDeliverableDialog(): void {

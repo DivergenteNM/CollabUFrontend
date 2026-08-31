@@ -20,7 +20,8 @@ export class AuthService extends BaseApiService {
   protected readonly basePath = '/auth';
   private readonly tokenService = inject(TokenService);
 
-  private normalizeAuthUser(user: AuthUser): AuthUser {
+  private normalizeAuthUser(user?: AuthUser): AuthUser | undefined {
+    if (!user) return undefined;
     const verified = user.isVerified ?? user.isEmailVerified ?? false;
     return {
       ...user,
@@ -32,7 +33,7 @@ export class AuthService extends BaseApiService {
   private normalizeAuthResponse(response: AuthResponse): AuthResponse {
     return {
       ...response,
-      user: this.normalizeAuthUser(response.user),
+      user: (this.normalizeAuthUser(response.user) ?? response.user) as AuthUser,
     };
   }
 

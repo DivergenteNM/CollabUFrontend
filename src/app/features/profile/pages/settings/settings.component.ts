@@ -50,8 +50,8 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.notificationService.getPreferences().subscribe((resp) => {
-      if (resp.data) {
-        this.prefs.set(resp.data);
+      if (resp) {
+        this.prefs.set(resp);
       }
     });
   }
@@ -81,6 +81,10 @@ export class SettingsComponent implements OnInit {
   }
 
   deactivateAccount(): void {
+    if (this.authStore.isFacultyAdmin()) {
+      return;
+    }
+
     const ref = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Desactivar Cuenta',

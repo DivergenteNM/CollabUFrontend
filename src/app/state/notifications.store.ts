@@ -1,14 +1,38 @@
 import {
   signalStore, withState, withMethods, withComputed, withHooks, patchState
 } from '@ngrx/signals';
-import { computed, inject, effect } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { Notification } from '../core/models';
 import { NotificationRealtimeService } from '../core/services/notification-realtime.service';
+import {
+  notificationConfig, NotificationCategory,
+} from '../core/notifications/notification-registry';
 
 interface NotificationsState {
   notifications: Notification[];
   unreadCount: number;
   isLoading: boolean;
+}
+
+/**
+ * Deriva conteos por categoría desde las notificaciones cargadas. El total
+ * "oficial" del backend se mantiene en `unreadCount`; los conteos por
+ * categoría son estimaciones basadas en las notificaciones ya en el store,
+ * suficiente para pintar badges de sidebar sin llamadas extra.
+ */
+function categorizeUnread(
+  notifications: Notification[],
+): Record<NotificationCategory, number> {
+  const counts: Record<NotificationCategory, number> = {
+    applications: 0, academic: 0, chat: 0,
+    evaluations: 0, system: 0, projects: 0,
+  };
+  for (const n of notifications) {
+    if (n.isRead) continue;
+    const cat = notificationConfig(n.type).category;
+    counts[cat]++;
+  }
+  return counts;
 }
 
 export const NotificationsStore = signalStore(
@@ -22,6 +46,7 @@ export const NotificationsStore = signalStore(
   withComputed((store) => ({
     hasUnread: computed(() => store.unreadCount() > 0),
     recentNotifications: computed(() => store.notifications().slice(0, 5)),
+    unreadByCategory: computed(() => categorizeUnread(store.notifications())),
   })),
 
   withMethods((store) => ({

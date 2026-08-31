@@ -18,13 +18,13 @@
     }
 
     <mat-form-field appearance="outline" class="step-form__field">
-      <mat-label>Email institucional</mat-label>
-      <input matInput formControlName="email" type="email" placeholder="usuario@udenar.edu.co" autocomplete="email" />
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="usuario@ejemplo.com" autocomplete="email" />
       <mat-icon matPrefix>email</mat-icon>
       @if (accountForm.controls.email.hasError('required')) {
         <mat-error>El email es requerido</mat-error>
-      } @else if (accountForm.controls.email.hasError('udenarEmail')) {
-        <mat-error>Debe ser un correo &#64;udenar.edu.co</mat-error>
+      } @else if (accountForm.controls.email.hasError('email')) {
+        <mat-error>Debe ser un email válido</mat-error>
       }
     </mat-form-field>
 

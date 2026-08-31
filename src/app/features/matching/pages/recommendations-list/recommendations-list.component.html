@@ -27,57 +27,66 @@
                 <div class="recs__card-top">
                   <span class="recs__rank">#{{ (page() - 1) * 10 + i + 1 }}</span>
                   <div class="recs__card-info">
-                    <h3 class="recs__project-title">{{ rec.project.title }}</h3>
-                    <div class="recs__meta">
-                      <span class="recs__company">
-                        <mat-icon>business</mat-icon>
-                        {{ rec.project.companyName }}
-                      </span>
-                      @if (rec.project.location) {
-                        <span><mat-icon>location_on</mat-icon> {{ rec.project.location }}</span>
-                      }
-                      @if (rec.project.isRemote) {
-                        <span><mat-icon>laptop</mat-icon> Remoto</span>
-                      }
-                    </div>
-
-                    <mat-chip-set class="recs__tags">
-                      @for (tag of rec.project.tags.slice(0, 4); track tag) {
-                        <mat-chip>{{ tag }}</mat-chip>
-                      }
-                    </mat-chip-set>
+                    <h3 class="recs__project-title">{{ rec.projectTitle || 'Proyecto' }}</h3>
                   </div>
                 </div>
 
                 <!-- Overall match bar -->
                 <div class="recs__score-section">
-                  <app-match-score-bar [score]="rec.matchScore" label="Match Total" size="lg" />
+                  <app-match-score-bar [score]="rec.matchResult.overallScore" label="Match Total" size="lg" />
                 </div>
 
                 <!-- Breakdown bars -->
                 <div class="recs__breakdown">
-                  <app-match-score-bar [score]="rec.matchBreakdown.skill" label="Skills" size="sm" />
-                  <app-match-score-bar [score]="rec.matchBreakdown.experience" label="Experiencia" size="sm" />
-                  <app-match-score-bar [score]="rec.matchBreakdown.education" label="Educación" size="sm" />
-                  <app-match-score-bar [score]="rec.matchBreakdown.availability" label="Disponibilidad" size="sm" />
-                  <app-match-score-bar [score]="rec.matchBreakdown.rating" label="Rating" size="sm" />
+                  <app-match-score-bar [score]="rec.matchResult.skillsScore ?? 0" label="Skills" size="sm" />
+                  <app-match-score-bar [score]="rec.matchResult.proficiencyScore ?? 0" label="Nivel" size="sm" />
+                  <app-match-score-bar [score]="rec.matchResult.programScore ?? 0" label="Programa" size="sm" />
+                  <app-match-score-bar [score]="rec.matchResult.semesterScore ?? 0" label="Semestre" size="sm" />
+                  <app-match-score-bar [score]="rec.matchResult.availabilityScore ?? 0" label="Disponibilidad" size="sm" />
+                  <app-match-score-bar [score]="rec.matchResult.languageScore ?? 0" label="Idioma" size="sm" />
                 </div>
 
+                <!-- Desglose de afinidad: qué coincide y qué falta frente al proyecto,
+                     visible desde la tarjeta y no solo en el detalle — el estudiante
+                     debe poder entender el puntaje sin tener que abrir "Ver Match". -->
+                @if (rec.matchResult.skillsBreakdown?.matched?.length) {
+                  <div class="recs__skills-row">
+                    <mat-icon class="recs__skills-icon recs__skills-icon--match">check_circle</mat-icon>
+                    <mat-chip-set class="recs__tags">
+                      @for (skill of rec.matchResult.skillsBreakdown!.matched.slice(0, 4); track skill.name) {
+                        <mat-chip class="recs__chip--match">{{ skill.name }}</mat-chip>
+                      }
+                    </mat-chip-set>
+                  </div>
+                }
+                @if (rec.matchResult.skillsBreakdown?.missing?.length) {
+                  <div class="recs__skills-row">
+                    <mat-icon class="recs__skills-icon recs__skills-icon--missing">cancel</mat-icon>
+                    <mat-chip-set class="recs__tags">
+                      @for (skill of rec.matchResult.skillsBreakdown!.missing.slice(0, 3); track skill.name) {
+                        <mat-chip class="recs__chip--missing">{{ skill.name }}</mat-chip>
+                      }
+                    </mat-chip-set>
+                  </div>
+                }
+
                 <!-- Reason -->
-                <p class="recs__reason">
-                  <mat-icon>lightbulb</mat-icon>
-                  {{ rec.reason }}
-                </p>
+                @if (rec.message) {
+                  <p class="recs__reason">
+                    <mat-icon>lightbulb</mat-icon>
+                    {{ rec.message }}
+                  </p>
+                }
               </mat-card-content>
 
               <mat-card-actions align="end">
-                <button mat-button (click)="router.navigate(['/projects', rec.project.id])">
+                <button mat-button (click)="router.navigate(['/projects', rec.matchResult.projectId])">
                   <mat-icon>visibility</mat-icon> Ver Proyecto
                 </button>
-                <button mat-button (click)="router.navigate(['/matching/project', rec.project.id])">
+                <button mat-button (click)="router.navigate(['/matching/project', rec.matchResult.projectId])">
                   <mat-icon>analytics</mat-icon> Ver Match
                 </button>
-                <button mat-flat-button (click)="openApplyDialog(rec.project.id, rec.project.title)">
+                <button mat-flat-button (click)="openApplyDialog(rec.matchResult.projectId, rec.projectTitle || 'Proyecto')">
                   <mat-icon>send</mat-icon> Aplicar Ahora
                 </button>
               </mat-card-actions>

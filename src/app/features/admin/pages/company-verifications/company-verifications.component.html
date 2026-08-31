@@ -192,12 +192,12 @@
                 </div>
                 <div>
                   <div class="entity-name">{{ row.title }}</div>
-                  @if (row.tags?.length) {
+                  @if (row.skills?.length) {
                     <div class="tag-list">
-                      @for (tag of row.tags.slice(0, 3); track tag) {
-                        <span class="tag-chip">{{ tag }}</span>
+                      @for (skill of row.skills.slice(0, 3); track skill.name) {
+                        <span class="tag-chip">{{ skill.name }}</span>
                       }
-                      @if (row.tags.length > 3) { <span class="tag-chip tag-chip--more">+{{ row.tags.length - 3 }}</span> }
+                      @if (row.skills.length > 3) { <span class="tag-chip tag-chip--more">+{{ row.skills.length - 3 }}</span> }
                     </div>
                   }
                 </div>
@@ -248,11 +248,15 @@
                   (click)="viewProject(row); $event.stopPropagation()">
                   <mat-icon>visibility</mat-icon>
                 </button>
-                <button mat-icon-button class="approve-btn" matTooltip="Publicar proyecto"
+                <button mat-icon-button class="approve-btn" matTooltip="Aprobar y publicar"
                   (click)="approveProject(row); $event.stopPropagation()">
                   <mat-icon>check_circle</mat-icon>
                 </button>
-                <button mat-icon-button class="reject-btn" matTooltip="Rechazar y devolver a borrador"
+                <button mat-icon-button matTooltip="Solicitar cambios" style="color:#b45309"
+                  (click)="requestChangesProject(row); $event.stopPropagation()">
+                  <mat-icon>edit_note</mat-icon>
+                </button>
+                <button mat-icon-button class="reject-btn" matTooltip="Rechazar proyecto"
                   (click)="rejectProject(row); $event.stopPropagation()">
                   <mat-icon>cancel</mat-icon>
                 </button>

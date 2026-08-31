@@ -17,13 +17,6 @@ export const ADMIN_ROUTES: Routes = [
       ),
   },
   {
-    path: 'verifications/:id',
-    loadComponent: () =>
-      import('./pages/verification-detail/verification-detail.component').then(
-        (m) => m.VerificationDetailComponent
-      ),
-  },
-  {
     path: 'supervisors',
     loadComponent: () =>
       import('./pages/supervisor-assignments/supervisor-assignments.component').then(
@@ -49,6 +42,41 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/reports/reports.component').then(
         (m) => m.ReportsComponent
+      ),
+  },
+  {
+    path: 'rejection-categories',
+    loadComponent: () =>
+      import('./pages/rejection-categories/rejection-categories.component').then(
+        (m) => m.RejectionCategoriesComponent
+      ),
+  },
+  {
+    path: 'templates',
+    loadComponent: () =>
+      import('./pages/academic-templates/academic-templates.component').then(
+        (m) => m.AcademicTemplatesComponent
+      ),
+  },
+  {
+    path: 'document-requirements',
+    loadComponent: () =>
+      import('./pages/document-requirements/document-requirements.component').then(
+        (m) => m.DocumentRequirementsComponent
+      ),
+  },
+  {
+    path: 'academic-process',
+    loadComponent: () =>
+      import('./pages/academic-process/academic-process.component').then(
+        (m) => m.AcademicProcessComponent
+      ),
+  },
+  {
+    path: 'skills',
+    loadComponent: () =>
+      import('./pages/skill-catalog-management/skill-catalog-management.component').then(
+        (m) => m.SkillCatalogManagementComponent
       ),
   },
 ];

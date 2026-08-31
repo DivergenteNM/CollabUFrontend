@@ -32,16 +32,16 @@ export class SkillGapChartComponent {
       {
         label: 'Demanda',
         data: this.skills().map((s) => s.demandCount),
-        backgroundColor: 'rgba(59, 130, 246, 0.75)',
-        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(50, 130, 178, 0.78)',
+        borderColor: '#3282B2',
         borderWidth: 1,
         borderRadius: 4,
       },
       {
         label: 'Oferta',
         data: this.skills().map((s) => s.supplyCount),
-        backgroundColor: 'rgba(34, 197, 94, 0.75)',
-        borderColor: 'rgba(34, 197, 94, 1)',
+        backgroundColor: 'rgba(56, 142, 83, 0.78)',
+        borderColor: '#388E53',
         borderWidth: 1,
         borderRadius: 4,
       },
@@ -56,7 +56,7 @@ export class SkillGapChartComponent {
       legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 } } },
     },
     scales: {
-      x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' } },
+      x: { beginAtZero: true, grid: { color: 'rgba(74, 88, 76, 0.12)' } },
       y: { grid: { display: false } },
     },
   };

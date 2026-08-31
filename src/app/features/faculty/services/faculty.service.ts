@@ -5,6 +5,10 @@ import { BaseApiService } from '../../../core/services/base-api.service';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models';
 
+export type AssignmentRole = 'asesor' | 'jurado_anteproyecto' | 'jurado_final';
+export type AssignmentStatus =
+  | 'pending_acceptance' | 'accepted' | 'active' | 'declined' | 'disconnected' | 'replaced' | 'completed';
+
 export interface SupervisorAssignmentItem {
   id: string;
   supervisorId: string;
@@ -13,9 +17,13 @@ export interface SupervisorAssignmentItem {
   applicationId: string;
   periodId: string;
   assignedBy: string;
+  role: AssignmentRole;
   startDate: string;
   endDate: string | null;
-  status: 'active' | 'completed' | 'transferred';
+  status: AssignmentStatus;
+  declineReason: string | null;
+  acceptedAt: string | null;
+  declinedAt: string | null;
   notes: string | null;
   createdAt: string;
   supervisor: {
@@ -46,9 +54,11 @@ export interface EnrichedAssignment {
   projectId: string;
   periodId: string;
   assignedBy: string;
+  role: AssignmentRole;
   startDate: string;
   endDate: string | null;
-  status: string;
+  status: AssignmentStatus;
+  declineReason: string | null;
   notes: string | null;
   createdAt: string;
   studentName: string;
@@ -79,7 +89,9 @@ export interface AssignmentDetail {
   studentId: string;
   projectId: string;
   periodId: string;
+  periodName: string | null;
   assignedBy: string;
+  role: 'asesor' | 'jurado_anteproyecto' | 'jurado_final';
   startDate: string;
   endDate: string | null;
   status: string;
@@ -126,28 +138,42 @@ export interface Deliverable {
   feedback: string | null;
   grade: number | null;
   reviewedBy: string | null;
+  reviewedByRole?: string | null;
   reviewedAt: string | null;
+  reviewerName?: string | null;
+  reviewerRole?: string | null;
   revisionNumber: number;
   createdAt: string;
   updatedAt: string;
 }
 
+/**
+ * Alineado con `Backend/services/evaluation-service` (ver core/models/evaluation.model.ts).
+ * Se conserva la interfaz aquí para no romper import legacy en student-supervision.
+ */
 export interface EvaluationItem {
   id: string;
   evaluatorId: string;
-  evaluatorType: 'student' | 'company' | 'faculty';
   evaluatedId: string;
-  evaluatedType: 'student' | 'company';
   applicationId: string;
   projectId: string;
   evaluationType: string;
-  status: string;
-  overallRating: number;
-  comment: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'expired';
+  overallScore: number | null;
+  overallComment: string | null;
+  strengths: string | null;
+  areasForImprovement: string | null;
   isAnonymous: boolean;
-  ratings: Array<{ criteriaId: string; rating: number; comment?: string }>;
+  ratings: Array<{
+    id?: string;
+    criterionId: string;
+    score: number;
+    comment?: string | null;
+    criterion?: { id: string; name: string };
+  }>;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string | null;
 }
 
 export type SupervisorRole = 'academic_director' | 'internship_coordinator' | 'thesis_advisor' | 'faculty_supervisor';
@@ -197,6 +223,17 @@ export class FacultyService extends BaseApiService {
 
   getAssignmentDetail(assignmentId: string): Observable<AssignmentDetail> {
     return this.http.get<AssignmentDetail>(`${this.apiUrl}/supervisors/assignments/${assignmentId}`);
+  }
+
+  acceptAssignment(assignmentId: string): Observable<SupervisorAssignmentItem> {
+    return this.http.patch<SupervisorAssignmentItem>(`${this.apiUrl}/supervisors/assignments/${assignmentId}/accept`, {});
+  }
+
+  declineAssignment(assignmentId: string, reason: string): Observable<SupervisorAssignmentItem> {
+    return this.http.patch<SupervisorAssignmentItem>(
+      `${this.apiUrl}/supervisors/assignments/${assignmentId}/decline`,
+      { reason },
+    );
   }
 
   getDeliverables(applicationId: string): Observable<Deliverable[]> {

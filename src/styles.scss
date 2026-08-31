@@ -9,6 +9,7 @@
 @use 'styles/grid';
 @use 'styles/animations';
 @use 'styles/accessibility';
+@use 'styles/ui-refinements';
 
 // Material Design 3 theme (verde UDENAR + azul complementario)
 @use 'styles/theme/collab-u-theme';
@@ -41,23 +42,23 @@ body {
 // =============================================================================
 
 .toast-success {
-  --mdc-snackbar-container-color: #2e7d32;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mdc-snackbar-container-color: #3F7A58;
+  --mdc-snackbar-supporting-text-color: #F8FAF8;
 }
 
 .toast-error {
-  --mdc-snackbar-container-color: #d32f2f;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mdc-snackbar-container-color: #A94F4F;
+  --mdc-snackbar-supporting-text-color: #F8FAF8;
 }
 
 .toast-warning {
-  --mdc-snackbar-container-color: #ed6c02;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mdc-snackbar-container-color: #A86F2A;
+  --mdc-snackbar-supporting-text-color: #F8FAF8;
 }
 
 .toast-info {
-  --mdc-snackbar-container-color: #1976d2;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mdc-snackbar-container-color: #496F84;
+  --mdc-snackbar-supporting-text-color: #F8FAF8;
 }
 
 // =============================================================================
@@ -65,7 +66,7 @@ body {
 // =============================================================================
 
 a {
-  color: var(--color-accent);
+  color: var(--text-link);
   text-decoration: none;
 
   &:hover {
@@ -74,8 +75,8 @@ a {
 }
 
 ::selection {
-  background-color: var(--color-primary-light);
-  color: #ffffff;
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-800);
 }
 
 // Scrollbar styling
@@ -90,7 +91,7 @@ a {
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--border-radius-xs);
 
   &:hover {
     background: var(--text-disabled);

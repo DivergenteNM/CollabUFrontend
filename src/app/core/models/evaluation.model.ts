@@ -1,11 +1,53 @@
-import {
-  EvaluationType,
-  EvaluationStatus,
-  CriterionCategory,
-  RatingScale,
-} from '../enums';
+/**
+ * Modelo alineado con `Backend/services/evaluation-service/src/evaluation/entities/*`.
+ * El backend expone la evaluación como un contenedor con `ratings[]` (uno por
+ * criterio) y agregados: `overallScore`, `overallComment`, `strengths`,
+ * `areasForImprovement`. No hay concepto de "response" independiente — el
+ * evaluador completa la evaluación una sola vez mediante `POST /:id/submit`.
+ */
 
-export { EvaluationType, EvaluationStatus, CriterionCategory, RatingScale };
+export type EvaluationType =
+  | 'company_evaluates_student'
+  | 'student_evaluates_company'
+  | 'supervisor_evaluates_student'
+  | 'student_evaluates_supervisor'
+  | 'self_evaluation';
+
+export type EvaluationStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'completed'
+  | 'expired';
+
+export type CriterionCategory =
+  | 'technical'
+  | 'soft_skills'
+  | 'professional'
+  | 'academic'
+  | 'general';
+
+export type RatingScale = '1_to_5' | '1_to_10' | 'percentage';
+
+export interface EvaluationCriteria {
+  id: string;
+  name: string;
+  description: string | null;
+  category: CriterionCategory;
+  evaluationType: EvaluationType;
+  weight: number;
+  ratingScale: RatingScale;
+  isRequired: boolean;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface EvaluationRating {
+  id?: string;
+  criterionId: string;
+  score: number;
+  comment?: string | null;
+  criterion?: EvaluationCriteria;
+}
 
 export interface Evaluation {
   id: string;
@@ -22,103 +64,21 @@ export interface Evaluation {
   isAnonymous: boolean;
   dueDate: string | null;
   completedAt: string | null;
+  templateId: string | null;
   createdAt: string;
   updatedAt: string;
-  ratings?: EvaluationRating[];
+  ratings: EvaluationRating[];
+
+  /** Campos derivados que enriquece el backend (título/nombre de contraparte). */
+  projectTitle?: string;
+  evaluatorName?: string;
+  evaluatedName?: string;
 }
 
-export interface EvaluationRating {
+/** Alias legacy que otros componentes aún importan. */
+export type EvaluationCriteriaScore = EvaluationRating;
+export interface EvaluationResponse {
   id: string;
-  evaluationId: string;
-  criterionId: string;
-  score: number;
-  comment: string | null;
-  createdAt: string;
-  criterion?: EvaluationCriteria;
-}
-
-export interface EvaluationCriteria {
-  id: string;
-  name: string;
-  description: string | null;
-  category: CriterionCategory;
-  evaluationType: EvaluationType;
-  weight: number;
-  ratingScale: RatingScale;
-  isRequired: boolean;
-  isActive: boolean;
-  displayOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EvaluationTemplate {
-  id: string;
-  name: string;
-  description: string | null;
-  evaluationType: EvaluationType;
-  criteriaIds: string[];
-  isDefault: boolean;
-  isActive: boolean;
-  createdBy: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateEvaluationDto {
-  applicationId: string;
-  projectId: string;
-  evaluatedId: string;
-  evaluationType: EvaluationType;
-  isAnonymous?: boolean;
-  dueDate?: string;
-  templateId?: string;
-}
-
-export interface SubmitEvaluationDto {
-  ratings: EvaluationRatingDto[];
-  overallScore?: number;
-  overallComment?: string;
-  strengths?: string;
-  areasForImprovement?: string;
-}
-
-export interface EvaluationRatingDto {
-  criterionId: string;
-  score: number;
-  comment?: string;
-}
-
-export interface EvaluationQueryParams {
-  evaluationType?: EvaluationType;
-  status?: EvaluationStatus;
-  projectId?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface AggregateScores {
-  averageScore: number | null;
-  completedCount: number;
-  byType: Record<string, number | null>;
-}
-
-export function getEvaluationStatusLabel(status: EvaluationStatus): string {
-  const labels: Record<EvaluationStatus, string> = {
-    [EvaluationStatus.PENDING]: 'Pendiente',
-    [EvaluationStatus.IN_PROGRESS]: 'En progreso',
-    [EvaluationStatus.COMPLETED]: 'Completada',
-    [EvaluationStatus.EXPIRED]: 'Expirada',
-  };
-  return labels[status] ?? status;
-}
-
-export function getEvaluationTypeLabel(type: EvaluationType): string {
-  const labels: Record<EvaluationType, string> = {
-    [EvaluationType.COMPANY_EVALUATES_STUDENT]: 'Empresa evalúa estudiante',
-    [EvaluationType.STUDENT_EVALUATES_COMPANY]: 'Estudiante evalúa empresa',
-    [EvaluationType.SUPERVISOR_EVALUATES_STUDENT]: 'Supervisor evalúa estudiante',
-    [EvaluationType.SELF_EVALUATION]: 'Auto-evaluación',
-  };
-  return labels[type] ?? type;
+  content: string;
+  respondedAt: string;
 }
