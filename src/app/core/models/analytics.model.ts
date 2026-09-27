@@ -4,9 +4,16 @@ export type ReportType =
   | 'period_summary'
   | 'company_performance'
   | 'student_outcomes'
+  | 'supervisor_report'
   | 'skill_gap_analysis'
   | 'matching_effectiveness'
+  | 'academic_process_summary'
+  | 'supervisor_workload'
+  | 'project_completion_rates'
   | 'custom';
+
+/** Ámbito del reporte — determina si hace falta elegir una entidad puntual antes de generarlo. */
+export type ReportScope = 'platform' | 'company' | 'student' | 'supervisor';
 
 export type ReportStatus = 'generating' | 'completed' | 'failed';
 
@@ -116,6 +123,7 @@ export interface CompanyMetrics {
   companyId: string;
   totalProjects: number;
   activeProjects: number;
+  completedProjects: number;
   totalApplicationsReceived: number;
   avgTimeToRespondHours: number | null;
   avgEvaluationGiven: number | null;
@@ -146,6 +154,7 @@ export interface Report {
   reportType: ReportType;
   generatedBy: string;
   periodId: string | null;
+  entityId: string | null;
   parameters: Record<string, unknown> | null;
   data: Record<string, unknown>;
   fileUrl: string | null;
@@ -156,6 +165,7 @@ export interface Report {
 export interface GenerateReportPayload {
   name: string;
   reportType: ReportType;
+  entityId?: string;
   periodId?: string;
   parameters?: Record<string, unknown>;
 }

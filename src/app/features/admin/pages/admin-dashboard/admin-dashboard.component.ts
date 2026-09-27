@@ -6,11 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DatePipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { ChartData } from 'chart.js';
-import { environment } from '../../../../../environments/environment';
-import { AnalyticsDashboard, PlatformMetrics, SkillTrend } from '../../../../core/models';
-import { AcademicKpis } from '../../../analytics/services/analytics.service';
+import { SkillTrend } from '../../../../core/models';
+import { AnalyticsService } from '../../../analytics/services/analytics.service';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
 import { LineChartComponent } from '../../../../shared/components/charts/line-chart/line-chart.component';
 import { SkillGapChartComponent } from '../../../../shared/components/charts/skill-gap-chart/skill-gap-chart.component';
@@ -27,20 +26,23 @@ import { SkillGapChartComponent } from '../../../../shared/components/charts/ski
 })
 export class AdminAnalyticsComponent {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly analyticsService = inject(AnalyticsService);
 
-  readonly dashboard = httpResource<AnalyticsDashboard>(() => {
-    if (!isPlatformBrowser(this.platformId)) return undefined;
-    return { url: `${environment.apiUrl}/analytics/dashboard` };
+  private readonly browserReady = computed(() => (isPlatformBrowser(this.platformId) ? {} : undefined));
+
+  readonly dashboard = rxResource({
+    params: () => this.browserReady(),
+    stream: () => this.analyticsService.getDashboard(),
   });
 
-  readonly platformHistory = httpResource<PlatformMetrics[]>(() => {
-    if (!isPlatformBrowser(this.platformId)) return undefined;
-    return { url: `${environment.apiUrl}/analytics/platform` };
+  readonly platformHistory = rxResource({
+    params: () => this.browserReady(),
+    stream: () => this.analyticsService.getPlatformMetrics(),
   });
 
-  readonly academicKpis = httpResource<AcademicKpis>(() => {
-    if (!isPlatformBrowser(this.platformId)) return undefined;
-    return { url: `${environment.apiUrl}/analytics/academic-kpis` };
+  readonly academicKpis = rxResource({
+    params: () => this.browserReady(),
+    stream: () => this.analyticsService.getAcademicKpis(),
   });
 
   readonly completionRate = computed(() => {
@@ -108,10 +110,11 @@ export class AdminAnalyticsComponent {
       period_summary: 'Resumen de Período',
       company_performance: 'Desempeño Empresa',
       student_outcomes: 'Resultados Estudiante',
+      supervisor_report: 'Carga de Docente',
       skill_gap_analysis: 'Brecha de Skills',
       matching_effectiveness: 'Efectividad Matching',
       academic_process_summary: 'Resumen del Proceso Académico',
-      supervisor_workload: 'Carga de Docentes',
+      supervisor_workload: 'Carga de Docentes (Plataforma)',
       project_completion_rates: 'Tasas de Completitud',
       custom: 'Personalizado',
     };

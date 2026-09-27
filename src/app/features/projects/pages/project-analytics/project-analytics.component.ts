@@ -1,5 +1,5 @@
 import {
-  Component, ChangeDetectionStrategy, inject, PLATFORM_ID, computed,
+  Component, ChangeDetectionStrategy, inject, PLATFORM_ID, computed, input,
 } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -7,30 +7,25 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AnalyticsService } from '../../../analytics/services/analytics.service';
-import { AuthStore } from '../../../../state/auth.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 
 @Component({
-  selector: 'app-company-analytics',
+  selector: 'app-project-analytics',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [MatCardModule, MatIconModule, MatProgressBarModule, DecimalPipe, StatCardComponent, EmptyStateComponent],
-  templateUrl: './company-analytics.component.html',
-  styleUrl: './company-analytics.component.scss',
+  templateUrl: './project-analytics.component.html',
+  styleUrl: './project-analytics.component.scss',
 })
-export class CompanyAnalyticsComponent {
-  private readonly authStore = inject(AuthStore);
+export class ProjectAnalyticsComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly analyticsService = inject(AnalyticsService);
 
+  readonly id = input.required<string>();
+
   readonly metrics = rxResource({
-    params: () => {
-      if (!isPlatformBrowser(this.platformId)) return undefined;
-      const userId = this.authStore.user()?.id;
-      return userId ? { userId } : undefined;
-    },
-    stream: ({ params }) => this.analyticsService.getCompanySummary(params.userId),
+    params: () => (isPlatformBrowser(this.platformId) ? { projectId: this.id() } : undefined),
+    stream: ({ params }) => this.analyticsService.getProjectSummary(params.projectId),
   });
 
   readonly isNotFound = computed(() => {
@@ -43,10 +38,8 @@ export class CompanyAnalyticsComponent {
     return rate != null ? Math.round(rate) : 0;
   });
 
-  readonly avgResponseLabel = computed(() => {
-    const h = this.metrics.value()?.avgTimeToRespondHours;
-    if (h == null) return '—';
-    if (h < 24) return `${Math.round(h)}h`;
-    return `${Math.round(h / 24)}d`;
+  readonly conversionRateDisplay = computed(() => {
+    const rate = this.metrics.value()?.conversionRate;
+    return rate != null ? Math.round(rate) : 0;
   });
 }

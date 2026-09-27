@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { environment } from '../../../../../environments/environment';
-import { PaginatedResponse, Project, Application } from '../../../../core/models';
+import { PaginatedResponse, Project, Application, CompanyMetrics } from '../../../../core/models';
 import { ApplicationService } from '../../../../features/applications/services/application.service';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
@@ -88,9 +88,15 @@ export class CompanyDashboardComponent {
     return projects.reduce((sum, p) => sum + p.positionsFilled, 0);
   });
 
+  readonly metricsResource = httpResource<CompanyMetrics>(() => {
+    const userId = this.authStore.user()?.id;
+    if (!userId) return undefined;
+    return { url: `${environment.apiUrl}/analytics/companies/${userId}/summary` };
+  });
+
   readonly avgRating = computed(() => {
-    // Placeholder — computed from project data or separate endpoint
-    return '—';
+    const rating = this.metricsResource.value()?.avgEvaluationReceived;
+    return rating != null ? (+rating).toFixed(1) : '—';
   });
 
   onChangeApplicationStatus(event: { id: string; status: string }): void {

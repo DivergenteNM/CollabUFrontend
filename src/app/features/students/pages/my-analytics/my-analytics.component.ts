@@ -2,32 +2,43 @@ import {
   Component, ChangeDetectionStrategy, inject, PLATFORM_ID, computed,
 } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { environment } from '../../../../../environments/environment';
-import { StudentMetrics } from '../../../../core/models';
+import { AnalyticsService } from '../../../analytics/services/analytics.service';
 import { AuthStore } from '../../../../state/auth.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
+import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-my-analytics',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [MatCardModule, MatIconModule, MatProgressBarModule, DecimalPipe, StatCardComponent],
+  imports: [MatCardModule, MatIconModule, MatProgressBarModule, DecimalPipe, StatCardComponent, EmptyStateComponent],
   templateUrl: './my-analytics.component.html',
   styleUrl: './my-analytics.component.scss',
 })
 export class MyAnalyticsComponent {
   private readonly authStore = inject(AuthStore);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly analyticsService = inject(AnalyticsService);
 
-  readonly metrics = httpResource<StudentMetrics>(() => {
-    if (!isPlatformBrowser(this.platformId)) return undefined;
-    const userId = this.authStore.user()?.id;
-    if (!userId) return undefined;
-    return { url: `${environment.apiUrl}/analytics/students/${userId}/summary` };
+  readonly metrics = rxResource({
+    params: () => {
+      if (!isPlatformBrowser(this.platformId)) return undefined;
+      const userId = this.authStore.user()?.id;
+      return userId ? { userId } : undefined;
+    },
+    stream: ({ params }) => this.analyticsService.getStudentSummary(params.userId),
+  });
+
+  // 404 real = ni el endpoint on-demand ni ningún snapshot previo tienen datos para este
+  // estudiante (caso legítimo: cuenta nueva sin actividad) — se distingue de un error técnico
+  // (servicio caído, red) para no invitar a "reintentar" algo que no va a cambiar solo.
+  readonly isNotFound = computed(() => {
+    const err = this.metrics.error() as { status?: number } | undefined;
+    return err?.status === 404;
   });
 
   readonly acceptanceRate = computed(() => {

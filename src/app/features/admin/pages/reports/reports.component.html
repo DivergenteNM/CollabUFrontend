@@ -42,10 +42,10 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let r">
-            @if (r.fileUrl) {
-              <a mat-icon-button [href]="r.fileUrl" target="_blank" rel="noopener">
-                <mat-icon>download</mat-icon>
-              </a>
+            @if (r.status === 'completed') {
+              <button mat-icon-button (click)="downloadPdf(r)" matTooltip="Descargar PDF" [disabled]="downloadingId() === r.id">
+                <mat-icon>{{ downloadingId() === r.id ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
+              </button>
             }
           </td>
         </ng-container>

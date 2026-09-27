@@ -1,0 +1,107 @@
+<div class="project-analytics">
+
+  <div class="project-analytics__header">
+    <div>
+      <h1>Métricas del Proyecto</h1>
+      <p class="header-subtitle">Rendimiento de aplicaciones, conversión y evaluación</p>
+    </div>
+  </div>
+
+  @if (metrics.isLoading()) {
+    <mat-progress-bar mode="indeterminate" class="loading-bar" />
+  }
+
+  @if (metrics.value(); as m) {
+
+    <!-- Stat cards -->
+    <div class="stats-grid">
+      <app-stat-card icon="send" [value]="m.totalApplications" label="Total aplicaciones" color="primary" />
+      <app-stat-card icon="check_circle" [value]="m.acceptedApplications" label="Aceptadas" color="primary" />
+      <app-stat-card icon="cancel" [value]="m.rejectedApplications" label="Rechazadas" color="accent" />
+      @if (m.avgMatchScore !== null) {
+        <app-stat-card icon="grade" [value]="(+m.avgMatchScore).toFixed(1)" label="Match score promedio" color="accent" />
+      }
+      @if (m.avgEvaluationScore !== null) {
+        <app-stat-card icon="star" [value]="(+m.avgEvaluationScore).toFixed(1)" label="Evaluación promedio" color="primary" />
+      }
+    </div>
+
+    <div class="metrics-grid">
+
+      <!-- Tasa de conversión -->
+      <mat-card class="metric-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="metric-icon metric-icon--primary">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <mat-card-title>Tasa de Conversión</mat-card-title>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="progress-section">
+            <div class="progress-header">
+              <span class="progress-value">{{ conversionRateDisplay() }}%</span>
+              <span class="progress-label">de las aplicaciones fueron aceptadas</span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="conversionRateDisplay()"
+              color="primary"
+              class="progress-bar"
+            />
+            <div class="progress-detail">
+              <span>{{ m.acceptedApplications }} aceptadas de {{ m.totalApplications }} totales</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Tasa de finalización -->
+      <mat-card class="metric-card">
+        <mat-card-header>
+          <div class="card-title-row">
+            <div class="metric-icon metric-icon--accent">
+              <mat-icon>task_alt</mat-icon>
+            </div>
+            <mat-card-title>Tasa de Finalización</mat-card-title>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="progress-section">
+            <div class="progress-header">
+              <span class="progress-value">{{ completionRateDisplay() }}%</span>
+              <span class="progress-label">de aplicaciones llegaron a completed</span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="completionRateDisplay()"
+              color="primary"
+              class="progress-bar"
+            />
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+  }
+
+  @if (metrics.error()) {
+    @if (isNotFound()) {
+      <app-empty-state
+        icon="query_stats"
+        title="Aún no hay métricas para este proyecto"
+        message="Cuando reciba aplicaciones vas a poder ver aquí su rendimiento."
+      />
+    } @else {
+      <mat-card class="error-card">
+        <mat-card-content>
+          <mat-icon color="warn">error_outline</mat-icon>
+          <span>No se pudieron cargar las métricas. Inténtalo de nuevo más tarde.</span>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+
+</div>

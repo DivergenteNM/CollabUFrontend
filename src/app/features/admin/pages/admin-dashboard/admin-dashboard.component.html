@@ -255,7 +255,7 @@
             <p class="trends-subtitle" style="margin-bottom: 8px;">Docentes con mayor carga activa</p>
             @for (w of topWorkload(); track w.supervisorId) {
               <div class="skill-row">
-                <span class="skill-name">{{ w.supervisorId }}</span>
+                <span class="skill-name">{{ w.supervisorName ?? w.supervisorId }}</span>
                 <span class="skill-badge skill-badge--demand">{{ w.activeCount }} estudiantes</span>
               </div>
             }

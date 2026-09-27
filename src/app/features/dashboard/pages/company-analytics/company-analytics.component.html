@@ -51,7 +51,7 @@
               class="progress-bar"
             />
             <div class="progress-detail">
-              <span>{{ m.totalProjects - m.activeProjects }} proyectos finalizados de {{ m.totalProjects }} totales</span>
+              <span>{{ m.completedProjects }} proyectos finalizados de {{ m.totalProjects }} totales</span>
             </div>
           </div>
         </mat-card-content>
@@ -91,12 +91,20 @@
   }
 
   @if (metrics.error()) {
-    <mat-card class="error-card">
-      <mat-card-content>
-        <mat-icon color="warn">error_outline</mat-icon>
-        <span>No se pudieron cargar las métricas. Inténtalo de nuevo más tarde.</span>
-      </mat-card-content>
-    </mat-card>
+    @if (isNotFound()) {
+      <app-empty-state
+        icon="query_stats"
+        title="Aún no tienes métricas"
+        message="Publica un proyecto para empezar a generar actividad medible."
+      />
+    } @else {
+      <mat-card class="error-card">
+        <mat-card-content>
+          <mat-icon color="warn">error_outline</mat-icon>
+          <span>No se pudieron cargar las métricas. Inténtalo de nuevo más tarde.</span>
+        </mat-card-content>
+      </mat-card>
+    }
   }
 
 </div>
