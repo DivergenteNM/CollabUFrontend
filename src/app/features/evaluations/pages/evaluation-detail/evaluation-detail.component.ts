@@ -16,6 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import {
   Evaluation, EvaluationCriteria, EvaluationRating,
@@ -50,7 +51,7 @@ interface CriterionDraft {
     FormsModule, DatePipe,
     MatButtonModule, MatIconModule, MatCardModule, MatDividerModule,
     MatFormFieldModule, MatInputModule, MatSliderModule, MatSnackBarModule,
-    MatProgressSpinnerModule,
+    MatProgressSpinnerModule, MatTooltipModule,
     StarRatingComponent, MatchScoreBarComponent, SkeletonComponent, EmptyStateComponent,
   ],
   templateUrl: './evaluation-detail.component.html',
@@ -211,5 +212,18 @@ export class EvaluationDetailComponent {
   displayScore(score: number | null | undefined): string {
     if (score == null) return '—';
     return (Number(score) / 20).toFixed(1);
+  }
+
+  /** EST-09: aclara qué mide cada categoría de criterio al pasar el cursor (CriterionCategory, enums.ts). */
+  readonly categoryTooltip: Record<string, string> = {
+    technical: 'Dominio técnico y calidad del trabajo entregado.',
+    soft_skills: 'Comunicación, trabajo en equipo y actitud profesional.',
+    professional: 'Responsabilidad, puntualidad y ética de trabajo.',
+    academic: 'Aplicación de conocimientos y rigor académico.',
+    general: 'Valoración general del desempeño en este aspecto.',
+  };
+
+  categoryHint(category: string): string {
+    return this.categoryTooltip[category] ?? 'Criterio de evaluación del desempeño.';
   }
 }

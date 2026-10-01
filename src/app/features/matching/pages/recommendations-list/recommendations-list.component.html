@@ -29,6 +29,13 @@
                   <div class="recs__card-info">
                     <h3 class="recs__project-title">{{ rec.projectTitle || 'Proyecto' }}</h3>
                   </div>
+                  <div class="recs__score-badge"
+                    [class.recs__score-badge--high]="rec.matchResult.overallScore >= 80"
+                    [class.recs__score-badge--mid]="rec.matchResult.overallScore >= 50 && rec.matchResult.overallScore < 80"
+                    [class.recs__score-badge--low]="rec.matchResult.overallScore < 50">
+                    <span class="recs__score-badge-value">{{ rec.matchResult.overallScore | number:'1.0-0' }}%</span>
+                    <span class="recs__score-badge-label">Match</span>
+                  </div>
                 </div>
 
                 <!-- Overall match bar -->
@@ -52,6 +59,7 @@
                 @if (rec.matchResult.skillsBreakdown?.matched?.length) {
                   <div class="recs__skills-row">
                     <mat-icon class="recs__skills-icon recs__skills-icon--match">check_circle</mat-icon>
+                    <span class="recs__skills-label recs__skills-label--match">Cumples:</span>
                     <mat-chip-set class="recs__tags">
                       @for (skill of rec.matchResult.skillsBreakdown!.matched.slice(0, 4); track skill.name) {
                         <mat-chip class="recs__chip--match">{{ skill.name }}</mat-chip>
@@ -62,6 +70,7 @@
                 @if (rec.matchResult.skillsBreakdown?.missing?.length) {
                   <div class="recs__skills-row">
                     <mat-icon class="recs__skills-icon recs__skills-icon--missing">cancel</mat-icon>
+                    <span class="recs__skills-label recs__skills-label--missing">Por aprender:</span>
                     <mat-chip-set class="recs__tags">
                       @for (skill of rec.matchResult.skillsBreakdown!.missing.slice(0, 3); track skill.name) {
                         <mat-chip class="recs__chip--missing">{{ skill.name }}</mat-chip>

@@ -1,64 +1,103 @@
-<mat-card class="application-card__container">
-  <mat-card-header>
-    <mat-card-title>
-      @if (viewMode() === 'student') {
-      {{ application().project?.title || application().projectTitle || 'Proyecto' }}
-      } @else {
-      <div class="application-card__title-company">
-        <div class="student-name">
-          @if (application().student?.user) {
-          Estudiante: {{ application().student!.user!.firstName }} {{ application().student!.user!.lastName }}
-          } @else {
-          Estudiante #{{ application().student?.studentCode || application().studentId }}
-          }
-        </div>
-        @if (application().project?.title || application().projectTitle) {
-        <span class="project-tag">{{ application().project?.title || application().projectTitle }}</span>
-        }
-      </div>
-      }
-    </mat-card-title>
-    <mat-card-subtitle class="application-card__subtitle">
-      <app-status-badge [status]="application().status" size="sm" />
-      <span class="application-card__date">
-        <mat-icon>calendar_today</mat-icon>
-        {{ application().appliedAt | date:'d MMM yyyy' }}
-      </span>
-    </mat-card-subtitle>
-  </mat-card-header>
+<div class="app-card">
+  <!-- Top row: estado + indicador -->
+  <div class="app-card__top">
+    <app-status-badge [status]="application().status" size="sm" />
+    <span class="app-card__indicator" [class.app-card__indicator--active]="isActive()">
+      <span class="app-card__indicator-dot"></span>
+    </span>
+  </div>
 
-  <mat-card-content>
-    <app-application-progress-stepper [currentStatus]="application().status" />
-
-    @if (application().coverLetter) {
-    <p class="application-card__cover">{{ application().coverLetter }}</p>
-    }
-
-    @if (application().matchScore) {
-    <div class="application-card__score">
-      <mat-icon>star</mat-icon>
-      Match: {{ application().matchScore }}%
+  <!-- Header: icono temático + título + contexto -->
+  <div class="app-card__header">
+    <div class="app-card__icon-box" [class]="theme().bgClass">
+      <mat-icon [class]="theme().colorClass">{{ theme().icon }}</mat-icon>
     </div>
-    }
-  </mat-card-content>
+    <div class="app-card__header-body">
+      @if (viewMode() === 'student') {
+        <h3 class="app-card__title" [title]="application().project?.title || application().projectTitle || 'Proyecto'">
+          {{ application().project?.title || application().projectTitle || 'Proyecto' }}
+        </h3>
+        @if (application().companyName) {
+          <span class="app-card__subtitle">
+            <mat-icon>apartment</mat-icon>{{ application().companyName }}
+          </span>
+        }
+      } @else {
+        <h3 class="app-card__title">
+          @if (application().student?.user) {
+            {{ application().student!.user!.firstName }} {{ application().student!.user!.lastName }}
+          } @else {
+            Estudiante #{{ application().student?.studentCode || application().studentId }}
+          }
+        </h3>
+        @if (application().project?.title || application().projectTitle) {
+          <span class="app-card__subtitle">
+            <mat-icon>folder_open</mat-icon>{{ application().project?.title || application().projectTitle }}
+          </span>
+        }
+      }
+    </div>
+  </div>
 
-  <mat-card-actions align="end">
-    <button mat-button (click)="viewDetail.emit(application().id)">
-      <mat-icon>visibility</mat-icon> Ver Detalle
+  @if (application().coverLetter) {
+    <p class="app-card__cover">{{ application().coverLetter }}</p>
+  }
+
+  <!-- Metadata + match score -->
+  <div class="app-card__info-row">
+    <div class="app-card__metadata">
+      <div class="app-card__meta-item">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Postulado: {{ application().appliedAt | date:'d MMM yyyy' }}</span>
+      </div>
+      @if (application().reviewedAt) {
+        <div class="app-card__meta-item">
+          <mat-icon>fact_check</mat-icon>
+          <span>Revisado: {{ application().reviewedAt | date:'d MMM yyyy' }}</span>
+        </div>
+      }
+    </div>
+
+    @if (normalizedMatchScore() !== null) {
+      <div class="app-card__gauge">
+        <svg viewBox="0 0 64 64">
+          <circle class="app-card__gauge-track" cx="32" cy="32" r="26" fill="none" stroke-width="5" />
+          <circle class="app-card__gauge-progress" cx="32" cy="32" r="26" fill="none" stroke-width="5"
+            [style.strokeDasharray]="circumference" [style.strokeDashoffset]="strokeDashoffset()" />
+        </svg>
+        <div class="app-card__gauge-label">
+          <span class="app-card__gauge-value">{{ normalizedMatchScore() }}%</span>
+          <span class="app-card__gauge-sub">Match</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Progreso -->
+  <div class="app-card__stepper-panel">
+    <app-application-progress-stepper [currentStatus]="application().status" />
+  </div>
+
+  <!-- Acciones -->
+  <div class="app-card__actions">
+    <button type="button" class="app-btn app-btn--detail" (click)="viewDetail.emit(application().id)">
+      <mat-icon>visibility</mat-icon>
+      <span>Ver Detalle</span>
     </button>
 
     @if (viewMode() === 'company' && canChangeStatus()) {
-    <button mat-flat-button [matMenuTriggerFor]="statusMenu">
-      <mat-icon>edit</mat-icon> Cambiar Estado
-    </button>
-    <mat-menu #statusMenu="matMenu">
-      @for (action of availableActions(); track action.status) {
-      <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
-        <mat-icon>{{ action.icon }}</mat-icon>
-        {{ action.label }}
+      <button type="button" class="app-btn app-btn--primary" [matMenuTriggerFor]="statusMenu">
+        <mat-icon>edit</mat-icon>
+        <span>Cambiar Estado</span>
       </button>
-      }
-    </mat-menu>
+      <mat-menu #statusMenu="matMenu">
+        @for (action of availableActions(); track action.status) {
+          <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
+            <mat-icon>{{ action.icon }}</mat-icon>
+            {{ action.label }}
+          </button>
+        }
+      </mat-menu>
     }
-  </mat-card-actions>
-</mat-card>
+  </div>
+</div>

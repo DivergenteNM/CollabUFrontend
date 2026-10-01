@@ -41,14 +41,6 @@ export class ProfileViewComponent {
     this.student()?.skills?.map((s) => s.name) ?? []
   );
 
-  readonly practiceProgress = computed(() => {
-    const profile = this.student();
-    const completed = profile?.practiceHoursCompleted ?? 0;
-    const required = profile?.practiceHoursRequired ?? 0;
-    if (required <= 0) return 0;
-    return Math.min(100, Math.round((completed / required) * 100));
-  });
-
   levelLabel(level?: string): string {
     const labels: Record<string, string> = {
       basic: 'Básico',

@@ -77,14 +77,6 @@ export class StudentDashboardComponent {
 
   readonly profileCompleteness = computed(() => this.profile()?.profileCompleteness ?? 0);
 
-  readonly practiceHoursLabel = computed(() => {
-    const p = this.profile();
-    if (!p) return '0/0h';
-    const completed = p.practiceHoursCompleted ?? 0;
-    const required = p.practiceHoursRequired ?? 0;
-    return `${completed}/${required}h`;
-  });
-
   readonly recommendations = computed(() =>
     this.recommendationsResource.value()?.data ?? []
   );

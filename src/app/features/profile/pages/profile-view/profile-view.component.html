@@ -144,15 +144,6 @@
             </div>
           }
 
-          <div class="section">
-            <h3>Horas de Práctica</h3>
-            <div class="hours-info">
-              <span class="hours-value">{{ s.practiceHoursCompleted ?? 0 }}/{{ s.practiceHoursRequired ?? 0 }}h</span>
-              <mat-progress-bar mode="determinate"
-                [value]="practiceProgress()" />
-            </div>
-          </div>
-
           @if (authStore.profile()?.linkedinUrl || s.githubUrl || s.portfolioUrl || s.personalWebsiteUrl) {
             <div class="section">
               <h3>Enlaces</h3>

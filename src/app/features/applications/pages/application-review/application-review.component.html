@@ -64,10 +64,6 @@
                       <span>{{ student.gpa | number:'1.1-2' }}</span>
                     </div>
                   }
-                  <div class="review__info-row">
-                    <span class="review__label">Horas práctica</span>
-                    <span>{{ student.practiceHoursCompleted }}/{{ student.practiceHoursRequired }}h</span>
-                  </div>
                   @if (student.averageRating) {
                     <div class="review__info-row">
                       <span class="review__label">Rating promedio</span>
