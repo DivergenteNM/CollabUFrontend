@@ -127,6 +127,7 @@ a.mat-mdc-card:hover {
 .u-chip.status-accepted,
 .u-chip.status-approved,
 .u-chip.status-completed,
+.u-chip.status-interview,
 .u-chip.status-active {
   background: var(--color-success-bg);
   color: var(--color-success-text);
@@ -149,7 +150,22 @@ a.mat-mdc-card:hover {
 }
 
 // -----------------------------------------------------------------------------
-// 14.6 Formularios — spacing consistente, textarea comfortable
+// Elevation, Surface & Typographic Utilities
+// -----------------------------------------------------------------------------
+
+.bg-base,
+.background-base { background-color: var(--background-base) !important; }
+.surface-card    { background-color: var(--surface-card) !important; }
+.surface-hover   { background-color: var(--surface-hover) !important; }
+.surface-active  { background-color: var(--surface-active) !important; }
+.border-subtle   { border-color: var(--border-subtle) !important; }
+
+.text-primary    { color: var(--text-primary) !important; }
+.text-secondary  { color: var(--text-secondary) !important; }
+.text-muted      { color: var(--text-muted) !important; }
+
+// -----------------------------------------------------------------------------
+// 14.6 Formularios — spacing consistente, selects y textareas accesibles
 // -----------------------------------------------------------------------------
 
 .u-form-row {
@@ -167,6 +183,44 @@ a.mat-mdc-card:hover {
   justify-content: flex-end;
   margin-top: var(--space-3);
   flex-wrap: wrap;
+}
+
+// Estilos globales de form-field y select para garantizar contraste
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--border-color);
+  --mdc-outlined-text-field-hover-outline-color: var(--color-primary-400);
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary-400);
+  --mdc-outlined-text-field-label-text-color: var(--text-secondary);
+  --mdc-outlined-text-field-hover-label-text-color: var(--text-primary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--color-primary-400);
+  --mdc-outlined-text-field-input-text-color: var(--text-primary);
+  --mdc-outlined-text-field-input-text-placeholder-color: var(--text-tertiary);
+}
+
+.mat-mdc-select-value {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-select-arrow {
+  color: var(--text-secondary) !important;
+}
+
+.mat-mdc-select-panel {
+  background-color: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.mat-mdc-option {
+  color: var(--text-primary) !important;
+
+  &:hover:not(.mdc-list-item--disabled) {
+    background-color: var(--bg-hover) !important;
+  }
+
+  &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+    background-color: var(--bg-selected) !important;
+    color: var(--color-primary-400) !important;
+  }
 }
 
 // Textarea con altura mínima cómoda

@@ -34,4 +34,22 @@ html {
     typography: Inter,
     density: 0,
   ));
+
+  // Bridge M3 sys tokens to Collab-U dark slate elevation & WCAG AAA tokens
+  --mat-sys-surface:                   var(--bg-primary);
+  --mat-sys-surface-dim:               var(--bg-primary);
+  --mat-sys-surface-bright:            var(--bg-secondary);
+  --mat-sys-surface-container-lowest:  var(--bg-primary);
+  --mat-sys-surface-container-low:     var(--bg-secondary);
+  --mat-sys-surface-container:         var(--bg-card);
+  --mat-sys-surface-container-high:    var(--bg-elevated);
+  --mat-sys-surface-container-highest: var(--bg-elevated);
+
+  --mat-sys-on-surface:                var(--text-primary);
+  --mat-sys-on-surface-variant:        var(--text-secondary);
+  --mat-sys-outline:                   var(--text-tertiary);
+  --mat-sys-outline-variant:           var(--border-subtle);
+
+  --mat-sys-primary:                   var(--color-primary-400);
+  --mat-sys-on-primary:                #0C0D0F;
 }

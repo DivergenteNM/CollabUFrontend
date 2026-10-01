@@ -2,18 +2,19 @@
     :host { display: block; padding: 24px; max-width: 1200px; margin: 0 auto; }
 
     .my-apps__header {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       h1 {
         font-size: 1.75rem;
         font-weight: 700;
         margin: 0;
-        color: var(--mat-sys-on-surface);
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
       }
     }
 
     .my-apps__subtitle {
-      margin: 4px 0 0;
-      color: var(--mat-sys-on-surface-variant);
+      margin: 6px 0 0;
+      color: var(--text-secondary);
       font-size: 0.9375rem;
     }
 
@@ -21,16 +22,12 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       margin-bottom: 24px;
-      padding: 12px 16px;
-      background: var(--mat-sys-surface-container-low, var(--bg-card));
-      border-radius: var(--border-radius-md, 12px);
-      box-shadow: var(--shadow-sm);
     }
 
     .my-apps__filter {
-      min-width: 180px;
+      min-width: 200px;
     }
 
     .my-apps__list {

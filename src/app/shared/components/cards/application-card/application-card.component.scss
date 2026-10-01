@@ -80,16 +80,16 @@
   }
 }
 
-.theme-green   { background: var(--color-primary-50, #eef7f0); }
-.text-green    { color: var(--color-primary-600, #2e7544); }
-.theme-blue    { background: var(--color-accent-50, #eff6fb); }
-.text-blue     { color: var(--color-accent, #276a93); }
-.theme-purple  { background: #f3e8ff; }
-.text-purple   { color: #7e22ce; }
-.theme-amber   { background: var(--color-warning-bg, #fef5e7); }
-.text-amber    { color: var(--color-warning, #c2781b); }
-.theme-indigo  { background: #e0e7ff; }
-.text-indigo   { color: #4338ca; }
+.theme-green   { background: rgba(16, 185, 129, 0.08); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25); }
+.text-green    { color: #34D399; }
+.theme-blue    { background: rgba(16, 185, 129, 0.08); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25); }
+.text-blue     { color: #34D399; }
+.theme-purple  { background: rgba(161, 161, 170, 0.08); color: #E4E4E7; border: 1px solid rgba(161, 161, 170, 0.20); }
+.text-purple   { color: #E4E4E7; }
+.theme-amber   { background: rgba(245, 158, 11, 0.08); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.25); }
+.text-amber    { color: #FBBF24; }
+.theme-indigo  { background: rgba(16, 185, 129, 0.08); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25); }
+.text-indigo   { color: #34D399; }
 
 .app-card__header-body {
   flex: 1;
@@ -99,7 +99,7 @@
 .app-card__title {
   font-size: 1.0625rem;
   font-weight: 700;
-  color: var(--text-primary, #1a241c);
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.35;
   display: -webkit-box;
@@ -115,16 +115,21 @@
   gap: 4px;
   margin-top: 4px;
   font-size: 0.8125rem;
-  color: var(--text-secondary, #4a584c);
+  color: var(--text-secondary);
   font-weight: 500;
 
-  mat-icon { font-size: 15px; width: 15px; height: 15px; }
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: var(--text-tertiary);
+  }
 }
 
 // ── Carta de presentación ─────────────────────────────────────────────
 .app-card__cover {
   font-size: 0.84375rem;
-  color: var(--text-secondary, #4a584c);
+  color: var(--text-secondary);
   line-height: 1.45;
   margin: 0 0 14px 0;
   display: -webkit-box;
@@ -155,7 +160,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: var(--text-primary, #1a241c);
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
 
@@ -163,7 +168,7 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
-    color: var(--text-tertiary, #6e7d70);
+    color: var(--text-tertiary);
     flex-shrink: 0;
   }
 }
@@ -181,10 +186,10 @@
   }
 }
 
-.app-card__gauge-track { stroke: var(--bg-tertiary, #e3e8e0); }
+.app-card__gauge-track { stroke: var(--bg-tertiary); }
 
 .app-card__gauge-progress {
-  stroke: var(--color-accent, #276a93);
+  stroke: var(--color-primary-400);
   stroke-linecap: round;
   transition: stroke-dashoffset 0.6s ease;
 }
@@ -202,19 +207,20 @@
 .app-card__gauge-value {
   font-size: 0.875rem;
   font-weight: 800;
-  color: var(--text-primary, #1a241c);
+  color: var(--text-primary);
   line-height: 1.1;
 }
 
 .app-card__gauge-sub {
   font-size: 0.5625rem;
   font-weight: 600;
-  color: var(--text-tertiary, #6e7d70);
+  color: var(--text-tertiary);
 }
 
 // ── Panel del stepper ─────────────────────────────────────────────────
 .app-card__stepper-panel {
-  background: var(--bg-secondary, #f3f6f3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-md, 10px);
   padding: 14px 12px 10px;
   margin-bottom: 16px;
@@ -250,24 +256,25 @@
   mat-icon { font-size: 17px; width: 17px; height: 17px; }
 
   &--detail {
-    background: var(--bg-card, #ffffff);
-    border: 1px solid var(--border-color, #d3ddd4);
-    color: var(--text-primary, #1a241c);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 
     &:hover {
-      background: var(--bg-hover, #e6efe8);
-      border-color: var(--color-primary-300, #84c49b);
+      background: var(--bg-hover);
+      border-color: var(--color-primary-400);
+      color: var(--text-primary);
     }
   }
 
   &--primary {
-    background: var(--color-primary, #388e53);
-    border: 1px solid var(--color-primary, #388e53);
-    color: var(--text-on-primary, #f8faf8);
+    background: var(--color-primary-600);
+    border: 1px solid var(--color-primary-600);
+    color: var(--text-on-primary);
 
     &:hover {
-      background: var(--color-primary-600, #2e7544);
-      border-color: var(--color-primary-600, #2e7544);
+      background: var(--color-primary-700);
+      border-color: var(--color-primary-700);
     }
   }
 }

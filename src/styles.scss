@@ -35,6 +35,13 @@ body {
 
 .dark-theme body {
   color-scheme: dark;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme ::selection {
+  background-color: var(--color-primary-200);
+  color: var(--text-primary);
 }
 
 // =============================================================================

@@ -3,7 +3,7 @@ import { ApplicationStatus, ProjectStatus } from '../enums';
 export interface StatusConfig {
   label: string;
   icon: string;
-  tone: 'success' | 'warning' | 'error' | 'info' | 'neutral';
+  tone: 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'interview';
 }
 
 export type StatusDomain =
@@ -20,7 +20,7 @@ const APPLICATION: Record<string, StatusConfig> = {
   [ApplicationStatus.PENDING]:            { label: 'Pendiente',            icon: 'schedule',       tone: 'warning' },
   [ApplicationStatus.UNDER_REVIEW]:       { label: 'En revisión',          icon: 'visibility',     tone: 'info' },
   [ApplicationStatus.SHORTLISTED]:        { label: 'Preseleccionada',      icon: 'star_outline',   tone: 'info' },
-  [ApplicationStatus.INTERVIEW]:          { label: 'Entrevista',           icon: 'event',          tone: 'info' },
+  [ApplicationStatus.INTERVIEW]:          { label: 'Entrevista',           icon: 'event',          tone: 'interview' },
   [ApplicationStatus.ACCEPTED]:           { label: 'Aceptada',             icon: 'check_circle',   tone: 'success' },
   [ApplicationStatus.PENDING_SUPERVISOR]: { label: 'Esperando asesor',     icon: 'person_search',  tone: 'warning' },
   [ApplicationStatus.REJECTED]:           { label: 'Rechazada',            icon: 'cancel',         tone: 'error' },
@@ -116,14 +116,15 @@ export function statusLabel(domain: StatusDomain, value: string): string {
   return statusOf(domain, value).label;
 }
 
-const TONE_COLORS: Record<StatusConfig['tone'], { color: string; bg: string }> = {
-  success: { color: '#18572F', bg: '#E6F5EB' },
-  warning: { color: '#834D09', bg: '#FEF5E7' },
-  error:   { color: '#8C1E1E', bg: '#FDF0F0' },
-  info:    { color: '#154D6F', bg: '#E6F2FA' },
-  neutral: { color: '#4A584C', bg: '#EEF2EC' },
+const TONE_COLORS: Record<StatusConfig['tone'], { color: string; bg: string; border: string }> = {
+  success:   { color: 'var(--color-success-text)', bg: 'var(--color-success-bg)', border: 'var(--color-success-border)' },
+  warning:   { color: 'var(--color-warning-text)', bg: 'var(--color-warning-bg)', border: 'var(--color-warning-border)' },
+  error:     { color: 'var(--color-error-text)',   bg: 'var(--color-error-bg)',   border: 'var(--color-error-border)' },
+  info:      { color: 'var(--color-info-text)',    bg: 'var(--color-info-bg)',    border: 'var(--color-info-border)' },
+  neutral:   { color: 'var(--text-secondary)',     bg: 'var(--bg-secondary)',     border: 'var(--border-color)' },
+  interview: { color: 'var(--color-success-text)', bg: 'var(--color-success-bg)', border: 'var(--color-success-border)' },
 };
 
-export function statusColors(tone: StatusConfig['tone']): { color: string; bg: string } {
-  return TONE_COLORS[tone];
+export function statusColors(tone: StatusConfig['tone']): { color: string; bg: string; border: string } {
+  return TONE_COLORS[tone] ?? TONE_COLORS.neutral;
 }
