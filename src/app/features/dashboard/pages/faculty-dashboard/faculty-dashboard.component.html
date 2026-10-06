@@ -1,135 +1,479 @@
 <div class="faculty-dashboard">
-  @if (!hasProfilePicture()) {
-    <div class="dashboard__welcome-banner">
-      <div class="dashboard__user-avatar">
-        <div class="dashboard__user-avatar-placeholder">
-          <span>{{ userInitials() }}</span>
+  <!-- ============================================================ -->
+  <!-- 1. HERO / BANNER DE BIENVENIDA DOCENTE                       -->
+  <!-- ============================================================ -->
+  <header class="dashboard__hero">
+    <div class="hero__content">
+      <!-- Avatar del docente con foto real o iniciales -->
+      <div class="hero__avatar-container">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl() | imageUrl" [alt]="authStore.displayName()" class="hero__avatar-img" />
+        } @else {
+          <div class="hero__avatar-placeholder">
+            <span>{{ userInitials() }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Saludo e información académica -->
+      <div class="hero__info">
+        <div class="hero__greeting-row">
+          <h1 class="hero__title">
+            {{ greetingTime() }}, <span class="hero__name">{{ authStore.displayName() }}</span>! 🎓
+          </h1>
         </div>
+
+        <div class="hero__academic-meta">
+          <span class="academic-badge">
+            <mat-icon>psychology</mat-icon>
+            {{ supervisorRoleLabel() }}
+          </span>
+          @if (supervisorProfile()?.department) {
+            <span class="academic-badge academic-badge--subtle">
+              <mat-icon>domain</mat-icon>
+              {{ supervisorProfile()?.department }}
+            </span>
+          }
+          @if (supervisorProfile()?.employeeCode) {
+            <span class="academic-badge academic-badge--subtle">
+              <mat-icon>badge</mat-icon>
+              Cód. {{ supervisorProfile()?.employeeCode }}
+            </span>
+          }
+          <span class="academic-badge academic-badge--accent" matTooltip="Capacidad de tutoría académica">
+            <mat-icon>groups</mat-icon>
+            {{ supervisorProfile()?.currentStudents || activeCount() }}/{{ supervisorProfile()?.maxStudents || 10 }} Estudiantes
+          </span>
+        </div>
+
+        <p class="hero__subtitle">
+          Panel de asesoría académica, evaluación de jurados y seguimiento formativo de estudiantes en Collab-U.
+        </p>
       </div>
-      <div class="dashboard__user-info">
-        <h2>¡Hola, {{ authStore.displayName() }}! 👋</h2>
-        <p>Bienvenido a tu panel docente en Collab-U</p>
-      </div>
-      <a mat-stroked-button routerLink="/profile/edit" class="dashboard__edit-profile-btn">
-        <mat-icon>photo_camera</mat-icon> Editar Foto
+    </div>
+
+    <!-- Acciones en el Hero -->
+    <div class="hero__actions">
+      <a mat-flat-button color="primary" routerLink="/my-students" class="hero__btn hero__btn--primary">
+        <mat-icon>school</mat-icon> Mis Estudiantes
+      </a>
+      <a mat-stroked-button routerLink="/projects" class="hero__btn">
+        <mat-icon>folder</mat-icon> Proyectos
+      </a>
+      <a mat-stroked-button routerLink="/skills" class="hero__btn">
+        <mat-icon>insights</mat-icon> Tendencias de Skills
       </a>
     </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- 2. ALERTA DE ASIGNACIONES PENDIENTES DE ACEPTACIÓN          -->
+  <!-- ============================================================ -->
+  @if (pendingAcceptanceCount() > 0) {
+    <section class="dashboard__pending-banner">
+      <div class="pending-banner__icon-box">
+        <mat-icon>notification_important</mat-icon>
+      </div>
+      <div class="pending-banner__info">
+        <div class="pending-banner__tag">
+          <span class="live-dot"></span>
+          CONFIRMACIÓN REQUERIDA
+        </div>
+        <h3 class="pending-banner__title">
+          Tienes {{ pendingAcceptanceCount() }} asignación(es) académica(s) pendiente(s) por responder
+        </h3>
+        <p class="pending-banner__text">
+          La coordinación te ha asignado como asesor o jurado. Confirma tu participación para habilitar el seguimiento del estudiante.
+        </p>
+      </div>
+      <div class="pending-banner__cta">
+        <button mat-flat-button color="primary" (click)="setFilter('pending')">
+          <mat-icon>rate_review</mat-icon> Revisar Asignaciones
+        </button>
+      </div>
+    </section>
   }
 
+  <!-- ============================================================ -->
+  <!-- 3. STATS / KPIS DEL DOCENTE                                  -->
+  <!-- ============================================================ -->
   <section class="dashboard__stats">
     @if (isLoading()) {
-      @for (_ of [1,2,3]; track $index) {
-        <app-skeleton width="100%" height="120px" />
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <app-skeleton width="100%" height="110px" />
       }
     } @else {
+      <!-- 1. Total Asignados -->
       <app-stat-card
         icon="groups"
         [value]="totalCount()"
-        label="Estudiantes Asignados"
+        label="Estudiantes a Cargo"
+        hint="Total de asignaciones registradas a tu cargo"
+        trendLabel="Historial de tutorías"
         color="primary"
         [clickable]="true"
         (clicked)="router.navigate(['/my-students'])" />
+
+      <!-- 2. Supervisiones Activas -->
       <app-stat-card
-        icon="check_circle"
+        icon="play_circle"
         [value]="activeCount()"
-        label="Asignaciones Activas"
-        color="accent" />
+        label="Supervisiones Activas"
+        hint="Estudiantes con procesos académicos en curso activo"
+        trendLabel="En seguimiento actual"
+        color="accent"
+        [clickable]="true"
+        (clicked)="setFilter('active')" />
+
+      <!-- 3. Por Aceptar -->
+      <app-stat-card
+        icon="pending_actions"
+        [value]="pendingAcceptanceCount()"
+        label="Por Aceptar"
+        hint="Asignaciones que requieren tu confirmación docente"
+        [trendLabel]="pendingAcceptanceCount() > 0 ? 'Requiere tu respuesta' : 'Al día'"
+        [color]="pendingAcceptanceCount() > 0 ? 'warn' : 'primary'"
+        [clickable]="true"
+        (clicked)="setFilter('pending')" />
+
+      <!-- 4. Roles de Jurado -->
+      <app-stat-card
+        icon="gavel"
+        [value]="juradoCount()"
+        label="Roles de Jurado"
+        hint="Asignaciones como jurado evaluador de anteproyecto o sustentación"
+        trendLabel="Comités evaluadores"
+        color="accent"
+        [clickable]="true"
+        (clicked)="setFilter('jurado')" />
+
+      <!-- 5. Completadas -->
       <app-stat-card
         icon="verified"
         [value]="completedCount()"
-        label="Completadas"
-        color="primary" />
+        label="Culminadas con Éxito"
+        hint="Proyectos y prácticas finalizadas con aprobación académica"
+        trendLabel="Titulados y avalados"
+        color="primary"
+        [clickable]="true"
+        (clicked)="setFilter('completed')" />
     }
   </section>
 
-  <section class="dashboard__students">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>school</mat-icon> Mis Estudiantes
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        @if (isLoading()) {
-          @for (_ of [1,2,3,4]; track $index) {
-            <app-skeleton width="100%" height="56px" />
-          }
-        } @else if (assignments().length === 0) {
-          <app-empty-state
-            icon="people_outline"
-            title="Sin estudiantes asignados"
-            message="Aún no tienes estudiantes bajo tu supervisión." />
-        } @else {
-          <div class="students-list">
-            @for (a of assignments(); track a.id) {
-              <div class="student-row"
-                   (click)="navigateToStudent(a.applicationId)"
-                   (keydown.enter)="navigateToStudent(a.applicationId)"
-                   tabindex="0"
-                   role="button">
-                <div class="student-row__avatar">
-                  <mat-icon>person</mat-icon>
-                </div>
-                <div class="student-row__info">
-                  <span class="student-row__name">{{ a.studentName }}</span>
-                  <span class="student-row__meta">
-                    <mat-icon>folder</mat-icon>
-                    <span class="truncate">{{ a.projectTitle }}</span>
-                    <span class="student-row__dot">·</span>
-                    <span class="truncate">{{ a.companyName }}</span>
-                  </span>
-                </div>
-                <app-status-badge [status]="a.status" domain="assignment" size="sm" />
-              </div>
-            }
-          </div>
-          <button mat-button class="dashboard__view-all"
-                  (click)="router.navigate(['/my-students'])">
-            Ver todos los estudiantes
-          </button>
-        }
-      </mat-card-content>
-    </mat-card>
-  </section>
+  <!-- ============================================================ -->
+  <!-- 4. GRID PRINCIPAL (BENTO: 2 COLUMNAS)                         -->
+  <!-- ============================================================ -->
+  <section class="dashboard__main-grid">
+    <!-- COLUMNA IZQUIERDA: GESTIÓN DE TUTORÍAS -->
+    <div class="dashboard__col-primary">
 
-  @defer (on viewport) {
-    <section class="dashboard__activity">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>notifications</mat-icon> Notificaciones Recientes
-          </mat-card-title>
+      <!-- ======================================================== -->
+      <!-- A. ESTUDIANTES Y TUTORÍAS ACADÉMICAS                     -->
+      <!-- ======================================================== -->
+      <mat-card class="dashboard__card">
+        <mat-card-header class="dashboard__card-header">
+          <div class="card-header__title-group">
+            <div class="card-header__icon-bubble card-header__icon-bubble--primary">
+              <mat-icon>school</mat-icon>
+            </div>
+            <div>
+              <h2 class="card-header__title">Estudiantes y Tutorías Académicas</h2>
+              <p class="card-header__subtitle">
+                Supervisión formativa de anteproyectos, entregables y vinculación con proyectos
+              </p>
+            </div>
+          </div>
+          @if (assignments().length > 0) {
+            <a mat-button color="primary" routerLink="/my-students" class="card-header__link-btn">
+              Ver todos ({{ totalCount() }}) <mat-icon>chevron_right</mat-icon>
+            </a>
+          }
         </mat-card-header>
-        <mat-card-content>
-          @if (notificationsStore.recentNotifications().length === 0) {
+
+        <!-- Filtros interactivos por pestañas -->
+        @if (assignments().length > 0) {
+          <div class="faculty__filter-tabs">
+            <button
+              type="button"
+              class="filter-tab"
+              [class.filter-tab--active]="activeFilter() === 'all'"
+              (click)="setFilter('all')">
+              Todos <span class="tab-count">{{ assignments().length }}</span>
+            </button>
+            <button
+              type="button"
+              class="filter-tab"
+              [class.filter-tab--active]="activeFilter() === 'active'"
+              (click)="setFilter('active')">
+              Activos <span class="tab-count">{{ activeCount() }}</span>
+            </button>
+            <button
+              type="button"
+              class="filter-tab"
+              [class.filter-tab--active]="activeFilter() === 'pending'"
+              (click)="setFilter('pending')">
+              Por Aceptar <span class="tab-count">{{ pendingAcceptanceCount() }}</span>
+            </button>
+            <button
+              type="button"
+              class="filter-tab"
+              [class.filter-tab--active]="activeFilter() === 'jurado'"
+              (click)="setFilter('jurado')">
+              Como Jurado <span class="tab-count">{{ juradoCount() }}</span>
+            </button>
+            <button
+              type="button"
+              class="filter-tab"
+              [class.filter-tab--active]="activeFilter() === 'completed'"
+              (click)="setFilter('completed')">
+              Completados <span class="tab-count">{{ completedCount() }}</span>
+            </button>
+          </div>
+        }
+
+        <mat-card-content class="dashboard__card-body">
+          @if (isLoading()) {
+            <div class="students__loading-list">
+              @for (_ of [1, 2, 3, 4]; track $index) {
+                <app-skeleton width="100%" height="86px" />
+              }
+            </div>
+          } @else if (filteredAssignments().length === 0) {
             <app-empty-state
-              icon="notifications_none"
-              title="Sin notificaciones"
-              message="No tienes notificaciones recientes." />
+              icon="school"
+              title="Sin estudiantes en esta categoría"
+              message="No tienes estudiantes asignados con este filtro en este momento."
+              actionLabel="Ver Todos los Estudiantes"
+              (actionClicked)="setFilter('all')" />
           } @else {
-            <div class="dashboard__notifications-list">
-              @for (n of notificationsStore.recentNotifications(); track n.id) {
-                <div class="notification-item" [class.unread]="!n.isRead">
-                  <mat-icon class="notification-item__icon">
-                    {{ n.isRead ? 'notifications_none' : 'notifications_active' }}
-                  </mat-icon>
-                  <div class="notification-item__content">
-                    <span class="notification-item__title">{{ n.title }}</span>
-                    <span class="notification-item__message">{{ n.message }}</span>
-                    <span class="notification-item__time">{{ n.createdAt | relativeTime }}</span>
+            <div class="students__list">
+              @for (a of filteredAssignments(); track a.id) {
+                <div class="student-card" (click)="navigateToStudent(a.applicationId)">
+                  <!-- Avatar e iniciales -->
+                  <div class="student-card__avatar">
+                    <div class="avatar-placeholder">
+                      {{ getStudentInitials(a.studentName) }}
+                    </div>
+                  </div>
+
+                  <!-- Información del estudiante y proyecto -->
+                  <div class="student-card__info">
+                    <div class="student-card__name-row">
+                      <h3 class="student-card__name">{{ a.studentName }}</h3>
+                      @if (a.studentCode) {
+                        <span class="student-card__code">Cód. {{ a.studentCode }}</span>
+                      }
+                      <span class="role-badge" [class]="getRoleBadgeClass(a.role)">
+                        {{ getRoleLabel(a.role) }}
+                      </span>
+                    </div>
+
+                    <p class="student-card__project">
+                      <mat-icon>folder_open</mat-icon>
+                      <span class="truncate">{{ a.projectTitle }}</span>
+                    </p>
+
+                    <div class="student-card__meta">
+                      <span class="meta-tag">
+                        <mat-icon>apartment</mat-icon>
+                        <span class="truncate">{{ a.companyName }}</span>
+                      </span>
+                      <span class="meta-dot">·</span>
+                      <span class="meta-tag">
+                        <mat-icon>calendar_today</mat-icon>
+                        Inicio {{ a.startDate | date:'d MMM yyyy' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Estado oficial de la asignación -->
+                  <div class="student-card__status">
+                    <app-status-badge [status]="a.status" domain="assignment" size="sm" />
+                  </div>
+
+                  <!-- Acciones del docente -->
+                  <div class="student-card__actions" (click)="$event.stopPropagation()">
+                    @if (a.status === 'pending_acceptance') {
+                      <button
+                        mat-flat-button
+                        color="primary"
+                        class="action-btn action-btn--accept"
+                        [disabled]="processingId() === a.id"
+                        (click)="acceptAssignment(a, $event)">
+                        <mat-icon>check</mat-icon> Aceptar
+                      </button>
+                      <button
+                        mat-stroked-button
+                        color="warn"
+                        class="action-btn action-btn--decline"
+                        [disabled]="processingId() === a.id"
+                        (click)="declineAssignment(a, $event)">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    } @else {
+                      <button
+                        mat-stroked-button
+                        class="action-btn action-btn--supervise"
+                        (click)="navigateToStudent(a.applicationId)">
+                        <span>Supervisar</span>
+                        <mat-icon>arrow_forward</mat-icon>
+                      </button>
+                    }
                   </div>
                 </div>
               }
             </div>
-            <button mat-button class="dashboard__view-all"
-                    (click)="router.navigate(['/notifications'])">
-              Ver todas las notificaciones
+          }
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- COLUMNA DERECHA: SIDEBAR DOCENTE -->
+    <aside class="dashboard__col-sidebar">
+
+      <!-- ======================================================== -->
+      <!-- B. ACCESOS RÁPIDOS DOCENTES                             -->
+      <!-- ======================================================== -->
+      <mat-card class="dashboard__card sidebar__card">
+        <mat-card-header class="dashboard__card-header">
+          <div class="card-header__title-group">
+            <div class="card-header__icon-bubble card-header__icon-bubble--primary">
+              <mat-icon>bolt</mat-icon>
+            </div>
+            <div>
+              <h2 class="card-header__title">Accesos Rápidos</h2>
+              <p class="card-header__subtitle">Herramientas docentes clave</p>
+            </div>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content class="dashboard__card-body">
+          <div class="quick-actions__grid">
+            <a routerLink="/my-students" class="quick-action-tile">
+              <div class="quick-action-tile__icon quick-action-tile__icon--green">
+                <mat-icon>school</mat-icon>
+              </div>
+              <div class="quick-action-tile__text">
+                <span class="quick-action-tile__label">Mis Estudiantes</span>
+                <span class="quick-action-tile__desc">Lista detallada y actas</span>
+              </div>
+              <mat-icon class="quick-action-tile__arrow">chevron_right</mat-icon>
+            </a>
+
+            <a routerLink="/projects" class="quick-action-tile">
+              <div class="quick-action-tile__icon quick-action-tile__icon--blue">
+                <mat-icon>folder</mat-icon>
+              </div>
+              <div class="quick-action-tile__text">
+                <span class="quick-action-tile__label">Proyectos Disponibles</span>
+                <span class="quick-action-tile__desc">Ofertas y convocatorias</span>
+              </div>
+              <mat-icon class="quick-action-tile__arrow">chevron_right</mat-icon>
+            </a>
+
+            <a routerLink="/skills" class="quick-action-tile">
+              <div class="quick-action-tile__icon quick-action-tile__icon--amber">
+                <mat-icon>insights</mat-icon>
+              </div>
+              <div class="quick-action-tile__text">
+                <span class="quick-action-tile__label">Tendencias de Skills</span>
+                <span class="quick-action-tile__desc">Demanda laboral de competencias</span>
+              </div>
+              <mat-icon class="quick-action-tile__arrow">chevron_right</mat-icon>
+            </a>
+
+            <a routerLink="/profile" class="quick-action-tile">
+              <div class="quick-action-tile__icon quick-action-tile__icon--purple">
+                <mat-icon>badge</mat-icon>
+              </div>
+              <div class="quick-action-tile__text">
+                <span class="quick-action-tile__label">Mi Perfil Académico</span>
+                <span class="quick-action-tile__desc">Departamento y especialidad</span>
+              </div>
+              <mat-icon class="quick-action-tile__arrow">chevron_right</mat-icon>
+            </a>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- ======================================================== -->
+      <!-- C. PRO-TIP DOCENTE (ACOMPAÑAMIENTO FORMATIVO)           -->
+      <!-- ======================================================== -->
+      <div class="protip-card">
+        <div class="protip-card__top">
+          <span class="protip-card__badge">
+            <mat-icon>school</mat-icon>
+            Acompañamiento Formativo
+          </span>
+        </div>
+        <h3 class="protip-card__title">Retroalimentación continua en Workspace</h3>
+        <p class="protip-card__text">
+          La retroalimentación periódica a los entregables y anteproyectos dentro de los primeros 5 días hábiles incrementa en un 40% la calidad de las sustentaciones finales de grado.
+        </p>
+        <a mat-stroked-button routerLink="/my-students" class="protip-card__btn">
+          Ver Mis Estudiantes <mat-icon>arrow_forward</mat-icon>
+        </a>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- D. NOTIFICACIONES Y ACTIVIDAD RECIENTE                  -->
+      <!-- ======================================================== -->
+      <mat-card class="dashboard__card sidebar__card">
+        <mat-card-header class="dashboard__card-header">
+          <div class="card-header__title-group">
+            <div class="card-header__icon-bubble card-header__icon-bubble--accent">
+              <mat-icon>notifications</mat-icon>
+            </div>
+            <div>
+              <h2 class="card-header__title">Notificaciones</h2>
+              <p class="card-header__subtitle">Avisos y entregas recientes</p>
+            </div>
+          </div>
+          @if (notificationsStore.unreadCount() > 0) {
+            <span class="notifications__unread-pill">
+              {{ notificationsStore.unreadCount() }} nueva(s)
+            </span>
+          }
+        </mat-card-header>
+
+        <mat-card-content class="dashboard__card-body">
+          @if (notificationsStore.recentNotifications().length === 0) {
+            <app-empty-state
+              icon="notifications_none"
+              title="Sin notificaciones pendientes"
+              message="Las solicitudes de revisión de entregables y cambios de estado aparecerán aquí." />
+          } @else {
+            <div class="notifications__list">
+              @for (n of notificationsStore.recentNotifications().slice(0, 4); track n.id) {
+                <div
+                  class="notif-item"
+                  [class.notif-item--unread]="!n.isRead"
+                  (click)="router.navigate(['/notifications'])">
+                  <div class="notif-item__icon-box">
+                    <mat-icon>{{ n.isRead ? 'notifications_none' : 'notifications_active' }}</mat-icon>
+                  </div>
+                  <div class="notif-item__content">
+                    <div class="notif-item__header">
+                      <span class="notif-item__title">{{ n.title }}</span>
+                      @if (!n.isRead) {
+                        <span class="notif-item__dot"></span>
+                      }
+                    </div>
+                    <p class="notif-item__message">{{ n.message }}</p>
+                    <span class="notif-item__time">{{ n.createdAt | relativeTime }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <button mat-button class="sidebar__view-all-btn" (click)="router.navigate(['/notifications'])">
+              Ver centro de notificaciones <mat-icon>chevron_right</mat-icon>
             </button>
           }
         </mat-card-content>
       </mat-card>
-    </section>
-  } @placeholder {
-    <app-skeleton width="100%" height="200px" />
-  }
+
+    </aside>
+  </section>
 </div>

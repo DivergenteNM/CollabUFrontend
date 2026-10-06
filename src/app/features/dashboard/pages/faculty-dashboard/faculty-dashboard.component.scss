@@ -2,123 +2,395 @@
 
 :host {
   display: block;
+  width: 100%;
 }
 
 .faculty-dashboard {
   @include mx.page-container;
+  padding-top: 24px;
+  padding-bottom: 48px;
 }
 
-.dashboard__welcome-banner {
+// =============================================================================
+// 1. HERO / BANNER DE BIENVENIDA DOCENTE
+// =============================================================================
+.dashboard__hero {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: var(--mat-sys-surface-container-low, #ffffff);
-  border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
-  border-radius: 16px;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 28px 32px;
+  background: linear-gradient(
+    135deg,
+    var(--bg-card) 0%,
+    color-mix(in srgb, var(--color-primary-50, #EEF7F0) 60%, var(--bg-card)) 100%
+  );
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-xl, 20px);
   margin-bottom: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-}
-
-.dashboard__user-avatar {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  position: relative;
   overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid var(--mat-sys-primary, #3b82f6);
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--color-primary-500) 8%, transparent) 0%, transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px;
+    gap: 20px;
   }
 }
 
-.dashboard__user-avatar-placeholder {
+.hero__content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+.hero__avatar-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: var(--shadow-md);
+  padding: 3px;
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+}
+
+.hero__avatar-img {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #ffffff;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-elevated);
+  display: block;
+}
+
+.hero__avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--color-primary-600);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  letter-spacing: -0.5px;
 }
 
-.dashboard__user-info {
+.hero__info {
   flex: 1;
+  min-width: 0;
+}
 
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
+.hero__greeting-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
 
-  p {
-    margin: 2px 0 0;
-    font-size: 0.875rem;
-    color: var(--mat-sys-on-surface-variant, #666);
+.hero__title {
+  margin: 0;
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  line-height: 1.25;
+
+  @media (max-width: 640px) {
+    font-size: 1.35rem;
   }
 }
 
-.dashboard__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+.hero__name {
+  color: var(--color-primary-600);
 }
 
-.dashboard__students {
-  margin-bottom: 24px;
+.hero__academic-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
-  mat-card-header {
-    margin-bottom: 16px;
+.academic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-pill, 999px);
+  background: color-mix(in srgb, var(--color-primary-500) 12%, transparent);
+  color: var(--color-primary-700);
+  border: 1px solid color-mix(in srgb, var(--color-primary-500) 24%, transparent);
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
   }
 
-  mat-card-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.125rem;
+  &--subtle {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-color: var(--border-subtle);
+  }
+
+  &--accent {
+    background: color-mix(in srgb, var(--color-accent-500) 12%, transparent);
+    color: var(--color-accent-700);
+    border-color: color-mix(in srgb, var(--color-accent-500) 24%, transparent);
   }
 }
 
-.students-list {
+.hero__subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.hero__actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+  flex-shrink: 0;
+
+  @media (max-width: 1024px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+  }
 }
 
-.student-row {
+.hero__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm, 8px);
+  padding: 0 18px;
+  height: 40px;
+  white-space: nowrap;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &--primary {
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary) 30%, transparent);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+    }
+  }
+}
+
+// =============================================================================
+// 2. ALERTA DE ASIGNACIONES PENDIENTES
+// =============================================================================
+.dashboard__pending-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: background-color 150ms ease;
-  border-radius: 8px;
+  gap: 20px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-warning-bg) 85%, var(--bg-card)) 0%,
+    var(--bg-card) 100%
+  );
+  border: 1px solid var(--color-warning-border);
+  border-left: 5px solid var(--color-warning);
+  border-radius: var(--border-radius-md, 12px);
+  box-shadow: var(--shadow-sm);
 
-  &:hover {
-    background-color: var(--mat-sys-surface-variant);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--mat-sys-primary);
-    outline-offset: -2px;
-  }
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  @media (max-width: 860px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 }
 
-.student-row__avatar {
-  width: 36px;
-  height: 36px;
+.pending-banner__icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  color: var(--color-warning-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.pending-banner__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pending-banner__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-warning-text);
+  margin-bottom: 4px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--mat-sys-surface-variant);
+  background-color: var(--color-warning);
+  box-shadow: 0 0 0 0 rgba(194, 120, 27, 0.7);
+  animation: pulse-warn 1.8s infinite;
+}
+
+@keyframes pulse-warn {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(194, 120, 27, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 7px rgba(194, 120, 27, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(194, 120, 27, 0);
+  }
+}
+
+.pending-banner__title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pending-banner__text {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.pending-banner__cta {
+  flex-shrink: 0;
+
+  @media (max-width: 860px) {
+    width: 100%;
+  }
+}
+
+// =============================================================================
+// 3. STATS / KPIS DEL DOCENTE
+// =============================================================================
+.dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+// =============================================================================
+// 4. MAIN BENTO GRID (2 COLUMNAS)
+// =============================================================================
+.dashboard__main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1.15fr);
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard__col-primary,
+.dashboard__col-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+// =============================================================================
+// MAT-CARD ESTILIZADO GENERAL
+// =============================================================================
+.dashboard__card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg, 16px);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: border-color 200ms ease;
+
+  &:hover {
+    border-color: var(--border-color);
+  }
+}
+
+.dashboard__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-header__title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.card-header__icon-bubble {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,46 +400,298 @@
     font-size: 20px;
     width: 20px;
     height: 20px;
-    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &--primary {
+    background: color-mix(in srgb, var(--color-primary-500) 12%, transparent);
+    color: var(--color-primary-600);
+  }
+
+  &--accent {
+    background: color-mix(in srgb, var(--color-accent-500) 12%, transparent);
+    color: var(--color-accent-600);
   }
 }
 
-.student-row__info {
+.card-header__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.card-header__subtitle {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.card-header__link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.dashboard__card-body {
+  padding: 20px 24px;
+}
+
+// =============================================================================
+// A. FILTROS Y LISTA DE ESTUDIANTES
+// =============================================================================
+.faculty__filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--border-radius-pill, 999px);
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  }
+
+  &--active {
+    background: var(--bg-elevated);
+    color: var(--color-primary-700);
+    border-color: var(--border-subtle);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .tab-count {
+      background: var(--color-primary-500);
+      color: #fff;
+    }
+  }
+}
+
+.tab-count {
+  font-size: 0.6875rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.students__loading-list,
+.students__list {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 12px;
+}
+
+.student-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-md, 12px);
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    border-color: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
+  }
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+.student-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-subtle);
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-primary-700);
+  background: color-mix(in srgb, var(--color-primary-500) 12%, transparent);
+}
+
+.student-card__info {
   flex: 1;
-  gap: 2px;
+  min-width: 0;
 }
 
-.student-row__name {
-  font-size: 0.875rem;
+.student-card__name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.student-card__name {
+  margin: 0;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--mat-sys-on-surface);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.student-row__meta {
+.student-card__code {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.role-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--border-radius-pill, 999px);
+  white-space: nowrap;
+
+  &--asesor {
+    background: color-mix(in srgb, var(--color-primary-500) 12%, transparent);
+    color: var(--color-primary-700);
+    border: 1px solid color-mix(in srgb, var(--color-primary-500) 24%, transparent);
+  }
+
+  &--jurado-ap {
+    background: color-mix(in srgb, var(--color-accent-500) 12%, transparent);
+    color: var(--color-accent-700);
+    border: 1px solid color-mix(in srgb, var(--color-accent-500) 24%, transparent);
+  }
+
+  &--jurado-fn {
+    background: var(--color-purple-bg, #F3E8FF);
+    color: var(--color-purple-text, #7E22CE);
+    border: 1px solid var(--color-purple-border, #E9D5FF);
+  }
+}
+
+.student-card__project {
+  margin: 0 0 6px;
   display: flex;
   align-items: center;
   gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--color-primary-600);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+}
+
+.student-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   font-size: 0.75rem;
-  color: var(--mat-sys-on-surface-variant);
-  min-width: 0;
+  color: var(--text-tertiary);
+}
+
+.meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-secondary);
 
   mat-icon {
     font-size: 14px;
     width: 14px;
     height: 14px;
-    flex-shrink: 0;
-  }
-
-  .truncate {
-    max-width: 160px;
   }
 }
 
-.student-row__dot {
+.meta-dot {
+  color: var(--text-disabled);
+}
+
+.student-card__status {
   flex-shrink: 0;
+}
+
+.student-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  height: 34px;
+  border-radius: var(--border-radius-xs, 6px);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &--accept {
+    padding: 0 14px;
+  }
+
+  &--decline {
+    min-width: 36px;
+    padding: 0 8px;
+  }
+
+  &--supervise {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 12px;
+  }
 }
 
 .truncate {
@@ -176,75 +700,291 @@
   white-space: nowrap;
 }
 
-.dashboard__view-all {
-  width: 100%;
-  margin-top: 8px;
+// =============================================================================
+// B. ACCESOS RÁPIDOS DOCENTES
+// =============================================================================
+.quick-actions__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.dashboard__activity {
-  margin-bottom: 24px;
+.quick-action-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--border-radius-md, 12px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 
-  mat-card-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.125rem;
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    border-color: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
+
+    .quick-action-tile__arrow {
+      transform: translateX(3px);
+      color: var(--color-primary-500);
+    }
   }
 }
 
-.dashboard__notifications-list {
+.quick-action-tile__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &--green {
+    background: color-mix(in srgb, var(--color-primary-500) 12%, transparent);
+    color: var(--color-primary-600);
+  }
+
+  &--blue {
+    background: color-mix(in srgb, var(--color-accent-500) 12%, transparent);
+    color: var(--color-accent-600);
+  }
+
+  &--amber {
+    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+    color: var(--color-warning-text);
+  }
+
+  &--purple {
+    background: var(--color-purple-bg, #F3E8FF);
+    color: var(--color-purple-text, #7E22CE);
+  }
+}
+
+.quick-action-tile__text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.notification-item {
+.quick-action-tile__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.quick-action-tile__desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.quick-action-tile__arrow {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-disabled);
+  transition: transform 150ms ease, color 150ms ease;
+  flex-shrink: 0;
+}
+
+// =============================================================================
+// C. PRO-TIP DOCENTE
+// =============================================================================
+.protip-card {
+  padding: 22px 24px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary-50, #EEF7F0) 70%, var(--bg-card)) 0%,
+    var(--bg-card) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-primary-500) 25%, transparent);
+  border-radius: var(--border-radius-lg, 16px);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.protip-card__top {
+  margin-bottom: 10px;
+}
+
+.protip-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-primary-700);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.protip-card__title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.protip-card__text {
+  margin: 0 0 16px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.protip-card__btn {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border-radius: var(--border-radius-sm, 8px);
+  color: var(--color-primary-700);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+  }
+}
+
+// =============================================================================
+// D. NOTIFICACIONES RECIENTES
+// =============================================================================
+.notifications__unread-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--border-radius-pill, 999px);
+  background: color-mix(in srgb, var(--color-accent-500) 15%, transparent);
+  color: var(--color-accent-700);
+}
+
+.notifications__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background-color 150ms ease;
 
   &:last-child {
     border-bottom: none;
   }
 
-  &.unread {
-    .notification-item__title {
-      font-weight: 600;
+  &:hover {
+    .notif-item__title {
+      color: var(--color-primary-600);
+    }
+  }
+
+  &--unread {
+    .notif-item__title {
+      font-weight: 700;
     }
 
-    .notification-item__icon {
-      color: var(--mat-sys-primary);
+    .notif-item__icon-box {
+      color: var(--color-accent-600);
+      background: color-mix(in srgb, var(--color-accent-500) 12%, transparent);
     }
   }
 }
 
-.notification-item__icon {
-  color: var(--mat-sys-on-surface-variant);
-  margin-top: 2px;
+.notif-item__icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
-.notification-item__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.notif-item__content {
+  flex: 1;
   min-width: 0;
 }
 
-.notification-item__title {
-  font-size: 0.875rem;
-  color: var(--mat-sys-on-surface);
+.notif-item__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
 }
 
-.notification-item__message {
+.notif-item__title {
   font-size: 0.8125rem;
-  color: var(--mat-sys-on-surface-variant);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  transition: color 150ms ease;
 }
 
-.notification-item__time {
+.notif-item__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-500);
+  flex-shrink: 0;
+}
+
+.notif-item__message {
+  margin: 0 0 4px;
   font-size: 0.75rem;
-  color: var(--mat-sys-outline);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-item__time {
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
+.sidebar__view-all-btn {
+  width: 100%;
+  margin-top: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--color-primary-600);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 }
