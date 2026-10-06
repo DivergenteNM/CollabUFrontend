@@ -343,6 +343,26 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     { id: 'soft_skill', label: 'Blandas', icon: 'handshake' },
   ];
 
+  // Formato con comas para miles y millones (ej: 1,423,500)
+  readonly formattedCompensationAmount = computed(() => {
+    const amount = this.basicInfoValues()?.compensationAmount;
+    if (amount === null || amount === undefined || isNaN(amount)) return '';
+    return Number(amount).toLocaleString('en-US');
+  });
+
+  onCompensationInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const rawDigits = input.value.replace(/\D/g, '');
+    if (!rawDigits) {
+      this.basicInfoForm.patchValue({ compensationAmount: null });
+      input.value = '';
+      return;
+    }
+    const num = parseInt(rawDigits, 10);
+    this.basicInfoForm.patchValue({ compensationAmount: num });
+    input.value = num.toLocaleString('en-US');
+  }
+
   // Cálculo de duración estimada en tiempo real
   readonly durationSummary = computed(() => {
     const values = this.scheduleValues();

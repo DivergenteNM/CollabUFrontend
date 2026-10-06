@@ -198,9 +198,19 @@
                   <mat-form-field appearance="outline" class="flex-1">
                     <mat-label>Monto Estimado Mensual</mat-label>
                     <mat-icon matPrefix class="field-prefix-icon">attach_money</mat-icon>
-                    <input matInput type="number" formControlName="compensationAmount"
-                           placeholder="Ej: 1423500" min="0" />
-                    <mat-hint>Auxilio o remuneración económica mensual</mat-hint>
+                    <input matInput type="text" inputmode="numeric"
+                           [value]="formattedCompensationAmount()"
+                           (input)="onCompensationInput($event)"
+                           placeholder="Ej: 1,423,500" />
+                    <mat-hint>
+                      @if (basicInfoForm.get('compensationAmount')?.value) {
+                        <span class="compensation-preview-hint">
+                          $ {{ formattedCompensationAmount() }} {{ basicInfoForm.get('currency')?.value || 'COP' }} mensuales
+                        </span>
+                      } @else {
+                        <span>Auxilio o remuneración económica mensual (ej: 1,423,500)</span>
+                      }
+                    </mat-hint>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="currency-field">
@@ -631,10 +641,17 @@
             <!-- Listado de Habilidades Seleccionadas -->
             @if (skills().length > 0) {
               <div class="selected-skills-wrapper">
-                <h4>Habilidades Añadidas ({{ skills().length }})</h4>
+                <div class="selected-skills-header">
+                  <h4>Habilidades Añadidas ({{ skills().length }})</h4>
+                  <span class="selected-skills-tip">
+                    Personaliza el nivel mínimo esperado y marca como obligatorias aquellas indispensables para el proyecto.
+                  </span>
+                </div>
+
                 <div class="selected-skills-grid">
                   @for (skill of skills(); track skill.name) {
                     <div class="skill-config-card" [class.skill-config-card--mandatory]="skill.isMandatory">
+                      <!-- Fila superior: Título, categoría y botón eliminar -->
                       <div class="skill-config-card__top">
                         <div class="skill-config-card__title-row">
                           <span class="skill-name">{{ skill.name }}</span>
@@ -643,18 +660,19 @@
                         <button type="button" mat-icon-button color="warn"
                                 matTooltip="Quitar habilidad"
                                 (click)="removeSkill(skill.name)"
-                                aria-label="Eliminar habilidad">
+                                aria-label="Eliminar habilidad"
+                                class="remove-skill-btn">
                           <mat-icon>delete_outline</mat-icon>
                         </button>
                       </div>
 
+                      <!-- Fila de configuración: Nivel de dominio y Toggle de Obligatoria -->
                       <div class="skill-config-card__controls">
-                        <!-- Nivel de dominio -->
-                        <mat-form-field appearance="outline" class="density-compact">
+                        <mat-form-field appearance="outline" class="skill-level-field">
                           <mat-label>Nivel de dominio</mat-label>
                           <mat-select [value]="skill.proficiencyLevel"
                                       (selectionChange)="setSkillProficiency(skill.name, $event.value)">
-                            <mat-option [value]="null">Sin mínimo (Deseable)</mat-option>
+                            <mat-option [value]="null">Sin mínimo requerido</mat-option>
                             <mat-option value="beginner">Principiante</mat-option>
                             <mat-option value="intermediate">Intermedio</mat-option>
                             <mat-option value="advanced">Avanzado</mat-option>
@@ -662,14 +680,23 @@
                           </mat-select>
                         </mat-form-field>
 
-                        <!-- Toggle de Obligatorio -->
-                        <div class="mandatory-toggle-box">
+                        <div class="mandatory-toggle-box" [class.mandatory-toggle-box--active]="skill.isMandatory">
                           <mat-slide-toggle
                             [checked]="skill.isMandatory"
                             (change)="toggleSkillMandatory(skill.name, $event.checked)">
-                            <span [class.text-bold]="skill.isMandatory">
-                              {{ skill.isMandatory ? 'Excluyente (Obligatoria)' : 'Deseable (Puntos extra)' }}
-                            </span>
+                            <div class="toggle-badge-wrapper">
+                              @if (skill.isMandatory) {
+                                <span class="status-badge-inline status-badge-inline--mandatory">
+                                  <mat-icon>verified</mat-icon>
+                                  Obligatoria
+                                </span>
+                              } @else {
+                                <span class="status-badge-inline status-badge-inline--optional">
+                                  <mat-icon>add_circle_outline</mat-icon>
+                                  Deseable
+                                </span>
+                              }
+                            </div>
                           </mat-slide-toggle>
                         </div>
                       </div>
