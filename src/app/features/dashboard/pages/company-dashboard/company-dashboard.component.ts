@@ -41,10 +41,15 @@ export class CompanyDashboardComponent {
   readonly notificationsStore = inject(NotificationsStore);
   private readonly applicationService = inject(ApplicationService);
 
+  readonly hasProfilePicture = this.authStore.hasAvatar;
+
   readonly userInitials = computed(() => {
     const p = this.authStore.profile();
     if (p?.firstName && p?.lastName) {
       return `${p.firstName[0]}${p.lastName[0]}`.toUpperCase();
+    }
+    if (p?.firstName) {
+      return p.firstName.slice(0, 2).toUpperCase();
     }
     return 'C';
   });

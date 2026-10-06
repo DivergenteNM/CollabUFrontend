@@ -77,14 +77,26 @@ export const AuthStore = signalStore(
 
       return true;
     }),
+    hasAvatar: computed(() => {
+      const avatar = store.profile()?.avatarUrl;
+      return Boolean(avatar && avatar.trim().length > 0);
+    }),
     displayName: computed(() => {
       const profile = store.profile();
       if (profile) {
-        return `${profile.firstName} ${profile.lastName}`.trim();
+        const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
+        if (fullName) {
+          return fullName;
+        }
       }
 
-      const user = store.user();
-      return user ? user.email : '';
+      const role = store.user()?.role;
+      if (role === UserRole.STUDENT) return 'Estudiante';
+      if (role === UserRole.FACULTY) return 'Docente';
+      if (role === UserRole.COMPANY) return 'Empresa';
+      if (role === UserRole.ADMIN) return 'Administrador';
+
+      return 'Usuario';
     }),
   })),
 
@@ -108,6 +120,7 @@ export const AuthStore = signalStore(
 
       userProfileService.getMyProfile().subscribe({
         next: (res) => {
+          tokenService.saveProfile(res.data);
           patchState(store, {
             profile: res.data,
             profileLoaded: true,
@@ -135,6 +148,7 @@ export const AuthStore = signalStore(
       setAuth(user: AuthUser, token: string, refreshToken: string): void {
         tokenService.saveTokens(token, refreshToken);
         tokenService.saveUser(user);
+        tokenService.saveProfile(null);
         patchState(store, {
           user,
           token,
@@ -167,6 +181,7 @@ export const AuthStore = signalStore(
       },
 
       setProfile(profile: UserProfile | null): void {
+        tokenService.saveProfile(profile);
         patchState(store, {
           profile,
           profileLoaded: true,
@@ -195,8 +210,14 @@ export const AuthStore = signalStore(
       const tokenService = inject(TokenService);
       const token = tokenService.getAccessToken();
       const user = tokenService.getUser();
+      const profile = tokenService.getProfile();
       if (token && user) {
-        patchState(store, { user, token });
+        patchState(store, {
+          user,
+          token,
+          profile,
+          profileLoaded: !!profile,
+        });
         store.loadUserProfile();
       } else {
         patchState(store, { authReady: true });

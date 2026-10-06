@@ -43,10 +43,15 @@ export class FacultyDashboardComponent implements OnDestroy {
   private readonly facultyService = inject(FacultyService);
   readonly notificationsStore = inject(NotificationsStore);
 
+  readonly hasProfilePicture = this.authStore.hasAvatar;
+
   readonly userInitials = computed(() => {
     const p = this.authStore.profile();
     if (p?.firstName && p?.lastName) {
       return `${p.firstName[0]}${p.lastName[0]}`.toUpperCase();
+    }
+    if (p?.firstName) {
+      return p.firstName.slice(0, 2).toUpperCase();
     }
     return 'D';
   });
