@@ -1,97 +1,405 @@
-<div class="company-profile">
-  <button mat-button (click)="history.back()">
-    <mat-icon>arrow_back</mat-icon>
-    Volver
-  </button>
+<div class="company-public-view">
+  <!-- Top Navigation Bar -->
+  <div class="company-public-view__top-nav">
+    <button mat-button (click)="history.back()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+  </div>
 
+  <!-- Loading State -->
   @if (resource.isLoading()) {
-    <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+    <div class="company-skeleton">
+      <div class="company-skeleton__cover"></div>
+      <div class="company-skeleton__content">
+        <div class="company-skeleton__avatar"></div>
+        <div class="company-skeleton__lines">
+          <div class="company-skeleton__line company-skeleton__line--title"></div>
+          <div class="company-skeleton__line company-skeleton__line--subtitle"></div>
+          <div class="company-skeleton__line company-skeleton__line--meta"></div>
+        </div>
+      </div>
+    </div>
   }
 
-  @if (resource.value()?.data; as c) {
-    <mat-card>
+  <!-- Error State -->
+  @if (resource.error()) {
+    <mat-card class="company-error-card">
       <mat-card-content>
-        <div class="profile-header">
-          <div class="company-logo">
-            @if (c.logoUrl) {
-              <img [src]="c.logoUrl" [alt]="c.companyName" />
-            } @else {
-              <mat-icon>business</mat-icon>
-            }
-          </div>
-          <div class="company-info">
-            <h2>
-              {{ c.companyName }}
-              @if (c.verificationStatus === 'verified' || c.isVerified) {
-                <mat-icon class="verified-badge">verified</mat-icon>
-              }
-            </h2>
-            <p>{{ c.industry ?? 'Sin industria' }} · {{ c.headquartersCity ?? c.city ?? 'Sin ciudad' }}</p>
-            @if (c.rating || c.averageRating) {
-              <div class="rating-row">
-                <app-star-rating [value]="c.rating ?? c.averageRating ?? 0" [readonly]="true" size="sm" />
-                <span>({{ c.totalProjects ?? 0 }} proyectos)</span>
-              </div>
-            }
-          </div>
+        <div class="company-error-content">
+          <mat-icon class="error-icon">business_center</mat-icon>
+          <h3>Perfil de empresa no disponible</h3>
+          <p>No se pudo cargar la información de esta organización o no existe en la plataforma.</p>
+          <button mat-stroked-button (click)="history.back()">Regresar</button>
         </div>
-
-        @if (c.description) {
-          <div class="section">
-            <h3>Descripción</h3>
-            <p>{{ c.description }}</p>
-          </div>
-        }
-
-        <div class="section">
-          <h3>Información</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="label">Tamaño</span>
-              <span>{{ sizeLabel(c.companySize) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Proyectos activos</span>
-              <span>{{ c.activeProjects ?? 0 }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Total proyectos</span>
-              <span>{{ c.totalProjects ?? 0 }}</span>
-            </div>
-            @if (c.website || c.websiteUrl) {
-              <div class="info-item">
-                <span class="label">Sitio web</span>
-                <a [href]="c.website ?? c.websiteUrl" target="_blank">{{ c.website ?? c.websiteUrl }}</a>
-              </div>
-            }
-            @if (c.phone) {
-              <div class="info-item">
-                <span class="label">Teléfono</span>
-                <span>{{ c.phone }}</span>
-              </div>
-            }
-            @if (c.address) {
-              <div class="info-item">
-                <span class="label">Dirección</span>
-                <span>{{ c.address }}</span>
-              </div>
-            }
-          </div>
-        </div>
-
-        @if ((c.contacts?.length ?? 0) > 0) {
-          <div class="section">
-            <h3>Contactos</h3>
-            @for (contact of c.contacts ?? []; track contact.id) {
-              <div class="contact-card">
-                <strong>{{ contact.firstName }} {{ contact.lastName }}</strong>
-                <span>{{ contact.position ?? 'Contacto' }}</span>
-                <span>{{ contact.email }}</span>
-              </div>
-            }
-          </div>
-        }
       </mat-card-content>
     </mat-card>
+  }
+
+  <!-- Company Content -->
+  @if (company(); as c) {
+    <!-- ─── HERO BRANDING CARD ─── -->
+    <div class="company-hero-card">
+      <div class="company-hero-card__cover">
+        <div class="company-hero-card__cover-pattern"></div>
+      </div>
+
+      <div class="company-hero-card__body">
+        <div class="company-hero-card__main-row">
+          <!-- Double-bezel Logo Squircle -->
+          <div class="company-hero-card__logo-wrapper">
+            <div class="company-hero-card__logo-box">
+              @if (resolvedLogoUrl() && !logoLoadError()) {
+                <img
+                  [src]="resolvedLogoUrl()"
+                  [alt]="c.companyName"
+                  class="company-hero-card__logo-img"
+                  (error)="onLogoError()"
+                  (load)="onLogoLoad()"
+                />
+              } @else {
+                <div class="company-hero-card__logo-placeholder">
+                  <span>{{ companyInitials() }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Header Details & Badges -->
+          <div class="company-hero-card__info">
+            <div class="company-hero-card__title-row">
+              <div class="company-hero-card__title-group">
+                <h1 class="company-hero-card__name">{{ c.companyName }}</h1>
+                @if (c.legalName) {
+                  <span class="company-hero-card__legal-name">{{ c.legalName }}</span>
+                }
+              </div>
+
+              <div class="company-hero-card__badges">
+                @if (c.verificationStatus === 'verified' || c.isVerified) {
+                  <span class="status-badge status-badge--verified" title="Organización verificada institucionalmente">
+                    <mat-icon>verified</mat-icon> Verificada
+                  </span>
+                } @else if (c.verificationStatus === 'pending') {
+                  <span class="status-badge status-badge--pending" title="En proceso de verificación institucional">
+                    <mat-icon>hourglass_top</mat-icon> En revisión
+                  </span>
+                } @else {
+                  <span class="status-badge status-badge--unverified">
+                    <mat-icon>shield</mat-icon> {{ verificationStatusLabel(c.verificationStatus) }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Key Meta Chips -->
+            <div class="company-hero-card__meta-chips">
+              @if (c.industry) {
+                <span class="meta-chip">
+                  <mat-icon>domain</mat-icon> {{ c.industry }}
+                </span>
+              }
+              <span class="meta-chip">
+                <mat-icon>location_on</mat-icon> {{ c.headquartersCity ?? c.city ?? 'Sede no asignada' }}
+                @if (c.headquartersState ?? c.department) {
+                  , {{ c.headquartersState ?? c.department }}
+                }
+              </span>
+              @if (c.companySize) {
+                <span class="meta-chip">
+                  <mat-icon>groups</mat-icon> {{ sizeLabel(c.companySize) }}
+                </span>
+              }
+              @if (c.foundedYear) {
+                <span class="meta-chip">
+                  <mat-icon>calendar_today</mat-icon> Fundada en {{ c.foundedYear }}
+                </span>
+              }
+              @if (c.nit) {
+                <span class="meta-chip">
+                  <mat-icon>badge</mat-icon> NIT: {{ c.nit }}
+                </span>
+              }
+            </div>
+
+            <!-- Star Rating row if available -->
+            @if (c.rating || c.averageRating) {
+              <div class="company-hero-card__rating-row">
+                <app-star-rating [value]="c.rating ?? c.averageRating ?? 5" [readonly]="true" size="sm" />
+                <span class="rating-value">{{ (c.rating ?? c.averageRating ?? 5) | number:'1.1-1' }}</span>
+                <span class="rating-count">({{ c.totalReviews ?? c.totalProjects ?? 0 }} valoraciones)</span>
+              </div>
+            }
+          </div>
+
+          <!-- Hero Action CTAs -->
+          <div class="company-hero-card__actions">
+            @if (cleanWebsiteUrl()) {
+              <a
+                mat-flat-button
+                color="primary"
+                [href]="cleanWebsiteUrl()"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hero-action-btn"
+              >
+                <mat-icon>open_in_new</mat-icon> Sitio Web
+              </a>
+            }
+            @if (c.phone) {
+              <a
+                mat-stroked-button
+                [href]="'tel:' + c.phone"
+                class="hero-action-btn"
+              >
+                <mat-icon>phone</mat-icon> Contactar
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── BENTO STATS GRID ─── -->
+    <div class="company-bento-grid">
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--projects">
+          <mat-icon>rocket_launch</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ c.totalProjects ?? c.activeProjects ?? 0 }}</span>
+          <span class="bento-card__label">Proyectos Publicados</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--rating">
+          <mat-icon>star</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ c.rating ? (c.rating | number:'1.1-1') : '5.0' }}</span>
+          <span class="bento-card__label">Calificación Institucional</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--locations">
+          <mat-icon>store</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ c.locations?.length ? c.locations?.length : 1 }}</span>
+          <span class="bento-card__label">Sedes & Sucursales</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--contacts">
+          <mat-icon>badge</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ c.contacts?.length ?? 0 }}</span>
+          <span class="bento-card__label">Contactos Registrados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 2-COLUMN DETAILS ─── -->
+    <div class="company-details-layout">
+      <!-- Left / Main Column -->
+      <div class="company-details-layout__main">
+        <!-- Acerca de la Empresa -->
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="card-header-icon">info</mat-icon>
+            <mat-card-title>Acerca de la Organización</mat-card-title>
+            <mat-card-subtitle>Misión, propósito y descripción institucional</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (c.description) {
+              <p class="company-description-text">{{ c.description }}</p>
+            } @else {
+              <p class="empty-text">Esta empresa aún no ha redactado una descripción pública.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Áreas de Negocio & Especialidad -->
+        @if ((c.businessAreas?.length ?? 0) > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">hub</mat-icon>
+              <mat-card-title>Áreas de Especialidad y Enfoque</mat-card-title>
+              <mat-card-subtitle>Campos en los que colabora y formula retos de innovación</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="business-areas-grid">
+                @for (area of c.businessAreas ?? []; track area.id) {
+                  <div class="business-area-card">
+                    <div class="business-area-card__header">
+                      <mat-icon>check_circle</mat-icon>
+                      <h4>{{ area.areaName }}</h4>
+                    </div>
+                    @if (area.description) {
+                      <p class="business-area-card__desc">{{ area.description }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Sedes y Cobertura -->
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="card-header-icon">apartment</mat-icon>
+            <mat-card-title>Presencia Geográfica y Sedes</mat-card-title>
+            <mat-card-subtitle>Ubicaciones físicas y puntos de operación</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if ((c.locations?.length ?? 0) > 0) {
+              <div class="locations-grid">
+                @for (loc of c.locations ?? []; track loc.id) {
+                  <div class="location-card" [class.location-card--headquarters]="loc.isHeadquarters">
+                    <div class="location-card__header">
+                      <div class="location-card__title-row">
+                        <h4>{{ loc.branchName || 'Sede ' + loc.city }}</h4>
+                        @if (loc.isHeadquarters) {
+                          <span class="hq-badge">Sede Principal</span>
+                        }
+                      </div>
+                      <span class="location-card__city">
+                        <mat-icon>location_on</mat-icon>
+                        {{ loc.city }}{{ loc.state ? ', ' + loc.state : '' }}{{ loc.country ? ' (' + loc.country + ')' : '' }}
+                      </span>
+                    </div>
+                    @if (loc.address) {
+                      <p class="location-card__address">
+                        <mat-icon>navigation</mat-icon> {{ loc.address }}
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="single-location-box">
+                <mat-icon>storefront</mat-icon>
+                <div>
+                  <strong>Sede Principal:</strong>
+                  <p>{{ c.headquartersCity ?? c.city ?? 'No especificada' }}{{ c.headquartersState ?? c.department ? ', ' + (c.headquartersState ?? c.department) : '' }}</p>
+                  @if (c.address) {
+                    <span class="single-location-box__addr">{{ c.address }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Right / Sidebar Column -->
+      <div class="company-details-layout__sidebar">
+        <!-- Ficha Corporativa -->
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="card-header-icon">corporate_fare</mat-icon>
+            <mat-card-title>Ficha Institucional</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="corporate-info-list">
+              @if (c.legalName) {
+                <div class="corp-info-item">
+                  <span class="corp-info-item__label">Razón Social</span>
+                  <span class="corp-info-item__val">{{ c.legalName }}</span>
+                </div>
+              }
+              @if (c.nit) {
+                <div class="corp-info-item">
+                  <span class="corp-info-item__label">NIT / Identificación</span>
+                  <span class="corp-info-item__val">{{ c.nit }}</span>
+                </div>
+              }
+              <div class="corp-info-item">
+                <span class="corp-info-item__label">Sector / Industria</span>
+                <span class="corp-info-item__val">{{ c.industry || 'No especificada' }}</span>
+              </div>
+              <div class="corp-info-item">
+                <span class="corp-info-item__label">Dimensión de la Empresa</span>
+                <span class="corp-info-item__val">{{ sizeLabel(c.companySize) }}</span>
+              </div>
+              @if (c.employeeCount) {
+                <div class="corp-info-item">
+                  <span class="corp-info-item__label">Número de Empleados</span>
+                  <span class="corp-info-item__val">~{{ c.employeeCount }} colaboradores</span>
+                </div>
+              }
+              @if (c.foundedYear) {
+                <div class="corp-info-item">
+                  <span class="corp-info-item__label">Año de Fundación</span>
+                  <span class="corp-info-item__val">{{ c.foundedYear }}</span>
+                </div>
+              }
+              @if (cleanWebsiteUrl()) {
+                <div class="corp-info-item">
+                  <span class="corp-info-item__label">Portal Web</span>
+                  <a [href]="cleanWebsiteUrl()" target="_blank" rel="noopener noreferrer" class="corp-info-item__link">
+                    {{ c.website ?? c.websiteUrl }}
+                    <mat-icon>north_east</mat-icon>
+                  </a>
+                </div>
+              }
+              @if (c.phone) {
+                <div class="corp-info-item">
+                  <span class="corp-info-item__label">Línea Telefónica</span>
+                  <a [href]="'tel:' + c.phone" class="corp-info-item__link">
+                    {{ c.phone }}
+                    <mat-icon>call</mat-icon>
+                  </a>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Contactos Institucionales Registrados -->
+        @if ((c.contacts?.length ?? 0) > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">contacts</mat-icon>
+              <mat-card-title>Contactos Directos</mat-card-title>
+              <mat-card-subtitle>Representantes institucionales</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="contacts-list">
+                @for (contact of c.contacts ?? []; track contact.id) {
+                  <div class="contact-box" [class.contact-box--primary]="contact.isPrimary">
+                    <div class="contact-box__avatar">
+                      {{ contact.firstName[0] || 'C' }}{{ contact.lastName ? contact.lastName[0] : '' }}
+                    </div>
+                    <div class="contact-box__info">
+                      <div class="contact-box__name-row">
+                        <strong>{{ contact.firstName }} {{ contact.lastName }}</strong>
+                        @if (contact.isPrimary) {
+                          <span class="primary-badge">Principal</span>
+                        }
+                      </div>
+                      <span class="contact-box__position">{{ contact.position || 'Representante' }}</span>
+                      <a [href]="'mailto:' + contact.email" class="contact-box__email">
+                        <mat-icon>mail</mat-icon> {{ contact.email }}
+                      </a>
+                      @if (contact.phone) {
+                        <a [href]="'tel:' + contact.phone" class="contact-box__phone">
+                          <mat-icon>phone</mat-icon> {{ contact.phone }}
+                        </a>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </div>
   }
 </div>

@@ -16,6 +16,8 @@ import { MatSliderModule } from '@angular/material/slider';
 
 export interface AvatarCropDialogData {
   imageFile: File;
+  cropShape?: 'circle' | 'square';
+  title?: string;
 }
 
 @Component({
@@ -49,6 +51,15 @@ export class AvatarCropDialogComponent implements AfterViewInit {
   private image: HTMLImageElement | null = null;
   private readonly canvasSize = 320;
   private readonly cropRadius = 130;
+
+  get isSquare(): boolean {
+    return this.data?.cropShape === 'square';
+  }
+
+  get dialogTitle(): string {
+    if (this.data?.title) return this.data.title;
+    return this.isSquare ? 'Recortar Logo de la Empresa' : 'Recortar Foto de Perfil';
+  }
 
   ngAfterViewInit(): void {
     if (this.data?.imageFile) {
@@ -149,21 +160,46 @@ export class AvatarCropDialogComponent implements AfterViewInit {
     ctx.drawImage(this.image, this.offsetX, this.offsetY, drawWidth, drawHeight);
     ctx.restore();
 
-    // Draw dark semi-transparent overlay outside circular crop area
+    const cropSize = this.cropRadius * 2;
+    const cropLeft = (canvas.width - cropSize) / 2;
+    const cropTop = (canvas.height - cropSize) / 2;
+    const cornerRadius = 24;
+
+    // Draw dark semi-transparent overlay outside crop area
     ctx.save();
     ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     ctx.beginPath();
     ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.arc(canvas.width / 2, canvas.height / 2, this.cropRadius, 0, Math.PI * 2, true);
+
+    if (this.isSquare) {
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(cropLeft, cropTop, cropSize, cropSize, cornerRadius);
+      } else {
+        ctx.rect(cropLeft, cropTop, cropSize, cropSize);
+      }
+    } else {
+      ctx.arc(canvas.width / 2, canvas.height / 2, this.cropRadius, 0, Math.PI * 2, true);
+    }
+
     ctx.fill();
     ctx.restore();
 
-    // Draw circular border
+    // Draw crop border
     ctx.save();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, this.cropRadius, 0, Math.PI * 2);
+
+    if (this.isSquare) {
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(cropLeft, cropTop, cropSize, cropSize, cornerRadius);
+      } else {
+        ctx.strokeRect(cropLeft, cropTop, cropSize, cropSize);
+      }
+    } else {
+      ctx.arc(canvas.width / 2, canvas.height / 2, this.cropRadius, 0, Math.PI * 2);
+    }
+
     ctx.stroke();
     ctx.restore();
   }
@@ -175,7 +211,7 @@ export class AvatarCropDialogComponent implements AfterViewInit {
     }
 
     const outputCanvas = document.createElement('canvas');
-    const outputSize = 400; // Output dimension for high-quality circular avatar
+    const outputSize = 400; // Output dimension for crisp avatar/logo
     outputCanvas.width = outputSize;
     outputCanvas.height = outputSize;
     const ctx = outputCanvas.getContext('2d');
@@ -198,10 +234,19 @@ export class AvatarCropDialogComponent implements AfterViewInit {
     const sourceCropTop = (centerY - this.cropRadius - this.offsetY) / currentScale;
     const sourceCropSize = (this.cropRadius * 2) / currentScale;
 
-    // Draw cropped region onto output canvas with circular mask
-    ctx.beginPath();
-    ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, Math.PI * 2);
-    ctx.clip();
+    // Draw cropped region onto output canvas
+    if (this.isSquare) {
+      const outputRadius = 32;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(0, 0, outputSize, outputSize, outputRadius);
+        ctx.clip();
+      }
+    } else {
+      ctx.beginPath();
+      ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, Math.PI * 2);
+      ctx.clip();
+    }
 
     ctx.drawImage(
       this.image,
@@ -217,7 +262,8 @@ export class AvatarCropDialogComponent implements AfterViewInit {
 
     outputCanvas.toBlob((blob) => {
       if (blob) {
-        const croppedFile = new File([blob], `avatar-${Date.now()}.png`, {
+        const fileName = this.isSquare ? `logo-${Date.now()}.png` : `avatar-${Date.now()}.png`;
+        const croppedFile = new File([blob], fileName, {
           type: 'image/png',
         });
         this.dialogRef.close(croppedFile);

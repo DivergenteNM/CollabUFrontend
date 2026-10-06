@@ -157,7 +157,12 @@
             <textarea matInput rows="2" [value]="commentText()" (input)="commentText.set($any($event.target).value)"></textarea>
           </mat-form-field>
           <button mat-stroked-button type="button" [disabled]="!commentText().trim() || submittingComment()" (click)="submitComment()">
-            @if (submittingComment()) { <mat-spinner diameter="16" /> } @else { <mat-icon>comment</mat-icon> Comentar }
+            @if (submittingComment()) {
+              <mat-spinner diameter="16" />
+            } @else {
+              <mat-icon>comment</mat-icon>
+            }
+            <span>Comentar</span>
           </button>
         </div>
       }
@@ -188,13 +193,28 @@
 
           <div class="ap-panel__review-actions">
             <button mat-flat-button color="primary" type="button" [disabled]="!!submittingReview()" (click)="submitReview('approve')">
-              @if (submittingReview() === 'approve') { <mat-spinner diameter="16" /> } @else { <mat-icon>check_circle</mat-icon> Dar visto bueno }
+              @if (submittingReview() === 'approve') {
+                <mat-spinner diameter="16" />
+              } @else {
+                <mat-icon>check_circle</mat-icon>
+              }
+              <span>Dar visto bueno</span>
             </button>
             <button mat-stroked-button type="button" [disabled]="!!submittingReview()" (click)="submitReview('correction')">
-              @if (submittingReview() === 'correction') { <mat-spinner diameter="16" /> } @else { <mat-icon>edit_note</mat-icon> Solicitar corrección }
+              @if (submittingReview() === 'correction') {
+                <mat-spinner diameter="16" />
+              } @else {
+                <mat-icon>edit_note</mat-icon>
+              }
+              <span>Solicitar corrección</span>
             </button>
             <button mat-stroked-button color="warn" type="button" [disabled]="!!submittingReview()" (click)="submitReview('reject')">
-              @if (submittingReview() === 'reject') { <mat-spinner diameter="16" /> } @else { <mat-icon>cancel</mat-icon> Rechazar }
+              @if (submittingReview() === 'reject') {
+                <mat-spinner diameter="16" />
+              } @else {
+                <mat-icon>cancel</mat-icon>
+              }
+              <span>Rechazar</span>
             </button>
           </div>
         </div>
