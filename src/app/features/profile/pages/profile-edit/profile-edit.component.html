@@ -881,7 +881,23 @@
           Perfil Base
         </ng-template>
         <div class="tab-content">
-          <p class="tab-description">Información personal visible en tu cuenta.</p>
+          <p class="tab-description">Información personal e imagen pública de tu cuenta en Collab-U.</p>
+
+          <div class="user-avatar-card">
+            <app-avatar-upload
+              [currentAvatarUrl]="authStore.profile()?.avatarUrl"
+              [size]="116"
+              label="Foto de perfil"
+              category="avatar"
+              fallbackIcon="person"
+            />
+            <div class="user-avatar-card__hint">
+              <h4>Fotografía de perfil oficial</h4>
+              <p>Tu foto se mostrará en los proyectos que supervisas, actas de evaluación y ante tus estudiantes asignados.</p>
+              <span class="hint-specs">JPG, PNG o WebP · Máx. 5MB · Encuadre profesional centrado</span>
+            </div>
+          </div>
+
           <form [formGroup]="userForm">
             <div class="form-row">
               <mat-form-field appearance="outline">
@@ -894,24 +910,38 @@
               </mat-form-field>
             </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Teléfono</mat-label>
-              <input matInput formControlName="phone" placeholder="+57 3001234567" />
-            </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono de contacto</mat-label>
+                <input matInput formControlName="phone" placeholder="+57 3001234567" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>LinkedIn URL (opcional)</mat-label>
+                <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/tu-perfil" />
+                @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
+                  <mat-error>Ingresa una URL válida de LinkedIn o deja el campo vacío.</mat-error>
+                }
+              </mat-form-field>
+            </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>LinkedIn URL (opcional)</mat-label>
-              <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
-              @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
-                <mat-error>Ingresa una URL valida de LinkedIn o deja el campo vacio.</mat-error>
-              }
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Biografía general</mat-label>
+              <mat-label>Biografía académica y trayectoria</mat-label>
               <textarea matInput formControlName="bio" rows="4"
-                placeholder="Cuéntanos sobre ti..."></textarea>
+                placeholder="Describe tu trayectoria docente, líneas de investigación y áreas de asesoría académica..."></textarea>
             </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="button"
+                (click)="saveBaseProfile()"
+                [disabled]="userForm.invalid || saving()">
+                @if (saving()) {
+                  <mat-icon>hourglass_empty</mat-icon> Guardando...
+                } @else {
+                  <mat-icon>save</mat-icon> Guardar Perfil Base
+                }
+              </button>
+            </div>
           </form>
         </div>
       </mat-tab>
@@ -923,45 +953,71 @@
           Perfil Docente
         </ng-template>
         <div class="tab-content">
-          <p class="tab-description">Datos institucionales y de cargo académico.</p>
-          <form [formGroup]="facultyForm" (ngSubmit)="saveFaculty()">
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Código de empleado</mat-label>
-                <input matInput formControlName="employeeCode" />
-                @if (facultyForm.controls['employeeCode'].hasError('pattern') && facultyForm.controls['employeeCode'].touched) {
-                  <mat-error>Solo letras, números y guiones.</mat-error>
-                }
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Departamento</mat-label>
-                <input matInput formControlName="department" />
-              </mat-form-field>
-            </div>
+          <p class="tab-description">Ficha institucional, adscripción académica y áreas de supervisión.</p>
 
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Cargo</mat-label>
-                <mat-select formControlName="role">
-                  @for (r of supervisorRoles; track r.value) {
-                    <mat-option [value]="r.value">{{ r.label }}</mat-option>
+          <div class="profile-edit__hub-banner">
+            <div class="hub-text">
+              <div class="hub-badge"><mat-icon>assignment_ind</mat-icon> Panel de Supervisión</div>
+              <p>Revisa los anteproyectos asignados, califica entregables y genera actas de evaluación en tu módulo dedicado:</p>
+            </div>
+            <div class="hub-actions">
+              <a mat-stroked-button routerLink="/my-students" class="hub-btn">
+                <mat-icon>groups</mat-icon> Ir a Mis Estudiantes
+              </a>
+            </div>
+          </div>
+
+          <form [formGroup]="facultyForm" (ngSubmit)="saveFaculty()">
+            <div class="form-section-card">
+              <div class="form-section-header">
+                <div class="section-icon">
+                  <mat-icon>badge</mat-icon>
+                </div>
+                <div>
+                  <h3>Ficha Institucional del Docente</h3>
+                  <p>Datos requeridos por la coordinación para la vinculación en convenios y asesorías de grado.</p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Código de empleado</mat-label>
+                  <input matInput formControlName="employeeCode" placeholder="Ej: DOC-2024" />
+                  @if (facultyForm.controls['employeeCode'].hasError('pattern') && facultyForm.controls['employeeCode'].touched) {
+                    <mat-error>Solo letras, números y guiones.</mat-error>
                   }
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Especialización</mat-label>
-                <input matInput formControlName="specialization" placeholder="Ej: Ingeniería de Software" />
-              </mat-form-field>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Departamento Académico</mat-label>
+                  <input matInput formControlName="department" placeholder="Ej: Ingeniería de Sistemas" />
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Cargo / Rol en Proyectos</mat-label>
+                  <mat-select formControlName="role">
+                    @for (r of supervisorRoles; track r.value) {
+                      <mat-option [value]="r.value">{{ r.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Línea de Especialización</mat-label>
+                  <input matInput formControlName="specialization" placeholder="Ej: Inteligencia Artificial, Ciberseguridad" />
+                </mat-form-field>
+              </div>
             </div>
 
             <div class="form-actions">
               <button mat-flat-button color="primary" type="submit"
                 [disabled]="facultyForm.invalid || saving()">
                 @if (saving()) {
-                  Guardando...
+                  <mat-icon>hourglass_empty</mat-icon> Guardando...
                 } @else {
-                  <ng-container><mat-icon>save</mat-icon></ng-container>
-                  Guardar Cambios
+                  <mat-icon>save</mat-icon> Guardar Perfil Docente
                 }
               </button>
             </div>

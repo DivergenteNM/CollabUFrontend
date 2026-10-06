@@ -10,8 +10,7 @@ import { CompanyProfile, StudentProfile } from '../../../../core/models';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
 import { StudentService } from '../../../students/services/student.service';
 import { AuthStore } from '../../../../state/auth.store';
-import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
-import { FacultyService } from '../../../faculty/services/faculty.service';
+import { FacultyService, SupervisorProfile } from '../../../faculty/services/faculty.service';
 import { ImageUrlPipe } from '../../../../shared/pipes';
 import { resolveImageUrl } from '../../../../shared/utils';
 
@@ -21,7 +20,7 @@ import { resolveImageUrl } from '../../../../shared/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DecimalPipe, RouterLink, MatIconModule, MatButtonModule, MatCardModule,
-    MatChipsModule, MatProgressBarModule, SkillChipListComponent,
+    MatChipsModule, MatProgressBarModule,
     ImageUrlPipe,
   ],
   templateUrl: './profile-view.component.html',
@@ -36,9 +35,10 @@ export class ProfileViewComponent {
   readonly loading = signal(true);
   readonly student = signal<StudentProfile | null>(null);
   readonly company = signal<CompanyProfile | null>(null);
-  readonly supervisor = signal<any | null>(null);
+  readonly supervisor = signal<SupervisorProfile | null>(null);
   readonly companyLogoLoadError = signal(false);
   readonly studentAvatarLoadError = signal(false);
+  readonly facultyAvatarLoadError = signal(false);
 
   readonly resolvedCompanyLogoUrl = computed(() => {
     const c = this.company();
@@ -116,6 +116,54 @@ export class ProfileViewComponent {
     return missing;
   });
 
+  readonly resolvedFacultyAvatarUrl = computed(() => {
+    return resolveImageUrl(this.authStore.profile()?.avatarUrl);
+  });
+
+  readonly facultyInitials = computed(() => {
+    const name = (this.authStore.displayName() || 'Docente').trim();
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  });
+
+  readonly facultyCapacityPercentage = computed(() => {
+    const s = this.supervisor();
+    if (!s || !s.maxStudents) return 0;
+    return Math.min(100, Math.round((s.currentStudents / s.maxStudents) * 100));
+  });
+
+  readonly missingFacultyCompleteness = computed(() => {
+    const s = this.supervisor();
+    const prof = this.authStore.profile();
+    if (!s) return [];
+    const missing: { key: string; label: string; route: string }[] = [];
+    if (!prof?.avatarUrl) {
+      missing.push({ key: 'avatar', label: 'Foto de perfil oficial', route: '/profile/edit' });
+    }
+    if (!prof?.bio || prof.bio.length < 20) {
+      missing.push({ key: 'bio', label: 'Biografía académica', route: '/profile/edit' });
+    }
+    if (!s.specialization) {
+      missing.push({ key: 'spec', label: 'Área de especialización', route: '/profile/edit' });
+    }
+    if (!s.department) {
+      missing.push({ key: 'dept', label: 'Departamento académico', route: '/profile/edit' });
+    }
+    if (!prof?.linkedinUrl) {
+      missing.push({ key: 'linkedin', label: 'LinkedIn profesional', route: '/profile/edit' });
+    }
+    return missing;
+  });
+
+  readonly facultyCompletenessPercentage = computed(() => {
+    const missing = this.missingFacultyCompleteness().length;
+    const totalFields = 5;
+    return Math.round(((totalFields - missing) / totalFields) * 100);
+  });
+
   constructor() {
     this.loadProfile();
   }
@@ -134,6 +182,14 @@ export class ProfileViewComponent {
 
   onStudentAvatarLoad(): void {
     this.studentAvatarLoadError.set(false);
+  }
+
+  onFacultyAvatarError(): void {
+    this.facultyAvatarLoadError.set(true);
+  }
+
+  onFacultyAvatarLoad(): void {
+    this.facultyAvatarLoadError.set(false);
   }
 
   readonly skillNames = computed(() =>

@@ -1022,46 +1022,357 @@
 
   @if (authStore.isFaculty()) {
     @if (supervisor(); as sup) {
-      <mat-card class="profile-view__main">
-        <mat-card-content>
-          <div class="profile-header">
-            <div class="avatar">
-              @if (authStore.profile()?.avatarUrl) {
-                <img [src]="authStore.profile()?.avatarUrl" alt="Avatar" class="avatar__img" />
-              } @else {
-                <mat-icon>person</mat-icon>
-              }
+      <div class="faculty-profile-view">
+        <!-- ─── HERO IDENTITY & ACADEMIC CARD ─── -->
+        <div class="faculty-hero-card">
+          <div class="faculty-hero-card__cover">
+            <div class="faculty-hero-card__cover-pattern"></div>
+          </div>
+
+          <div class="faculty-hero-card__body">
+            <div class="faculty-hero-card__main-row">
+              <!-- Double-bezel Avatar Squircle -->
+              <div class="faculty-hero-card__avatar-wrapper">
+                <div class="faculty-hero-card__avatar-box">
+                  @if (resolvedFacultyAvatarUrl() && !facultyAvatarLoadError()) {
+                    <img
+                      [src]="resolvedFacultyAvatarUrl()"
+                      [alt]="authStore.displayName()"
+                      class="faculty-hero-card__avatar-img"
+                      (error)="onFacultyAvatarError()"
+                      (load)="onFacultyAvatarLoad()"
+                    />
+                  } @else {
+                    <div class="faculty-hero-card__avatar-placeholder">
+                      <span>{{ facultyInitials() }}</span>
+                    </div>
+                  }
+                </div>
+                <a routerLink="/profile/edit" class="faculty-hero-card__avatar-edit" title="Cambiar fotografía académica">
+                  <mat-icon>photo_camera</mat-icon>
+                </a>
+              </div>
+
+              <!-- Header Info & Badges -->
+              <div class="faculty-hero-card__info">
+                <div class="faculty-hero-card__title-row">
+                  <div class="faculty-hero-card__title-group">
+                    <h2 class="faculty-hero-card__name">{{ authStore.displayName() }}</h2>
+                    <p class="faculty-hero-card__role-title">
+                      {{ supervisorRoleLabel(sup.role) }} · {{ sup.department || 'Facultad' }}
+                    </p>
+                  </div>
+
+                  <div class="faculty-hero-card__badges">
+                    <span class="status-badge status-badge--verified" title="Docente activo en Collab-U">
+                      <mat-icon>verified</mat-icon> Docente Activo
+                    </span>
+                    <span class="status-badge" [class.status-badge--available]="sup.isActive" [class.status-badge--busy]="!sup.isActive">
+                      <mat-icon>{{ sup.isActive ? 'how_to_reg' : 'person_off' }}</mat-icon>
+                      {{ sup.isActive ? 'Disponible para Asesorías' : 'Carga Completa / Inactivo' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Key Meta Chips -->
+                <div class="faculty-hero-card__meta-chips">
+                  @if (sup.department) {
+                    <span class="meta-chip">
+                      <mat-icon>apartment</mat-icon> {{ sup.department }}
+                    </span>
+                  }
+                  @if (sup.employeeCode) {
+                    <span class="meta-chip">
+                      <mat-icon>badge</mat-icon> Código: {{ sup.employeeCode }}
+                    </span>
+                  }
+                  @if (sup.specialization) {
+                    <span class="meta-chip">
+                      <mat-icon>psychology</mat-icon> {{ sup.specialization }}
+                    </span>
+                  }
+                  <span class="meta-chip meta-chip--highlight">
+                    <mat-icon>groups</mat-icon> Cupos: {{ sup.currentStudents }} / {{ sup.maxStudents }} estudiantes
+                  </span>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="faculty-hero-card__actions">
+                <a mat-flat-button color="primary" routerLink="/profile/edit" class="hero-action-btn">
+                  <mat-icon>edit</mat-icon> Editar Perfil
+                </a>
+                <a mat-stroked-button routerLink="/my-students" class="hero-action-btn">
+                  <mat-icon>groups</mat-icon> Mis Estudiantes
+                </a>
+                @if (cleanUrl(authStore.profile()?.linkedinUrl); as inLink) {
+                  <a mat-stroked-button [href]="inLink" target="_blank" rel="noopener noreferrer" class="hero-action-btn hero-action-btn--linkedin">
+                    <mat-icon>open_in_new</mat-icon> LinkedIn
+                  </a>
+                }
+              </div>
             </div>
-            <div>
-              <h2>{{ authStore.displayName() }}</h2>
-              <p>{{ sup.department ?? 'Sin departamento' }}</p>
-              <p><mat-icon>badge</mat-icon> Código: {{ sup.employeeCode ?? 'No registrado' }}</p>
+          </div>
+        </div>
+
+        <!-- ─── COMPLETENESS / HEALTH BAR ─── -->
+        <div class="faculty-completeness-card">
+          <div class="faculty-completeness-card__header">
+            <div class="faculty-completeness-card__label">
+              <mat-icon class="completeness-icon">verified_user</mat-icon>
+              <span>Nivel de Perfil Docente</span>
+            </div>
+            <strong class="faculty-completeness-card__percentage">{{ facultyCompletenessPercentage() }}% completo</strong>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="facultyCompletenessPercentage()" class="faculty-progress-bar" />
+          @if (missingFacultyCompleteness().length > 0 && facultyCompletenessPercentage() < 100) {
+            <div class="faculty-completeness-card__hint">
+              <span>Sugerencias para optimizar tu perfil académico:</span>
+              <div class="missing-chips">
+                @for (item of missingFacultyCompleteness(); track item.key) {
+                  <a [routerLink]="item.route" class="missing-chip">
+                    <mat-icon>add_circle_outline</mat-icon> {{ item.label }}
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ─── BENTO STATS GRID (4 TARJETAS) ─── -->
+        <div class="faculty-bento-grid">
+          <!-- Tarjeta 1: Carga de Estudiantes -->
+          <div class="bento-card bento-card--students">
+            <div class="bento-card__icon bento-card__icon--students">
+              <mat-icon>groups</mat-icon>
+            </div>
+            <div class="bento-card__content">
+              <span class="bento-card__value">{{ sup.currentStudents }} / {{ sup.maxStudents }}</span>
+              <span class="bento-card__label">Estudiantes Asignados</span>
+              <span class="bento-card__sublabel">{{ facultyCapacityPercentage() }}% de capacidad de tutoría</span>
             </div>
           </div>
 
-          <div class="section">
-            <h3>Rol</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Cargo</span>
-                <span>{{ supervisorRoleLabel(sup.role) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Especialización</span>
-                <span>{{ sup.specialization ?? 'No especificada' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estudiantes asignados</span>
-                <span>{{ sup.currentStudents }} / {{ sup.maxStudents }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Estado</span>
-                <span>{{ sup.isActive ? 'Activo' : 'Inactivo' }}</span>
-              </div>
+          <!-- Tarjeta 2: Cargo Institucional -->
+          <div class="bento-card bento-card--role">
+            <div class="bento-card__icon bento-card__icon--role">
+              <mat-icon>school</mat-icon>
+            </div>
+            <div class="bento-card__content">
+              <span class="bento-card__value">{{ supervisorRoleLabel(sup.role) }}</span>
+              <span class="bento-card__label">Rol en Proyectos</span>
+              <span class="bento-card__sublabel">Asesorías y evaluación</span>
             </div>
           </div>
-        </mat-card-content>
-      </mat-card>
+
+          <!-- Tarjeta 3: Departamento -->
+          <div class="bento-card bento-card--dept">
+            <div class="bento-card__icon bento-card__icon--dept">
+              <mat-icon>apartment</mat-icon>
+            </div>
+            <div class="bento-card__content">
+              <span class="bento-card__value">{{ sup.department || 'Sin Asignar' }}</span>
+              <span class="bento-card__label">Departamento Académico</span>
+              <span class="bento-card__sublabel">Facultad de adscripción</span>
+            </div>
+          </div>
+
+          <!-- Tarjeta 4: Especialidad -->
+          <div class="bento-card bento-card--spec">
+            <div class="bento-card__icon bento-card__icon--spec">
+              <mat-icon>psychology</mat-icon>
+            </div>
+            <div class="bento-card__content">
+              <span class="bento-card__value">{{ sup.specialization || 'General' }}</span>
+              <span class="bento-card__label">Área de Especialidad</span>
+              <span class="bento-card__sublabel">Línea de investigación</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── 2-COLUMN DETAILS LAYOUT ─── -->
+        <div class="faculty-details-layout">
+          <!-- Columna Principal (Izquierda) -->
+          <div class="faculty-details-layout__main">
+            <!-- Acerca del Docente -->
+            <mat-card class="detail-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="card-header-icon">person</mat-icon>
+                <mat-card-title>Acerca del Docente</mat-card-title>
+                <mat-card-subtitle>Trayectoria académica y enfoque profesional</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                @if (authStore.profile()?.bio) {
+                  <p class="faculty-bio-text">{{ authStore.profile()?.bio }}</p>
+                } @else {
+                  <div class="empty-state-box">
+                    <mat-icon>edit_note</mat-icon>
+                    <p>Aún no has redactado tu biografía académica.</p>
+                    <a mat-button color="primary" routerLink="/profile/edit">
+                      <mat-icon>add</mat-icon> Agregar biografía
+                    </a>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Líneas de Investigación & Enfoque -->
+            <mat-card class="detail-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="card-header-icon">science</mat-icon>
+                <mat-card-title>Áreas de Especialidad y Asesoría</mat-card-title>
+                <mat-card-subtitle>Temáticas donde guías anteproyectos y proyectos de grado</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                @if (sup.specialization) {
+                  <div class="specialization-badge-box">
+                    <div class="specialization-badge-icon">
+                      <mat-icon>psychology</mat-icon>
+                    </div>
+                    <div class="specialization-badge-text">
+                      <strong>{{ sup.specialization }}</strong>
+                      <p>Disponible para dirigir tesis, pasantías y proyectos de vinculación universidad-empresa.</p>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="empty-state-box">
+                    <mat-icon>psychology</mat-icon>
+                    <p>No has especificado tu área de especialización.</p>
+                    <a mat-button color="primary" routerLink="/profile/edit">
+                      <mat-icon>add</mat-icon> Definir especialidad
+                    </a>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Hub de Supervisión de Proyectos -->
+            <mat-card class="detail-card supervision-hub-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="card-header-icon">assignment_ind</mat-icon>
+                <mat-card-title>Gestión y Supervisión Académica</mat-card-title>
+                <mat-card-subtitle>Monitoreo de anteproyectos, entregables y actas de evaluación</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="supervision-hub-info">
+                  <p>
+                    Desde el módulo de <strong>Mis Estudiantes</strong> puedes revisar los anteproyectos asignados,
+                    retroalimentar entregables con archivos adjuntos y calificar las actas finales en la escala oficial de 0 a 100 puntos.
+                  </p>
+                  <div class="supervision-hub-actions">
+                    <a mat-flat-button color="primary" routerLink="/my-students" class="hub-action-btn">
+                      <mat-icon>folder_shared</mat-icon> Ir a Mis Estudiantes Asignados
+                    </a>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Columna Lateral (Derecha) -->
+          <div class="faculty-details-layout__sidebar">
+            <!-- Ficha Institucional -->
+            <mat-card class="detail-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="card-header-icon">badge</mat-icon>
+                <mat-card-title>Ficha Institucional</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="academic-sheet-list">
+                  <div class="sheet-item">
+                    <span class="sheet-item__label">Código Docente</span>
+                    <strong class="sheet-item__value">{{ sup.employeeCode || 'Sin registrar' }}</strong>
+                  </div>
+                  <div class="sheet-item">
+                    <span class="sheet-item__label">Departamento</span>
+                    <strong class="sheet-item__value">{{ sup.department || 'Sin asignar' }}</strong>
+                  </div>
+                  <div class="sheet-item">
+                    <span class="sheet-item__label">Cargo / Responsabilidad</span>
+                    <strong class="sheet-item__value">{{ supervisorRoleLabel(sup.role) }}</strong>
+                  </div>
+                  <div class="sheet-item">
+                    <span class="sheet-item__label">Estado en Collab-U</span>
+                    <span class="status-pill" [class.status-pill--active]="sup.isActive" [class.status-pill--inactive]="!sup.isActive">
+                      {{ sup.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Capacidad de Tutorías -->
+            <mat-card class="detail-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="card-header-icon">pie_chart</mat-icon>
+                <mat-card-title>Capacidad de Tutorías</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="capacity-box">
+                  <div class="capacity-box__header">
+                    <span class="capacity-box__num">{{ sup.currentStudents }} de {{ sup.maxStudents }}</span>
+                    <span class="capacity-box__badge" [class.capacity-box__badge--available]="sup.currentStudents < sup.maxStudents">
+                      {{ sup.maxStudents - sup.currentStudents }} cupos disponibles
+                    </span>
+                  </div>
+                  <mat-progress-bar mode="determinate" [value]="facultyCapacityPercentage()" class="capacity-bar" />
+                  <p class="capacity-box__desc">
+                    Asignación controlada para garantizar atención personalizada en cada proyecto académico.
+                  </p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Canales de Contacto -->
+            <mat-card class="detail-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="card-header-icon">contact_mail</mat-icon>
+                <mat-card-title>Contacto Oficial</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="links-vertical-list">
+                  @if (authStore.user()?.email; as email) {
+                    <a [href]="'mailto:' + email" class="social-link-card">
+                      <div class="social-link-card__icon social-link-card__icon--email">
+                        <mat-icon>email</mat-icon>
+                      </div>
+                      <div class="social-link-card__content">
+                        <span class="social-link-card__label">Correo Institucional</span>
+                        <span class="social-link-card__url">{{ email }}</span>
+                      </div>
+                      <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                    </a>
+                  }
+                  @if (authStore.profile()?.phone; as phone) {
+                    <a [href]="'tel:' + phone" class="social-link-card">
+                      <div class="social-link-card__icon social-link-card__icon--phone">
+                        <mat-icon>call</mat-icon>
+                      </div>
+                      <div class="social-link-card__content">
+                        <span class="social-link-card__label">Teléfono de Contacto</span>
+                        <span class="social-link-card__url">{{ phone }}</span>
+                      </div>
+                      <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                    </a>
+                  }
+                  @if (cleanUrl(authStore.profile()?.linkedinUrl); as inLink) {
+                    <a [href]="inLink" target="_blank" rel="noopener noreferrer" class="social-link-card">
+                      <div class="social-link-card__icon social-link-card__icon--linkedin">
+                        <mat-icon>open_in_new</mat-icon>
+                      </div>
+                      <div class="social-link-card__content">
+                        <span class="social-link-card__label">LinkedIn Académico</span>
+                        <span class="social-link-card__url">{{ inLink }}</span>
+                      </div>
+                      <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                    </a>
+                  }
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </div>
     }
   }
 
