@@ -1,341 +1,1084 @@
-<div class="project-create">
-  <h1>Crear Proyecto</h1>
+<div class="project-create-layout">
+  <!-- BREADCRUMBS & TOP BAR -->
+  <header class="project-create-header">
+    <div class="header-top">
+      <app-breadcrumbs [items]="breadcrumbs" />
+      <button mat-button class="back-link-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Volver a Mis Proyectos
+      </button>
+    </div>
 
-  <mat-stepper linear #stepper>
-    <mat-step [stepControl]="infoForm" label="Información General">
-      <form [formGroup]="infoForm" class="project-create__form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Título del Proyecto</mat-label>
-          <input matInput formControlName="title" placeholder="Ej: Desarrollo de App Móvil" />
-          <mat-error>Título requerido (mín. 5 caracteres)</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Descripción</mat-label>
-          <textarea matInput formControlName="description" rows="6"
-                    placeholder="Describe las actividades, objetivos y alcance del proyecto..."></textarea>
-          <mat-error>Descripción requerida (mín. 50 caracteres)</mat-error>
-        </mat-form-field>
-
-        <div class="project-create__row">
-          <mat-form-field appearance="outline">
-            <mat-label>Tipo de Proyecto</mat-label>
-            <mat-select formControlName="projectType">
-              @for (type of projectTypes; track type.value) {
-                <mat-option [value]="type.value">{{ type.label }}</mat-option>
-              }
-            </mat-select>
-            <mat-error>Selecciona un tipo</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Posiciones Disponibles</mat-label>
-            <input matInput type="number" formControlName="positionsAvailable" min="1" />
-            <mat-error>Mín. 1 posición</mat-error>
-          </mat-form-field>
+    <div class="header-main">
+      <div class="header-titles">
+        <div class="title-with-badge">
+          <h1>Publicar Nueva Convocatoria</h1>
+          <span class="status-pill status-pill--draft">
+            <span class="pulse-dot"></span>
+            Borrador en edición
+          </span>
         </div>
-
-        <div class="project-create__row">
-          <mat-slide-toggle formControlName="isRemote">Remoto</mat-slide-toggle>
-
-          @if (!infoForm.value.isRemote) {
-            <mat-form-field appearance="outline" class="flex-1">
-              <mat-label>Ubicación</mat-label>
-              <input matInput formControlName="location" />
-            </mat-form-field>
-          }
-        </div>
-
-        <div class="project-create__row">
-          <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Horas Semanales</mat-label>
-            <input matInput type="number" formControlName="weeklyHours" min="1" placeholder="Ej: 10" />
-            <mat-error>Mínimo 1 hora semanal</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Horas Totales (Opcional)</mat-label>
-            <input matInput type="number" formControlName="totalHours" min="1" placeholder="Ej: 120" />
-            @if (infoForm.get('totalHours')?.hasError('totalLessThanWeekly')) {
-              <mat-error>Las horas totales no pueden ser menores a las semanales</mat-error>
-            } @else {
-              <mat-error>Mínimo 1 hora total</mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <div class="project-create__row">
-          <mat-form-field appearance="outline">
-            <mat-label>Fecha de Inicio</mat-label>
-            <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
-            <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
-            <mat-datepicker #startPicker />
-            <mat-error>Fecha requerida</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Fecha de Fin</mat-label>
-            <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
-            <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
-            <mat-datepicker #endPicker />
-            @if (infoForm.get('endDate')?.hasError('endBeforeStart')) {
-              <mat-error>Debe ser posterior al inicio</mat-error>
-            } @else {
-              <mat-error>Fecha requerida</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Límite de Aplicaciones</mat-label>
-            <input matInput [matDatepicker]="deadlinePicker" formControlName="applicationDeadline" />
-            <mat-datepicker-toggle matIconSuffix [for]="deadlinePicker" />
-            <mat-datepicker #deadlinePicker />
-            @if (infoForm.get('applicationDeadline')?.hasError('deadlineAfterStart')) {
-              <mat-error>Debe ser anterior al inicio</mat-error>
-            } @else {
-              <mat-error>Fecha requerida</mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <h3>Perfil Académico Ideal</h3>
-        <div class="project-create__row">
-          <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Carreras Relacionadas</mat-label>
-            <mat-select formControlName="academicPrograms" multiple
-                        (selectionChange)="onProgramsChange($event.value)">
-              @for (program of academicPrograms(); track program.id) {
-                <mat-option [value]="program.id">{{ program.name }}</mat-option>
-              }
-            </mat-select>
-            @if (loadingPrograms()) {
-              <mat-hint>Cargando programas...</mat-hint>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Semestre Mínimo</mat-label>
-            <input matInput type="number" formControlName="minimumSemester" min="1" max="12" />
-            <mat-error>Entre 1 y 12</mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="project-create__step-actions">
-          <button mat-flat-button matStepperNext [disabled]="infoForm.invalid">Siguiente</button>
-        </div>
-      </form>
-    </mat-step>
-
-    <mat-step label="Habilidades">
-      <div class="project-create__form">
-        <h3>Habilidades requeridas</h3>
-        <p class="project-create__hint">
-          Selecciona del catálogo (filtrado por las carreras elegidas) o agrega habilidades libres.
-          Marca cuáles son obligatorias.
+        <p class="subtitle">
+          Define los objetivos, modalidad y competencias requeridas para conectar con los estudiantes universitarios ideales.
         </p>
+      </div>
 
-        @if (loadingCatalog()) {
-          <p class="project-create__hint">Cargando catálogo...</p>
+      <div class="header-actions">
+        @if (lastSavedTime()) {
+          <div class="autosave-badge" matTooltip="Tus cambios se guardan automáticamente en este navegador">
+            <mat-icon>cloud_done</mat-icon>
+            <span>Guardado: {{ lastSavedTime() }}</span>
+          </div>
         }
-        <div class="project-create__skill-suggestions">
-          <mat-card class="project-create__req-card">
-            <mat-card-content>
-              @for (entry of skillCatalog(); track entry.id) {
-                <button type="button" mat-stroked-button
-                  class="skill-chip"
-                  [class.skill-chip--selected]="isSkillSelected(entry.displayName)"
-                  (click)="toggleCatalogSkill(entry)">
-                  @if (isSkillSelected(entry.displayName)) {
-                    <mat-icon>check</mat-icon>
-                  } @else {
-                    <mat-icon>add</mat-icon>
-                  }
-                  {{ entry.displayName }}
-                </button>
-              }
-            </mat-card-content>
-          </mat-card>
-        </div>
-
-        <div class="project-create__row">
-          <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Agregar habilidad libre</mat-label>
-            <input matInput [(ngModel)]="customSkillDraft" [ngModelOptions]="{ standalone: true }"
-              (keydown.enter)="$event.preventDefault(); addCustomSkill()"
-              placeholder="Ej. Power BI, Blender, etc." />
-          </mat-form-field>
-          <button mat-flat-button color="primary" type="button" (click)="addCustomSkill()">
-            <mat-icon>add</mat-icon> Agregar
+        @if (hasDraftInStorage()) {
+          <button mat-stroked-button color="warn" class="discard-btn" (click)="discardDraft()">
+            <mat-icon>delete_sweep</mat-icon>
+            Descartar borrador
           </button>
-        </div>
+        }
+      </div>
+    </div>
+  </header>
 
-        @if (skills().length > 0) {
-          <h4>Habilidades seleccionadas ({{ skills().length }})</h4>
-          @for (skill of skills(); track skill.name) {
-            <mat-card class="project-create__req-card">
-              <mat-card-content>
-                <div class="project-create__row">
-                  <span class="flex-1">{{ skill.name }}</span>
+  <!-- STEPPER CONTAINER -->
+  <mat-card class="stepper-card">
+    <mat-stepper linear #stepper class="custom-stepper">
 
-                  <mat-form-field appearance="outline">
-                    <mat-label>Nivel mínimo</mat-label>
-                    <mat-select [value]="skill.proficiencyLevel"
-                                (selectionChange)="setSkillProficiency(skill.name, $event.value)">
-                      <mat-option [value]="null">Sin mínimo</mat-option>
-                      <mat-option value="beginner">Principiante</mat-option>
-                      <mat-option value="intermediate">Intermedio</mat-option>
-                      <mat-option value="advanced">Avanzado</mat-option>
-                      <mat-option value="expert">Experto</mat-option>
-                    </mat-select>
+      <!-- =================================================================== -->
+      <!-- PASO 1: INFORMACIÓN GENERAL Y MODALIDAD -->
+      <!-- =================================================================== -->
+      <mat-step [stepControl]="basicInfoForm" label="Información & Modalidad">
+        <form [formGroup]="basicInfoForm" class="step-form">
+
+          <div class="section-lead">
+            <div class="section-lead__icon">
+              <mat-icon>feed</mat-icon>
+            </div>
+            <div class="section-lead__text">
+              <h2>Información General de la Convocatoria</h2>
+              <p>Comienza indicando el título, propósito y la modalidad en la que se llevará a cabo el proyecto.</p>
+            </div>
+          </div>
+
+          <!-- Título del proyecto -->
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Título de la Convocatoria o Proyecto</mat-label>
+              <input matInput formControlName="title"
+                     placeholder="Ej: Desarrollo de Sistema Web de Monitoreo IoT para Agricultura Sostenible"
+                     maxlength="120" />
+              <mat-hint align="end">
+                {{ basicInfoForm.get('title')?.value?.length || 0 }} / 120 caracteres (mín. 10)
+              </mat-hint>
+              @if (basicInfoForm.get('title')?.hasError('required')) {
+                <mat-error>El título es obligatorio.</mat-error>
+              } @else if (basicInfoForm.get('title')?.hasError('minlength')) {
+                <mat-error>Ingresa al menos 10 caracteres explicativos.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Tipo de Proyecto (Visual Cards) -->
+          <div class="form-group">
+            <label class="group-label">Tipo de Convocatoria <span class="required-mark">*</span></label>
+            <p class="group-hint">Selecciona la figura académica o institucional correspondiente:</p>
+
+            <div class="type-cards-grid">
+              @for (type of projectTypes; track type.value) {
+                <div class="type-card"
+                     [class.type-card--selected]="basicInfoForm.get('projectType')?.value === type.value"
+                     (click)="basicInfoForm.patchValue({ projectType: type.value })"
+                     role="button"
+                     tabindex="0"
+                     (keydown.enter)="basicInfoForm.patchValue({ projectType: type.value })"
+                     (keydown.space)="basicInfoForm.patchValue({ projectType: type.value })">
+                  <div class="type-card__header">
+                    <div class="type-card__icon-box">
+                      <mat-icon>{{ type.icon }}</mat-icon>
+                    </div>
+                    <span class="type-card__badge">{{ type.badge }}</span>
+                  </div>
+                  <h3 class="type-card__title">{{ type.label }}</h3>
+                  <p class="type-card__desc">{{ type.desc }}</p>
+                  @if (basicInfoForm.get('projectType')?.value === type.value) {
+                    <div class="type-card__check">
+                      <mat-icon>check_circle</mat-icon>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Modalidad y Ubicación -->
+          <div class="form-group">
+            <label class="group-label">Modalidad de Trabajo <span class="required-mark">*</span></label>
+            <div class="mode-cards-grid">
+              @for (mode of locationTypes; track mode.value) {
+                <div class="mode-card"
+                     [class.mode-card--selected]="basicInfoForm.get('locationType')?.value === mode.value"
+                     (click)="basicInfoForm.patchValue({ locationType: mode.value })"
+                     role="button"
+                     tabindex="0"
+                     (keydown.enter)="basicInfoForm.patchValue({ locationType: mode.value })"
+                     (keydown.space)="basicInfoForm.patchValue({ locationType: mode.value })">
+                  <div class="mode-card__icon-box">
+                    <mat-icon>{{ mode.icon }}</mat-icon>
+                  </div>
+                  <div class="mode-card__info">
+                    <h4>{{ mode.label }}</h4>
+                    <p>{{ mode.desc }}</p>
+                  </div>
+                  @if (basicInfoForm.get('locationType')?.value === mode.value) {
+                    <mat-icon class="mode-card__check">check_circle</mat-icon>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Ubicación física si es presencial o híbrido -->
+            @if (basicInfoForm.get('locationType')?.value !== 'remote') {
+              <div class="location-input-container">
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>Sede o Dirección de Trabajo</mat-label>
+                  <mat-icon matPrefix class="field-prefix-icon">location_on</mat-icon>
+                  <input matInput formControlName="location"
+                         placeholder="Ej: Pasto, Nariño — Sede Administrativa Calle 18 # 25-10" />
+                  <mat-hint>Indica la ciudad y dirección o punto de referencia para los postulantes.</mat-hint>
+                </mat-form-field>
+              </div>
+            }
+          </div>
+
+          <!-- Cupos Disponibles y Compensación -->
+          <div class="form-grid-2">
+            <!-- Selector de cupos -->
+            <div class="positions-selector-box">
+              <label class="group-label">Vacantes / Cupos Disponibles <span class="required-mark">*</span></label>
+              <p class="group-hint">Cantidad de estudiantes que tu equipo puede vincular:</p>
+              <div class="stepper-counter">
+                <button type="button" mat-icon-button (click)="adjustPositions(-1)"
+                        [disabled]="(basicInfoForm.get('positionsAvailable')?.value || 1) <= 1"
+                        aria-label="Reducir cupos">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <span class="stepper-counter__value">
+                  {{ basicInfoForm.get('positionsAvailable')?.value }}
+                </span>
+                <button type="button" mat-icon-button (click)="adjustPositions(1)"
+                        [disabled]="(basicInfoForm.get('positionsAvailable')?.value || 1) >= 50"
+                        aria-label="Aumentar cupos">
+                  <mat-icon>add</mat-icon>
+                </button>
+                <span class="stepper-counter__label">
+                  {{ (basicInfoForm.get('positionsAvailable')?.value || 1) === 1 ? 'estudiante' : 'estudiantes' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tipo de Compensación -->
+            <div class="compensation-box">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Tipo de Compensación o Apoyo</mat-label>
+                <mat-icon matPrefix class="field-prefix-icon">payments</mat-icon>
+                <mat-select formControlName="compensationType">
+                  @for (comp of compensationTypes; track comp.value) {
+                    <mat-option [value]="comp.value">
+                      <div class="select-option-item">
+                        <span>{{ comp.label }}</span>
+                        <small class="select-option-hint"> — {{ comp.desc }}</small>
+                      </div>
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              @if (basicInfoForm.get('compensationType')?.value === 'paid' || basicInfoForm.get('compensationType')?.value === 'stipend') {
+                <div class="compensation-amount-row">
+                  <mat-form-field appearance="outline" class="flex-1">
+                    <mat-label>Monto Estimado Mensual</mat-label>
+                    <mat-icon matPrefix class="field-prefix-icon">attach_money</mat-icon>
+                    <input matInput type="number" formControlName="compensationAmount"
+                           placeholder="Ej: 1423500" min="0" />
+                    <mat-hint>Auxilio o remuneración económica mensual</mat-hint>
                   </mat-form-field>
 
-                  <button mat-icon-button color="warn" aria-label="Quitar habilidad" (click)="removeSkill(skill.name)">
+                  <mat-form-field appearance="outline" class="currency-field">
+                    <mat-label>Moneda</mat-label>
+                    <mat-select formControlName="currency">
+                      <mat-option value="COP">COP ($)</mat-option>
+                      <mat-option value="USD">USD ($)</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Descripción del Proyecto -->
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Descripción Detallada del Proyecto y Alcance <span class="required-mark">*</span></mat-label>
+              <textarea matInput formControlName="description" rows="7"
+                        placeholder="Describe los objetivos, los desafíos técnicos que enfrentará el estudiante, los entregables esperados y las responsabilidades principales..."></textarea>
+              <mat-hint align="end">
+                @if ((basicInfoForm.get('description')?.value?.length || 0) < 50) {
+                  <span class="char-warn">
+                    {{ basicInfoForm.get('description')?.value?.length || 0 }} / 50 mín. caracteres requeridos
+                  </span>
+                } @else {
+                  <span class="char-good">
+                    <mat-icon class="inline-icon">check</mat-icon>
+                    {{ basicInfoForm.get('description')?.value?.length }} caracteres redactados
+                  </span>
+                }
+              </mat-hint>
+              @if (basicInfoForm.get('description')?.hasError('required')) {
+                <mat-error>La descripción es obligatoria.</mat-error>
+              } @else if (basicInfoForm.get('description')?.hasError('minlength')) {
+                <mat-error>Ingresa al menos 50 caracteres para brindar suficiente contexto a los aspirantes.</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Card de consejos para la redacción -->
+            <div class="writing-tips-card">
+              <div class="writing-tips-card__header">
+                <mat-icon>lightbulb</mat-icon>
+                <span>Recomendaciones para una convocatoria exitosa</span>
+              </div>
+              <ul class="writing-tips-card__list">
+                <li><strong>Objetivo claro:</strong> Explica cuál es el problema que el estudiante ayudará a resolver.</li>
+                <li><strong>Actividades:</strong> Menciona si participará en desarrollo de software, análisis de datos, pruebas o diseño.</li>
+                <li><strong>Metodología:</strong> Indica si usan metodologías ágiles (Scrum/Kanban) y herramientas de colaboración (Git, Jira).</li>
+                <li><strong>Mentoria:</strong> Resalta si contará con apoyo continuo de líderes técnicos o profesionales experimentados.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Botones de acción del paso 1 -->
+          <div class="step-actions">
+            <button type="button" mat-flat-button color="primary" class="primary-step-btn"
+                    (click)="validateAndNext(stepper, basicInfoForm, 'Información General')">
+              Continuar al Cronograma
+              <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- =================================================================== -->
+      <!-- PASO 2: CRONOGRAMA Y HORAS -->
+      <!-- =================================================================== -->
+      <mat-step [stepControl]="scheduleForm" label="Cronograma & Horas">
+        <form [formGroup]="scheduleForm" class="step-form">
+
+          <div class="section-lead">
+            <div class="section-lead__icon">
+              <mat-icon>calendar_month</mat-icon>
+            </div>
+            <div class="section-lead__text">
+              <h2>Cronograma y Dedicación Horaria</h2>
+              <p>Establece los plazos de recepción de hojas de vida, las fechas de ejecución y la intensidad horaria requerida.</p>
+            </div>
+          </div>
+
+          <!-- Timeline visual con fechas -->
+          <div class="timeline-visual-card">
+            <div class="timeline-visual-header">
+              <mat-icon>timeline</mat-icon>
+              <span>Línea de Tiempo del Proyecto</span>
+            </div>
+
+            <div class="timeline-milestones">
+              <!-- Hito 1: Límite -->
+              <div class="milestone-item">
+                <div class="milestone-item__node"
+                     [class.milestone-item__node--set]="scheduleForm.get('applicationDeadline')?.value">
+                  <mat-icon>assignment_turned_in</mat-icon>
+                </div>
+                <div class="milestone-item__content">
+                  <span class="milestone-item__tag">Fase 1</span>
+                  <h4>Cierre de Postulaciones</h4>
+                  <p class="milestone-item__date">
+                    {{ scheduleForm.get('applicationDeadline')?.value ? (scheduleForm.get('applicationDeadline')?.value | date:'dd MMM yyyy') : 'Por definir' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="milestone-connector"></div>
+
+              <!-- Hito 2: Inicio -->
+              <div class="milestone-item">
+                <div class="milestone-item__node"
+                     [class.milestone-item__node--set]="scheduleForm.get('startDate')?.value">
+                  <mat-icon>play_circle</mat-icon>
+                </div>
+                <div class="milestone-item__content">
+                  <span class="milestone-item__tag">Fase 2</span>
+                  <h4>Inicio de Actividades</h4>
+                  <p class="milestone-item__date">
+                    {{ scheduleForm.get('startDate')?.value ? (scheduleForm.get('startDate')?.value | date:'dd MMM yyyy') : 'Por definir' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="milestone-connector"></div>
+
+              <!-- Hito 3: Fin -->
+              <div class="milestone-item">
+                <div class="milestone-item__node"
+                     [class.milestone-item__node--set]="scheduleForm.get('endDate')?.value">
+                  <mat-icon>flag</mat-icon>
+                </div>
+                <div class="milestone-item__content">
+                  <span class="milestone-item__tag">Fase 3</span>
+                  <h4>Cierre y Evaluación</h4>
+                  <p class="milestone-item__date">
+                    {{ scheduleForm.get('endDate')?.value ? (scheduleForm.get('endDate')?.value | date:'dd MMM yyyy') : 'Por definir' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campos de Fecha -->
+          <div class="form-grid-3">
+            <!-- Límite de aplicaciones -->
+            <mat-form-field appearance="outline">
+              <mat-label>Límite de Postulaciones <span class="required-mark">*</span></mat-label>
+              <input matInput [matDatepicker]="deadlinePicker" formControlName="applicationDeadline"
+                     placeholder="Fecha límite" />
+              <mat-datepicker-toggle matIconSuffix [for]="deadlinePicker" />
+              <mat-datepicker #deadlinePicker />
+              <mat-hint>Último día para postularse</mat-hint>
+              @if (scheduleForm.get('applicationDeadline')?.hasError('deadlineAfterStart')) {
+                <mat-error>Debe ser anterior o igual al inicio del proyecto.</mat-error>
+              } @else if (scheduleForm.get('applicationDeadline')?.hasError('required')) {
+                <mat-error>Fecha límite requerida.</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Fecha de inicio -->
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de Inicio <span class="required-mark">*</span></mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate"
+                     placeholder="Fecha de inicio" />
+              <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+              <mat-datepicker #startPicker />
+              <mat-hint>Inicio formal del estudiante</mat-hint>
+              @if (scheduleForm.get('startDate')?.hasError('required')) {
+                <mat-error>Fecha de inicio requerida.</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Fecha de fin -->
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de Fin <span class="required-mark">*</span></mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate"
+                     placeholder="Fecha de finalización" />
+              <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+              <mat-datepicker #endPicker />
+              <mat-hint>Culminación del periodo</mat-hint>
+              @if (scheduleForm.get('endDate')?.hasError('endBeforeStart')) {
+                <mat-error>Debe ser posterior al inicio.</mat-error>
+              } @else if (scheduleForm.get('endDate')?.hasError('required')) {
+                <mat-error>Fecha de fin requerida.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Banner dinámico con duración calculada -->
+          @if (durationSummary(); as summary) {
+            <div class="duration-computed-card">
+              <div class="duration-computed-card__icon">
+                <mat-icon>hourglass_bottom</mat-icon>
+              </div>
+              <div class="duration-computed-card__text">
+                <h4>Duración Estimada del Proyecto</h4>
+                <p>
+                  <strong>{{ summary.months }} {{ summary.months === 1 ? 'mes' : 'meses' }}</strong>
+                  ({{ summary.weeks }} semanas aprox. • {{ summary.days }} días calendario)
+                </p>
+              </div>
+
+              @if (summary.suggestedTotalHours) {
+                <button type="button" mat-stroked-button class="suggest-hours-btn"
+                        (click)="applySuggestedHours()">
+                  <mat-icon>auto_fix_high</mat-icon>
+                  Sugerir {{ summary.suggestedTotalHours }} h totales
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Dedicación horaria -->
+          <div class="form-grid-2">
+            <mat-form-field appearance="outline">
+              <mat-label>Horas Semanales Requeridas <span class="required-mark">*</span></mat-label>
+              <mat-icon matPrefix class="field-prefix-icon">schedule</mat-icon>
+              <input matInput type="number" formControlName="weeklyHours" min="1" max="60"
+                     placeholder="Ej: 20" />
+              <mat-hint>Típico para prácticas: 20 h (medio tiempo) o 40 h (tiempo completo)</mat-hint>
+              @if (scheduleForm.get('weeklyHours')?.hasError('required')) {
+                <mat-error>Indica las horas semanales.</mat-error>
+              } @else if (scheduleForm.get('weeklyHours')?.hasError('min')) {
+                <mat-error>Mínimo 1 hora semanal.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Horas Totales del Proyecto (Opcional)</mat-label>
+              <mat-icon matPrefix class="field-prefix-icon">timer</mat-icon>
+              <input matInput type="number" formControlName="totalHours" min="1"
+                     placeholder="Ej: 320" />
+              <mat-hint>Total de horas a certificar al culminar el proyecto</mat-hint>
+              @if (scheduleForm.get('totalHours')?.hasError('totalLessThanWeekly')) {
+                <mat-error>Las horas totales no pueden ser inferiores a las semanales.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Acciones del paso 2 -->
+          <div class="step-actions">
+            <button type="button" mat-stroked-button matStepperPrevious>
+              <mat-icon>arrow_back</mat-icon>
+              Anterior
+            </button>
+            <button type="button" mat-flat-button color="primary" class="primary-step-btn"
+                    (click)="validateAndNext(stepper, scheduleForm, 'Cronograma')">
+              Continuar al Perfil de Candidato
+              <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- =================================================================== -->
+      <!-- PASO 3: PERFIL ACADÉMICO & COMPETENCIAS -->
+      <!-- =================================================================== -->
+      <mat-step [stepControl]="profileForm" label="Perfil & Competencias">
+        <div class="step-form">
+
+          <div class="section-lead">
+            <div class="section-lead__icon">
+              <mat-icon>school</mat-icon>
+            </div>
+            <div class="section-lead__text">
+              <h2>Perfil Académico y Competencias</h2>
+              <p>Indica las carreras convocadas y selecciona las habilidades técnicas y blandas que el postulante debe poseer.</p>
+            </div>
+          </div>
+
+          <!-- Formulario de Carreras y Semestre -->
+          <form [formGroup]="profileForm" class="form-grid-2">
+            <!-- Selección de Programas Académicos -->
+            <div class="academic-programs-block">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Programas Académicos / Carreras Afines <span class="required-mark">*</span></mat-label>
+                <mat-icon matPrefix class="field-prefix-icon">local_library</mat-icon>
+                <mat-select formControlName="academicPrograms" multiple
+                            (selectionChange)="onProgramsChange($event.value)"
+                            placeholder="Selecciona las carreras convocadas">
+                  @for (program of academicPrograms(); track program.id) {
+                    <mat-option [value]="program.id">
+                      <div class="program-option-row">
+                        <span>{{ program.name }}</span>
+                        @if (program.faculty) {
+                          <span class="program-faculty-tag">{{ program.faculty }}</span>
+                        }
+                      </div>
+                    </mat-option>
+                  }
+                </mat-select>
+                <mat-hint>
+                  @if (loadingPrograms()) {
+                    Cargando carreras de la Universidad...
+                  } @else {
+                    Puedes elegir múltiples carreras. El catálogo de habilidades se adaptará a tu selección.
+                  }
+                </mat-hint>
+                @if (profileForm.get('academicPrograms')?.hasError('required') && profileForm.get('academicPrograms')?.touched) {
+                  <mat-error>Debes vincular al menos un programa académico.</mat-error>
+                }
+              </mat-form-field>
+
+              @if ((profileForm.get('academicPrograms')?.value?.length || 0) > 0) {
+                <div class="selected-programs-tags">
+                  <span class="tags-counter-label">Carreras vinculadas:</span>
+                  @for (progId of profileForm.get('academicPrograms')?.value; track progId) {
+                    <span class="program-chip">
+                      <mat-icon>school</mat-icon>
+                      {{ getProgramName(progId) }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Semestre mínimo -->
+            <div class="minimum-semester-block">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Semestre Mínimo Requerido</mat-label>
+                <mat-icon matPrefix class="field-prefix-icon">military_tech</mat-icon>
+                <mat-select formControlName="minimumSemester">
+                  <mat-option [value]="null">Cualquier semestre</mat-option>
+                  <mat-option [value]="4">4° Semestre en adelante</mat-option>
+                  <mat-option [value]="5">5° Semestre en adelante</mat-option>
+                  <mat-option [value]="6">6° Semestre en adelante</mat-option>
+                  <mat-option [value]="7">7° Semestre en adelante (Recomendado para prácticas)</mat-option>
+                  <mat-option [value]="8">8° Semestre en adelante</mat-option>
+                  <mat-option [value]="9">9° Semestre en adelante</mat-option>
+                  <mat-option [value]="10">10° Semestre (Grado/Tesis)</mat-option>
+                </mat-select>
+                <mat-hint>Filtra candidatos según su avance en el plan de estudios.</mat-hint>
+              </mat-form-field>
+            </div>
+          </form>
+
+          <mat-divider style="margin: 24px 0;"></mat-divider>
+
+          <!-- SELECCIÓN DE HABILIDADES -->
+          <div class="skills-section">
+            <div class="skills-section__header">
+              <div class="skills-section__titles">
+                <h3>Habilidades y Competencias Requeridas <span class="required-mark">*</span></h3>
+                <p>
+                  Explora el catálogo oficial de la Universidad o agrega habilidades libres.
+                  Configura el nivel mínimo y marca cuáles son excluyentes (obligatorias).
+                </p>
+              </div>
+              <div class="skills-count-pill" [class.skills-count-pill--valid]="skills().length > 0">
+                <mat-icon>{{ skills().length > 0 ? 'check_circle' : 'info' }}</mat-icon>
+                <span>{{ skills().length }} {{ skills().length === 1 ? 'habilidad configurada' : 'habilidades configuradas' }}</span>
+              </div>
+            </div>
+
+            <!-- Explorador de catálogo -->
+            <div class="catalog-explorer-card">
+              <!-- Barra de filtros y búsqueda -->
+              <div class="catalog-filters-bar">
+                <div class="catalog-search-field">
+                  <mat-icon>search</mat-icon>
+                  <input type="text"
+                         [ngModel]="skillSearch()"
+                         (ngModelChange)="skillSearch.set($event)"
+                         placeholder="Buscar en el catálogo (ej: Angular, Python, Scrum, Figma...)" />
+                  @if (skillSearch()) {
+                    <button type="button" mat-icon-button (click)="skillSearch.set('')" aria-label="Limpiar búsqueda">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  }
+                </div>
+
+                <!-- Filtros de categoría -->
+                <div class="catalog-category-chips">
+                  @for (cat of skillCategories; track cat.id) {
+                    <button type="button"
+                            class="cat-chip-btn"
+                            [class.cat-chip-btn--active]="selectedCategory() === cat.id"
+                            (click)="selectedCategory.set(cat.id)">
+                      <mat-icon>{{ cat.icon }}</mat-icon>
+                      {{ cat.label }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Chips del catálogo -->
+              <div class="catalog-chips-container">
+                @if (loadingCatalog()) {
+                  <div class="catalog-loading">
+                    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                    <p>Actualizando catálogo según carreras seleccionadas...</p>
+                  </div>
+                } @else if (filteredCatalog().length === 0) {
+                  <div class="catalog-empty">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron habilidades que coincidan con la búsqueda.</p>
+                  </div>
+                } @else {
+                  <div class="chips-flex-wrap">
+                    @for (entry of filteredCatalog(); track entry.id) {
+                      <button type="button"
+                              class="catalog-skill-pill"
+                              [class.catalog-skill-pill--selected]="isSkillSelected(entry.displayName)"
+                              (click)="toggleCatalogSkill(entry)">
+                        <mat-icon>{{ isSkillSelected(entry.displayName) ? 'check' : 'add' }}</mat-icon>
+                        <span class="pill-name">{{ entry.displayName }}</span>
+                        <span class="pill-category">{{ getCategoryLabel(entry.category) }}</span>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Input para agregar habilidad libre -->
+              <div class="custom-skill-input-row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>¿No encuentras una habilidad? Agrégala directamente</mat-label>
+                  <mat-icon matPrefix class="field-prefix-icon">draw</mat-icon>
+                  <input matInput [(ngModel)]="customSkillDraft"
+                         placeholder="Ej: Power BI, Blender, AWS Lambda, Negociación..."
+                         (keydown.enter)="$event.preventDefault(); addCustomSkill()" />
+                </mat-form-field>
+                <button type="button" mat-flat-button color="primary" class="add-custom-btn" (click)="addCustomSkill()">
+                  <mat-icon>add</mat-icon>
+                  Agregar a la lista
+                </button>
+              </div>
+            </div>
+
+            <!-- Listado de Habilidades Seleccionadas -->
+            @if (skills().length > 0) {
+              <div class="selected-skills-wrapper">
+                <h4>Habilidades Añadidas ({{ skills().length }})</h4>
+                <div class="selected-skills-grid">
+                  @for (skill of skills(); track skill.name) {
+                    <div class="skill-config-card" [class.skill-config-card--mandatory]="skill.isMandatory">
+                      <div class="skill-config-card__top">
+                        <div class="skill-config-card__title-row">
+                          <span class="skill-name">{{ skill.name }}</span>
+                          <span class="skill-cat-tag">{{ getCategoryLabel(skill.category) }}</span>
+                        </div>
+                        <button type="button" mat-icon-button color="warn"
+                                matTooltip="Quitar habilidad"
+                                (click)="removeSkill(skill.name)"
+                                aria-label="Eliminar habilidad">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      </div>
+
+                      <div class="skill-config-card__controls">
+                        <!-- Nivel de dominio -->
+                        <mat-form-field appearance="outline" class="density-compact">
+                          <mat-label>Nivel de dominio</mat-label>
+                          <mat-select [value]="skill.proficiencyLevel"
+                                      (selectionChange)="setSkillProficiency(skill.name, $event.value)">
+                            <mat-option [value]="null">Sin mínimo (Deseable)</mat-option>
+                            <mat-option value="beginner">Principiante</mat-option>
+                            <mat-option value="intermediate">Intermedio</mat-option>
+                            <mat-option value="advanced">Avanzado</mat-option>
+                            <mat-option value="expert">Experto</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+
+                        <!-- Toggle de Obligatorio -->
+                        <div class="mandatory-toggle-box">
+                          <mat-slide-toggle
+                            [checked]="skill.isMandatory"
+                            (change)="toggleSkillMandatory(skill.name, $event.checked)">
+                            <span [class.text-bold]="skill.isMandatory">
+                              {{ skill.isMandatory ? 'Excluyente (Obligatoria)' : 'Deseable (Puntos extra)' }}
+                            </span>
+                          </mat-slide-toggle>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="no-skills-alert">
+                <mat-icon>warning_amber</mat-icon>
+                <span>Aún no has seleccionado ninguna habilidad. Haz clic en las sugerencias del catálogo o añade habilidades libres para continuar.</span>
+              </div>
+            }
+          </div>
+
+          <mat-divider style="margin: 24px 0;"></mat-divider>
+
+          <!-- OTROS REQUISITOS (IDIOMAS, CERTIFICACIONES, ETC.) -->
+          <div class="extra-reqs-section">
+            <div class="extra-reqs-section__header">
+              <div>
+                <h3>Requisitos Adicionales (Opcional)</h3>
+                <p>Agrega condiciones especiales como certificados, dominio de un segundo idioma o experiencia específica.</p>
+              </div>
+              <button type="button" mat-stroked-button (click)="addRequirement()">
+                <mat-icon>add</mat-icon>
+                Nuevo Requisito
+              </button>
+            </div>
+
+            @if (requirementsControls().length > 0) {
+              <div class="extra-reqs-list">
+                @for (req of requirementsControls(); track $index) {
+                  <div class="extra-req-card">
+                    <div class="extra-req-card__row">
+                      <mat-form-field appearance="outline" class="type-select">
+                        <mat-label>Tipo</mat-label>
+                        <mat-select [value]="req.type"
+                                    (selectionChange)="updateRequirement($index, 'type', $event.value)">
+                          <mat-option value="language">Idioma</mat-option>
+                          <mat-option value="certification">Certificación</mat-option>
+                          <mat-option value="experience">Experiencia previa</mat-option>
+                          <mat-option value="education">Educación específica</mat-option>
+                          <mat-option value="other">Otro requisito</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" class="flex-1">
+                        <mat-label>Descripción del requisito</mat-label>
+                        <input matInput [value]="req.name"
+                               placeholder="Ej: Inglés B2 conversacional, Certificación Scrum Master..."
+                               (input)="updateRequirement($index, 'name', $any($event.target).value)" />
+                      </mat-form-field>
+
+                      <mat-slide-toggle
+                        [checked]="req.isMandatory"
+                        (change)="updateRequirement($index, 'isMandatory', $event.checked)">
+                        Obligatorio
+                      </mat-slide-toggle>
+
+                      <button type="button" mat-icon-button color="warn" (click)="removeRequirement($index)"
+                              aria-label="Eliminar requisito">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Acciones del paso 3 -->
+          <div class="step-actions">
+            <button type="button" mat-stroked-button matStepperPrevious>
+              <mat-icon>arrow_back</mat-icon>
+              Anterior
+            </button>
+            <button type="button" mat-flat-button color="primary" class="primary-step-btn"
+                    (click)="validateStep3AndNext(stepper)">
+              Revisar Convocatoria
+              <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- =================================================================== -->
+      <!-- PASO 4: DOCUMENTACIÓN & REVISIÓN FINAL -->
+      <!-- =================================================================== -->
+      <mat-step label="Documento & Revisión">
+        <div class="step-form">
+
+          <div class="section-lead">
+            <div class="section-lead__icon">
+              <mat-icon>verified</mat-icon>
+            </div>
+            <div class="section-lead__text">
+              <h2>Documentación Institucional y Ficha de Revisión</h2>
+              <p>Adjunta el oficio formal de solicitud de practicantes y verifica la información antes de remitir a la Universidad.</p>
+            </div>
+          </div>
+
+          <!-- ZONA DE CARGA DE DOCUMENTO FORMAL -->
+          <div class="doc-upload-box">
+            <div class="doc-upload-box__header">
+              <mat-icon>badge</mat-icon>
+              <div>
+                <h3>Carta u Oficio de Solicitud Formal</h3>
+                <p>
+                  Documento membretado expedido por la empresa solicitando la vinculación de practicantes.
+                  <strong>Requerido por la Universidad para someter la propuesta a revisión y aprobación formal.</strong>
+                </p>
+              </div>
+            </div>
+
+            @if (documentFileId()) {
+              <!-- Archivo ya cargado -->
+              <div class="uploaded-doc-card">
+                <div class="uploaded-doc-card__icon">
+                  <mat-icon>picture_as_pdf</mat-icon>
+                </div>
+                <div class="uploaded-doc-card__meta">
+                  <span class="file-name">{{ documentFileName() }}</span>
+                  <span class="file-size">{{ formatBytes(documentFileSize()) }} • Adjuntado formalmente</span>
+                </div>
+                <div class="uploaded-doc-card__status">
+                  <span class="doc-verified-badge">
+                    <mat-icon>check_circle</mat-icon>
+                    Listo para revisión
+                  </span>
+                </div>
+                <div class="uploaded-doc-card__actions">
+                  <button type="button" mat-stroked-button (click)="openFilePicker()">
+                    <mat-icon>sync</mat-icon> Reemplazar
+                  </button>
+                  <button type="button" mat-icon-button color="warn" (click)="clearDocument()" aria-label="Quitar archivo">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
-              </mat-card-content>
-            </mat-card>
-          }
-        }
-
-        <h3 style="margin-top: 24px">Otros requisitos (educación, experiencia, idiomas, certificaciones)</h3>
-
-        @for (req of requirementsControls(); track $index) {
-          <mat-card class="project-create__req-card">
-            <mat-card-content>
-              <div class="project-create__row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Tipo</mat-label>
-                  <mat-select [value]="req.type"
-                              (selectionChange)="updateRequirement($index, 'type', $event.value)">
-                    <mat-option value="education">Educación</mat-option>
-                    <mat-option value="experience">Experiencia</mat-option>
-                    <mat-option value="language">Idioma</mat-option>
-                    <mat-option value="certification">Certificación</mat-option>
-                    <mat-option value="other">Otro</mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>Nombre</mat-label>
-                  <input matInput [value]="req.name"
-                         (input)="updateRequirement($index, 'name', $any($event.target).value)" />
-                </mat-form-field>
               </div>
-
-              <div class="project-create__row">
-                <mat-slide-toggle
-                  [checked]="req.isMandatory"
-                  (change)="updateRequirement($index, 'isMandatory', $event.checked)">
-                  Obligatorio
-                </mat-slide-toggle>
-                <button mat-icon-button color="warn" aria-label="Eliminar requisito" (click)="removeRequirement($index)">
-                  <mat-icon>delete</mat-icon>
-                </button>
+            } @else {
+              <!-- Dropzone para subir archivo -->
+              <div class="file-dropzone"
+                   [class.file-dropzone--active]="isDragging()"
+                   (dragover)="onDragOver($event)"
+                   (dragleave)="onDragLeave($event)"
+                   (drop)="onDrop($event)"
+                   (click)="openFilePicker()">
+                <div class="file-dropzone__content">
+                  <div class="file-dropzone__icon-circle">
+                    <mat-icon>cloud_upload</mat-icon>
+                  </div>
+                  <h4>Arrastra aquí tu carta de solicitud o haz clic para explorar</h4>
+                  <p class="file-dropzone__hint">Formatos soportados: PDF, DOC, DOCX (Máximo 10 MB)</p>
+                  @if (uploadingDocument()) {
+                    <div class="dropzone-uploading">
+                      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                      <span>Subiendo documento al servidor seguro...</span>
+                    </div>
+                  } @else {
+                    <button type="button" mat-stroked-button class="dropzone-browse-btn">
+                      <mat-icon>folder_open</mat-icon> Explorar en mi equipo
+                    </button>
+                  }
+                </div>
               </div>
-            </mat-card-content>
-          </mat-card>
-        }
-
-        <button mat-stroked-button (click)="addRequirement()">
-          <mat-icon>add</mat-icon> Agregar Requisito
-        </button>
-
-        <h3 style="margin-top: 24px">Documento de solicitud formal</h3>
-        <p class="project-create__hint">
-          Carta u oficio de solicitud institucional. Requerido para enviar el proyecto a revisión (no para guardar como borrador).
-        </p>
-        @if (documentFileId()) {
-          <div class="project-create__row">
-            <mat-icon>description</mat-icon>
-            <span>{{ documentFileName() }}</span>
-            <button mat-icon-button color="warn" aria-label="Quitar documento" (click)="clearDocument()">
-              <mat-icon>delete</mat-icon>
-            </button>
+            }
+            <input #fileInputEl type="file" hidden accept=".pdf,.doc,.docx" (change)="onDocumentSelected($event)" />
           </div>
-        } @else {
-          <button mat-stroked-button type="button" [disabled]="uploadingDocument()" (click)="documentInput.click()">
-            <mat-icon>upload_file</mat-icon>
-            {{ uploadingDocument() ? 'Cargando...' : 'Adjuntar documento (PDF/DOC)' }}
-          </button>
-          <input #documentInput type="file" hidden accept=".pdf,.doc,.docx" (change)="onDocumentSelected($event)" />
-        }
 
-        <div class="project-create__step-actions">
-          <button mat-stroked-button matStepperPrevious>Anterior</button>
-          <button mat-flat-button matStepperNext>Siguiente</button>
-        </div>
-      </div>
-    </mat-step>
-
-    <mat-step label="Revisión">
-      <div class="project-create__form">
-        <h3>Vista Previa</h3>
-
-        <mat-card class="project-create__preview">
-          <mat-card-content>
-            <h2>{{ infoForm.value.title || 'Sin título' }}</h2>
-            <p class="project-create__preview-meta">
-              <span>{{ getProjectTypeLabel(infoForm.value.projectType) }}</span>
-              <span>{{ infoForm.value.isRemote ? 'Remoto' : infoForm.value.location }}</span>
-              <span>{{ infoForm.value.positionsAvailable }} posiciones</span>
-              @if (infoForm.value.weeklyHours) {
-                <span>• {{ infoForm.value.weeklyHours }}h/sem</span>
+          <!-- CHECKLIST DE PREPARACIÓN / READINESS -->
+          <div class="readiness-summary-card">
+            <div class="readiness-summary-card__header">
+              <mat-icon>fact_check</mat-icon>
+              <h4>Auditoría de Requisitos para Aprobación</h4>
+            </div>
+            <div class="readiness-grid">
+              @for (item of readinessChecklist(); track item.title) {
+                <div class="readiness-item" [class.readiness-item--done]="item.done">
+                  <mat-icon class="readiness-item__icon">
+                    {{ item.done ? 'check_circle' : 'pending' }}
+                  </mat-icon>
+                  <div class="readiness-item__text">
+                    <span class="readiness-item__title">{{ item.title }}</span>
+                    <span class="readiness-item__detail">{{ item.detail }}</span>
+                  </div>
+                </div>
               }
-              @if (infoForm.value.totalHours) {
-                <span>• {{ infoForm.value.totalHours }}h tot</span>
-              }
-            </p>
+            </div>
+          </div>
 
-            <h4>Descripción</h4>
-            <p class="project-create__preview-desc">{{ infoForm.value.description }}</p>
-
-            @if (requirementsControls().length > 0) {
-              <h4>Requisitos ({{ requirementsControls().length }})</h4>
-              <ul>
-                @for (req of requirementsControls(); track $index) {
-                  <li>
-                    <strong>{{ req.name }}</strong> — {{ req.type }}
-                    @if (req.proficiencyLevel) { ({{ req.proficiencyLevel }}) }
-                    @if (req.isMandatory) { <em>*obligatorio</em> }
-                  </li>
-                }
-              </ul>
-            }
-
-            @if (skills().length > 0) {
-              <h4>Habilidades ({{ skills().length }})</h4>
-              <div class="project-create__preview-tags">
-                @for (skill of skills(); track skill.name) {
-                  <span class="tag-chip">{{ skill.name }}</span>
-                }
+          <!-- LIVE PREVIEW / FICHA EJECUTIVA -->
+          <div class="preview-section">
+            <div class="preview-section__header">
+              <mat-icon>visibility</mat-icon>
+              <div>
+                <h3>Vista Previa de la Publicación</h3>
+                <p>Así visualizarán los estudiantes y la coordinación académica la ficha de tu convocatoria:</p>
               </div>
-            }
+            </div>
 
-            @if (infoForm.value.academicPrograms?.length) {
-              <h4>Programas académicos</h4>
-              <p>
-                @for (programId of infoForm.value.academicPrograms; track programId) {
-                  <span class="tag-chip">{{ getProgramName(programId) }}</span>
+            <mat-card class="executive-preview-card">
+              <!-- Banner superior de la ficha -->
+              <div class="executive-preview-card__banner">
+                <div class="badges-row">
+                  <span class="tag-badge tag-badge--primary">
+                    <mat-icon>work</mat-icon>
+                    {{ getProjectTypeLabel(basicInfoForm.value.projectType) }}
+                  </span>
+                  <span class="tag-badge tag-badge--mode">
+                    <mat-icon>{{ basicInfoForm.value.locationType === 'remote' ? 'home_work' : (basicInfoForm.value.locationType === 'onsite' ? 'apartment' : 'sync_alt') }}</mat-icon>
+                    {{ getLocationTypeLabel(basicInfoForm.value.locationType) }}
+                  </span>
+                  <span class="tag-badge tag-badge--seats">
+                    <mat-icon>groups</mat-icon>
+                    {{ basicInfoForm.value.positionsAvailable }} {{ basicInfoForm.value.positionsAvailable === 1 ? 'cupo' : 'cupos' }}
+                  </span>
+                  <span class="tag-badge tag-badge--comp">
+                    <mat-icon>payments</mat-icon>
+                    {{ getCompensationTypeLabel(basicInfoForm.value.compensationType) }}
+                    @if (basicInfoForm.value.compensationAmount) {
+                      ({{ basicInfoForm.value.compensationAmount | currency:(basicInfoForm.value.currency || 'COP'):'symbol':'1.0-0' }})
+                    }
+                  </span>
+                </div>
+              </div>
+
+              <div class="executive-preview-card__body">
+                <h2 class="preview-title">
+                  {{ basicInfoForm.value.title || 'Título de la convocatoria pendiente de definir' }}
+                </h2>
+
+                @if (basicInfoForm.value.location && basicInfoForm.value.locationType !== 'remote') {
+                  <p class="preview-location">
+                    <mat-icon>location_on</mat-icon>
+                    {{ basicInfoForm.value.location }}
+                  </p>
                 }
-              </p>
-            }
 
-            <h4>Documento de solicitud</h4>
-            <p>{{ documentFileName() || 'No adjuntado (requerido para enviar a revisión)' }}</p>
-          </mat-card-content>
-        </mat-card>
+                <!-- Métricas destacadas en barra -->
+                <div class="preview-metrics-strip">
+                  <div class="metric-block">
+                    <span class="metric-label">Cierre Postulaciones</span>
+                    <span class="metric-val">
+                      {{ scheduleForm.value.applicationDeadline ? (scheduleForm.value.applicationDeadline | date:'dd MMM yyyy') : 'No asignado' }}
+                    </span>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Periodo Ejecución</span>
+                    <span class="metric-val">
+                      @if (scheduleForm.value.startDate && scheduleForm.value.endDate) {
+                        {{ scheduleForm.value.startDate | date:'dd MMM' }} — {{ scheduleForm.value.endDate | date:'dd MMM yyyy' }}
+                      } @else {
+                        Por definir
+                      }
+                    </span>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Dedicación Semanal</span>
+                    <span class="metric-val">{{ scheduleForm.value.weeklyHours || 0 }} h/semana</span>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Horas Totales</span>
+                    <span class="metric-val">
+                      {{ scheduleForm.value.totalHours ? (scheduleForm.value.totalHours + ' h cert.') : 'Por definir' }}
+                    </span>
+                  </div>
+                </div>
 
-        <div class="project-create__step-actions">
-          <button mat-stroked-button matStepperPrevious>Anterior</button>
-          <button mat-stroked-button (click)="saveDraft()" [disabled]="submitting()">
-            Guardar Borrador
-          </button>
-          <button mat-flat-button (click)="publish()" [disabled]="infoForm.invalid || submitting()">
-            Publicar
-          </button>
+                <!-- Descripción -->
+                <div class="preview-block">
+                  <h4 class="preview-subtitle">Propósito y Alcance</h4>
+                  <p class="preview-description">
+                    {{ basicInfoForm.value.description || 'Sin descripción todavía.' }}
+                  </p>
+                </div>
+
+                <!-- Carreras afines -->
+                @if (profileForm.value.academicPrograms?.length) {
+                  <div class="preview-block">
+                    <h4 class="preview-subtitle">Carreras y Programas Convocados</h4>
+                    <div class="preview-tags-flex">
+                      @for (progId of profileForm.value.academicPrograms; track progId) {
+                        <span class="program-pill-tag">
+                          <mat-icon>school</mat-icon>
+                          {{ getProgramName(progId) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Habilidades obligatorias y opcionales -->
+                @if (skills().length > 0) {
+                  <div class="preview-block">
+                    <h4 class="preview-subtitle">Competencias Buscadas</h4>
+
+                    @if (mandatorySkills().length > 0) {
+                      <div class="skills-group-block">
+                        <span class="skills-group-title">
+                          <mat-icon class="icon-mandatory">verified</mat-icon>
+                          Indispensables / Excluyentes:
+                        </span>
+                        <div class="preview-tags-flex">
+                          @for (skill of mandatorySkills(); track skill.name) {
+                            <span class="skill-tag skill-tag--mandatory">
+                              {{ skill.name }}
+                              @if (skill.proficiencyLevel) {
+                                <small>({{ getProficiencyLabel(skill.proficiencyLevel) }})</small>
+                              }
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    @if (optionalSkills().length > 0) {
+                      <div class="skills-group-block">
+                        <span class="skills-group-title">
+                          <mat-icon class="icon-optional">stars</mat-icon>
+                          Deseables / Puntos Extra:
+                        </span>
+                        <div class="preview-tags-flex">
+                          @for (skill of optionalSkills(); track skill.name) {
+                            <span class="skill-tag skill-tag--optional">
+                              {{ skill.name }}
+                              @if (skill.proficiencyLevel) {
+                                <small>({{ getProficiencyLabel(skill.proficiencyLevel) }})</small>
+                              }
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Requisitos adicionales -->
+                @if (requirementsControls().length > 0) {
+                  <div class="preview-block">
+                    <h4 class="preview-subtitle">Requisitos Adicionales</h4>
+                    <ul class="preview-reqs-bullets">
+                      @for (req of requirementsControls(); track $index) {
+                        @if (req.name) {
+                          <li>
+                            <strong>{{ req.name }}</strong>
+                            <span class="req-type-pill">{{ req.type }}</span>
+                            @if (req.isMandatory) {
+                              <span class="req-mandatory-pill">Obligatorio</span>
+                            }
+                          </li>
+                        }
+                      }
+                    </ul>
+                  </div>
+                }
+
+                <!-- Estado del documento -->
+                <div class="preview-doc-status">
+                  <mat-icon>{{ documentFileId() ? 'description' : 'warning' }}</mat-icon>
+                  <span>
+                    Carta formal de solicitud:
+                    <strong>{{ documentFileName() || 'Pendiente de adjuntar' }}</strong>
+                  </span>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+
+          <!-- ACCIONES FINALES -->
+          <div class="step-actions step-actions--final">
+            <button type="button" mat-stroked-button matStepperPrevious>
+              <mat-icon>arrow_back</mat-icon>
+              Modificar datos
+            </button>
+
+            <div class="final-buttons-group">
+              <button type="button" mat-stroked-button class="draft-btn"
+                      (click)="saveDraft()" [disabled]="submitting()">
+                <mat-icon>save</mat-icon>
+                Guardar como Borrador
+              </button>
+
+              <button type="button" mat-flat-button color="primary" class="publish-btn"
+                      (click)="publish()"
+                      [disabled]="!canSubmitForApproval() || submitting()">
+                @if (submitting()) {
+                  <ng-container>
+                    <mat-icon class="spinning-icon">sync</mat-icon>
+                    <span>Enviando a revisión...</span>
+                  </ng-container>
+                } @else {
+                  <ng-container>
+                    <mat-icon>send</mat-icon>
+                    <span>Enviar a Revisión Institucional</span>
+                  </ng-container>
+                }
+              </button>
+            </div>
+          </div>
+
+          @if (!canSubmitForApproval()) {
+            <p class="final-submit-hint">
+              * Para enviar la convocatoria a aprobación institucional, completa todos los campos requeridos, vincula carreras, añade al menos una habilidad y adjunta la carta formal.
+            </p>
+          }
         </div>
-      </div>
-    </mat-step>
-  </mat-stepper>
+      </mat-step>
+
+    </mat-stepper>
+  </mat-card>
 </div>
