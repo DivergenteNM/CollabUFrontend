@@ -1,82 +1,508 @@
-<div class="public-profile">
-  <button mat-button (click)="history.back()">
-    <mat-icon>arrow_back</mat-icon>
-    Volver
-  </button>
+<div class="student-public-view">
+  <!-- Top Navigation Bar -->
+  <div class="student-public-view__top-nav">
+    <button mat-button (click)="history.back()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+  </div>
 
+  <!-- Loading State -->
   @if (resource.isLoading()) {
-    <mat-card><mat-card-content><p>Cargando perfil...</p></mat-card-content></mat-card>
+    <div class="student-skeleton">
+      <div class="student-skeleton__cover"></div>
+      <div class="student-skeleton__content">
+        <div class="student-skeleton__avatar"></div>
+        <div class="student-skeleton__lines">
+          <div class="student-skeleton__line student-skeleton__line--title"></div>
+          <div class="student-skeleton__line student-skeleton__line--subtitle"></div>
+          <div class="student-skeleton__line student-skeleton__line--meta"></div>
+        </div>
+      </div>
+    </div>
   }
 
-  @if (resource.value()?.data; as s) {
-    <mat-card>
+  <!-- Error State -->
+  @if (resource.error()) {
+    <mat-card class="student-error-card">
       <mat-card-content>
-        <div class="profile-header">
-          <div class="avatar">
-            <mat-icon>person</mat-icon>
-          </div>
-          <div class="profile-info">
-            <h2>{{ s.program }}</h2>
-            <p>Semestre {{ s.semester }}</p>
-            @if (s.averageRating) {
-              <app-star-rating [value]="s.averageRating" [readonly]="true" size="sm" />
-            }
-          </div>
+        <div class="student-error-content">
+          <mat-icon class="error-icon">school</mat-icon>
+          <h3>Perfil estudiantil no disponible</h3>
+          <p>No se pudo cargar la información de este estudiante o no existe en la plataforma.</p>
+          <button mat-stroked-button (click)="history.back()">Regresar</button>
         </div>
+      </mat-card-content>
+    </mat-card>
+  }
 
-        @if (s.bio) {
-          <div class="section">
-            <h3>Acerca de</h3>
-            <p>{{ s.bio }}</p>
-          </div>
-        }
+  <!-- Student Content -->
+  @if (student(); as s) {
+    <!-- ─── HERO IDENTITY & ACADEMIC CARD ─── -->
+    <div class="student-hero-card">
+      <div class="student-hero-card__cover">
+        <div class="student-hero-card__cover-pattern"></div>
+      </div>
 
-        @if (s.skills.length > 0) {
-          <div class="section">
-            <h3>Habilidades</h3>
-            <div class="skills-detailed">
-              @for (skill of s.skills; track skill.id) {
-                <mat-chip-set>
-                  <mat-chip>
-                    {{ skill.name }}
-                    <span class="skill-level">{{ levelLabel(skill.proficiencyLevel) }}</span>
-                  </mat-chip>
-                </mat-chip-set>
+      <div class="student-hero-card__body">
+        <div class="student-hero-card__main-row">
+          <!-- Double-bezel Avatar Squircle -->
+          <div class="student-hero-card__avatar-wrapper">
+            <div class="student-hero-card__avatar-box">
+              @if (resolvedAvatarUrl() && !avatarLoadError()) {
+                <img
+                  [src]="resolvedAvatarUrl()"
+                  [alt]="studentDisplayName()"
+                  class="student-hero-card__avatar-img"
+                  (error)="onAvatarError()"
+                  (load)="onAvatarLoad()"
+                />
+              } @else {
+                <div class="student-hero-card__avatar-placeholder">
+                  <span>{{ studentInitials() }}</span>
+                </div>
               }
             </div>
           </div>
-        }
 
-        @if (((s.workExperience?.length ?? 0) + s.experiences.length) > 0) {
-          <div class="section">
-            <h3>Experiencia</h3>
-            @for (exp of (s.workExperience?.length ? s.workExperience : s.experiences); track exp.id) {
-              <div class="experience-item">
-                <strong>{{ exp.title }}</strong>
-                <span class="exp-company">{{ exp.companyName ?? 'Experiencia profesional' }}</span>
-                <p>{{ exp.description ?? '' }}</p>
+          <!-- Header Details & Badges -->
+          <div class="student-hero-card__info">
+            <div class="student-hero-card__title-row">
+              <div class="student-hero-card__title-group">
+                <h1 class="student-hero-card__name">{{ studentDisplayName() }}</h1>
+                <p class="student-hero-card__headline">
+                  {{ s.headline || (s.program + ' · Semestre ' + s.semester) }}
+                </p>
+              </div>
+
+              <div class="student-hero-card__badges">
+                <span class="status-badge status-badge--verified" title="Estudiante activo en Collab-U">
+                  <mat-icon>verified</mat-icon> Estudiante Activo
+                </span>
+                @if (s.availability) {
+                  <span class="status-badge status-badge--availability">
+                    <mat-icon>schedule</mat-icon> {{ availabilityLabel(s.availability) }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Key Meta Chips -->
+            <div class="student-hero-card__meta-chips">
+              <span class="meta-chip">
+                <mat-icon>school</mat-icon> {{ s.program }}
+              </span>
+              <span class="meta-chip">
+                <mat-icon>menu_book</mat-icon> Semestre {{ s.semester }}
+              </span>
+              @if (s.faculty) {
+                <span class="meta-chip">
+                  <mat-icon>account_balance</mat-icon> {{ s.faculty }}
+                </span>
+              }
+              @if (s.preferredWorkMode) {
+                <span class="meta-chip">
+                  <mat-icon>laptop_mac</mat-icon> Modalidad {{ workModeLabel(s.preferredWorkMode) }}
+                </span>
+              }
+              @if (s.gpa) {
+                <span class="meta-chip meta-chip--highlight">
+                  <mat-icon>star</mat-icon> GPA: {{ s.gpa | number:'1.1-2' }} / 5.0
+                </span>
+              }
+            </div>
+
+            <!-- Star Rating row if available -->
+            @if (s.averageRating) {
+              <div class="student-hero-card__rating-row">
+                <app-star-rating [value]="s.averageRating" [readonly]="true" size="sm" />
+                <span class="rating-value">{{ s.averageRating | number:'1.1-1' }}</span>
+                <span class="rating-count">({{ s.totalRatings ?? 0 }} valoraciones)</span>
               </div>
             }
           </div>
+
+          <!-- Hero Action CTAs -->
+          <div class="student-hero-card__actions">
+            @if (cleanUrl(s.cvUrl); as cvLink) {
+              <a
+                mat-flat-button
+                color="primary"
+                [href]="cvLink"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hero-action-btn"
+              >
+                <mat-icon>description</mat-icon> Ver CV
+              </a>
+            }
+            @if (user()?.linkedinUrl || s.linkedinUrl) {
+              <a
+                mat-stroked-button
+                [href]="cleanUrl(user()?.linkedinUrl || s.linkedinUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hero-action-btn"
+              >
+                <mat-icon>open_in_new</mat-icon> LinkedIn
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── BENTO STATS GRID ─── -->
+    <div class="student-bento-grid">
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--gpa">
+          <mat-icon>grade</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ s.gpa ? (s.gpa | number:'1.1-2') : '4.50' }}</span>
+          <span class="bento-card__label">Promedio Acumulado (GPA)</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--credits">
+          <mat-icon>pie_chart</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">
+            {{ s.totalCreditsCompleted ?? 0 }}
+            @if (s.totalCreditsRequired) {
+              <small class="bento-card__subval">/ {{ s.totalCreditsRequired }}</small>
+            }
+          </span>
+          <span class="bento-card__label">Créditos Aprobados</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--skills">
+          <mat-icon>psychology</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ s.skills.length }}</span>
+          <span class="bento-card__label">Habilidades Validadas</span>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="bento-card__icon bento-card__icon--exp">
+          <mat-icon>rocket_launch</mat-icon>
+        </div>
+        <div class="bento-card__content">
+          <span class="bento-card__value">{{ s.experiences.length + s.education.length }}</span>
+          <span class="bento-card__label">Experiencias & Formación</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 2-COLUMN DETAILS LAYOUT ─── -->
+    <div class="student-details-layout">
+      <!-- Left / Main Column -->
+      <div class="student-details-layout__main">
+        <!-- Acerca de mí -->
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="card-header-icon">person</mat-icon>
+            <mat-card-title>Acerca de mí</mat-card-title>
+            <mat-card-subtitle>Perfil vocacional y presentación profesional</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (s.bio) {
+              <p class="student-bio-text">{{ s.bio }}</p>
+            } @else {
+              <p class="empty-text">Este estudiante aún no ha redactado una presentación pública.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Habilidades y Competencias -->
+        @if (s.skills.length > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">psychology</mat-icon>
+              <mat-card-title>Habilidades y Competencias</mat-card-title>
+              <mat-card-subtitle>Conocimientos técnicos y habilidades aplicadas</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="student-skills-grid">
+                @for (skill of s.skills; track skill.id) {
+                  <div class="student-skill-badge">
+                    <span class="student-skill-badge__name">{{ skill.name }}</span>
+                    @if (skill.proficiencyLevel) {
+                      <span class="student-skill-badge__level">{{ levelLabel(skill.proficiencyLevel) }}</span>
+                    }
+                    @if (skill.isVerified) {
+                      <mat-icon class="student-skill-badge__verified" title="Habilidad certificada">verified</mat-icon>
+                    }
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
         }
 
-        @if (s.linkedinUrl || s.githubUrl || s.portfolioUrl) {
-          <div class="section">
-            <h3>Enlaces</h3>
-            <div class="links">
-              @if (s.linkedinUrl) {
-                <a [href]="s.linkedinUrl" target="_blank"><mat-icon>link</mat-icon> LinkedIn</a>
-              }
-              @if (s.githubUrl) {
-                <a [href]="s.githubUrl" target="_blank"><mat-icon>code</mat-icon> GitHub</a>
-              }
-              @if (s.portfolioUrl) {
-                <a [href]="s.portfolioUrl" target="_blank"><mat-icon>language</mat-icon> Portfolio</a>
-              }
-            </div>
-          </div>
+        <!-- Experiencia y Proyectos -->
+        @if (((s.workExperience?.length ?? 0) + s.experiences.length) > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">work_history</mat-icon>
+              <mat-card-title>Experiencia y Proyectos</mat-card-title>
+              <mat-card-subtitle>Pasantías, voluntariados y proyectos aplicados</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="timeline-list">
+                @for (exp of (s.experiences.length ? s.experiences : s.workExperience ?? []); track exp.id) {
+                  <div class="timeline-item">
+                    <div class="timeline-item__bullet">
+                      <mat-icon>business_center</mat-icon>
+                    </div>
+                    <div class="timeline-item__content">
+                      <div class="timeline-item__header">
+                        <h4 class="timeline-item__title">{{ exp.title }}</h4>
+                        <span class="timeline-item__date">
+                          {{ exp.startDate }} — {{ exp.isCurrent ? 'Actualidad' : (exp.endDate ?? 'Actualidad') }}
+                        </span>
+                      </div>
+                      <div class="timeline-item__meta">
+                        <span class="timeline-item__entity">{{ exp.companyName ?? 'Trabajo independiente' }}</span>
+                        <span class="timeline-badge timeline-badge--type">{{ expTypeLabel(exp.type) }}</span>
+                        @if (exp.workMode) {
+                          <span class="timeline-badge timeline-badge--mode">{{ workModeLabel(exp.workMode) }}</span>
+                        }
+                      </div>
+                      @if (exp.description) {
+                        <p class="timeline-item__desc">{{ exp.description }}</p>
+                      }
+                      @if (exp.responsibilities) {
+                        <p class="timeline-item__subdesc"><strong>Responsabilidades:</strong> {{ exp.responsibilities }}</p>
+                      }
+                      @if ((exp.technologiesUsed?.length ?? 0) > 0) {
+                        <div class="timeline-item__tags">
+                          @for (tech of exp.technologiesUsed ?? []; track tech) {
+                            <span class="tag-chip">{{ tech }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
         }
-      </mat-card-content>
-    </mat-card>
+
+        <!-- Formación Académica -->
+        @if (((s.academicInfo?.length ?? 0) + s.education.length) > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">school</mat-icon>
+              <mat-card-title>Educación y Formación</mat-card-title>
+              <mat-card-subtitle>Historial académico y programas cursados</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="timeline-list">
+                @for (edu of (s.education.length ? s.education : s.academicInfo ?? []); track edu.id) {
+                  <div class="timeline-item">
+                    <div class="timeline-item__bullet timeline-item__bullet--edu">
+                      <mat-icon>school</mat-icon>
+                    </div>
+                    <div class="timeline-item__content">
+                      <div class="timeline-item__header">
+                        <h4 class="timeline-item__title">{{ edu.degree }}</h4>
+                        <span class="timeline-item__date">
+                          {{ edu.startDate }} — {{ edu.isCurrent ? 'Cursando actualmente' : (edu.endDate ?? 'Completado') }}
+                        </span>
+                      </div>
+                      <div class="timeline-item__meta">
+                        <span class="timeline-item__entity">{{ edu.institution }}</span>
+                        @if (edu.fieldOfStudy) {
+                          <span class="timeline-badge timeline-badge--field">{{ edu.fieldOfStudy }}</span>
+                        }
+                        @if (edu.gpa) {
+                          <span class="timeline-badge timeline-badge--gpa">GPA: {{ edu.gpa | number:'1.1-2' }}</span>
+                        }
+                      </div>
+                      @if (edu.thesisTitle) {
+                        <p class="timeline-item__subdesc"><strong>Tesis:</strong> {{ edu.thesisTitle }}</p>
+                      }
+                      @if (edu.description) {
+                        <p class="timeline-item__desc">{{ edu.description }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Right / Sidebar Column -->
+      <div class="student-details-layout__sidebar">
+        <!-- Ficha Académica y Preferencias -->
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="card-header-icon">badge</mat-icon>
+            <mat-card-title>Ficha Académica</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="academic-sheet-list">
+              <div class="sheet-item">
+                <span class="sheet-item__label">Programa</span>
+                <span class="sheet-item__val">{{ s.program }}</span>
+              </div>
+              <div class="sheet-item">
+                <span class="sheet-item__label">Semestre Actual</span>
+                <span class="sheet-item__val">{{ s.semester }}° Semestre</span>
+              </div>
+              @if (s.faculty) {
+                <div class="sheet-item">
+                  <span class="sheet-item__label">Facultad</span>
+                  <span class="sheet-item__val">{{ s.faculty }}</span>
+                </div>
+              }
+              @if (s.expectedGraduationYear) {
+                <div class="sheet-item">
+                  <span class="sheet-item__label">Graduación Estimada</span>
+                  <span class="sheet-item__val">{{ s.expectedGraduationYear }}</span>
+                </div>
+              }
+              @if (s.availableHoursPerWeek) {
+                <div class="sheet-item">
+                  <span class="sheet-item__label">Horas Semanales</span>
+                  <span class="sheet-item__val">{{ s.availableHoursPerWeek }} horas disponibles</span>
+                </div>
+              }
+              <div class="sheet-item">
+                <span class="sheet-item__label">Reubicación</span>
+                <span class="sheet-item__val">{{ s.willingToRelocate ? 'Disponible para traslado' : 'No disponible' }}</span>
+              </div>
+            </div>
+
+            @if (cleanUrl(s.cvUrl); as cvLink) {
+              <div class="cv-highlight-box">
+                <mat-icon class="cv-highlight-box__icon">description</mat-icon>
+                <div class="cv-highlight-box__text">
+                  <strong>Curriculum Vitae</strong>
+                  <span>Documento adjunto</span>
+                </div>
+                <a mat-flat-button color="primary" [href]="cvLink" target="_blank" rel="noopener noreferrer">
+                  <mat-icon>open_in_new</mat-icon>
+                </a>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Idiomas -->
+        @if (s.languages.length > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">translate</mat-icon>
+              <mat-card-title>Idiomas</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="languages-stack">
+                @for (lang of s.languages; track lang.id) {
+                  <div class="language-row">
+                    <div class="language-row__info">
+                      <mat-icon>language</mat-icon>
+                      <span class="language-row__name">{{ lang.language }}</span>
+                    </div>
+                    <span class="language-row__badge">{{ levelLabel(lang.proficiencyLevel) }}</span>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Áreas de Interés -->
+        @if (s.interests.length > 0) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">interests</mat-icon>
+              <mat-card-title>Áreas de Interés</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="interests-pills">
+                @for (int of s.interests; track int.id) {
+                  <span class="interest-pill">
+                    <mat-icon>flare</mat-icon> {{ int.interestName }}
+                  </span>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Enlaces Profesionales y Redes -->
+        @if (s.linkedinUrl || s.githubUrl || s.portfolioUrl || s.personalWebsiteUrl) {
+          <mat-card class="detail-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-header-icon">link</mat-icon>
+              <mat-card-title>Portafolio y Redes</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="links-vertical-list">
+                @if (cleanUrl(s.linkedinUrl); as lnk) {
+                  <a [href]="lnk" target="_blank" rel="noopener noreferrer" class="social-link-card">
+                    <div class="social-link-card__icon social-link-card__icon--linkedin">
+                      <mat-icon>link</mat-icon>
+                    </div>
+                    <div class="social-link-card__content">
+                      <span class="social-link-card__label">LinkedIn</span>
+                      <span class="social-link-card__url">{{ lnk }}</span>
+                    </div>
+                    <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                  </a>
+                }
+                @if (cleanUrl(s.githubUrl); as git) {
+                  <a [href]="git" target="_blank" rel="noopener noreferrer" class="social-link-card">
+                    <div class="social-link-card__icon social-link-card__icon--github">
+                      <mat-icon>code</mat-icon>
+                    </div>
+                    <div class="social-link-card__content">
+                      <span class="social-link-card__label">GitHub</span>
+                      <span class="social-link-card__url">{{ git }}</span>
+                    </div>
+                    <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                  </a>
+                }
+                @if (cleanUrl(s.portfolioUrl); as port) {
+                  <a [href]="port" target="_blank" rel="noopener noreferrer" class="social-link-card">
+                    <div class="social-link-card__icon social-link-card__icon--portfolio">
+                      <mat-icon>language</mat-icon>
+                    </div>
+                    <div class="social-link-card__content">
+                      <span class="social-link-card__label">Portafolio Web</span>
+                      <span class="social-link-card__url">{{ port }}</span>
+                    </div>
+                    <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                  </a>
+                }
+                @if (cleanUrl(s.personalWebsiteUrl); as web) {
+                  <a [href]="web" target="_blank" rel="noopener noreferrer" class="social-link-card">
+                    <div class="social-link-card__icon social-link-card__icon--web">
+                      <mat-icon>public</mat-icon>
+                    </div>
+                    <div class="social-link-card__content">
+                      <span class="social-link-card__label">Sitio Web Personal</span>
+                      <span class="social-link-card__url">{{ web }}</span>
+                    </div>
+                    <mat-icon class="social-link-card__arrow">north_east</mat-icon>
+                  </a>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </div>
   }
 </div>

@@ -20,7 +20,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ApiResponse, CompanyProfile, UserProfile, AcademicProgram } from '../../../../core/models';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ApiResponse, CompanyProfile, CompanyContact, CompanyLocation, CompanyBusinessArea, UserProfile, AcademicProgram } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
@@ -37,7 +38,7 @@ import { AvatarUploadComponent } from '../../../../shared/components/ui/avatar-u
     RouterLink, ReactiveFormsModule, FormsModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatSnackBarModule, MatTabsModule,
+    MatSnackBarModule, MatTabsModule, MatCheckboxModule,
     AvatarUploadComponent,
   ],
   templateUrl: './profile-edit.component.html',
@@ -115,14 +116,42 @@ export class ProfileEditComponent implements OnInit {
 
   readonly companyForm: FormGroup = this.fb.group({
     companyName: ['', Validators.required],
+    legalName: [''],
     nit: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(20)]],
     industry: ['', Validators.required],
     companySize: [''],
+    foundedYear: [null],
+    employeeCount: [null],
     headquartersCity: ['', Validators.required],
     headquartersState: [''],
     website: ['', [this.optionalHttpUrlValidator('website')]],
   });
+
+  // Company nested signals
+  readonly companyLogoUrl = signal<string | null>(null);
+  readonly companyContacts = signal<CompanyContact[]>([]);
+  readonly companyLocations = signal<CompanyLocation[]>([]);
+  readonly companyBusinessAreas = signal<CompanyBusinessArea[]>([]);
+
+  // New company contact form fields
+  newContactFirstName = '';
+  newContactLastName = '';
+  newContactEmail = '';
+  newContactPosition = '';
+  newContactPhone = '';
+  newContactIsPrimary = false;
+
+  // New company location form fields
+  newLocationCity = '';
+  newLocationName = '';
+  newLocationAddress = '';
+  newLocationState = '';
+  newLocationIsHeadquarters = false;
+
+  // New company business area fields
+  newAreaName = '';
+  newAreaDescription = '';
 
   readonly supervisorRoles = [
     { value: 'faculty_supervisor', label: 'Supervisor de Facultad' },
@@ -213,12 +242,19 @@ export class ProfileEditComponent implements OnInit {
         next: (resp) => {
           this.roleProfileExists.set(true);
           const c = resp.data;
+          this.companyLogoUrl.set(c.logoUrl ?? this.authStore.profile()?.avatarUrl ?? null);
+          this.companyContacts.set(c.contacts ?? []);
+          this.companyLocations.set(c.locations ?? []);
+          this.companyBusinessAreas.set(c.businessAreas ?? []);
           this.companyForm.patchValue({
             companyName: c.companyName ?? '',
+            legalName: c.legalName ?? '',
             nit: c.nit ?? '',
             description: c.description ?? '',
             industry: c.industry ?? '',
             companySize: c.companySize ?? '',
+            foundedYear: c.foundedYear ?? null,
+            employeeCount: c.employeeCount ?? null,
             headquartersCity: c.headquartersCity ?? c.city ?? '',
             headquartersState: c.headquartersState ?? c.department ?? '',
             website: c.website ?? c.websiteUrl ?? '',
@@ -435,19 +471,140 @@ export class ProfileEditComponent implements OnInit {
     };
   }
 
+  onCompanyLogoChanged(newLogoUrl: string | null): void {
+    this.companyLogoUrl.set(newLogoUrl);
+  }
+
   private buildCompanyPayload() {
     const raw = this.companyForm.getRawValue();
 
     return {
       companyName: raw.companyName,
+      legalName: this.normalizeOptionalText(raw.legalName),
       nit: raw.nit,
       description: raw.description,
       industry: raw.industry,
       companySize: this.normalizeOptionalText(raw.companySize) as CompanyProfile['companySize'] | undefined,
+      foundedYear: raw.foundedYear ? Number(raw.foundedYear) : undefined,
+      employeeCount: raw.employeeCount ? Number(raw.employeeCount) : undefined,
       headquartersCity: raw.headquartersCity,
       headquartersState: this.normalizeOptionalText(raw.headquartersState),
       website: this.normalizeOptionalText(raw.website),
+      logoUrl: this.companyLogoUrl() || undefined,
     };
+  }
+
+  addCompanyContact(): void {
+    if (!this.newContactFirstName?.trim() || !this.newContactLastName?.trim() || !this.newContactEmail?.trim()) {
+      this.snackBar.open('Ingresa nombres, apellidos y correo electrónico del contacto', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    this.companyProfileService.addContact({
+      firstName: this.newContactFirstName.trim(),
+      lastName: this.newContactLastName.trim(),
+      email: this.newContactEmail.trim(),
+      position: this.normalizeOptionalText(this.newContactPosition),
+      phone: this.normalizeOptionalText(this.newContactPhone),
+      isPrimary: this.newContactIsPrimary,
+    }).subscribe({
+      next: (res) => {
+        this.companyContacts.update(c => [...c, res.data]);
+        this.newContactFirstName = '';
+        this.newContactLastName = '';
+        this.newContactEmail = '';
+        this.newContactPosition = '';
+        this.newContactPhone = '';
+        this.newContactIsPrimary = false;
+        this.snackBar.open('Contacto registrado', 'Cerrar', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo registrar el contacto', 'Cerrar', { duration: 3000 });
+      },
+    });
+  }
+
+  removeCompanyContact(id: string): void {
+    this.companyProfileService.deleteContact(id).subscribe({
+      next: () => {
+        this.companyContacts.update(c => c.filter(item => item.id !== id));
+        this.snackBar.open('Contacto eliminado', 'Cerrar', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo eliminar el contacto', 'Cerrar', { duration: 3000 });
+      },
+    });
+  }
+
+  addCompanyLocation(): void {
+    if (!this.newLocationCity?.trim()) {
+      this.snackBar.open('La ciudad de la sede es requerida', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    this.companyProfileService.addLocation({
+      city: this.newLocationCity.trim(),
+      name: this.normalizeOptionalText(this.newLocationName),
+      address: this.normalizeOptionalText(this.newLocationAddress),
+      state: this.normalizeOptionalText(this.newLocationState),
+      isHeadquarters: this.newLocationIsHeadquarters,
+    }).subscribe({
+      next: (res) => {
+        this.companyLocations.update(l => [...l, res.data]);
+        this.newLocationCity = '';
+        this.newLocationName = '';
+        this.newLocationAddress = '';
+        this.newLocationState = '';
+        this.newLocationIsHeadquarters = false;
+        this.snackBar.open('Sede agregada', 'Cerrar', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo agregar la sede', 'Cerrar', { duration: 3000 });
+      },
+    });
+  }
+
+  removeCompanyLocation(id: string): void {
+    this.companyProfileService.deleteLocation(id).subscribe({
+      next: () => {
+        this.companyLocations.update(l => l.filter(item => item.id !== id));
+        this.snackBar.open('Sede eliminada', 'Cerrar', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo eliminar la sede', 'Cerrar', { duration: 3000 });
+      },
+    });
+  }
+
+  addCompanyBusinessArea(): void {
+    if (!this.newAreaName?.trim()) {
+      this.snackBar.open('El nombre del área es requerido', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    this.companyProfileService.addBusinessArea({
+      areaName: this.newAreaName.trim(),
+      description: this.normalizeOptionalText(this.newAreaDescription),
+    }).subscribe({
+      next: (res) => {
+        this.companyBusinessAreas.update(a => [...a, res.data]);
+        this.newAreaName = '';
+        this.newAreaDescription = '';
+        this.snackBar.open('Área de negocio registrada', 'Cerrar', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo registrar el área', 'Cerrar', { duration: 3000 });
+      },
+    });
+  }
+
+  removeCompanyBusinessArea(id: string): void {
+    this.companyProfileService.deleteBusinessArea(id).subscribe({
+      next: () => {
+        this.companyBusinessAreas.update(a => a.filter(item => item.id !== id));
+        this.snackBar.open('Área eliminada', 'Cerrar', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo eliminar el área', 'Cerrar', { duration: 3000 });
+      },
+    });
   }
 
   // Nested entities handlers
@@ -519,6 +676,26 @@ export class ProfileEditComponent implements OnInit {
     this.studentService.removeExperience(id).subscribe(() => {
       this.experiences.update(l => l.filter(x => x.id !== id));
     });
+  }
+
+  levelLabel(level?: string): string {
+    const labels: Record<string, string> = {
+      basic: 'Básico',
+      intermediate: 'Intermedio',
+      advanced: 'Avanzado',
+      native: 'Nativo',
+    };
+    return (level && labels[level]) ?? level ?? '';
+  }
+
+  formatExpType(type?: string): string {
+    const labels: Record<string, string> = {
+      professional: 'Profesional',
+      academic: 'Académica',
+      volunteer: 'Voluntariado',
+      personal_project: 'Proyecto Personal',
+    };
+    return (type && labels[type]) ?? type ?? '';
   }
 
   private normalizeOptionalText(value: string | null | undefined): string | undefined {

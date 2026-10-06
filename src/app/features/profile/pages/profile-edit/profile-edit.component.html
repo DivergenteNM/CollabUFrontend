@@ -17,7 +17,810 @@
           Perfil Base
         </ng-template>
         <div class="tab-content">
-          <p class="tab-description">Información personal visible en tu cuenta.</p>
+          <p class="tab-description">Información personal e imagen pública de tu cuenta en Collab-U.</p>
+
+          <div class="user-avatar-card">
+            <app-avatar-upload
+              [currentAvatarUrl]="authStore.profile()?.avatarUrl"
+              [size]="116"
+              label="Foto de perfil"
+              category="avatar"
+              fallbackIcon="person"
+            />
+            <div class="user-avatar-card__hint">
+              <h4>Fotografía de perfil oficial</h4>
+              <p>Tu foto es tu carta de presentación ante empresas reclutadoras y compañeros de equipo en retos de innovación.</p>
+              <span class="hint-specs">JPG, PNG o WebP · Máx. 5MB · Recomendado encuadre centrado</span>
+            </div>
+          </div>
+
+          <form [formGroup]="userForm">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombres</mat-label>
+                <input matInput formControlName="firstName" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Apellidos</mat-label>
+                <input matInput formControlName="lastName" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono de contacto</mat-label>
+                <input matInput formControlName="phone" placeholder="+57 3001234567" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>LinkedIn URL (opcional)</mat-label>
+                <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/tu-perfil" />
+                @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
+                  <mat-error>Ingresa una URL válida de LinkedIn o deja el campo vacío.</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Biografía general</mat-label>
+              <textarea matInput formControlName="bio" rows="4"
+                placeholder="Cuéntanos brevemente sobre ti, tus metas y lo que buscas lograr..."></textarea>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="button"
+                (click)="saveBaseProfile()"
+                [disabled]="userForm.invalid || saving()">
+                @if (saving()) {
+                  <mat-icon>hourglass_empty</mat-icon> Guardando...
+                } @else {
+                  <mat-icon>save</mat-icon> Guardar Perfil Base
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 2: Perfil Estudiante ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">school</mat-icon>
+          Académico y Profesional
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Datos universitarios, trayectoria, disponibilidad y presencia digital.</p>
+
+          <div class="profile-edit__hub-banner">
+            <div class="hub-text">
+              <div class="hub-badge"><mat-icon>auto_awesome</mat-icon> Módulos dedicados</div>
+              <p>Edita tus habilidades con autocompletado y gestiona tus archivos (CV en PDF, certificados) en sus módulos especializados:</p>
+            </div>
+            <div class="hub-actions">
+              <a mat-stroked-button routerLink="/profile/skills" class="hub-btn">
+                <mat-icon>psychology</mat-icon> Habilidades y Skills
+              </a>
+              <a mat-stroked-button routerLink="/profile/documents" class="hub-btn">
+                <mat-icon>folder_open</mat-icon> Gestor de Documentos
+              </a>
+            </div>
+          </div>
+
+          <form [formGroup]="studentForm" (ngSubmit)="saveStudent()">
+
+            <!-- Sección 1: Datos Académicos -->
+            <div class="form-section-card">
+              <div class="form-section-header">
+                <div class="section-icon"><mat-icon>school</mat-icon></div>
+                <div>
+                  <h3>Información Universitaria</h3>
+                  <p>Programa académico, facultad, matrícula y métricas de avance.</p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Código estudiantil</mat-label>
+                  <input matInput formControlName="studentCode" placeholder="Ej: EST-202410" />
+                  @if (studentForm.controls['studentCode'].hasError('pattern') && studentForm.controls['studentCode'].touched) {
+                    <mat-error>Solo letras, números y guiones.</mat-error>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Programa académico</mat-label>
+                  <mat-select formControlName="program" (selectionChange)="onProgramChange($event.value)">
+                    @for (program of programs(); track program.id) {
+                      <mat-option [value]="program.name">{{ program.name }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (unrecognizedLegacyProgram()) {
+                    <mat-hint>
+                      Tu programa actual ("{{ unrecognizedLegacyProgram() }}") no está en el catálogo — selecciona el correcto de la lista.
+                    </mat-hint>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Semestre actual</mat-label>
+                  <mat-select formControlName="semester">
+                    @for (s of semesters; track s) {
+                      <mat-option [value]="s">Semestre {{ s }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Facultad</mat-label>
+                  <input matInput formControlName="faculty" placeholder="Ej: Facultad de Ingeniería" />
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Año de ingreso</mat-label>
+                  <input matInput type="number" formControlName="enrollmentYear" placeholder="Ej: 2022" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Año est. graduación</mat-label>
+                  <input matInput type="number" formControlName="expectedGraduationYear" placeholder="Ej: 2026" />
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Promedio Acumulado (GPA)</mat-label>
+                  <input matInput type="number" step="0.1" formControlName="gpa" placeholder="Ej: 4.5" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Créditos aprobados</mat-label>
+                  <input matInput type="number" formControlName="totalCreditsCompleted" placeholder="Ej: 112" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Créditos requeridos</mat-label>
+                  <input matInput type="number" formControlName="totalCreditsRequired" placeholder="Ej: 160" />
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Sección 2: Titular y Resumen -->
+            <div class="form-section-card">
+              <div class="form-section-header">
+                <div class="section-icon"><mat-icon>badge</mat-icon></div>
+                <div>
+                  <h3>Titular y Resumen Profesional</h3>
+                  <p>Preséntate en pocas palabras ante reclutadores y líderes de proyectos.</p>
+                </div>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Titular profesional (Headline)</mat-label>
+                <input matInput formControlName="headline" placeholder="Ej: Estudiante de Ingeniería de Sistemas | Apasionado por IA y Desarrollo Full Stack" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Acerca de mí (Biografía estudiantil)</mat-label>
+                <textarea matInput formControlName="bio" rows="4"
+                  placeholder="Describe tus intereses académicos, fortalezas, metas profesionales y lo que te motiva a colaborar en proyectos reales..."></textarea>
+              </mat-form-field>
+            </div>
+
+            <!-- Sección 3: Disponibilidad y Preferencias -->
+            <div class="form-section-card">
+              <div class="form-section-header">
+                <div class="section-icon"><mat-icon>schedule</mat-icon></div>
+                <div>
+                  <h3>Disponibilidad y Modalidad</h3>
+                  <p>Especifica tus horarios y condiciones de trabajo para proyectos y pasantías.</p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Disponibilidad</mat-label>
+                  <mat-select formControlName="availability">
+                    <mat-option value="full_time">Tiempo Completo</mat-option>
+                    <mat-option value="part_time">Medio Tiempo</mat-option>
+                    <mat-option value="flexible">Horario Flexible</mat-option>
+                    <mat-option value="unavailable">No disponible actualmente</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Modo de trabajo preferido</mat-label>
+                  <mat-select formControlName="preferredWorkMode">
+                    <mat-option value="remote">Remoto</mat-option>
+                    <mat-option value="hybrid">Híbrido</mat-option>
+                    <mat-option value="onsite">Presencial</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row align-center">
+                <mat-form-field appearance="outline">
+                  <mat-label>Horas semanales disponibles</mat-label>
+                  <input matInput type="number" formControlName="availableHoursPerWeek" placeholder="Ej: 20" />
+                </mat-form-field>
+                <div class="checkbox-field-modern">
+                  <input type="checkbox" formControlName="willingToRelocate" id="relocate" />
+                  <label for="relocate">
+                    <strong>Dispuesto a reubicarse</strong>
+                    <span>Abierto a oportunidades fuera de mi ciudad base</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección 4: Presencia Digital y Enlaces -->
+            <div class="form-section-card">
+              <div class="form-section-header">
+                <div class="section-icon"><mat-icon>public</mat-icon></div>
+                <div>
+                  <h3>Portafolio y Enlaces Digitales</h3>
+                  <p>Muestra tu trabajo, repositorios de código y accesos a tu portafolio personal.</p>
+                </div>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>URL del Curriculum Vitae (CV)</mat-label>
+                <input matInput formControlName="cvUrl" placeholder="https://drive.google.com/... o enlace directo a tu PDF" />
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>GitHub URL</mat-label>
+                  <input matInput formControlName="githubUrl" placeholder="https://github.com/tu-usuario" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Portafolio URL</mat-label>
+                  <input matInput formControlName="portfolioUrl" placeholder="https://miportafolio.dev" />
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Sitio web personal URL</mat-label>
+                <input matInput formControlName="personalWebsiteUrl" placeholder="https://misitio.com" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="submit" class="save-submit-btn"
+                [disabled]="studentForm.invalid || saving()">
+                @if (saving()) {
+                  <mat-icon>hourglass_empty</mat-icon> Guardando cambios...
+                } @else {
+                  <mat-icon>save</mat-icon> Guardar Perfil Académico
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 3: Idiomas ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">language</mat-icon>
+          Idiomas
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Idiomas que manejas y tu nivel de dominio.</p>
+          <div class="entity-list">
+            @for (lang of languages(); track lang.id) {
+              <div class="entity-item">
+                <div class="entity-left">
+                  <div class="entity-icon"><mat-icon>language</mat-icon></div>
+                  <span class="entity-label">{{ lang.language }}</span>
+                  <span class="entity-badge">{{ levelLabel(lang.proficiency) }}</span>
+                </div>
+                <button mat-icon-button type="button" (click)="removeLanguage(lang.id)" aria-label="Eliminar idioma" class="entity-delete-btn">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <div class="entity-empty-state">
+                <mat-icon>translate</mat-icon>
+                <p>Aún no has añadido idiomas</p>
+                <small>Indica los idiomas que dominas para enriquecer tu perfil ante proyectos internacionales.</small>
+              </div>
+            }
+          </div>
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Idioma</mat-label>
+              <input matInput [(ngModel)]="newLangName" placeholder="Ej: Inglés, Francés, Alemán" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Nivel de dominio</mat-label>
+              <mat-select [(ngModel)]="newLangLevel">
+                <mat-option value="basic">Básico (A1 - A2)</mat-option>
+                <mat-option value="intermediate">Intermedio (B1 - B2)</mat-option>
+                <mat-option value="advanced">Avanzado (C1 - C2)</mat-option>
+                <mat-option value="native">Nativo / Materno</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-flat-button color="accent" type="button" (click)="addLanguage()" class="add-btn">
+              <mat-icon>add</mat-icon> Agregar Idioma
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 4: Intereses ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">interests</mat-icon>
+          Intereses
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Áreas temáticas, disciplinas y tecnologías que te apasionan.</p>
+          <div class="entity-list chip-list">
+            @for (int of interests(); track int.id) {
+              <div class="entity-chip">
+                <mat-icon class="chip-dot">tag</mat-icon>
+                <span>{{ int.area }}</span>
+                <button mat-icon-button type="button" (click)="removeInterest(int.id)" aria-label="Eliminar interés">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <div class="entity-empty-state">
+                <mat-icon>interests</mat-icon>
+                <p>Aún no has añadido áreas de interés</p>
+                <small>Ej: Inteligencia Artificial, Finanzas Cuantitativas, Robótica, UX Research, Ciberseguridad.</small>
+              </div>
+            }
+          </div>
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nueva área de interés</mat-label>
+              <input matInput [(ngModel)]="newInterestName" placeholder="Escribe y presiona Enter..." (keydown.enter)="addInterest(); $event.preventDefault()" />
+            </mat-form-field>
+            <button mat-flat-button color="accent" type="button" (click)="addInterest()" class="add-btn">
+              <mat-icon>add</mat-icon> Agregar
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 5: Educación ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">menu_book</mat-icon>
+          Educación
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Historial de formación académica, colegios o instituciones previas.</p>
+          <div class="entity-list">
+            @for (edu of educationList(); track edu.id) {
+              <div class="entity-item">
+                <div class="entity-left">
+                  <div class="entity-icon"><mat-icon>school</mat-icon></div>
+                  <div class="entity-info">
+                    <span class="entity-label">{{ edu.degree }}</span>
+                    <span class="entity-sub">{{ edu.institution }} · {{ edu.startDate }}</span>
+                  </div>
+                </div>
+                <button mat-icon-button type="button" (click)="removeEducation(edu.id)" aria-label="Eliminar educación" class="entity-delete-btn">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <div class="entity-empty-state">
+                <mat-icon>school</mat-icon>
+                <p>Aún no has añadido formación adicional</p>
+                <small>Registra diplomados, bachillerato técnico, cursos acreditados u otros títulos.</small>
+              </div>
+            }
+          </div>
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Institución educativa</mat-label>
+              <input matInput [(ngModel)]="newEduInstitution" placeholder="Ej: Universidad Nacional" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Título / Programa</mat-label>
+              <input matInput [(ngModel)]="newEduDegree" placeholder="Ej: Diplomado en Cloud Computing" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de inicio</mat-label>
+              <input matInput type="date" [(ngModel)]="newEduStartDate" />
+            </mat-form-field>
+            <button mat-flat-button color="accent" type="button" (click)="addEducation()" class="add-btn">
+              <mat-icon>add</mat-icon> Agregar Educación
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 6: Experiencia ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">work_history</mat-icon>
+          Experiencia
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Experiencia profesional, proyectos de investigación, monitorías o voluntariados.</p>
+          <div class="entity-list">
+            @for (exp of experiences(); track exp.id) {
+              <div class="entity-item">
+                <div class="entity-left">
+                  <div class="entity-icon"><mat-icon>work_outline</mat-icon></div>
+                  <div class="entity-info">
+                    <span class="entity-label">{{ exp.title }}</span>
+                    <span class="entity-sub">{{ formatExpType(exp.type) }} · {{ exp.startDate }}</span>
+                  </div>
+                </div>
+                <button mat-icon-button type="button" (click)="removeExperience(exp.id)" aria-label="Eliminar experiencia" class="entity-delete-btn">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <div class="entity-empty-state">
+                <mat-icon>work_outline</mat-icon>
+                <p>Aún no has añadido experiencia</p>
+                <small>Incluye proyectos de clase destacados, pasantías, monitorías académicas o trabajos freelance.</small>
+              </div>
+            }
+          </div>
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Cargo / Rol desempeñado</mat-label>
+              <input matInput [(ngModel)]="newExpTitle" placeholder="Ej: Desarrollador Frontend Jr." />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de experiencia</mat-label>
+              <mat-select [(ngModel)]="newExpType">
+                <mat-option value="professional">Profesional / Laboral</mat-option>
+                <mat-option value="academic">Monitoría / Académica</mat-option>
+                <mat-option value="volunteer">Voluntariado</mat-option>
+                <mat-option value="personal_project">Proyecto Personal Destacado</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de inicio</mat-label>
+              <input matInput type="date" [(ngModel)]="newExpStartDate" />
+            </mat-form-field>
+            <button mat-flat-button color="accent" type="button" (click)="addExperience()" class="add-btn">
+              <mat-icon>add</mat-icon> Agregar Experiencia
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+
+    </mat-tab-group>
+  }
+
+  @if (authStore.isCompany()) {
+    <mat-tab-group animationDuration="200ms" class="profile-tabs">
+
+      <!-- ─── TAB 1: Perfil Empresa ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">business</mat-icon>
+          Perfil Empresa
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Datos institucionales y marca oficial de tu organización.</p>
+
+          <!-- Logo de la Empresa -->
+          <div class="company-logo-section">
+            <app-avatar-upload
+              [currentAvatarUrl]="companyLogoUrl()"
+              [size]="124"
+              shape="rounded"
+              mode="company"
+              label="Logo de la empresa"
+              category="company_logo"
+              fallbackIcon="business"
+              [companyName]="companyForm.get('companyName')?.value"
+              (avatarChanged)="onCompanyLogoChanged($event)"
+            />
+            <div class="company-logo-section__hint">
+              <h4>Logo oficial de la organización</h4>
+              <p>Este logo se mostrará en tus proyectos publicados, postulaciones, tarjetas públicas y perfil institucional.</p>
+              <span class="hint-specs">Formatos: PNG, JPG, WebP · Tamaño máx. 5MB · Proporción 1:1 recomendada</span>
+            </div>
+          </div>
+
+          <form [formGroup]="companyForm" (ngSubmit)="saveCompany()">
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombre comercial</mat-label>
+                <input matInput formControlName="companyName" placeholder="Ej: Tech Solutions" />
+                @if (companyForm.controls['companyName'].hasError('required') && companyForm.controls['companyName'].touched) {
+                  <mat-error>El nombre de la empresa es obligatorio.</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Razón social (opcional)</mat-label>
+                <input matInput formControlName="legalName" placeholder="Ej: Tech Solutions S.A.S." />
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>NIT</mat-label>
+                <input matInput formControlName="nit" placeholder="Ej: 900123456-7" />
+                @if (companyForm.controls['nit'].hasError('required') && companyForm.controls['nit'].touched) {
+                  <mat-error>El NIT es obligatorio.</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Industria / Sector</mat-label>
+                <input matInput formControlName="industry" placeholder="Ej: Tecnología y Software" />
+                @if (companyForm.controls['industry'].hasError('required') && companyForm.controls['industry'].touched) {
+                  <mat-error>La industria es obligatoria.</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Tamaño de empresa</mat-label>
+                <mat-select formControlName="companySize">
+                  <mat-option value="startup">Startup (1-10)</mat-option>
+                  <mat-option value="small">Pequeña (11-50)</mat-option>
+                  <mat-option value="medium">Mediana (51-200)</mat-option>
+                  <mat-option value="large">Grande (201-1000)</mat-option>
+                  <mat-option value="enterprise">Corporativa / Enterprise (+1000)</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Año de fundación</mat-label>
+                <input matInput type="number" formControlName="foundedYear" placeholder="Ej: 2018" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Nº de colaboradores</mat-label>
+                <input matInput type="number" formControlName="employeeCount" placeholder="Ej: 35" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Ciudad sede principal</mat-label>
+                <input matInput formControlName="headquartersCity" placeholder="Ej: Pasto" />
+                @if (companyForm.controls['headquartersCity'].hasError('required') && companyForm.controls['headquartersCity'].touched) {
+                  <mat-error>La ciudad principal es obligatoria.</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Departamento</mat-label>
+                <input matInput formControlName="headquartersState" placeholder="Ej: Nariño" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Sitio web oficial (opcional)</mat-label>
+              <input matInput formControlName="website" placeholder="https://miempresa.com" />
+              @if (companyForm.controls['website'].hasError('website') && companyForm.controls['website'].touched) {
+                <mat-error>Ingresa una URL válida (ej: https://ejemplo.com) o deja el campo vacío.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Descripción de la empresa</mat-label>
+              <textarea
+                matInput
+                formControlName="description"
+                rows="4"
+                placeholder="Describe la misión, visión, servicios y áreas de enfoque de tu empresa..."
+              ></textarea>
+              @if (companyForm.controls['description'].hasError('required') && companyForm.controls['description'].touched) {
+                <mat-error>La descripción es obligatoria.</mat-error>
+              }
+              @if (companyForm.controls['description'].hasError('minlength') && companyForm.controls['description'].touched) {
+                <mat-error>Ingresa al menos 20 caracteres.</mat-error>
+              }
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="submit" [disabled]="companyForm.invalid || saving()">
+                @if (saving()) {
+                  <span>Guardando...</span>
+                } @else {
+                  <mat-icon>save</mat-icon>
+                  <span>Guardar Cambios</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 2: Sedes y Ubicaciones ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">location_on</mat-icon>
+          Sedes
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Registra las diferentes sedes, oficinas o sucursales de tu organización.</p>
+
+          <div class="entity-list">
+            @for (loc of companyLocations(); track loc.id) {
+              <div class="entity-item">
+                <div class="entity-info">
+                  <span class="entity-label">
+                    {{ loc.city }}
+                    @if (loc.state) { · {{ loc.state }} }
+                  </span>
+                  <span class="entity-sub">
+                    {{ loc.branchName || 'Sede ' + loc.city }}
+                    @if (loc.address) { — {{ loc.address }} }
+                  </span>
+                </div>
+                @if (loc.isHeadquarters) {
+                  <span class="entity-badge">Principal</span>
+                }
+                <button mat-icon-button color="warn" type="button" (click)="removeCompanyLocation(loc.id)" title="Eliminar sede">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <p class="entity-empty">Aún no has registrado sedes adicionales.</p>
+            }
+          </div>
+
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Ciudad *</mat-label>
+              <input matInput [(ngModel)]="newLocationCity" placeholder="Ej: Pasto" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre / Sucursal</mat-label>
+              <input matInput [(ngModel)]="newLocationName" placeholder="Ej: Oficina Central" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Dirección</mat-label>
+              <input matInput [(ngModel)]="newLocationAddress" placeholder="Ej: Calle 18 #25-30" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Departamento</mat-label>
+              <input matInput [(ngModel)]="newLocationState" placeholder="Ej: Nariño" />
+            </mat-form-field>
+
+            <div class="checkbox-field">
+              <mat-checkbox [(ngModel)]="newLocationIsHeadquarters">Sede Principal</mat-checkbox>
+            </div>
+
+            <button mat-flat-button color="accent" type="button" (click)="addCompanyLocation()" class="add-btn">
+              <mat-icon>add</mat-icon> Agregar Sede
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 3: Contactos Institucionales ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">contacts</mat-icon>
+          Contactos
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Equipo de contacto institucional para estudiantes y docentes universitarios.</p>
+
+          <div class="entity-list">
+            @for (contact of companyContacts(); track contact.id) {
+              <div class="entity-item">
+                <div class="entity-info">
+                  <span class="entity-label">{{ contact.firstName }} {{ contact.lastName }}</span>
+                  <span class="entity-sub">
+                    {{ contact.position || 'Contacto' }} · {{ contact.email }}
+                    @if (contact.phone) { · Tel: {{ contact.phone }} }
+                  </span>
+                </div>
+                @if (contact.isPrimary) {
+                  <span class="entity-badge">Contacto Principal</span>
+                }
+                <button mat-icon-button color="warn" type="button" (click)="removeCompanyContact(contact.id)" title="Eliminar contacto">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <p class="entity-empty">Aún no has registrado contactos clave en tu perfil.</p>
+            }
+          </div>
+
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombres *</mat-label>
+              <input matInput [(ngModel)]="newContactFirstName" placeholder="Ej: Andrea" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Apellidos *</mat-label>
+              <input matInput [(ngModel)]="newContactLastName" placeholder="Ej: Gómez" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Correo institucional *</mat-label>
+              <input matInput type="email" [(ngModel)]="newContactEmail" placeholder="contacto@empresa.com" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Cargo / Rol</mat-label>
+              <input matInput [(ngModel)]="newContactPosition" placeholder="Ej: Gerente de Talento" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono</mat-label>
+              <input matInput [(ngModel)]="newContactPhone" placeholder="+57 3001234567" />
+            </mat-form-field>
+
+            <div class="checkbox-field">
+              <mat-checkbox [(ngModel)]="newContactIsPrimary">Contacto Principal</mat-checkbox>
+            </div>
+
+            <button mat-flat-button color="accent" type="button" (click)="addCompanyContact()" class="add-btn">
+              <mat-icon>add</mat-icon> Registrar Contacto
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 4: Áreas de Negocio ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">category</mat-icon>
+          Áreas de Negocio
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Áreas de especialidad y sectores técnicos en los que tu empresa desarrolla proyectos.</p>
+
+          <div class="entity-list">
+            @for (area of companyBusinessAreas(); track area.id) {
+              <div class="entity-item">
+                <div class="entity-info">
+                  <span class="entity-label">{{ area.areaName }}</span>
+                  @if (area.description) {
+                    <span class="entity-sub">{{ area.description }}</span>
+                  }
+                </div>
+                <button mat-icon-button color="warn" type="button" (click)="removeCompanyBusinessArea(area.id)" title="Eliminar área">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <p class="entity-empty">Aún no has agregado áreas de negocio.</p>
+            }
+          </div>
+
+          <div class="form-row add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre del área *</mat-label>
+              <input matInput [(ngModel)]="newAreaName" placeholder="Ej: Desarrollo Móvil, Inteligencia Artificial..." />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Descripción (opcional)</mat-label>
+              <input matInput [(ngModel)]="newAreaDescription" placeholder="Breve detalle del enfoque técnico" />
+            </mat-form-field>
+
+            <button mat-flat-button color="accent" type="button" (click)="addCompanyBusinessArea()" class="add-btn">
+              <mat-icon>add</mat-icon> Agregar Área
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ─── TAB 5: Representante (Perfil Base) ─── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">person</mat-icon>
+          Representante
+        </ng-template>
+        <div class="tab-content">
+          <p class="tab-description">Información del usuario administrador / representante de esta cuenta.</p>
           <div class="profile-edit__avatar-section">
             <app-avatar-upload [currentAvatarUrl]="authStore.profile()?.avatarUrl" />
           </div>
@@ -42,477 +845,22 @@
               <mat-label>LinkedIn URL (opcional)</mat-label>
               <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
               @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
-                <mat-error>Ingresa una URL valida de LinkedIn o deja el campo vacio.</mat-error>
+                <mat-error>Ingresa una URL válida de LinkedIn o deja el campo vacío.</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Biografía general</mat-label>
-              <textarea matInput formControlName="bio" rows="4"
-                placeholder="Cuéntanos sobre ti..."></textarea>
+              <mat-label>Biografía personal</mat-label>
+              <textarea matInput formControlName="bio" rows="4" placeholder="Tu rol y trayectoria profesional en la empresa..."></textarea>
             </mat-form-field>
 
             <div class="form-actions">
-              <button mat-flat-button color="primary" type="button"
-                (click)="saveBaseProfile()"
-                [disabled]="userForm.invalid || saving()">
+              <button mat-flat-button color="primary" type="button" (click)="saveBaseProfile()" [disabled]="userForm.invalid || saving()">
                 @if (saving()) {
-                  Guardando...
+                  <span>Guardando...</span>
                 } @else {
-                  <ng-container><mat-icon>save</mat-icon></ng-container>
-                  Guardar Perfil Base
-                }
-              </button>
-            </div>
-          </form>
-        </div>
-      </mat-tab>
-
-      <!-- ─── TAB 2: Perfil Estudiante ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">school</mat-icon>
-          Académico
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Datos académicos y preferencias de trabajo.</p>
-
-          <!-- Habilidades y documentos se editan en sus propias vistas — sin este
-               acceso directo, un estudiante en esta pantalla no tenía forma de
-               llegar a ellas salvo volviendo primero a "Ver perfil". -->
-          <div class="profile-edit__quick-links">
-            <a mat-stroked-button routerLink="/profile/skills">
-              <mat-icon>psychology</mat-icon> Editar habilidades
-            </a>
-            <a mat-stroked-button routerLink="/profile/documents">
-              <mat-icon>description</mat-icon> Editar documentos
-            </a>
-          </div>
-
-          <form [formGroup]="studentForm" (ngSubmit)="saveStudent()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Biografía</mat-label>
-              <textarea matInput formControlName="bio" rows="3"
-                placeholder="Cuéntanos sobre ti..."></textarea>
-            </mat-form-field>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Código estudiantil</mat-label>
-                <input matInput formControlName="studentCode" />
-                @if (studentForm.controls['studentCode'].hasError('pattern') && studentForm.controls['studentCode'].touched) {
-                  <mat-error>Solo letras, números y guiones.</mat-error>
-                }
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Programa académico</mat-label>
-                <mat-select formControlName="program" (selectionChange)="onProgramChange($event.value)">
-                  @for (program of programs(); track program.id) {
-                    <mat-option [value]="program.name">{{ program.name }}</mat-option>
-                  }
-                </mat-select>
-                @if (unrecognizedLegacyProgram()) {
-                  <mat-hint>
-                    Tu programa actual ("{{ unrecognizedLegacyProgram() }}") no está en el catálogo — selecciona el correcto de la lista.
-                  </mat-hint>
-                }
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Semestre</mat-label>
-                <mat-select formControlName="semester">
-                  @for (s of semesters; track s) {
-                    <mat-option [value]="s">{{ s }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Facultad</mat-label>
-                <input matInput formControlName="faculty" />
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Año de ingreso</mat-label>
-                <input matInput type="number" formControlName="enrollmentYear" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Año est. graduación</mat-label>
-                <input matInput type="number" formControlName="expectedGraduationYear" />
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>GPA Promedio</mat-label>
-                <input matInput type="number" step="0.1" formControlName="gpa" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Créditos completados</mat-label>
-                <input matInput type="number" formControlName="totalCreditsCompleted" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Créditos requeridos</mat-label>
-                <input matInput type="number" formControlName="totalCreditsRequired" />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Titular (Headline)</mat-label>
-              <input matInput formControlName="headline" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>URL del CV</mat-label>
-              <input matInput formControlName="cvUrl" placeholder="https://..." />
-            </mat-form-field>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Disponibilidad</mat-label>
-                <mat-select formControlName="availability">
-                  <mat-option value="full_time">Tiempo Completo</mat-option>
-                  <mat-option value="part_time">Medio Tiempo</mat-option>
-                  <mat-option value="flexible">Flexible</mat-option>
-                  <mat-option value="unavailable">No disponible</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Modo de trabajo preferido</mat-label>
-                <mat-select formControlName="preferredWorkMode">
-                  <mat-option value="remote">Remoto</mat-option>
-                  <mat-option value="hybrid">Híbrido</mat-option>
-                  <mat-option value="onsite">Presencial</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row" style="margin-bottom: 1rem;">
-              <mat-form-field appearance="outline">
-                <mat-label>Horas disponibles por semana</mat-label>
-                <input matInput type="number" formControlName="availableHoursPerWeek" />
-              </mat-form-field>
-              <div class="checkbox-field">
-                <input type="checkbox" formControlName="willingToRelocate" id="relocate" />
-                <label for="relocate">Dispuesto a reubicarse</label>
-              </div>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>GitHub URL</mat-label>
-              <input matInput formControlName="githubUrl" placeholder="https://github.com/..." />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Portfolio URL</mat-label>
-              <input matInput formControlName="portfolioUrl" placeholder="https://..." />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Sitio personal URL</mat-label>
-              <input matInput formControlName="personalWebsiteUrl" placeholder="https://..." />
-            </mat-form-field>
-
-            <div class="form-actions">
-              <button mat-flat-button color="primary" type="submit"
-                [disabled]="studentForm.invalid || saving()">
-                @if (saving()) {
-                  Guardando...
-                } @else {
-                  <ng-container><mat-icon>save</mat-icon></ng-container>
-                  Guardar Cambios
-                }
-              </button>
-            </div>
-          </form>
-        </div>
-      </mat-tab>
-
-      <!-- ─── TAB 3: Idiomas ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">language</mat-icon>
-          Idiomas
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Idiomas que manejas y tu nivel de dominio.</p>
-          <div class="entity-list">
-            @for (lang of languages(); track lang.id) {
-              <div class="entity-item">
-                <span class="entity-label">{{ lang.language }}</span>
-                <span class="entity-badge">{{ lang.proficiency }}</span>
-                <button mat-icon-button type="button" (click)="removeLanguage(lang.id)" aria-label="Eliminar idioma">
-                  <mat-icon>delete_outline</mat-icon>
-                </button>
-              </div>
-            } @empty {
-              <p class="entity-empty">Aún no has añadido idiomas.</p>
-            }
-          </div>
-          <div class="form-row add-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Idioma</mat-label>
-              <input matInput [(ngModel)]="newLangName" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Nivel</mat-label>
-              <mat-select [(ngModel)]="newLangLevel">
-                <mat-option value="basic">Básico</mat-option>
-                <mat-option value="intermediate">Intermedio</mat-option>
-                <mat-option value="advanced">Avanzado</mat-option>
-                <mat-option value="native">Nativo</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="button" (click)="addLanguage()" class="add-btn">
-              <mat-icon>add</mat-icon> Agregar
-            </button>
-          </div>
-        </div>
-      </mat-tab>
-
-      <!-- ─── TAB 4: Intereses ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">interests</mat-icon>
-          Intereses
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Áreas temáticas que te apasionan.</p>
-          <div class="entity-list chip-list">
-            @for (int of interests(); track int.id) {
-              <div class="entity-chip">
-                <span>{{ int.area }}</span>
-                <button mat-icon-button type="button" (click)="removeInterest(int.id)" aria-label="Eliminar interés">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-            } @empty {
-              <p class="entity-empty">Aún no has añadido intereses.</p>
-            }
-          </div>
-          <div class="form-row add-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Área de interés</mat-label>
-              <input matInput [(ngModel)]="newInterestName" (keydown.enter)="addInterest(); $event.preventDefault()" />
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="button" (click)="addInterest()" class="add-btn">
-              <mat-icon>add</mat-icon> Agregar
-            </button>
-          </div>
-        </div>
-      </mat-tab>
-
-      <!-- ─── TAB 5: Educación ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">menu_book</mat-icon>
-          Educación
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Tu historial de formación académica.</p>
-          <div class="entity-list">
-            @for (edu of educationList(); track edu.id) {
-              <div class="entity-item">
-                <div class="entity-info">
-                  <span class="entity-label">{{ edu.degree }}</span>
-                  <span class="entity-sub">{{ edu.institution }} · {{ edu.startDate }}</span>
-                </div>
-                <button mat-icon-button type="button" (click)="removeEducation(edu.id)" aria-label="Eliminar educación">
-                  <mat-icon>delete_outline</mat-icon>
-                </button>
-              </div>
-            } @empty {
-              <p class="entity-empty">Aún no has añadido formación académica.</p>
-            }
-          </div>
-          <div class="form-row add-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Institución</mat-label>
-              <input matInput [(ngModel)]="newEduInstitution" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Título</mat-label>
-              <input matInput [(ngModel)]="newEduDegree" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Fecha de inicio</mat-label>
-              <input matInput type="date" [(ngModel)]="newEduStartDate" />
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="button" (click)="addEducation()" class="add-btn">
-              <mat-icon>add</mat-icon> Agregar
-            </button>
-          </div>
-        </div>
-      </mat-tab>
-
-      <!-- ─── TAB 6: Experiencia ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">work_history</mat-icon>
-          Experiencia
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Experiencia profesional, académica o de voluntariado.</p>
-          <div class="entity-list">
-            @for (exp of experiences(); track exp.id) {
-              <div class="entity-item">
-                <div class="entity-info">
-                  <span class="entity-label">{{ exp.title }}</span>
-                  <span class="entity-sub">{{ exp.type }} · {{ exp.startDate }}</span>
-                </div>
-                <button mat-icon-button type="button" (click)="removeExperience(exp.id)" aria-label="Eliminar experiencia">
-                  <mat-icon>delete_outline</mat-icon>
-                </button>
-              </div>
-            } @empty {
-              <p class="entity-empty">Aún no has añadido experiencia.</p>
-            }
-          </div>
-          <div class="form-row add-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Cargo / Título</mat-label>
-              <input matInput [(ngModel)]="newExpTitle" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Tipo</mat-label>
-              <mat-select [(ngModel)]="newExpType">
-                <mat-option value="professional">Profesional</mat-option>
-                <mat-option value="academic">Académica</mat-option>
-                <mat-option value="volunteer">Voluntariado</mat-option>
-                <mat-option value="personal_project">Proyecto Personal</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Fecha de inicio</mat-label>
-              <input matInput type="date" [(ngModel)]="newExpStartDate" />
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="button" (click)="addExperience()" class="add-btn">
-              <mat-icon>add</mat-icon> Agregar
-            </button>
-          </div>
-        </div>
-      </mat-tab>
-
-    </mat-tab-group>
-  }
-
-  @if (authStore.isCompany()) {
-    <mat-tab-group animationDuration="200ms" class="profile-tabs">
-
-      <!-- ─── TAB 1: Perfil Base ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">person</mat-icon>
-          Perfil Base
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Información personal visible en tu cuenta.</p>
-          <form [formGroup]="userForm">
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Nombres</mat-label>
-                <input matInput formControlName="firstName" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Apellidos</mat-label>
-                <input matInput formControlName="lastName" />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Teléfono</mat-label>
-              <input matInput formControlName="phone" placeholder="+57 3001234567" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>LinkedIn URL (opcional)</mat-label>
-              <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
-              @if (userForm.controls['linkedinUrl'].hasError('linkedinUrl') && userForm.controls['linkedinUrl'].touched) {
-                <mat-error>Ingresa una URL valida de LinkedIn o deja el campo vacio.</mat-error>
-              }
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Biografía general</mat-label>
-              <textarea matInput formControlName="bio" rows="4"
-                placeholder="Cuéntanos sobre ti..."></textarea>
-            </mat-form-field>
-          </form>
-        </div>
-      </mat-tab>
-
-      <!-- ─── TAB 2: Perfil Empresa ─── -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">business</mat-icon>
-          Perfil Empresa
-        </ng-template>
-        <div class="tab-content">
-          <p class="tab-description">Datos institucionales de tu organización.</p>
-          <form [formGroup]="companyForm" (ngSubmit)="saveCompany()">
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nombre de la empresa</mat-label>
-                <input matInput formControlName="companyName" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>NIT</mat-label>
-                <input matInput formControlName="nit" placeholder="Ej: 900123456-7" />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción</mat-label>
-              <textarea matInput formControlName="description" rows="4"></textarea>
-            </mat-form-field>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Industria</mat-label>
-                <input matInput formControlName="industry" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Tamaño</mat-label>
-                <mat-select formControlName="companySize">
-                  <mat-option value="startup">Startup</mat-option>
-                  <mat-option value="small">Pequeña</mat-option>
-                  <mat-option value="medium">Mediana</mat-option>
-                  <mat-option value="large">Grande</mat-option>
-                  <mat-option value="enterprise">Enterprise</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Ciudad</mat-label>
-                <input matInput formControlName="headquartersCity" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Departamento</mat-label>
-                <input matInput formControlName="headquartersState" />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Sitio Web (opcional)</mat-label>
-              <input matInput formControlName="website" placeholder="https://..." />
-              @if (companyForm.controls['website'].hasError('website') && companyForm.controls['website'].touched) {
-                <mat-error>Ingresa una URL valida o deja el campo vacio.</mat-error>
-              }
-            </mat-form-field>
-
-            <div class="form-actions">
-              <button mat-flat-button color="primary" type="submit"
-                [disabled]="companyForm.invalid || saving()">
-                @if (saving()) {
-                  Guardando...
-                } @else {
-                  <ng-container><mat-icon>save</mat-icon></ng-container>
-                  Guardar Cambios
+                  <mat-icon>save</mat-icon>
+                  <span>Guardar Perfil Base</span>
                 }
               </button>
             </div>
