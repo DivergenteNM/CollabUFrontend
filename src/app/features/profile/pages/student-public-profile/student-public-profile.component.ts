@@ -1,12 +1,13 @@
-import { Component, ChangeDetectionStrategy, input, computed, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, input, computed, signal, inject } from '@angular/core';
+import { DecimalPipe, Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { httpResource } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, StudentProfile, UserProfile } from '../../../../core/models';
+import { StudentProfile, UserProfile } from '../../../../core/models';
 import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
 import { resolveImageUrl } from '../../../../shared/utils';
 
@@ -22,24 +23,40 @@ import { resolveImageUrl } from '../../../../shared/utils';
   styleUrl: './student-public-profile.component.scss',
 })
 export class StudentPublicProfileComponent {
-  readonly id = input.required<string>();
-  readonly history = window.history;
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+
+  readonly id = input<string>();
+  readonly profileId = computed(() => this.id() || this.route.snapshot.paramMap.get('id') || '');
 
   readonly avatarLoadError = signal(false);
 
-  readonly resource = httpResource<ApiResponse<StudentProfile>>(
-    () => ({ url: `${environment.apiUrl}/students/profile/${this.id()}` })
-  );
+  readonly resource = httpResource<any>(() => {
+    const id = this.profileId();
+    if (!id) return undefined;
+    return { url: `${environment.apiUrl}/students/profile/${id}` };
+  });
 
-  readonly student = computed(() => this.resource.value()?.data ?? null);
+  readonly student = computed(() => {
+    const res: any = this.resource.value();
+    if (!res) return null;
+    return (res.data ?? res) as StudentProfile;
+  });
 
-  readonly studentUserId = computed(() => this.student()?.userId ?? this.id());
+  readonly studentUserId = computed(() => this.student()?.userId ?? this.profileId());
 
-  readonly userResource = httpResource<ApiResponse<UserProfile>>(
-    () => ({ url: `${environment.apiUrl}/users/profile/${this.studentUserId()}` })
-  );
+  readonly userResource = httpResource<any>(() => {
+    const userId = this.studentUserId();
+    if (!userId) return undefined;
+    return { url: `${environment.apiUrl}/users/profile/${userId}` };
+  });
 
-  readonly user = computed(() => this.userResource.value()?.data ?? this.student()?.user ?? null);
+  readonly user = computed(() => {
+    const res: any = this.userResource.value();
+    const u = res ? (res.data ?? res) : null;
+    return (u ?? this.student()?.user ?? null) as UserProfile | null;
+  });
 
   readonly studentDisplayName = computed(() => {
     const u = this.user();
@@ -61,6 +78,14 @@ export class StudentPublicProfileComponent {
     }
     return name.slice(0, 2).toUpperCase();
   });
+
+  goBack(): void {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/profile/view']);
+    }
+  }
 
   onAvatarError(): void {
     this.avatarLoadError.set(true);

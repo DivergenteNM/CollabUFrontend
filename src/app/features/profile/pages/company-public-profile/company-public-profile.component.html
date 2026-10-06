@@ -1,7 +1,7 @@
 <div class="company-public-view">
   <!-- Top Navigation Bar -->
   <div class="company-public-view__top-nav">
-    <button mat-button (click)="history.back()" class="back-button">
+    <button mat-button (click)="goBack()" class="back-button">
       <mat-icon>arrow_back</mat-icon>
       Volver
     </button>
@@ -30,7 +30,7 @@
           <mat-icon class="error-icon">business_center</mat-icon>
           <h3>Perfil de empresa no disponible</h3>
           <p>No se pudo cargar la información de esta organización o no existe en la plataforma.</p>
-          <button mat-stroked-button (click)="history.back()">Regresar</button>
+          <button mat-stroked-button (click)="goBack()">Regresar</button>
         </div>
       </mat-card-content>
     </mat-card>
@@ -401,5 +401,17 @@
         }
       </div>
     </div>
+  } @else if (!resource.isLoading() && !resource.error()) {
+    <mat-card class="company-error-card">
+      <mat-card-content>
+        <div class="company-error-content">
+          <mat-icon class="error-icon">business_center</mat-icon>
+          <h3>Perfil de empresa no encontrado</h3>
+          <p>No se encontró la información pública para esta organización o no se encuentra activa.</p>
+          <button mat-stroked-button (click)="goBack()">Regresar</button>
+        </div>
+      </mat-card-content>
+    </mat-card>
   }
 </div>
+

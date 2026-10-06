@@ -102,7 +102,7 @@
                 <a mat-flat-button color="primary" routerLink="/profile/edit" class="hero-action-btn">
                   <mat-icon>edit</mat-icon> Editar Perfil
                 </a>
-                <a mat-stroked-button [routerLink]="['/profile/student', s.userId]" class="hero-action-btn">
+                <a mat-stroked-button [routerLink]="['/profile/student', s.userId || s.id || authStore.user()?.id]" class="hero-action-btn">
                   <mat-icon>visibility</mat-icon> Vista Pública
                 </a>
                 @if (cleanUrl(s.cvUrl); as cvLink) {
@@ -724,7 +724,7 @@
                 <a mat-flat-button color="primary" routerLink="/profile/edit" class="hero-action-btn">
                   <mat-icon>edit</mat-icon> Editar Perfil
                 </a>
-                <a mat-stroked-button [routerLink]="['/profile/company', c.userId]" class="hero-action-btn">
+                <a mat-stroked-button [routerLink]="['/profile/company', c.userId || c.id || authStore.user()?.id]" class="hero-action-btn">
                   <mat-icon>visibility</mat-icon> Vista Pública
                 </a>
               </div>

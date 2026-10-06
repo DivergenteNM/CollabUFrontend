@@ -1,12 +1,13 @@
-import { Component, ChangeDetectionStrategy, input, computed, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, input, computed, signal, inject } from '@angular/core';
+import { DecimalPipe, Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { httpResource } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { ApiResponse, CompanyProfile } from '../../../../core/models';
+import { CompanyProfile } from '../../../../core/models';
 import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
 import { resolveImageUrl } from '../../../../shared/utils';
 
@@ -22,16 +23,26 @@ import { resolveImageUrl } from '../../../../shared/utils';
   styleUrl: './company-public-profile.component.scss',
 })
 export class CompanyPublicProfileComponent {
-  readonly id = input.required<string>();
-  readonly history = window.history;
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+
+  readonly id = input<string>();
+  readonly profileId = computed(() => this.id() || this.route.snapshot.paramMap.get('id') || '');
 
   readonly logoLoadError = signal(false);
 
-  readonly resource = httpResource<ApiResponse<CompanyProfile>>(
-    () => ({ url: `${environment.apiUrl}/companies/profile/${this.id()}` })
-  );
+  readonly resource = httpResource<any>(() => {
+    const id = this.profileId();
+    if (!id) return undefined;
+    return { url: `${environment.apiUrl}/companies/profile/${id}` };
+  });
 
-  readonly company = computed(() => this.resource.value()?.data ?? null);
+  readonly company = computed(() => {
+    const res: any = this.resource.value();
+    if (!res) return null;
+    return (res.data ?? res) as CompanyProfile;
+  });
 
   readonly resolvedLogoUrl = computed(() => {
     const c = this.company();
@@ -53,6 +64,14 @@ export class CompanyPublicProfileComponent {
     if (!url) return null;
     return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
   });
+
+  goBack(): void {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/profile/view']);
+    }
+  }
 
   onLogoError(): void {
     this.logoLoadError.set(true);
