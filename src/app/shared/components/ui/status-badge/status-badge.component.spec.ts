@@ -45,4 +45,21 @@ describe('StatusBadgeComponent — contrast & tokens', () => {
     expect(config.bg).toBe('var(--color-success-bg)');
     expect(config.border).toBe('var(--color-success-border)');
   });
+
+  it('resolves correct accessible tone, label, icon and description for PUBLISHED in project domain', () => {
+    const fixture = TestBed.createComponent(StatusBadgeComponent);
+    fixture.componentRef.setInput('status', 'published');
+    fixture.componentRef.setInput('domain', 'project');
+    fixture.detectChanges();
+
+    const config = fixture.componentInstance.statusConfig();
+    expect(config.label).toBe('Publicado');
+    expect(config.icon).toBe('public');
+    expect(config.tone).toBe('success');
+    expect(config.description).toContain('Publicado');
+
+    const hostEl: HTMLElement = fixture.nativeElement;
+    expect(hostEl.getAttribute('title')).toContain('Publicado');
+    expect(hostEl.getAttribute('aria-label')).toBe('Estado: Publicado');
+  });
 });

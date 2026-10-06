@@ -42,7 +42,25 @@
             <div class="project-card__banner-icon">
               <mat-icon>{{ project.status === 'completed' ? 'workspace_premium' : project.status === 'in_progress' ? 'engineering' : 'business_center' }}</mat-icon>
             </div>
-            <app-status-badge [status]="project.status" size="sm" />
+            <div class="project-card__status-wrapper">
+              <app-status-badge
+                [status]="project.status"
+                domain="project"
+                size="sm"
+                [matTooltip]="getStatusExplanation(project.status)"
+                matTooltipPosition="above" />
+              <button
+                type="button"
+                class="project-card__status-help"
+                [matTooltip]="getStatusExplanation(project.status)"
+                matTooltipPosition="above"
+                aria-label="Explicación del estado"
+                (click)="$event.stopPropagation()"
+                (keydown.enter)="$event.stopPropagation()"
+                (keydown.space)="$event.stopPropagation()">
+                <mat-icon>help_outline</mat-icon>
+              </button>
+            </div>
           </div>
 
           <mat-card-content class="project-card__body">
