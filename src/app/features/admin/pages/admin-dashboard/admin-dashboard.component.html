@@ -1,282 +1,625 @@
-﻿<div class="admin-analytics">
+<div class="admin-dashboard">
 
-  <!-- Header -->
-  <div class="admin-analytics__header">
-    <div class="header-left">
-      <h1>Panel de Administracion</h1>
-      <p class="header-subtitle">Resumen de actividad y metricas de la plataforma</p>
+  <!-- ============================================================ -->
+  <!-- 1. HERO / BANNER EJECUTIVO INSTITUCIONAL                     -->
+  <!-- ============================================================ -->
+  <header class="admin-hero">
+    <!-- Contenido Principal: Avatar + Identidad + Badges -->
+    <div class="admin-hero__content">
+      <div class="admin-hero__avatar-container">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl() | imageUrl" [alt]="authStore.displayName()" class="admin-hero__avatar-img" />
+        } @else {
+          <div class="admin-hero__avatar-placeholder">
+            <span>{{ userInitials() }}</span>
+          </div>
+        }
+        <span class="admin-hero__avatar-badge" matTooltip="Perfil de Administrador">
+          <mat-icon>verified_user</mat-icon>
+        </span>
+      </div>
+
+      <div class="admin-hero__info">
+        <div class="admin-hero__badges-row">
+          <span class="admin-badge admin-badge--role">
+            <mat-icon>shield</mat-icon>
+            <span>Administrador de Plataforma</span>
+          </span>
+          <span class="admin-badge admin-badge--status" matTooltip="Todos los servicios del sistema se encuentran en línea">
+            <span class="status-pulse-dot"></span>
+            <span>Sistema Operativo · 100%</span>
+          </span>
+          <span class="admin-badge admin-badge--subtle">
+            <mat-icon>today</mat-icon>
+            <span>{{ currentDateFormatted() }}</span>
+          </span>
+        </div>
+
+        <h1 class="admin-hero__title">
+          {{ greetingTime() }}, <span class="admin-hero__name">{{ authStore.displayName() }}</span>! <span class="admin-hero__emoji">⚡</span>
+        </h1>
+
+        <p class="admin-hero__subtitle">
+          Panel de comando institucional: supervisión global de talento universitario, alianzas empresariales, métricas de retención y calidad académica en Collab-U.
+        </p>
+      </div>
     </div>
-    <a mat-flat-button color="primary" routerLink="/admin/reports" class="header-btn">
-      <mat-icon>assessment</mat-icon>
-      Ver Reportes
-    </a>
-  </div>
 
+    <!-- Barra Inferior de Acciones Rápidas -->
+    <div class="admin-hero__toolbar">
+      <div class="admin-hero__toolbar-label">
+        <mat-icon>flash_on</mat-icon>
+        <span>Accesos Rápidos</span>
+      </div>
+
+      <div class="admin-hero__actions">
+        <a mat-flat-button color="primary" routerLink="/admin/reports" class="admin-hero__btn admin-hero__btn--primary">
+          <mat-icon>assessment</mat-icon>
+          <span>Generar Reportes</span>
+        </a>
+        <a mat-stroked-button routerLink="/admin/academic-process" class="admin-hero__btn">
+          <mat-icon>assignment_turned_in</mat-icon>
+          <span>Cola Académica</span>
+        </a>
+        <a mat-stroked-button routerLink="/admin/verifications" class="admin-hero__btn">
+          <mat-icon>verified</mat-icon>
+          <span>Verificar Empresas</span>
+        </a>
+        <a mat-stroked-button routerLink="/admin/users" class="admin-hero__btn">
+          <mat-icon>manage_accounts</mat-icon>
+          <span>Gestión de Usuarios</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- 2. ESTADO DE CARGA GLOBAL                                    -->
+  <!-- ============================================================ -->
   @if (dashboard.isLoading()) {
-    <mat-progress-bar mode="indeterminate" class="loading-bar" />
+    <div class="admin-loading-card">
+      <mat-progress-bar mode="indeterminate" class="admin-loading-progress" />
+      <div class="admin-loading-card__content">
+        <mat-icon class="admin-loading-spin">sync</mat-icon>
+        <span>Sincronizando analíticas, series temporales e indicadores de plataforma...</span>
+      </div>
+    </div>
   }
 
   @if (dashboard.value(); as data) {
 
-    <!-- Stat Cards -->
-    <div class="admin-analytics__stats">
-      <app-stat-card icon="people" [value]="data.platformMetrics.totalUsers" label="Total usuarios" color="primary" />
-      <app-stat-card icon="school" [value]="data.platformMetrics.totalStudents" label="Estudiantes" color="primary" />
-      <app-stat-card icon="business" [value]="data.platformMetrics.totalCompanies" label="Empresas" color="accent" />
-      <app-stat-card icon="folder_open" [value]="data.platformMetrics.activeProjects" label="Proyectos activos" color="primary" />
-      <app-stat-card icon="mail" [value]="data.platformMetrics.totalApplications" label="Aplicaciones totales" color="accent" />
-      <app-stat-card icon="grade" [value]="data.platformMetrics.avgMatchScore?.toFixed(1) ?? '—'" label="Match score promedio" color="primary" />
-    </div>
-
-    <!-- Actividad del mes -->
-    <div class="admin-analytics__trends-card">
-      <div class="trends-header">
-        <div>
-          <h2 class="trends-title">Actividad este mes</h2>
-          @if (data.trends.lastSnapshotDate) {
-            <span class="trends-subtitle">Ultimo snapshot: {{ data.trends.lastSnapshotDate | date:'mediumDate' }}</span>
-          }
+    <!-- ============================================================ -->
+    <!-- 3. PLATAFORMA CORE KPIS (6 TARJETAS EJECUTIVAS)              -->
+    <!-- ============================================================ -->
+    <section class="admin-section admin-section--kpis">
+      <div class="section-header">
+        <div class="section-header__text">
+          <h2 class="section-title">
+            <mat-icon>dashboard_customize</mat-icon>
+            Métricas Clave de la Plataforma
+          </h2>
+          <p class="section-subtitle">Indicadores consolidados de adopción, volumen y calidad del matching</p>
         </div>
       </div>
-      <div class="trends-grid">
-        <div class="trend-item trend-item--users">
-          <div class="trend-icon-wrap">
-            <mat-icon>person_add</mat-icon>
-          </div>
-          <span class="trend-value">+{{ data.trends.newUsersThisMonth }}</span>
-          <span class="trend-label">Usuarios nuevos</span>
-        </div>
-        <div class="trend-divider"></div>
-        <div class="trend-item trend-item--projects">
-          <div class="trend-icon-wrap">
-            <mat-icon>add_circle</mat-icon>
-          </div>
-          <span class="trend-value">+{{ data.trends.newProjectsThisMonth }}</span>
-          <span class="trend-label">Proyectos nuevos</span>
-        </div>
-        <div class="trend-divider"></div>
-        <div class="trend-item trend-item--apps">
-          <div class="trend-icon-wrap">
-            <mat-icon>send</mat-icon>
-          </div>
-          <span class="trend-value">+{{ data.trends.applicationsThisMonth }}</span>
-          <span class="trend-label">Aplicaciones enviadas</span>
-        </div>
+
+      <div class="admin-stats-grid">
+        <app-stat-card
+          icon="people_alt"
+          [value]="data.platformMetrics.totalUsers"
+          label="Total Usuarios"
+          color="primary"
+          hint="Cuentas registradas en todos los roles del sistema"
+        />
+        <app-stat-card
+          icon="school"
+          [value]="data.platformMetrics.totalStudents"
+          label="Estudiantes Activos"
+          color="primary"
+          hint="Talento universitario con perfil académico vigente"
+        />
+        <app-stat-card
+          icon="corporate_fare"
+          [value]="data.platformMetrics.totalCompanies"
+          label="Empresas Vinculadas"
+          color="accent"
+          hint="Empresas con convenios y vacantes disponibles"
+        />
+        <app-stat-card
+          icon="rocket_launch"
+          [value]="data.platformMetrics.activeProjects"
+          label="Proyectos Activos"
+          color="primary"
+          [hint]="'De ' + data.platformMetrics.totalProjects + ' iniciativas registradas en total'"
+        />
+        <app-stat-card
+          icon="mark_email_read"
+          [value]="data.platformMetrics.totalApplications"
+          label="Postulaciones Totales"
+          color="accent"
+          hint="Aplicaciones enviadas a proyectos y retos"
+        />
+        <app-stat-card
+          icon="auto_awesome"
+          [value]="data.platformMetrics.avgMatchScore ? data.platformMetrics.avgMatchScore.toFixed(1) + '%' : '—'"
+          label="Match IA Promedio"
+          color="primary"
+          hint="Afinidad promedio entre perfiles y requisitos"
+        />
       </div>
-    </div>
+    </section>
 
-    <!-- Bottom Grid: 3 columnas -->
-    <div class="admin-analytics__charts">
-
-      <!-- Evolución histórica de la plataforma -->
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <div class="card-title-row">
-            <div class="card-title-icon card-title-icon--primary">
-              <mat-icon>show_chart</mat-icon>
-            </div>
-            <div>
-              <mat-card-title>Evolución de la plataforma</mat-card-title>
-              <mat-card-subtitle>Últimos 30 snapshots</mat-card-subtitle>
-            </div>
+    <!-- ============================================================ -->
+    <!-- 4. PULSO DE CRECIMIENTO MENSUAL (MOMENTUM BAR)               -->
+    <!-- ============================================================ -->
+    <section class="admin-momentum">
+      <div class="admin-momentum__header">
+        <div class="admin-momentum__title-wrap">
+          <div class="admin-momentum__icon-box">
+            <mat-icon>trending_up</mat-icon>
           </div>
-        </mat-card-header>
-        <mat-card-content class="chart-content">
-          @if (platformHistory.isLoading()) {
-            <div class="chart-skeleton"></div>
-          } @else if ((platformHistory.value()?.length ?? 0) > 0) {
-            <app-line-chart [chartData]="platformChartData()" />
-          } @else {
-            <div class="empty-state">
-              <mat-icon>timeline</mat-icon>
-              <p>Sin datos históricos aún</p>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Demanda vs Oferta de skills -->
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <div class="card-title-row">
-            <div class="card-title-icon card-title-icon--accent">
-              <mat-icon>equalizer</mat-icon>
-            </div>
-            <div>
-              <mat-card-title>Demanda vs. Oferta de Skills</mat-card-title>
-              <mat-card-subtitle>Top 10 habilidades</mat-card-subtitle>
-            </div>
+          <div>
+            <h3 class="admin-momentum__title">Pulso y Crecimiento del Mes</h3>
+            <p class="admin-momentum__subtitle">Flujo de nuevas incorporaciones e interacciones en el periodo actual</p>
           </div>
-        </mat-card-header>
-        <mat-card-content class="chart-content chart-content--tall">
-          @if (topSkillsForChart().length > 0) {
-            <app-skill-gap-chart [skills]="topSkillsForChart()" />
-          } @else {
-            <div class="empty-state">
-              <mat-icon>bar_chart</mat-icon>
-              <p>Sin datos de skills aún</p>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
-
-    </div>
-
-    <!-- Bottom Grid: 3 columnas -->
-    <div class="admin-analytics__bottom">
-
-      <!-- Acciones Pendientes -->
-      <mat-card class="bottom-card">
-        <mat-card-header>
-          <div class="card-title-row">
-            <div class="card-title-icon card-title-icon--warn">
-              <mat-icon>pending_actions</mat-icon>
-            </div>
-            <mat-card-title>Acciones Pendientes</mat-card-title>
-          </div>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="action-list">
-            <a routerLink="/admin/verifications" class="action-item">
-              <div class="action-icon-wrap action-icon-wrap--warn">
-                <mat-icon>verified</mat-icon>
-              </div>
-              <span>Empresas por verificar</span>
-              <mat-icon class="action-arrow">chevron_right</mat-icon>
-            </a>
-            <a routerLink="/admin/supervisors" class="action-item">
-              <div class="action-icon-wrap action-icon-wrap--primary">
-                <mat-icon>supervisor_account</mat-icon>
-              </div>
-              <span>Supervisores por asignar</span>
-              <mat-icon class="action-arrow">chevron_right</mat-icon>
-            </a>
-            <a routerLink="/admin/academic-process" class="action-item">
-              <div class="action-icon-wrap action-icon-wrap--accent">
-                <mat-icon>assignment_turned_in</mat-icon>
-              </div>
-              <span>Cola de trabajo académico</span>
-              <mat-icon class="action-arrow">chevron_right</mat-icon>
-            </a>
-            <a routerLink="/admin/periods" class="action-item">
-              <div class="action-icon-wrap action-icon-wrap--accent">
-                <mat-icon>calendar_month</mat-icon>
-              </div>
-              <span>Gestionar periodos academicos</span>
-              <mat-icon class="action-arrow">chevron_right</mat-icon>
-            </a>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Top Skills -->
-      <mat-card class="bottom-card">
-        <mat-card-header>
-          <div class="card-title-row">
-            <div class="card-title-icon card-title-icon--primary">
-              <mat-icon>bar_chart</mat-icon>
-            </div>
-            <mat-card-title>Top Skills en Demanda</mat-card-title>
-          </div>
-        </mat-card-header>
-        <mat-card-content>
-          @if (data.topSkills.length === 0) {
-            <div class="empty-state">
-              <mat-icon>insights</mat-icon>
-              <p>Sin datos de skills disponibles</p>
-            </div>
-          }
-          <div class="skills-list">
-            @for (skill of data.topSkills; track skill.name; let i = $index) {
-              <div class="skill-row">
-                <span class="skill-rank">#{{ i + 1 }}</span>
-                <span class="skill-name">{{ skill.name }}</span>
-                <div class="skill-badges">
-                  <span class="skill-badge skill-badge--demand">D: {{ skill.demand }}</span>
-                  <span class="skill-badge skill-badge--supply">O: {{ skill.supply }}</span>
-                </div>
-                <mat-icon class="skill-trend-icon skill-trend-icon--{{ skill.trend ?? 'stable' }}">{{ trendIcon(skill.trend) }}</mat-icon>
-              </div>
-            }
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Reportes Recientes -->
-      <mat-card class="bottom-card">
-        <mat-card-header>
-          <div class="card-title-row">
-            <div class="card-title-icon card-title-icon--accent">
-              <mat-icon>description</mat-icon>
-            </div>
-            <mat-card-title>Reportes Recientes</mat-card-title>
-          </div>
-          <a mat-button color="primary" routerLink="/admin/reports" class="see-all-btn">Ver todos</a>
-        </mat-card-header>
-        <mat-card-content>
-          @if (data.recentReports.length === 0) {
-            <div class="empty-state">
-              <mat-icon>folder_open</mat-icon>
-              <p>No hay reportes generados aun</p>
-            </div>
-          }
-          <div class="reports-list">
-            @for (report of data.recentReports; track report.id) {
-              <div class="report-row">
-                <div class="report-info">
-                  <span class="report-name">{{ report.name }}</span>
-                  <span class="report-type">{{ reportTypeLabel(report.type) }}</span>
-                </div>
-                <span class="report-status status-{{ report.status }}">{{ reportStatusLabel(report.status) }}</span>
-              </div>
-            }
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-    </div>
-
-    <!-- KPIs del flujo académico -->
-    <div class="admin-analytics__trends-card">
-      <div class="trends-header">
-        <h2 class="trends-title">Flujo académico</h2>
-      </div>
-
-      @if (academicKpis.value(); as kpis) {
-        <div class="admin-analytics__stats">
-          <app-stat-card icon="task_alt" [value]="completionRate() !== null ? completionRate() + '%' : '—'" label="Tasa de completitud" color="primary" />
-          <app-stat-card icon="groups" [value]="kpis.assignmentStats?.totalAssignments ?? 0" label="Asignaciones totales" color="accent" />
-          <app-stat-card icon="schedule" [value]="kpis.assignmentStats?.avgAcceptanceHours != null ? (kpis.assignmentStats!.avgAcceptanceHours + 'h') : '—'" label="Tiempo promedio de aceptación" color="primary" />
-          <app-stat-card icon="rate_review" [value]="kpis.academicStats?.avgAnteproyectoCorrections ?? '—'" label="Correcciones promedio anteproyecto" color="accent" />
         </div>
 
-        @if (topWorkload().length > 0) {
-          <div class="skills-list" style="margin-top: 16px;">
-            <p class="trends-subtitle" style="margin-bottom: 8px;">Docentes con mayor carga activa</p>
-            @for (w of topWorkload(); track w.supervisorId) {
-              <div class="skill-row">
-                <span class="skill-name">{{ w.supervisorName ?? w.supervisorId }}</span>
-                <span class="skill-badge skill-badge--demand">{{ w.activeCount }} estudiantes</span>
-              </div>
-            }
+        @if (data.trends.lastSnapshotDate) {
+          <div class="admin-momentum__snapshot-badge" matTooltip="Fecha del último corte analítico consolidado">
+            <mat-icon>update</mat-icon>
+            <span>Último corte: {{ data.trends.lastSnapshotDate | date:'mediumDate' }}</span>
           </div>
         }
-      } @else if (academicKpis.isLoading()) {
-        <mat-progress-bar mode="indeterminate" />
-      } @else {
-        <div class="empty-state">
-          <mat-icon>school</mat-icon>
-          <p>Sin datos del flujo académico aún</p>
+      </div>
+
+      <div class="admin-momentum__grid">
+        <div class="momentum-pod momentum-pod--users">
+          <div class="momentum-pod__icon-wrap">
+            <mat-icon>person_add</mat-icon>
+          </div>
+          <div class="momentum-pod__info">
+            <span class="momentum-pod__value">+{{ data.trends.newUsersThisMonth }}</span>
+            <span class="momentum-pod__label">Nuevos Usuarios</span>
+            <span class="momentum-pod__tag">Estudiantes y empresas</span>
+          </div>
         </div>
-      }
-    </div>
+
+        <div class="momentum-pod__divider"></div>
+
+        <div class="momentum-pod momentum-pod--projects">
+          <div class="momentum-pod__icon-wrap">
+            <mat-icon>post_add</mat-icon>
+          </div>
+          <div class="momentum-pod__info">
+            <span class="momentum-pod__value">+{{ data.trends.newProjectsThisMonth }}</span>
+            <span class="momentum-pod__label">Proyectos Publicados</span>
+            <span class="momentum-pod__tag">Retos y oportunidades</span>
+          </div>
+        </div>
+
+        <div class="momentum-pod__divider"></div>
+
+        <div class="momentum-pod momentum-pod--apps">
+          <div class="momentum-pod__icon-wrap">
+            <mat-icon>send_and_archive</mat-icon>
+          </div>
+          <div class="momentum-pod__info">
+            <span class="momentum-pod__value">+{{ data.trends.applicationsThisMonth }}</span>
+            <span class="momentum-pod__label">Postulaciones</span>
+            <span class="momentum-pod__tag">Enviadas a vacantes</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 5. ANALÍTICA VISUAL (BENTO 2 COLUMNAS DE GRÁFICAS)           -->
+    <!-- ============================================================ -->
+    <section class="admin-charts-section">
+      <div class="admin-charts-grid">
+
+        <!-- Evolución histórica de la plataforma -->
+        <mat-card class="admin-chart-card">
+          <mat-card-header class="admin-chart-card__header">
+            <div class="admin-chart-card__title-row">
+              <div class="admin-chart-card__icon-box admin-chart-card__icon-box--primary">
+                <mat-icon>show_chart</mat-icon>
+              </div>
+              <div>
+                <mat-card-title class="admin-chart-card__title">Evolución Histórica de la Plataforma</mat-card-title>
+                <mat-card-subtitle class="admin-chart-card__subtitle">Trayectoria acumulada en los últimos 30 snapshots</mat-card-subtitle>
+              </div>
+            </div>
+            <span class="admin-chart-card__badge admin-chart-card__badge--primary">
+              <mat-icon>timeline</mat-icon> Series Diarias
+            </span>
+          </mat-card-header>
+
+          <mat-card-content class="admin-chart-card__content">
+            @if (platformHistory.isLoading()) {
+              <div class="chart-skeleton-box">
+                <div class="skeleton-shimmer"></div>
+              </div>
+            } @else if ((platformHistory.value()?.length ?? 0) > 0) {
+              <div class="chart-wrapper">
+                <app-line-chart [chartData]="platformChartData()" />
+              </div>
+            } @else {
+              <div class="admin-empty-state">
+                <mat-icon>timeline</mat-icon>
+                <h4>Sin datos históricos suficientes</h4>
+                <p>Las series temporales se generarán automáticamente a medida que se acumulen snapshots de uso.</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Demanda vs Oferta de skills -->
+        <mat-card class="admin-chart-card">
+          <mat-card-header class="admin-chart-card__header">
+            <div class="admin-chart-card__title-row">
+              <div class="admin-chart-card__icon-box admin-chart-card__icon-box--accent">
+                <mat-icon>equalizer</mat-icon>
+              </div>
+              <div>
+                <mat-card-title class="admin-chart-card__title">Demanda vs. Oferta de Habilidades</mat-card-title>
+                <mat-card-subtitle class="admin-chart-card__subtitle">Brecha de competencias requeridas por empresas vs estudiantes</mat-card-subtitle>
+              </div>
+            </div>
+            <span class="admin-chart-card__badge admin-chart-card__badge--accent">
+              <mat-icon>auto_graph</mat-icon> Top 10 Skills
+            </span>
+          </mat-card-header>
+
+          <mat-card-content class="admin-chart-card__content admin-chart-card__content--tall">
+            @if (topSkillsForChart().length > 0) {
+              <div class="chart-wrapper chart-wrapper--tall">
+                <app-skill-gap-chart [skills]="topSkillsForChart()" />
+              </div>
+            } @else {
+              <div class="admin-empty-state">
+                <mat-icon>bar_chart</mat-icon>
+                <h4>Sin datos comparativos de habilidades</h4>
+                <p>Se generarán automáticamente al publicarse proyectos con requerimientos técnicos.</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 6. HUB OPERATIVO Y DE CONTROL (3 COLUMNAS BENTO)             -->
+    <!-- ============================================================ -->
+    <section class="admin-command-hub">
+      <div class="admin-command-grid">
+
+        <!-- Columna 1: Centro de Operaciones & Accesos Clave -->
+        <mat-card class="admin-command-card">
+          <mat-card-header class="admin-command-card__header">
+            <div class="admin-command-card__title-row">
+              <div class="admin-command-card__icon-box admin-command-card__icon-box--warn">
+                <mat-icon>admin_panel_settings</mat-icon>
+              </div>
+              <div>
+                <mat-card-title class="admin-command-card__title">Centro de Operaciones</mat-card-title>
+                <mat-card-subtitle class="admin-command-card__subtitle">Atajos rápidos de supervisión y gestión</mat-card-subtitle>
+              </div>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content class="admin-command-card__content">
+            <div class="action-nav-list">
+              <a routerLink="/admin/verifications" class="action-nav-item">
+                <div class="action-nav-item__icon action-nav-item__icon--warn">
+                  <mat-icon>verified</mat-icon>
+                </div>
+                <div class="action-nav-item__info">
+                  <span class="action-nav-item__title">Verificación de Empresas</span>
+                  <span class="action-nav-item__sub">Revisión de NIT, personería y convenios</span>
+                </div>
+                <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
+              </a>
+
+              <a routerLink="/admin/supervisors" class="action-nav-item">
+                <div class="action-nav-item__icon action-nav-item__icon--primary">
+                  <mat-icon>supervisor_account</mat-icon>
+                </div>
+                <div class="action-nav-item__info">
+                  <span class="action-nav-item__title">Asignación de Docentes</span>
+                  <span class="action-nav-item__sub">Designar asesores de tesis y jurados</span>
+                </div>
+                <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
+              </a>
+
+              <a routerLink="/admin/academic-process" class="action-nav-item">
+                <div class="action-nav-item__icon action-nav-item__icon--accent">
+                  <mat-icon>assignment_turned_in</mat-icon>
+                </div>
+                <div class="action-nav-item__info">
+                  <span class="action-nav-item__title">Cola de Proceso Académico</span>
+                  <span class="action-nav-item__sub">Seguimiento de actas y validación de fases</span>
+                </div>
+                <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
+              </a>
+
+              <a routerLink="/admin/periods" class="action-nav-item">
+                <div class="action-nav-item__icon action-nav-item__icon--teal">
+                  <mat-icon>calendar_month</mat-icon>
+                </div>
+                <div class="action-nav-item__info">
+                  <span class="action-nav-item__title">Periodos Académicos</span>
+                  <span class="action-nav-item__sub">Gestión de calendarios y convocatorias</span>
+                </div>
+                <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
+              </a>
+
+              <a routerLink="/admin/skills" class="action-nav-item">
+                <div class="action-nav-item__icon action-nav-item__icon--purple">
+                  <mat-icon>psychology</mat-icon>
+                </div>
+                <div class="action-nav-item__info">
+                  <span class="action-nav-item__title">Catálogo de Habilidades</span>
+                  <span class="action-nav-item__sub">Taxonomía por programas académicos</span>
+                </div>
+                <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
+              </a>
+
+              <a routerLink="/admin/users" class="action-nav-item">
+                <div class="action-nav-item__icon action-nav-item__icon--indigo">
+                  <mat-icon>manage_accounts</mat-icon>
+                </div>
+                <div class="action-nav-item__info">
+                  <span class="action-nav-item__title">Gestión de Usuarios</span>
+                  <span class="action-nav-item__sub">Roles, accesos y estados de cuenta</span>
+                </div>
+                <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
+              </a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Columna 2: Top Habilidades en Demanda -->
+        <mat-card class="admin-command-card">
+          <mat-card-header class="admin-command-card__header">
+            <div class="admin-command-card__title-row">
+              <div class="admin-command-card__icon-box admin-command-card__icon-box--primary">
+                <mat-icon>leaderboard</mat-icon>
+              </div>
+              <div>
+                <mat-card-title class="admin-command-card__title">Top Skills en Demanda</mat-card-title>
+                <mat-card-subtitle class="admin-command-card__subtitle">Requeridas por empresas asociadas</mat-card-subtitle>
+              </div>
+            </div>
+            <a mat-button color="primary" routerLink="/admin/skills" class="header-link-btn">Ver Catálogo</a>
+          </mat-card-header>
+
+          <mat-card-content class="admin-command-card__content">
+            @if (data.topSkills.length === 0) {
+              <div class="admin-empty-state">
+                <mat-icon>insights</mat-icon>
+                <h4>Sin datos de skills</h4>
+                <p>No se han registrado búsquedas o requerimientos suficientes todavía.</p>
+              </div>
+            } @else {
+              <div class="skills-leaderboard">
+                @for (skill of data.topSkills; track skill.name; let i = $index) {
+                  <div class="skill-leader-item" [class.skill-leader-item--top3]="i < 3">
+                    <div class="skill-leader-item__rank-badge" [class.rank-1]="i === 0" [class.rank-2]="i === 1" [class.rank-3]="i === 2">
+                      #{{ i + 1 }}
+                    </div>
+
+                    <div class="skill-leader-item__content">
+                      <span class="skill-leader-item__name">{{ skill.name }}</span>
+                      <div class="skill-leader-item__meta">
+                        <span class="skill-stat-pill skill-stat-pill--demand" matTooltip="Veces solicitada por empresas">
+                          <mat-icon>work_outline</mat-icon> Demanda: {{ skill.demand }}
+                        </span>
+                        <span class="skill-stat-pill skill-stat-pill--supply" matTooltip="Estudiantes con esta competencia">
+                          <mat-icon>person_outline</mat-icon> Oferta: {{ skill.supply }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="skill-leader-item__trend" [matTooltip]="trendLabel(skill.trend)">
+                      <div class="trend-indicator trend-indicator--{{ skill.trend ?? 'stable' }}">
+                        <mat-icon>{{ trendIcon(skill.trend) }}</mat-icon>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Columna 3: Reportes Ejecutivos Recientes -->
+        <mat-card class="admin-command-card">
+          <mat-card-header class="admin-command-card__header">
+            <div class="admin-command-card__title-row">
+              <div class="admin-command-card__icon-box admin-command-card__icon-box--accent">
+                <mat-icon>description</mat-icon>
+              </div>
+              <div>
+                <mat-card-title class="admin-command-card__title">Reportes Recientes</mat-card-title>
+                <mat-card-subtitle class="admin-command-card__subtitle">Informes analíticos generados</mat-card-subtitle>
+              </div>
+            </div>
+            <a mat-button color="primary" routerLink="/admin/reports" class="header-link-btn">Ver todos</a>
+          </mat-card-header>
+
+          <mat-card-content class="admin-command-card__content">
+            @if (data.recentReports.length === 0) {
+              <div class="admin-empty-state">
+                <mat-icon>folder_open</mat-icon>
+                <h4>No hay reportes generados aún</h4>
+                <p>Puedes crear el primer informe institucional desde el centro de reportes.</p>
+                <a mat-flat-button color="primary" routerLink="/admin/reports" class="empty-btn">
+                  <mat-icon>add</mat-icon> Generar Reporte
+                </a>
+              </div>
+            } @else {
+              <div class="reports-stream">
+                @for (report of data.recentReports; track report.id) {
+                  <div class="report-stream-item">
+                    <div class="report-stream-item__icon-box">
+                      <mat-icon>insert_drive_file</mat-icon>
+                    </div>
+
+                    <div class="report-stream-item__info">
+                      <span class="report-stream-item__title">{{ report.name }}</span>
+                      <div class="report-stream-item__meta">
+                        <span class="report-stream-item__type">{{ reportTypeLabel(report.type) }}</span>
+                        <span class="report-stream-item__time">{{ report.createdAt | relativeTime }}</span>
+                      </div>
+                    </div>
+
+                    <div class="report-stream-item__badge status-pill--{{ report.status }}">
+                      @if (report.status === 'completed') {
+                        <mat-icon>check_circle</mat-icon>
+                      } @else if (report.status === 'generating') {
+                        <mat-icon class="pulse-icon">sync</mat-icon>
+                      } @else {
+                        <mat-icon>error</mat-icon>
+                      }
+                      <span>{{ reportStatusLabel(report.status) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 7. CALIDAD DEL FLUJO ACADÉMICO Y CARGA DOCENTE               -->
+    <!-- ============================================================ -->
+    <section class="admin-academic-hub">
+      <div class="admin-academic-hub__card">
+        <div class="admin-academic-hub__header">
+          <div class="admin-academic-hub__title-group">
+            <div class="admin-academic-hub__icon-box">
+              <mat-icon>school</mat-icon>
+            </div>
+            <div>
+              <h3 class="admin-academic-hub__title">Supervisión del Ciclo y Calidad Académica</h3>
+              <p class="admin-academic-hub__subtitle">Métricas de avance institucional, tiempos de respuesta y balance de asesorías docentes</p>
+            </div>
+          </div>
+          <a mat-stroked-button routerLink="/admin/supervisors" class="admin-academic-hub__action-btn">
+            <mat-icon>tune</mat-icon> Gestionar Asignaciones
+          </a>
+        </div>
+
+        @if (academicKpis.value(); as kpis) {
+          <!-- 4 KPIs del flujo académico -->
+          <div class="academic-stats-grid">
+            <app-stat-card
+              icon="task_alt"
+              [value]="completionRate() !== null ? completionRate() + '%' : '—'"
+              label="Tasa de Completitud"
+              color="primary"
+              hint="Porcentaje de estudiantes que finalizaron satisfactoriamente el ciclo"
+            />
+            <app-stat-card
+              icon="groups"
+              [value]="kpis.assignmentStats?.totalAssignments ?? 0"
+              label="Asignaciones Totales"
+              color="accent"
+              hint="Designaciones activas de tutores y jurados evaluadores"
+            />
+            <app-stat-card
+              icon="schedule"
+              [value]="kpis.assignmentStats?.avgAcceptanceHours != null ? (kpis.assignmentStats!.avgAcceptanceHours + 'h') : '—'"
+              label="Tiempo Respuesta Docente"
+              color="primary"
+              hint="Promedio de horas transcurridas antes de la aceptación docente"
+            />
+            <app-stat-card
+              icon="rate_review"
+              [value]="kpis.academicStats?.avgAnteproyectoCorrections ?? '—'"
+              label="Correcciones Anteproyecto"
+              color="accent"
+              hint="Rondas de retroalimentación previas a la aprobación del anteproyecto"
+            />
+          </div>
+
+          <!-- Tabla / Pods de Docentes con mayor carga activa -->
+          @if (topWorkload().length > 0) {
+            <div class="workload-container">
+              <div class="workload-header">
+                <div class="workload-header__title-row">
+                  <mat-icon>psychology</mat-icon>
+                  <h4>Docentes con Mayor Carga Activa de Asesorías</h4>
+                </div>
+                <span class="workload-header__tag">Top 5 supervisores según estudiantes asignados</span>
+              </div>
+
+              <div class="workload-list">
+                @for (w of topWorkload(); track w.supervisorId; let i = $index) {
+                  <div class="workload-item">
+                    <div class="workload-item__rank">#{{ i + 1 }}</div>
+
+                    <div class="workload-item__avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+
+                    <div class="workload-item__info">
+                      <span class="workload-item__name">{{ w.supervisorName ?? ('Docente ID: ' + w.supervisorId) }}</span>
+                      <span class="workload-item__meta">Capacidad activa de tutoría</span>
+                    </div>
+
+                    <div class="workload-item__progress-wrap">
+                      <div class="workload-progress-bar">
+                        <div class="workload-progress-fill" [style.width]="workloadWidth(w.activeCount)"></div>
+                      </div>
+                    </div>
+
+                    <div class="workload-item__badge">
+                      <mat-icon>school</mat-icon>
+                      <span>{{ w.activeCount }} estudiantes</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        } @else if (academicKpis.isLoading()) {
+          <div class="academic-loading-bar">
+            <mat-progress-bar mode="indeterminate" />
+            <p>Calculando estadísticas del flujo académico...</p>
+          </div>
+        } @else {
+          <div class="admin-empty-state">
+            <mat-icon>school</mat-icon>
+            <h4>Sin registros del flujo académico</h4>
+            <p>Aún no se han consolidado actas o asignaciones docentes para este periodo.</p>
+          </div>
+        }
+      </div>
+    </section>
+
   }
 
+  <!-- ============================================================ -->
+  <!-- 8. ESTADO DE ERROR DE TELEMETRÍA                             -->
+  <!-- ============================================================ -->
   @if (dashboard.error()) {
-    <mat-card class="error-card">
-      <mat-card-content>
-        <mat-icon color="warn">error_outline</mat-icon>
-        <span>Error al cargar las metricas. Verifica que el servicio de analytics este activo.</span>
+    <mat-card class="admin-error-card">
+      <mat-card-content class="admin-error-card__content">
+        <div class="admin-error-card__icon-box">
+          <mat-icon>error_outline</mat-icon>
+        </div>
+        <div class="admin-error-card__info">
+          <h4>No fue posible sincronizar el panel analítico institucional</h4>
+          <p>Verifica que el servicio de Analytics y la base de datos de telemetría estén activos y respondan adecuadamente.</p>
+        </div>
+        <button mat-stroked-button color="warn" (click)="dashboard.reload()" class="admin-error-card__retry-btn">
+          <mat-icon>refresh</mat-icon> Reintentar conexión
+        </button>
       </mat-card-content>
     </mat-card>
   }
