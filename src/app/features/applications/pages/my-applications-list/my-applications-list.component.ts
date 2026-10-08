@@ -30,9 +30,10 @@ import { EmptyStateComponent } from '../../../../shared/components/ui/empty-stat
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import {
-  ConfirmDialogComponent,
-  ConfirmDialogData,
-} from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
+  WithdrawDialogComponent,
+  WithdrawDialogData,
+  WithdrawDialogResult,
+} from '../../components/withdraw-dialog/withdraw-dialog.component';
 import {
   CoverLetterDialogComponent,
   CoverLetterDialogData,
@@ -311,44 +312,36 @@ export class MyApplicationsListComponent {
     const projectTitle =
       app?.project?.title || app?.projectTitle || 'el proyecto seleccionado';
     const company =
-      app?.companyName || app?.project?.companyName || 'la empresa';
+      app?.companyName || app?.project?.companyName || 'la empresa aliada';
 
-    const ref = this.dialog.open(ConfirmDialogComponent, {
+    const ref = this.dialog.open(WithdrawDialogComponent, {
       data: {
-        title: 'Retirar Postulación',
-        message: `¿Estás seguro de que deseas retirar tu postulación a "${projectTitle}" de ${company}?`,
-        confirmText: 'Sí, retirar postulación',
-        cancelText: 'Cancelar',
-        type: 'danger',
-        context: {
-          label: 'Proyecto',
-          value: projectTitle,
-          icon: 'work_outline',
-          status: 'Postulación activa',
-        },
-        consequences: [
-          'La empresa ya no continuará con tu proceso de evaluación para esta vacante.',
-          'Esta acción es definitiva y no se puede deshacer.',
-          'El cupo quedará disponible para otros estudiantes postulantes.',
-        ],
-      } satisfies ConfirmDialogData,
+        projectTitle,
+        companyName: company,
+      } satisfies WithdrawDialogData,
+      width: '580px',
+      maxWidth: '92vw',
     });
 
-    ref.afterClosed().subscribe((confirmed) => {
-      if (confirmed) {
-        this.applicationService.withdraw(id).subscribe({
+    ref.afterClosed().subscribe((res: WithdrawDialogResult | undefined) => {
+      if (res?.confirmed) {
+        this.applicationService.withdraw(id, res.reason).subscribe({
           next: () => {
             this.snackBar.open('Postulación retirada correctamente', 'Cerrar', {
               duration: 3500,
             });
             this.applicationsResource.reload();
           },
-          error: () =>
+          error: (err) => {
+            const errorMsg =
+              err?.error?.message ||
+              'No se pudo retirar la postulación. Intenta nuevamente.';
             this.snackBar.open(
-              'No se pudo retirar la postulación. Intenta nuevamente.',
+              Array.isArray(errorMsg) ? errorMsg.join(', ') : errorMsg,
               'Cerrar',
               { duration: 4000 },
-            ),
+            );
+          },
         });
       }
     });
