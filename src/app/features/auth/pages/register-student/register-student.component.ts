@@ -7,9 +7,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserRole } from '../../../../core/enums';
 import { CustomValidators } from '../../../../shared/validators';
+import { TermsPolicyDialogComponent } from '../../../../shared/components/ui/terms-policy-dialog/terms-policy-dialog.component';
 
 @Component({
   selector: 'app-register-student',
@@ -22,6 +25,8 @@ import { CustomValidators } from '../../../../shared/validators';
     MatIconModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
+    MatCheckboxModule,
+    MatDialogModule,
     RouterLink,
   ],
   templateUrl: './register-student.component.html',
@@ -30,6 +35,7 @@ import { CustomValidators } from '../../../../shared/validators';
 export class RegisterStudentComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
 
   showPassword = signal(false);
   isSubmitting = signal(false);
@@ -41,6 +47,7 @@ export class RegisterStudentComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, CustomValidators.strongPassword]],
       confirmPassword: ['', [Validators.required]],
+      termsAccepted: [false, [Validators.requiredTrue]],
     },
     { validators: [CustomValidators.passwordsMatch('password', 'confirmPassword')] }
   );
@@ -56,6 +63,20 @@ export class RegisterStudentComponent {
     // Watch password changes to update strength
     this.accountForm.controls.password.valueChanges.subscribe((value) => {
       this.passwordStrength.set(this.calcPasswordStrength(value));
+    });
+  }
+
+  openTerms(defaultTab: number, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.dialog.open(TermsPolicyDialogComponent, {
+      data: { defaultTab },
+      width: '760px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: true,
     });
   }
 

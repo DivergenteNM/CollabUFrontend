@@ -77,13 +77,42 @@
 
     <p class="register-note">Los datos personales y académicos se completan después del primer inicio de sesión.</p>
 
+    <div class="step-form__terms">
+      <mat-checkbox formControlName="termsAccepted" color="primary" class="terms-checkbox">
+        <span class="terms-text">
+          He leído y acepto los
+          <a
+            (click)="$event.preventDefault(); $event.stopPropagation(); openTerms(0, $event)"
+            class="terms-link"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="$event.preventDefault(); $event.stopPropagation(); openTerms(0, $event)"
+            (keydown.space)="$event.preventDefault(); $event.stopPropagation(); openTerms(0, $event)"
+          >Términos y Condiciones</a>
+          y la
+          <a
+            (click)="$event.preventDefault(); $event.stopPropagation(); openTerms(1, $event)"
+            class="terms-link"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="$event.preventDefault(); $event.stopPropagation(); openTerms(1, $event)"
+            (keydown.space)="$event.preventDefault(); $event.stopPropagation(); openTerms(1, $event)"
+          >Política de Tratamiento de Datos</a>
+          de la Universidad de Nariño.
+        </span>
+      </mat-checkbox>
+      @if (accountForm.controls.termsAccepted.hasError('required') && (accountForm.controls.termsAccepted.touched || accountForm.touched)) {
+        <p class="terms-error">Debes aceptar los términos y condiciones para continuar.</p>
+      }
+    </div>
+
     <div class="step-form__actions">
       <a mat-button routerLink="/auth/register">Volver</a>
       <button
         mat-flat-button
         color="primary"
         type="submit"
-        [disabled]="isSubmitting()"
+        [disabled]="accountForm.invalid || isSubmitting()"
       >
         @if (isSubmitting()) {
           <mat-spinner diameter="20"></mat-spinner>
