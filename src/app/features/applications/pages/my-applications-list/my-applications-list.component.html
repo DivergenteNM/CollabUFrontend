@@ -1,64 +1,436 @@
-
-    <div class="my-apps">
-      <header class="my-apps__header">
-        <h1>Mis Aplicaciones</h1>
-        <p class="my-apps__subtitle">Sigue el estado de tus postulaciones a proyectos.</p>
-      </header>
-
-      <!-- Filters -->
-      <div class="my-apps__filters">
-        <mat-form-field appearance="outline" class="my-apps__filter">
-          <mat-label>Estado</mat-label>
-          <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value); page.set(1)">
-            <mat-option value="">Todos</mat-option>
-            <mat-option [value]="ApplicationStatus.PENDING">Pendiente</mat-option>
-            <mat-option [value]="ApplicationStatus.UNDER_REVIEW">En revisión</mat-option>
-            <mat-option [value]="ApplicationStatus.INTERVIEW">Entrevista</mat-option>
-            <mat-option [value]="ApplicationStatus.ACCEPTED">Aceptada</mat-option>
-            <mat-option [value]="ApplicationStatus.REJECTED">Rechazada</mat-option>
-            <mat-option [value]="ApplicationStatus.IN_PROGRESS">En progreso</mat-option>
-            <mat-option [value]="ApplicationStatus.COMPLETED">Completada</mat-option>
-            <mat-option [value]="ApplicationStatus.WITHDRAWN">Retirada</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="my-apps__filter">
-          <mat-label>Ordenar</mat-label>
-          <mat-select [value]="sortBy()" (selectionChange)="sortBy.set($event.value)">
-            <mat-option value="appliedAt">Fecha aplicación</mat-option>
-            <mat-option value="matchScore">Match score</mat-option>
-            <mat-option value="status">Estado</mat-option>
-          </mat-select>
-        </mat-form-field>
+<div class="my-apps">
+  <!-- 1. Header / Hero -->
+  <header class="my-apps__hero">
+    <div class="my-apps__hero-content">
+      <div class="my-apps__hero-badge">
+        <mat-icon>dashboard</mat-icon>
+        <span>Portal del Estudiante</span>
       </div>
+      <h1 class="my-apps__hero-title">Mis Postulaciones</h1>
+      <p class="my-apps__hero-subtitle">
+        Gestiona y haz seguimiento en tiempo real al estado de tus aplicaciones a proyectos empresariales y pasantías académicas.
+      </p>
+    </div>
 
-      <!-- List -->
-      <div class="my-apps__list">
-        @if (applicationsResource.isLoading()) {
-          @for (_ of [1,2,3]; track $index) {
-            <app-skeleton width="100%" height="200px" />
-          }
-        } @else if (applications().length === 0) {
-          <app-empty-state
-            icon="inbox"
-            title="Sin aplicaciones"
-            message="Aún no has aplicado a ningún proyecto. Explora los proyectos disponibles."
-            actionLabel="Ver Proyectos"
-            (actionClicked)="router.navigate(['/projects'])" />
-        } @else {
-          @for (app of applications(); track app.id) {
-            <app-application-card
-              [application]="app"
-              viewMode="student"
-              (viewDetail)="router.navigate(['/workspace', $event])" />
-          }
-        }
+    <div class="my-apps__hero-actions">
+      <a mat-flat-button color="primary" routerLink="/projects" class="my-apps__action-btn my-apps__action-btn--primary">
+        <mat-icon>explore</mat-icon>
+        <span>Explorar Proyectos</span>
+      </a>
+      <a mat-stroked-button routerLink="/matching" class="my-apps__action-btn">
+        <mat-icon>auto_awesome</mat-icon>
+        <span>Smart Matching</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. KPI Pipeline Summary (Clickeables para filtrar rápidamente) -->
+  <section class="my-apps__kpi-grid" aria-label="Resumen de postulaciones">
+    <!-- Total -->
+    <div
+      class="kpi-card"
+      [class.kpi-card--active]="selectedCategory() === 'all'"
+      (click)="setCategory('all')"
+      role="button"
+      tabindex="0"
+      matTooltip="Mostrar todas las postulaciones">
+      <div class="kpi-card__icon kpi-card__icon--total">
+        <mat-icon>folder_open</mat-icon>
       </div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ counts().total }}</span>
+        <span class="kpi-card__label">Total Postulaciones</span>
+      </div>
+    </div>
 
-      @if (totalItems() > 0) {
-        <app-paginator
-          [totalItems]="totalItems()"
-          [pageSize]="10"
-          (pageChanged)="onPageChanged($event)" />
+    <!-- En Evaluación -->
+    <div
+      class="kpi-card"
+      [class.kpi-card--active]="selectedCategory() === 'in_review'"
+      (click)="toggleCategory('in_review')"
+      role="button"
+      tabindex="0"
+      matTooltip="Filtrar por postulaciones en revisión o pendientes">
+      <div class="kpi-card__icon kpi-card__icon--review">
+        <mat-icon>hourglass_top</mat-icon>
+      </div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ counts().inReview }}</span>
+        <span class="kpi-card__label">En Evaluación</span>
+      </div>
+    </div>
+
+    <!-- Entrevistas -->
+    <div
+      class="kpi-card"
+      [class.kpi-card--active]="selectedCategory() === 'interview'"
+      (click)="toggleCategory('interview')"
+      role="button"
+      tabindex="0"
+      matTooltip="Filtrar por convocatorias en etapa de entrevista">
+      <div class="kpi-card__icon kpi-card__icon--interview">
+        <mat-icon>event_available</mat-icon>
+      </div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ counts().interview }}</span>
+        <span class="kpi-card__label">Entrevistas</span>
+      </div>
+    </div>
+
+    <!-- Aceptadas / Activas -->
+    <div
+      class="kpi-card"
+      [class.kpi-card--active]="selectedCategory() === 'accepted'"
+      (click)="toggleCategory('accepted')"
+      role="button"
+      tabindex="0"
+      matTooltip="Filtrar por proyectos aceptados o en desarrollo">
+      <div class="kpi-card__icon kpi-card__icon--accepted">
+        <mat-icon>verified</mat-icon>
+      </div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ counts().accepted }}</span>
+        <span class="kpi-card__label">Aceptadas / Activas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Categorías / Pestañas de estado rápido -->
+  <nav class="my-apps__tabs-nav" aria-label="Filtros de estado">
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="selectedCategory() === 'all'"
+      (click)="setCategory('all')">
+      <span>Todas</span>
+      <span class="tab-pill__badge">{{ counts().total }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="selectedCategory() === 'in_review'"
+      (click)="setCategory('in_review')">
+      <span>En Evaluación</span>
+      <span class="tab-pill__badge">{{ counts().inReview }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="selectedCategory() === 'interview'"
+      (click)="setCategory('interview')">
+      <span>Entrevistas</span>
+      <span class="tab-pill__badge">{{ counts().interview }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="selectedCategory() === 'accepted'"
+      (click)="setCategory('accepted')">
+      <span>Aceptadas</span>
+      <span class="tab-pill__badge">{{ counts().accepted }}</span>
+    </button>
+
+    @if (counts().completed > 0) {
+      <button
+        type="button"
+        class="tab-pill"
+        [class.tab-pill--active]="selectedCategory() === 'completed'"
+        (click)="setCategory('completed')">
+        <span>Completadas</span>
+        <span class="tab-pill__badge">{{ counts().completed }}</span>
+      </button>
+    }
+
+    @if (counts().history > 0) {
+      <button
+        type="button"
+        class="tab-pill"
+        [class.tab-pill--active]="selectedCategory() === 'history'"
+        (click)="setCategory('history')">
+        <span>Historial / Cerradas</span>
+        <span class="tab-pill__badge">{{ counts().history }}</span>
+      </button>
+    }
+  </nav>
+
+  <!-- 4. Barra de Herramientas: Búsqueda, Ordenamiento y Modo de Vista -->
+  <div class="my-apps__toolbar">
+    <!-- Buscador en tiempo real -->
+    <div class="my-apps__search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por proyecto, empresa, tecnología..."
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+        aria-label="Buscar postulaciones" />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          class="clear-search-btn"
+          (click)="searchQuery.set('')"
+          aria-label="Limpiar búsqueda">
+          <mat-icon>close</mat-icon>
+        </button>
       }
     </div>
+
+    <!-- Controles de la derecha: Ordenamiento y Vista -->
+    <div class="my-apps__toolbar-controls">
+      <!-- Selector de Ordenamiento -->
+      <mat-form-field appearance="outline" class="sort-select" subscriptSizing="dynamic">
+        <mat-label>Ordenar por</mat-label>
+        <mat-select [value]="sortBy()" (selectionChange)="sortBy.set($event.value)">
+          <mat-option value="recent">Más recientes primero</mat-option>
+          <mat-option value="match">Mayor afinidad (Match Score)</mat-option>
+          <mat-option value="company">Empresa (A - Z)</mat-option>
+          <mat-option value="title">Título de Proyecto (A - Z)</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Botones de Modo de Vista (Cuadrícula vs Lista) -->
+      <div class="view-mode-toggle" role="group" aria-label="Modo de visualización">
+        <button
+          type="button"
+          class="toggle-btn"
+          [class.toggle-btn--active]="viewMode() === 'grid'"
+          (click)="viewMode.set('grid')"
+          matTooltip="Vista en tarjetas">
+          <mat-icon>grid_view</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="toggle-btn"
+          [class.toggle-btn--active]="viewMode() === 'list'"
+          (click)="viewMode.set('list')"
+          matTooltip="Vista compacta en lista">
+          <mat-icon>view_list</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de estado de filtros activos -->
+  @if (hasActiveFilters()) {
+    <div class="my-apps__active-filters-bar">
+      <div class="filter-count">
+        Mostrando <strong>{{ filteredApplications().length }}</strong> de <strong>{{ rawApplications().length }}</strong> postulaciones
+      </div>
+      <button type="button" class="clear-all-btn" (click)="clearFilters()">
+        <mat-icon>restart_alt</mat-icon>
+        <span>Restablecer filtros</span>
+      </button>
+    </div>
+  }
+
+  <!-- 5. Listado / Contenido Principal -->
+  <main class="my-apps__content">
+    <!-- Estado de carga: Skeletons -->
+    @if (applicationsResource.isLoading()) {
+      <div class="my-apps__skeleton-grid">
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <div class="skeleton-card">
+            <app-skeleton width="100%" height="240px" />
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Estado vacío 1: El estudiante no tiene ninguna postulación en el sistema -->
+    @else if (rawApplications().length === 0) {
+      <div class="empty-hero-card">
+        <div class="empty-hero__illustration">
+          <div class="empty-hero__icon-circle">
+            <mat-icon>work_outline</mat-icon>
+          </div>
+        </div>
+        <div class="empty-hero__body">
+          <h2 class="empty-hero__title">¡Empieza tu carrera profesional con Collab-U!</h2>
+          <p class="empty-hero__text">
+            Aún no has enviado ninguna postulación. Explora los proyectos publicados por empresas aliadas, postúlate con tu perfil académico y participa en iniciativas reales.
+          </p>
+
+          <div class="empty-hero__benefits">
+            <div class="benefit-item">
+              <mat-icon>rocket_launch</mat-icon>
+              <span>Proyectos reales remunerados y formativos</span>
+            </div>
+            <div class="benefit-item">
+              <mat-icon>school</mat-icon>
+              <span>Convalidación académica y asesoría docente</span>
+            </div>
+            <div class="benefit-item">
+              <mat-icon>handshake</mat-icon>
+              <span>Conexión directa con empresas del sector</span>
+            </div>
+          </div>
+
+          <div class="empty-hero__actions">
+            <a mat-flat-button color="primary" routerLink="/projects" class="empty-hero__cta">
+              <mat-icon>explore</mat-icon>
+              <span>Explorar Proyectos Disponibles</span>
+            </a>
+            <a mat-stroked-button routerLink="/matching" class="empty-hero__cta">
+              <mat-icon>auto_awesome</mat-icon>
+              <span>Descubrir con Smart Matching</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Estado vacío 2: Búsqueda o filtros sin resultados -->
+    @else if (filteredApplications().length === 0) {
+      <div class="filter-empty-state">
+        <div class="filter-empty__icon">
+          <mat-icon>search_off</mat-icon>
+        </div>
+        <h3 class="filter-empty__title">Sin resultados con los filtros actuales</h3>
+        <p class="filter-empty__desc">
+          No encontramos ninguna postulación que coincida con tus criterios de búsqueda o categoría seleccionada.
+        </p>
+        <button mat-flat-button color="primary" (click)="clearFilters()">
+          <mat-icon>restart_alt</mat-icon>
+          <span>Mostrar todas mis postulaciones</span>
+        </button>
+      </div>
+    }
+
+    <!-- Vista CUADRÍCULA (Cards) -->
+    @else if (viewMode() === 'grid') {
+      <div class="my-apps__grid">
+        @for (app of filteredApplications(); track app.id) {
+          <app-application-card
+            [application]="app"
+            viewMode="student"
+            (viewDetail)="router.navigate(['/workspace', $event])"
+            (withdraw)="withdrawApplication($event)"
+            (viewCoverLetter)="openCoverLetter($event)" />
+        }
+      </div>
+    }
+
+    <!-- Vista LISTA (Compact Rows) -->
+    @else {
+      <div class="my-apps__list-view">
+        <div class="list-header desktop-only">
+          <span class="col-main">Proyecto & Empresa</span>
+          <span class="col-status">Estado</span>
+          <span class="col-match">Match</span>
+          <span class="col-date">Postulado</span>
+          <span class="col-actions">Acciones</span>
+        </div>
+
+        <div class="list-body">
+          @for (app of filteredApplications(); track app.id) {
+            <div class="list-row">
+              <!-- Proyecto y empresa -->
+              <div class="list-row__main">
+                <div class="list-row__icon-box">
+                  <mat-icon>work_outline</mat-icon>
+                </div>
+                <div class="list-row__details">
+                  <h4 class="list-row__title" (click)="router.navigate(['/workspace', app.id])">
+                    {{ app.project?.title || app.projectTitle || 'Proyecto sin título' }}
+                  </h4>
+                  <div class="list-row__meta">
+                    @if (app.companyName || app.project?.companyName) {
+                      <span class="meta-company">
+                        <mat-icon>apartment</mat-icon>
+                        {{ app.companyName || app.project?.companyName }}
+                      </span>
+                    }
+                    @if (app.project?.locationType || app.project?.isRemote) {
+                      <span class="meta-location">
+                        <mat-icon>location_on</mat-icon>
+                        {{ app.project?.isRemote ? 'Remoto' : (app.project?.locationType || 'Presencial') }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Estado -->
+              <div class="list-row__status">
+                <app-status-badge [status]="app.status" size="sm" />
+              </div>
+
+              <!-- Match score -->
+              <div class="list-row__match">
+                @if (app.matchScore !== undefined && app.matchScore !== null) {
+                  <span class="match-pill" [matTooltip]="'Afinidad con tu perfil: ' + app.matchScore + '%'">
+                    <mat-icon>bolt</mat-icon> {{ app.matchScore }}%
+                  </span>
+                } @else {
+                  <span class="match-none">—</span>
+                }
+              </div>
+
+              <!-- Fecha -->
+              <div class="list-row__date">
+                <span class="date-text">{{ app.appliedAt | date:'d MMM yyyy' }}</span>
+              </div>
+
+              <!-- Acciones -->
+              <div class="list-row__actions">
+                <button
+                  mat-flat-button
+                  color="primary"
+                  class="row-action-btn"
+                  (click)="router.navigate(['/workspace', app.id])">
+                  <mat-icon>
+                    {{ app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.IN_PROGRESS ? 'rocket_launch' : 'visibility' }}
+                  </mat-icon>
+                  <span>
+                    {{ app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.IN_PROGRESS ? 'Workspace' : 'Detalle' }}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  class="row-menu-btn"
+                  [matMenuTriggerFor]="rowMenu"
+                  aria-label="Más opciones">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+
+                <mat-menu #rowMenu="matMenu">
+                  <button mat-menu-item (click)="router.navigate(['/workspace', app.id])">
+                    <mat-icon>visibility</mat-icon>
+                    <span>Ver Seguimiento en Workspace</span>
+                  </button>
+                  @if (app.coverLetter) {
+                    <button mat-menu-item (click)="openCoverLetter(app)">
+                      <mat-icon>mail_outline</mat-icon>
+                      <span>Ver Carta de Presentación</span>
+                    </button>
+                  }
+                  @if (app.status === ApplicationStatus.PENDING || app.status === ApplicationStatus.UNDER_REVIEW) {
+                    <button mat-menu-item (click)="withdrawApplication(app.id)">
+                      <mat-icon color="warn">undo</mat-icon>
+                      <span class="text-danger">Retirar Postulación</span>
+                    </button>
+                  }
+                </mat-menu>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </main>
+
+  <!-- Paginador -->
+  @if (totalItems() > pageSize()) {
+    <footer class="my-apps__footer">
+      <app-paginator
+        [totalItems]="totalItems()"
+        [pageSize]="pageSize()"
+        (pageChanged)="onPageChanged($event)" />
+    </footer>
+  }
+</div>

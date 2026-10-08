@@ -1,0 +1,86 @@
+<div class="cover-dialog">
+  <div class="cover-dialog__header">
+    <div class="cover-dialog__header-left">
+      <div class="cover-dialog__icon-wrap">
+        <mat-icon>mail_outline</mat-icon>
+      </div>
+      <div>
+        <h2 class="cover-dialog__title">Carta de Presentación</h2>
+        <p class="cover-dialog__subtitle">Mensaje enviado en tu postulación</p>
+      </div>
+    </div>
+    <button mat-icon-button class="cover-dialog__close" (click)="dialogRef.close()" aria-label="Cerrar diálogo">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="cover-dialog__content">
+    <!-- Meta card -->
+    <div class="cover-dialog__meta-card">
+      <div class="cover-dialog__meta-row">
+        <div class="cover-dialog__meta-project">
+          <span class="cover-dialog__meta-label">Proyecto</span>
+          <span class="cover-dialog__meta-title">{{ projectTitle }}</span>
+          <span class="cover-dialog__meta-company">
+            <mat-icon>apartment</mat-icon> {{ companyName }}
+          </span>
+        </div>
+        <div class="cover-dialog__meta-badge">
+          <app-status-badge [status]="application.status" size="sm" />
+          <span class="cover-dialog__meta-date">
+            <mat-icon>calendar_today</mat-icon>
+            {{ application.appliedAt | date:'d MMM yyyy' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Letter Body -->
+    <div class="cover-dialog__body-box">
+      <div class="cover-dialog__body-header">
+        <span class="cover-dialog__body-label">Contenido de la carta</span>
+      </div>
+      @if (application.coverLetter) {
+        <p class="cover-dialog__text">{{ application.coverLetter }}</p>
+      } @else {
+        <div class="cover-dialog__empty">
+          <mat-icon>info_outline</mat-icon>
+          <span>No se adjuntó carta de presentación en esta postulación.</span>
+        </div>
+      }
+    </div>
+
+    <!-- Attachments / Links if available -->
+    @if (application.resumeUrl || application.portfolioUrl) {
+      <div class="cover-dialog__attachments">
+        <span class="cover-dialog__attachments-title">Documentos adjuntos</span>
+        <div class="cover-dialog__attachments-list">
+          @if (application.resumeUrl) {
+            <a [href]="application.resumeUrl" target="_blank" rel="noopener noreferrer" class="cover-dialog__attachment-link">
+              <mat-icon>picture_as_pdf</mat-icon>
+              <span>Currículum Vítae / Hoja de Vida</span>
+              <mat-icon class="cover-dialog__link-ext">open_in_new</mat-icon>
+            </a>
+          }
+          @if (application.portfolioUrl) {
+            <a [href]="application.portfolioUrl" target="_blank" rel="noopener noreferrer" class="cover-dialog__attachment-link">
+              <mat-icon>link</mat-icon>
+              <span>Portafolio o Enlace Externo</span>
+              <mat-icon class="cover-dialog__link-ext">open_in_new</mat-icon>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="cover-dialog__footer">
+    <button mat-stroked-button (click)="dialogRef.close()">
+      Cerrar
+    </button>
+    <button mat-flat-button color="primary" (click)="goToWorkspace()">
+      <mat-icon>rocket_launch</mat-icon>
+      <span>Ir al Workspace</span>
+    </button>
+  </div>
+</div>

@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 import { Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
@@ -27,8 +29,13 @@ const ACTIVE_STATUSES = new Set<ApplicationStatus>([
   selector: 'app-application-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatIconModule, MatMenuModule, DatePipe,
-    StatusBadgeComponent, ApplicationProgressStepperComponent,
+    MatIconModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatTooltipModule,
+    DatePipe,
+    StatusBadgeComponent,
+    ApplicationProgressStepperComponent,
   ],
   host: { 'class': 'application-card' },
   templateUrl: './application-card.component.html',
@@ -39,6 +46,8 @@ export class ApplicationCardComponent {
   readonly viewMode = input<'student' | 'company'>('student');
   readonly viewDetail = output<string>();
   readonly changeStatus = output<{ id: string; status: ApplicationStatus }>();
+  readonly withdraw = output<string>();
+  readonly viewCoverLetter = output<Application>();
 
   readonly circumference = 2 * Math.PI * 26; // r = 26
 
@@ -79,13 +88,86 @@ export class ApplicationCardComponent {
     return this.circumference - (score / 100) * this.circumference;
   });
 
+  readonly upcomingInterview = computed(() =>
+    this.application().interviews?.find((i) => i.status === 'scheduled'),
+  );
+
+  readonly isAccepted = computed(
+    () => this.application().status === ApplicationStatus.ACCEPTED,
+  );
+
+  readonly isInterview = computed(
+    () =>
+      this.application().status === ApplicationStatus.INTERVIEW ||
+      !!this.upcomingInterview(),
+  );
+
+  readonly canWithdraw = computed(
+    () =>
+      this.viewMode() === 'student' &&
+      (this.application().status === ApplicationStatus.PENDING ||
+        this.application().status === ApplicationStatus.UNDER_REVIEW),
+  );
+
+  readonly projectSkills = computed(() =>
+    this.application().project?.skills?.slice(0, 3) ?? [],
+  );
+
+  readonly locationTypeLabel = computed(() => {
+    const loc = this.application().project?.locationType;
+    if (loc === 'remote' || this.application().project?.isRemote) return 'Remoto';
+    if (loc === 'hybrid') return 'Híbrido';
+    if (loc === 'onsite') return 'Presencial';
+    return null;
+  });
+
+  readonly primaryAction = computed(() => {
+    const s = this.application().status;
+    if (
+      s === ApplicationStatus.ACCEPTED ||
+      s === ApplicationStatus.IN_PROGRESS ||
+      s === ApplicationStatus.PENDING_SUPERVISOR
+    ) {
+      return {
+        label: 'Ir al Workspace',
+        icon: 'rocket_launch',
+        class: 'app-btn--workspace',
+      };
+    }
+    if (s === ApplicationStatus.INTERVIEW || this.upcomingInterview()) {
+      return {
+        label: 'Ver Entrevista',
+        icon: 'event',
+        class: 'app-btn--interview',
+      };
+    }
+    if (
+      s === ApplicationStatus.UNDER_REVIEW ||
+      s === ApplicationStatus.SHORTLISTED ||
+      s === ApplicationStatus.PENDING
+    ) {
+      return {
+        label: 'Ver Seguimiento',
+        icon: 'visibility',
+        class: 'app-btn--detail',
+      };
+    }
+    return {
+      label: 'Ver Detalle',
+      icon: 'folder_open',
+      class: 'app-btn--detail',
+    };
+  });
+
   readonly canChangeStatus = computed(() => {
     const s = this.application().status;
-    return s !== ApplicationStatus.COMPLETED &&
-           s !== ApplicationStatus.CANCELLED &&
-           s !== ApplicationStatus.WITHDRAWN &&
-           s !== ApplicationStatus.IN_PROGRESS &&
-           s !== ApplicationStatus.REJECTED;
+    return (
+      s !== ApplicationStatus.COMPLETED &&
+      s !== ApplicationStatus.CANCELLED &&
+      s !== ApplicationStatus.WITHDRAWN &&
+      s !== ApplicationStatus.IN_PROGRESS &&
+      s !== ApplicationStatus.REJECTED
+    );
   });
 
   readonly availableActions = computed(() => {
