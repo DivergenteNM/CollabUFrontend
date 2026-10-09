@@ -16,7 +16,7 @@
                 <h1>{{ app.project?.title || 'Proyecto' }}</h1>
                 <app-status-badge [status]="app.status" />
               </div>
-              <app-application-progress-stepper [currentStatus]="app.status" />
+              <app-macro-phase-stepper [status]="app.status" [hasUpcomingInterview]="!!app.interviews?.length" />
             </div>
           </mat-card-content>
         </mat-card>

@@ -24,8 +24,8 @@
     </div>
   </header>
 
-  <!-- 2. KPI Pipeline Summary (Clickeables para filtrar rápidamente) -->
-  <section class="my-apps__kpi-grid" aria-label="Resumen de postulaciones">
+  <!-- 2. KPI Pipeline Summary (Macro-Fases) -->
+  <section class="my-apps__kpi-grid" aria-label="Resumen de postulaciones por fase">
     <!-- Total -->
     <div
       class="kpi-card"
@@ -43,54 +43,54 @@
       </div>
     </div>
 
-    <!-- En Evaluación -->
+    <!-- 1. Fase Selección -->
     <div
       class="kpi-card"
-      [class.kpi-card--active]="selectedCategory() === 'in_review'"
-      (click)="toggleCategory('in_review')"
+      [class.kpi-card--active]="selectedCategory() === 'phase_recruitment'"
+      (click)="toggleCategory('phase_recruitment')"
       role="button"
       tabindex="0"
-      matTooltip="Filtrar por postulaciones en revisión o pendientes">
-      <div class="kpi-card__icon kpi-card__icon--review">
-        <mat-icon>hourglass_top</mat-icon>
+      matTooltip="Filtrar por Fase 1: Convocatoria, revisión y entrevistas">
+      <div class="kpi-card__icon kpi-card__icon--recruitment">
+        <mat-icon>how_to_reg</mat-icon>
       </div>
       <div class="kpi-card__content">
-        <span class="kpi-card__value">{{ counts().inReview }}</span>
-        <span class="kpi-card__label">En Evaluación</span>
+        <span class="kpi-card__value">{{ counts().recruitment }}</span>
+        <span class="kpi-card__label">1. Selección</span>
       </div>
     </div>
 
-    <!-- Entrevistas -->
+    <!-- 2. Fase Académica -->
     <div
       class="kpi-card"
-      [class.kpi-card--active]="selectedCategory() === 'interview'"
-      (click)="toggleCategory('interview')"
+      [class.kpi-card--active]="selectedCategory() === 'phase_academic'"
+      (click)="toggleCategory('phase_academic')"
       role="button"
       tabindex="0"
-      matTooltip="Filtrar por convocatorias en etapa de entrevista">
-      <div class="kpi-card__icon kpi-card__icon--interview">
-        <mat-icon>event_available</mat-icon>
+      matTooltip="Filtrar por Fase 2: Asignación de tutor y visto bueno institucional">
+      <div class="kpi-card__icon kpi-card__icon--academic">
+        <mat-icon>school</mat-icon>
       </div>
       <div class="kpi-card__content">
-        <span class="kpi-card__value">{{ counts().interview }}</span>
-        <span class="kpi-card__label">Entrevistas</span>
+        <span class="kpi-card__value">{{ counts().academic }}</span>
+        <span class="kpi-card__label">2. Académico</span>
       </div>
     </div>
 
-    <!-- Aceptadas / Activas -->
+    <!-- 3. Fase Workspace -->
     <div
       class="kpi-card"
-      [class.kpi-card--active]="selectedCategory() === 'accepted'"
-      (click)="toggleCategory('accepted')"
+      [class.kpi-card--active]="selectedCategory() === 'phase_workspace'"
+      (click)="toggleCategory('phase_workspace')"
       role="button"
       tabindex="0"
-      matTooltip="Filtrar por proyectos aceptados o en desarrollo">
-      <div class="kpi-card__icon kpi-card__icon--accepted">
-        <mat-icon>verified</mat-icon>
+      matTooltip="Filtrar por Fase 3: Proyecto en ejecución o finalizado">
+      <div class="kpi-card__icon kpi-card__icon--workspace">
+        <mat-icon>rocket_launch</mat-icon>
       </div>
       <div class="kpi-card__content">
-        <span class="kpi-card__value">{{ counts().accepted }}</span>
-        <span class="kpi-card__label">Aceptadas / Activas</span>
+        <span class="kpi-card__value">{{ counts().workspace }}</span>
+        <span class="kpi-card__label">3. Workspace</span>
       </div>
     </div>
   </section>
@@ -377,17 +377,14 @@
 
               <!-- Acciones -->
               <div class="list-row__actions">
+                @let cta = getActionConfig(app);
                 <button
                   mat-flat-button
                   color="primary"
                   class="row-action-btn"
                   (click)="router.navigate(['/workspace', app.id])">
-                  <mat-icon>
-                    {{ app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.IN_PROGRESS ? 'rocket_launch' : 'visibility' }}
-                  </mat-icon>
-                  <span>
-                    {{ app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.IN_PROGRESS ? 'Workspace' : 'Detalle' }}
-                  </span>
+                  <mat-icon>{{ cta.icon }}</mat-icon>
+                  <span>{{ cta.label }}</span>
                 </button>
 
                 <button

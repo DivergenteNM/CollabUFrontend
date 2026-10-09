@@ -24,6 +24,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { ApplicationService } from '../../services/application.service';
+import { resolveApplicationPhase } from '../../utils/application-phases.utils';
 import { ApplicationCardComponent } from '../../../../shared/components/cards/application-card/application-card.component';
 import { PaginatorComponent } from '../../../../shared/components/ui/paginator/paginator.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
@@ -45,7 +46,10 @@ export type ApplicationFilterCategory =
   | 'interview'
   | 'accepted'
   | 'completed'
-  | 'history';
+  | 'history'
+  | 'phase_recruitment'
+  | 'phase_academic'
+  | 'phase_workspace';
 
 @Component({
   selector: 'app-my-applications-list',
@@ -130,6 +134,11 @@ export class MyApplicationsListComponent {
     const apps = this.rawApplications();
     const counts = {
       total: apps.length,
+      // Conteo por Macro-Fases (para las tarjetas KPI superiores)
+      recruitment: 0,
+      academic: 0,
+      workspace: 0,
+      // Conteo granular (para las pestañas inferiores existentes)
       inReview: 0,
       interview: 0,
       accepted: 0,
@@ -139,6 +148,28 @@ export class MyApplicationsListComponent {
 
     for (const app of apps) {
       const s = app.status;
+
+      // 1. Clasificación por Macro-Fase
+      if (
+        s === ApplicationStatus.PENDING ||
+        s === ApplicationStatus.UNDER_REVIEW ||
+        s === ApplicationStatus.SHORTLISTED ||
+        s === ApplicationStatus.INTERVIEW
+      ) {
+        counts.recruitment++;
+      } else if (
+        s === ApplicationStatus.ACCEPTED ||
+        s === ApplicationStatus.PENDING_SUPERVISOR
+      ) {
+        counts.academic++;
+      } else if (
+        s === ApplicationStatus.IN_PROGRESS ||
+        s === ApplicationStatus.COMPLETED
+      ) {
+        counts.workspace++;
+      }
+
+      // 2. Clasificación granular existente para pestañas
       if (
         s === ApplicationStatus.PENDING ||
         s === ApplicationStatus.UNDER_REVIEW ||
@@ -178,6 +209,25 @@ export class MyApplicationsListComponent {
       list = list.filter((app) => {
         const s = app.status;
         switch (category) {
+          // Filtros de Macro-Fases activados desde los KPIs
+          case 'phase_recruitment':
+            return (
+              s === ApplicationStatus.PENDING ||
+              s === ApplicationStatus.UNDER_REVIEW ||
+              s === ApplicationStatus.SHORTLISTED ||
+              s === ApplicationStatus.INTERVIEW
+            );
+          case 'phase_academic':
+            return (
+              s === ApplicationStatus.ACCEPTED ||
+              s === ApplicationStatus.PENDING_SUPERVISOR
+            );
+          case 'phase_workspace':
+            return (
+              s === ApplicationStatus.IN_PROGRESS ||
+              s === ApplicationStatus.COMPLETED
+            );
+          // Filtros granulares existentes de las pestañas
           case 'in_review':
             return (
               s === ApplicationStatus.PENDING ||
@@ -292,6 +342,11 @@ export class MyApplicationsListComponent {
   onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchQuery.set(target.value);
+  }
+
+  getActionConfig(app: Application) {
+    const hasInterview = !!app.interviews?.some((i) => i.status === 'scheduled');
+    return resolveApplicationPhase(app.status, hasInterview).ctaConfig;
   }
 
   openCoverLetter(app: Application): void {

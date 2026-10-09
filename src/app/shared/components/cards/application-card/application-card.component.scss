@@ -434,18 +434,8 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-md, 10px);
-  padding: 12px 10px 8px;
+  padding: 12px 10px;
   margin-bottom: 16px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-  }
 }
 
 // ── Acciones ──────────────────────────────────────────────────────────
@@ -483,6 +473,20 @@
       background: var(--bg-hover);
       border-color: var(--color-primary-400);
       color: var(--color-primary-700);
+    }
+  }
+
+  &--academic {
+    background: #4f46e5;
+    border: 1px solid #4338ca;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+
+    &:hover {
+      background: #4338ca;
+      border-color: #3730a3;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.35);
+      transform: translateY(-1px);
     }
   }
 
@@ -540,10 +544,10 @@
   }
 }
 
-.menu-item-danger {
-  color: var(--color-error) !important;
+button.mat-mdc-menu-item.menu-item-danger {
+  color: var(--color-error);
 
   mat-icon {
-    color: var(--color-error) !important;
+    color: var(--color-error);
   }
 }

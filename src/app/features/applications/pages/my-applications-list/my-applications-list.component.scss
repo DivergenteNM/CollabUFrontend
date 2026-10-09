@@ -148,19 +148,26 @@
       color: var(--color-accent-600);
     }
 
+    &--recruitment,
     &--review {
       background: rgba(194, 120, 27, 0.1);
       color: var(--color-warning);
     }
 
-    &--interview {
-      background: rgba(130, 80, 223, 0.1);
-      color: #7c3aed;
+    &--academic {
+      background: rgba(79, 70, 229, 0.1);
+      color: #4f46e5;
     }
 
+    &--workspace,
     &--accepted {
       background: rgba(46, 133, 75, 0.1);
       color: var(--color-success);
+    }
+
+    &--interview {
+      background: rgba(130, 80, 223, 0.1);
+      color: #7c3aed;
     }
   }
 
@@ -790,7 +797,7 @@
 }
 
 .text-danger {
-  color: var(--color-error) !important;
+  color: var(--color-error);
 }
 
 // ── Responsive Queries ────────────────────────────────────────────────

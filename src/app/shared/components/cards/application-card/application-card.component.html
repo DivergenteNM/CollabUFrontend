@@ -169,9 +169,11 @@
     }
   </div>
 
-  <!-- Progreso -->
+  <!-- Progreso Modular por Macro-Fases -->
   <div class="app-card__stepper-panel">
-    <app-application-progress-stepper [currentStatus]="application().status" />
+    <app-macro-phase-stepper
+      [status]="application().status"
+      [hasUpcomingInterview]="!!upcomingInterview()" />
   </div>
 
   <!-- Acciones -->

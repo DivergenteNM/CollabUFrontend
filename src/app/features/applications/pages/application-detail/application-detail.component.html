@@ -23,7 +23,7 @@
               <mat-icon>business</mat-icon>
               {{ app.project?.companyName || 'Empresa' }}
             </p>
-            <app-application-progress-stepper [currentStatus]="app.status" />
+            <app-macro-phase-stepper [status]="app.status" [hasUpcomingInterview]="!!app.interviews?.length" />
           </mat-card-content>
         </mat-card>
 

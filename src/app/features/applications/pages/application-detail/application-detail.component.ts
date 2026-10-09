@@ -20,7 +20,7 @@ import { ApplicationStatus } from '../../../../core/enums';
 import { statusLabel as registryLabel } from '../../../../core/status/status-registry';
 import { ApplicationService, Permission } from '../../services/application.service';
 import { ChatService } from '../../../chat/services/chat.service';
-import { ApplicationProgressStepperComponent } from '../../../../shared/components/ui/application-progress-stepper/application-progress-stepper.component';
+import { MacroPhaseStepperComponent } from '../../../../shared/components/ui/macro-phase-stepper/macro-phase-stepper.component';
 import { TimelineComponent, TimelineEvent } from '../../../../shared/components/ui/timeline/timeline.component';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
@@ -39,7 +39,7 @@ import { catchError } from 'rxjs';
   imports: [
     MatCardModule, MatTabsModule, MatIconModule, MatButtonModule, MatDividerModule,
     MatDialogModule, MatSnackBarModule, DatePipe, MatProgressSpinnerModule,
-    ApplicationProgressStepperComponent, TimelineComponent, StatusBadgeComponent,
+    MacroPhaseStepperComponent, TimelineComponent, StatusBadgeComponent,
     SkeletonComponent, FileUploadComponent, EmptyStateComponent, FileLinkComponent,
     AnteproyectoPanelComponent, DocumentsPanelComponent, ProgressBarComponent,
   ],

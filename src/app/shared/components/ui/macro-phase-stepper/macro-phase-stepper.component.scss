@@ -1,0 +1,335 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.macro-stepper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+
+  // ── 1. Macro-Pills Row ────────────────────────────────────────────────
+  &__phases {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    width: 100%;
+  }
+
+  &__connector {
+    flex: 1;
+    height: 2px;
+    min-width: 10px;
+    background-color: var(--border-subtle, #e2e8f0);
+    transition: background-color 250ms ease;
+
+    &--filled {
+      background-color: var(--color-primary, #10b981);
+    }
+  }
+
+  // ── 2. Banner de Historial ───────────────────────────────────────────
+  &__history-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-info-bg, #eff6ff);
+    border: 1px dashed var(--color-info-border, #bfdbfe);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-top: 8px;
+    font-size: 0.6875rem;
+    color: var(--color-info-text, #1e40af);
+
+    .history-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    .history-reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--color-primary, #10b981);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      mat-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+      }
+    }
+  }
+
+  // ── 3. Estado Terminal ───────────────────────────────────────────────
+  &__terminal-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-error-bg, #fef2f2);
+    border: 1px solid var(--color-error-border, #fecaca);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 10px;
+
+    .terminal-icon-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fee2e2;
+      color: var(--color-error-text, #991b1b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .terminal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .terminal-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-error-text, #991b1b);
+    }
+
+    .terminal-desc {
+      font-size: 0.6875rem;
+      color: var(--text-secondary, #64748b);
+      white-space: normal;
+      line-height: 1.25;
+    }
+  }
+}
+
+// ── 4. Macro-Pill Button ──────────────────────────────────────────────
+.macro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: default;
+  outline: none;
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+
+  &--interactive {
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--color-primary-400, #34d399);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 0.625rem;
+    font-weight: 700;
+    background: var(--bg-secondary, #f1f5f9);
+    color: var(--text-tertiary, #94a3b8);
+    position: relative;
+
+    .badge-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  // Estado: Completada
+  &--completed {
+    background: var(--color-success-bg, #ecfdf5);
+    border-color: var(--color-success-border, #a7f3d0);
+    color: var(--color-success-text, #065f46);
+
+    .macro-pill__badge {
+      background: var(--color-primary, #10b981);
+      color: #ffffff;
+    }
+  }
+
+  // Estado: Fase en Curso (Activa)
+  &--current {
+    background: var(--color-primary, #10b981);
+    border-color: var(--color-primary-600, #059669);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.28);
+
+    .macro-pill__badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    .badge-dot {
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #facc15;
+      box-shadow: 0 0 4px #facc15;
+    }
+  }
+
+  // Estado: Seleccionada para inspección
+  &--selected:not(&--current) {
+    border-color: var(--color-primary-500, #10b981);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+
+  // Estado: Futura
+  &--future {
+    opacity: 0.65;
+    background: var(--bg-secondary, #f8fafc);
+    color: var(--text-tertiary, #94a3b8);
+  }
+}
+
+// ── 5. Micro-Timeline Dinámico ───────────────────────────────────────
+.micro-timeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 12px;
+  padding: 2px 0;
+
+  &__line {
+    flex: 1;
+    height: 2px;
+    min-width: 8px;
+    background-color: var(--border-subtle, #e2e8f0);
+    margin-top: 13px;
+    transition: background-color 250ms ease;
+
+    &--filled {
+      background-color: var(--color-primary, #10b981);
+    }
+  }
+}
+
+.micro-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  max-width: 68px;
+
+  &__node {
+    position: relative;
+  }
+
+  &__circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--border-color, #cbd5e1);
+    background: var(--bg-card, #ffffff);
+    transition: all 200ms ease;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: var(--text-tertiary, #94a3b8);
+    }
+  }
+
+  &__label {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary, #94a3b8);
+    text-align: center;
+    line-height: 1.2;
+    transition: color 200ms ease;
+  }
+
+  // Paso Completado
+  &--completed {
+    .micro-step__circle {
+      background: var(--color-primary, #10b981);
+      border-color: var(--color-primary, #10b981);
+
+      mat-icon {
+        color: #ffffff;
+      }
+    }
+
+    .micro-step__label {
+      color: var(--text-secondary, #475569);
+      font-weight: 500;
+    }
+  }
+
+  // Paso Activo (En Curso)
+  &--active {
+    .micro-step__circle {
+      border-color: var(--color-primary, #10b981);
+      background: var(--color-primary-100, #d1fae5);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+
+      mat-icon {
+        color: var(--color-primary-600, #059669);
+      }
+    }
+
+    .micro-step__label {
+      color: var(--color-primary-600, #059669);
+      font-weight: 700;
+    }
+  }
+
+  // Paso Futuro
+  &--future {
+    .micro-step__circle {
+      border-style: dashed;
+    }
+  }
+}

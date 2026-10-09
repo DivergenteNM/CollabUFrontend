@@ -7,7 +7,8 @@ import { DatePipe } from '@angular/common';
 import { Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
-import { ApplicationProgressStepperComponent } from '../../ui/application-progress-stepper/application-progress-stepper.component';
+import { MacroPhaseStepperComponent } from '../../ui/macro-phase-stepper/macro-phase-stepper.component';
+import { resolveApplicationPhase } from '../../../../features/applications/utils/application-phases.utils';
 
 interface CardTheme {
   icon: string;
@@ -35,7 +36,7 @@ const ACTIVE_STATUSES = new Set<ApplicationStatus>([
     MatTooltipModule,
     DatePipe,
     StatusBadgeComponent,
-    ApplicationProgressStepperComponent,
+    MacroPhaseStepperComponent,
   ],
   host: { 'class': 'application-card' },
   templateUrl: './application-card.component.html',
@@ -121,41 +122,19 @@ export class ApplicationCardComponent {
     return null;
   });
 
+  readonly phaseResolution = computed(() =>
+    resolveApplicationPhase(
+      this.application().status,
+      !!this.upcomingInterview(),
+    ),
+  );
+
   readonly primaryAction = computed(() => {
-    const s = this.application().status;
-    if (
-      s === ApplicationStatus.ACCEPTED ||
-      s === ApplicationStatus.IN_PROGRESS ||
-      s === ApplicationStatus.PENDING_SUPERVISOR
-    ) {
-      return {
-        label: 'Ir al Workspace',
-        icon: 'rocket_launch',
-        class: 'app-btn--workspace',
-      };
-    }
-    if (s === ApplicationStatus.INTERVIEW || this.upcomingInterview()) {
-      return {
-        label: 'Ver Entrevista',
-        icon: 'event',
-        class: 'app-btn--interview',
-      };
-    }
-    if (
-      s === ApplicationStatus.UNDER_REVIEW ||
-      s === ApplicationStatus.SHORTLISTED ||
-      s === ApplicationStatus.PENDING
-    ) {
-      return {
-        label: 'Ver Seguimiento',
-        icon: 'visibility',
-        class: 'app-btn--detail',
-      };
-    }
+    const cta = this.phaseResolution().ctaConfig;
     return {
-      label: 'Ver Detalle',
-      icon: 'folder_open',
-      class: 'app-btn--detail',
+      label: cta.label,
+      icon: cta.icon,
+      class: cta.cssClass,
     };
   });
 

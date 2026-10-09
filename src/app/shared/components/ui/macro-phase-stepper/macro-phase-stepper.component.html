@@ -1,0 +1,114 @@
+<div class="macro-stepper" [class.macro-stepper--terminal]="isTerminal()">
+  <!-- 1. Fila de Macro-Fases (3 Fases Principales) -->
+  <div class="macro-stepper__phases" role="tablist" aria-label="Macro fases de postulación">
+    @for (phase of macroPhases; track phase.id; let i = $index; let last = $last) {
+      <button
+        type="button"
+        class="macro-pill"
+        role="tab"
+        [id]="'macro-tab-' + phase.id"
+        [attr.aria-selected]="isPhaseSelected(phase)"
+        [attr.aria-controls]="'macro-panel-' + phase.id"
+        [class.macro-pill--completed]="isPhaseCompleted(phase)"
+        [class.macro-pill--current]="isPhaseCurrent(phase)"
+        [class.macro-pill--selected]="isPhaseSelected(phase)"
+        [class.macro-pill--future]="phase.order > resolution().currentPhaseIndex"
+        [class.macro-pill--interactive]="interactive() && phase.order <= resolution().currentPhaseIndex && !isTerminal()"
+        [matTooltip]="phase.description + (isPhaseCompleted(phase) ? ' (Completada - Clic para ver historial)' : '')"
+        (click)="onPhaseClick(phase)">
+        
+        <span class="macro-pill__badge">
+          @if (isPhaseCompleted(phase)) {
+            <mat-icon class="badge-icon badge-icon--check">check</mat-icon>
+          } @else if (isPhaseCurrent(phase)) {
+            <span class="badge-dot"></span>
+            <span class="badge-num">{{ phase.order }}</span>
+          } @else {
+            <span class="badge-num">{{ phase.order }}</span>
+          }
+        </span>
+
+        <span class="macro-pill__label">{{ phase.shortLabel }}</span>
+      </button>
+
+      @if (!last) {
+        <div
+          class="macro-stepper__connector"
+          [class.macro-stepper__connector--filled]="phase.order < resolution().currentPhaseIndex && !isTerminal()">
+        </div>
+      }
+    }
+  </div>
+
+  <!-- 2. Aviso de Inspección de Historial (si el usuario hizo clic en una fase pasada) -->
+  @if (isViewingHistory()) {
+    <div class="macro-stepper__history-banner">
+      <div class="history-info">
+        <mat-icon>history</mat-icon>
+        <span>Viendo historial: <strong>{{ activePhase().label }}</strong></span>
+      </div>
+      <button type="button" class="history-reset-btn" (click)="resetToActive()">
+        <span>Volver a etapa actual</span>
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- 3. Estado Terminal (Rechazada, Retirada, Cancelada) -->
+  @if (isTerminal()) {
+    <div class="macro-stepper__terminal-box">
+      <div class="terminal-icon-wrap">
+        <mat-icon>{{ resolution().terminalIcon }}</mat-icon>
+      </div>
+      <div class="terminal-body">
+        <span class="terminal-title">{{ resolution().terminalLabel }}</span>
+        @if (resolution().terminalDescription) {
+          <span class="terminal-desc">{{ resolution().terminalDescription }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- 4. Micro-Timeline Dinámico (Solo los pasos de la fase seleccionada) -->
+  @else {
+    <div
+      class="micro-timeline"
+      role="tabpanel"
+      [id]="'macro-panel-' + activePhase().id"
+      [attr.aria-labelledby]="'macro-tab-' + activePhase().id">
+      
+      @for (step of stepsToDisplay(); track step.status; let i = $index; let last = $last) {
+        @let state = getStepState(i);
+        
+        <div
+          class="micro-step"
+          [class.micro-step--completed]="state === 'completed'"
+          [class.micro-step--active]="state === 'active'"
+          [class.micro-step--future]="state === 'future'"
+          [matTooltip]="step.shortDescription">
+          
+          <div class="micro-step__node">
+            <div class="micro-step__circle">
+              <mat-icon>
+                @if (state === 'completed') {
+                  check
+                } @else {
+                  {{ step.icon }}
+                }
+              </mat-icon>
+            </div>
+          </div>
+
+          <span class="micro-step__label">{{ step.label }}</span>
+        </div>
+
+        @if (!last) {
+          <div
+            class="micro-timeline__line"
+            [class.micro-timeline__line--filled]="state === 'completed'">
+          </div>
+        }
+      }
+    </div>
+  }
+</div>
