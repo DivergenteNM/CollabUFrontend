@@ -24,6 +24,30 @@
     </div>
   </header>
 
+  <!-- Banner proactivo de entrevistas agendadas -->
+  @if (counts().interview > 0 && selectedCategory() !== 'interview') {
+    <div class="my-apps__interview-banner">
+      <div class="interview-banner__left">
+        <div class="interview-banner__icon">
+          <mat-icon>event_available</mat-icon>
+        </div>
+        <div class="interview-banner__text">
+          <strong>
+            Tienes {{ counts().interview }} {{ counts().interview === 1 ? 'entrevista programada' : 'entrevistas programadas' }}
+          </strong>
+          <span>Revisa tus postulaciones con cita agendada para coordinar tu conversación o prueba técnica.</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="interview-banner__cta"
+        (click)="setCategory('interview')">
+        <span>Ver entrevistas</span>
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+  }
+
   <!-- 2. KPI Pipeline Summary (Macro-Fases) -->
   <section class="my-apps__kpi-grid" aria-label="Resumen de postulaciones por fase">
     <!-- Total -->
@@ -95,13 +119,14 @@
     </div>
   </section>
 
-  <!-- 3. Categorías / Pestañas de estado rápido -->
-  <nav class="my-apps__tabs-nav" aria-label="Filtros de estado">
+  <!-- 3. Categorías / Pestañas de macro-fases y estado -->
+  <nav class="my-apps__tabs-nav" aria-label="Filtros de fase y estado">
     <button
       type="button"
       class="tab-pill"
       [class.tab-pill--active]="selectedCategory() === 'all'"
       (click)="setCategory('all')">
+      <mat-icon class="tab-icon">grid_view</mat-icon>
       <span>Todas</span>
       <span class="tab-pill__badge">{{ counts().total }}</span>
     </button>
@@ -109,38 +134,42 @@
     <button
       type="button"
       class="tab-pill"
-      [class.tab-pill--active]="selectedCategory() === 'in_review'"
-      (click)="setCategory('in_review')">
-      <span>En Evaluación</span>
-      <span class="tab-pill__badge">{{ counts().inReview }}</span>
+      [class.tab-pill--active]="selectedCategory() === 'phase_recruitment'"
+      (click)="setCategory('phase_recruitment')">
+      <mat-icon class="tab-icon">how_to_reg</mat-icon>
+      <span>1. Selección</span>
+      <span class="tab-pill__badge">{{ counts().recruitment }}</span>
     </button>
 
     <button
       type="button"
       class="tab-pill"
-      [class.tab-pill--active]="selectedCategory() === 'interview'"
-      (click)="setCategory('interview')">
-      <span>Entrevistas</span>
-      <span class="tab-pill__badge">{{ counts().interview }}</span>
+      [class.tab-pill--active]="selectedCategory() === 'phase_academic'"
+      (click)="setCategory('phase_academic')">
+      <mat-icon class="tab-icon">school</mat-icon>
+      <span>2. Académico</span>
+      <span class="tab-pill__badge">{{ counts().academic }}</span>
     </button>
 
     <button
       type="button"
       class="tab-pill"
-      [class.tab-pill--active]="selectedCategory() === 'accepted'"
-      (click)="setCategory('accepted')">
-      <span>Aceptadas</span>
-      <span class="tab-pill__badge">{{ counts().accepted }}</span>
+      [class.tab-pill--active]="selectedCategory() === 'phase_workspace'"
+      (click)="setCategory('phase_workspace')">
+      <mat-icon class="tab-icon">rocket_launch</mat-icon>
+      <span>3. Workspace</span>
+      <span class="tab-pill__badge">{{ counts().workspace }}</span>
     </button>
 
-    @if (counts().completed > 0) {
+    @if (counts().interview > 0) {
       <button
         type="button"
-        class="tab-pill"
-        [class.tab-pill--active]="selectedCategory() === 'completed'"
-        (click)="setCategory('completed')">
-        <span>Completadas</span>
-        <span class="tab-pill__badge">{{ counts().completed }}</span>
+        class="tab-pill tab-pill--interview"
+        [class.tab-pill--active]="selectedCategory() === 'interview'"
+        (click)="setCategory('interview')">
+        <mat-icon class="tab-icon">event</mat-icon>
+        <span>Entrevistas</span>
+        <span class="tab-pill__badge tab-pill__badge--accent">{{ counts().interview }}</span>
       </button>
     }
 
@@ -150,6 +179,7 @@
         class="tab-pill"
         [class.tab-pill--active]="selectedCategory() === 'history'"
         (click)="setCategory('history')">
+        <mat-icon class="tab-icon">history</mat-icon>
         <span>Historial / Cerradas</span>
         <span class="tab-pill__badge">{{ counts().history }}</span>
       </button>
@@ -319,7 +349,8 @@
       <div class="my-apps__list-view">
         <div class="list-header desktop-only">
           <span class="col-main">Proyecto & Empresa</span>
-          <span class="col-status">Estado</span>
+          <span class="col-phase">Macro-Fase</span>
+          <span class="col-status">Sub-Estado</span>
           <span class="col-match">Match</span>
           <span class="col-date">Postulado</span>
           <span class="col-actions">Acciones</span>
@@ -354,6 +385,31 @@
                 </div>
               </div>
 
+              <!-- Macro-Fase Badge -->
+              <div class="list-row__phase">
+                @let phaseInfo = getApplicationPhaseInfo(app);
+                @if (phaseInfo.isTerminal) {
+                  <span
+                    class="phase-badge phase-badge--terminal"
+                    [class.phase-badge--error]="phaseInfo.terminalTone === 'error'"
+                    [class.phase-badge--neutral]="phaseInfo.terminalTone === 'neutral'"
+                    [matTooltip]="phaseInfo.terminalDescription || ''">
+                    <mat-icon>{{ phaseInfo.terminalIcon }}</mat-icon>
+                    <span>{{ phaseInfo.terminalLabel }}</span>
+                  </span>
+                } @else {
+                  <span
+                    class="phase-badge"
+                    [class.phase-badge--recruitment]="phaseInfo.currentPhase.id === 'RECRUITMENT'"
+                    [class.phase-badge--academic]="phaseInfo.currentPhase.id === 'ACADEMIC'"
+                    [class.phase-badge--workspace]="phaseInfo.currentPhase.id === 'WORKSPACE'"
+                    [matTooltip]="phaseInfo.currentPhase.description">
+                    <mat-icon>{{ phaseInfo.currentPhase.icon }}</mat-icon>
+                    <span>Fase {{ phaseInfo.currentPhase.order }}: {{ phaseInfo.currentPhase.shortLabel }}</span>
+                  </span>
+                }
+              </div>
+
               <!-- Estado -->
               <div class="list-row__status">
                 <app-status-badge [status]="app.status" size="sm" />
@@ -379,9 +435,9 @@
               <div class="list-row__actions">
                 @let cta = getActionConfig(app);
                 <button
-                  mat-flat-button
-                  color="primary"
+                  type="button"
                   class="row-action-btn"
+                  [class]="cta.cssClass"
                   (click)="router.navigate(['/workspace', app.id])">
                   <mat-icon>{{ cta.icon }}</mat-icon>
                   <span>{{ cta.label }}</span>

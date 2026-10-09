@@ -9,28 +9,125 @@
   width: 100%;
   box-sizing: border-box;
 
-  // ── 1. Macro-Pills Row ────────────────────────────────────────────────
-  &__phases {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  // ── 1. Macro-Track: 3 segmentos con distribución garantizada al 100% ────
+  .macro-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
     width: 100%;
+    box-sizing: border-box;
   }
 
-  &__connector {
-    flex: 1;
-    height: 2px;
-    min-width: 10px;
-    background-color: var(--border-subtle, #e2e8f0);
-    transition: background-color 250ms ease;
+  // ── 2. Segmento de Macro-Fase ──────────────────────────────────────────
+  .macro-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle, #e2e8f0);
+    background: var(--bg-card, #ffffff);
+    color: var(--text-secondary, #64748b);
+    cursor: default;
+    outline: none;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
 
-    &--filled {
-      background-color: var(--color-primary, #10b981);
+    &--interactive {
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--color-primary-400, #34d399);
+        transform: translateY(-1px);
+      }
+    }
+
+    &__indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      border-radius: 50%;
+      background: var(--bg-secondary, #f1f5f9);
+      color: var(--text-tertiary, #94a3b8);
+      position: relative;
+      flex-shrink: 0;
+
+      .seg-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+      }
+    }
+
+    &__label {
+      font-size: 0.71875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      line-height: 1;
+    }
+
+    // Estado: Completada
+    &--completed {
+      background: var(--color-success-bg, #ecfdf5);
+      border-color: var(--color-success-border, #a7f3d0);
+      color: var(--color-success-text, #065f46);
+
+      .macro-segment__indicator {
+        background: var(--color-primary, #10b981);
+        color: #ffffff;
+      }
+    }
+
+    // Estado: Fase en Curso (Activa)
+    &--current {
+      background: var(--color-primary, #10b981);
+      border-color: var(--color-primary-600, #059669);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+
+      .macro-segment__indicator {
+        background: rgba(255, 255, 255, 0.28);
+        color: #ffffff;
+      }
+
+      .seg-dot {
+        position: absolute;
+        top: -1px;
+        right: -1px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #facc15;
+        box-shadow: 0 0 4px #facc15;
+      }
+    }
+
+    // Estado: Seleccionada para inspección
+    &--selected:not(&--current) {
+      border-color: var(--color-primary-500, #10b981);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+    }
+
+    // Estado: Futura
+    &--future {
+      opacity: 0.65;
+      background: var(--bg-secondary, #f8fafc);
+      color: var(--text-tertiary, #94a3b8);
     }
   }
 
-  // ── 2. Banner de Historial ───────────────────────────────────────────
+  // ── 3. Banner de Historial ───────────────────────────────────────────
   &__history-banner {
     display: flex;
     align-items: center;
@@ -80,23 +177,20 @@
     }
   }
 
-  // ── 3. Estado Terminal ───────────────────────────────────────────────
+  // ── 4. Estado Terminal ───────────────────────────────────────────────
   &__terminal-box {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: var(--color-error-bg, #fef2f2);
-    border: 1px solid var(--color-error-border, #fecaca);
+    gap: 10px;
     border-radius: 8px;
-    padding: 8px 10px;
-    margin-top: 10px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    transition: all 200ms ease;
 
     .terminal-icon-wrap {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: #fee2e2;
-      color: var(--color-error-text, #991b1b);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -119,131 +213,82 @@
     .terminal-title {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--color-error-text, #991b1b);
     }
 
     .terminal-desc {
       font-size: 0.6875rem;
-      color: var(--text-secondary, #64748b);
       white-space: normal;
       line-height: 1.25;
     }
+
+    &--error {
+      background: var(--color-error-bg, #fef2f2);
+      border: 1px solid var(--color-error-border, #fecaca);
+
+      .terminal-icon-wrap {
+        background: #fee2e2;
+        color: var(--color-error-text, #991b1b);
+      }
+
+      .terminal-title {
+        color: var(--color-error-text, #991b1b);
+      }
+
+      .terminal-desc {
+        color: var(--text-secondary, #64748b);
+      }
+    }
+
+    &--neutral {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border-color, #cbd5e1);
+
+      .terminal-icon-wrap {
+        background: var(--bg-tertiary, #e2e8f0);
+        color: var(--text-secondary, #475569);
+      }
+
+      .terminal-title {
+        color: var(--text-primary, #1e293b);
+      }
+
+      .terminal-desc {
+        color: var(--text-secondary, #64748b);
+      }
+    }
+  }
+
+  &--terminal {
+    .macro-track {
+      opacity: 0.45;
+      filter: grayscale(0.5);
+      pointer-events: none;
+    }
   }
 }
 
-// ── 4. Macro-Pill Button ──────────────────────────────────────────────
-.macro-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: 20px;
-  border: 1px solid var(--border-subtle, #e2e8f0);
-  background: var(--bg-card, #ffffff);
-  color: var(--text-secondary, #64748b);
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1;
-  cursor: default;
-  outline: none;
-  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-
-  &--interactive {
-    cursor: pointer;
-
-    &:hover {
-      border-color: var(--color-primary-400, #34d399);
-      transform: translateY(-1px);
-    }
-  }
-
-  &__badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    font-size: 0.625rem;
-    font-weight: 700;
-    background: var(--bg-secondary, #f1f5f9);
-    color: var(--text-tertiary, #94a3b8);
-    position: relative;
-
-    .badge-icon {
-      font-size: 12px;
-      width: 12px;
-      height: 12px;
-    }
-  }
-
-  // Estado: Completada
-  &--completed {
-    background: var(--color-success-bg, #ecfdf5);
-    border-color: var(--color-success-border, #a7f3d0);
-    color: var(--color-success-text, #065f46);
-
-    .macro-pill__badge {
-      background: var(--color-primary, #10b981);
-      color: #ffffff;
-    }
-  }
-
-  // Estado: Fase en Curso (Activa)
-  &--current {
-    background: var(--color-primary, #10b981);
-    border-color: var(--color-primary-600, #059669);
-    color: #ffffff;
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.28);
-
-    .macro-pill__badge {
-      background: rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-    }
-
-    .badge-dot {
-      position: absolute;
-      top: -1px;
-      right: -1px;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #facc15;
-      box-shadow: 0 0 4px #facc15;
-    }
-  }
-
-  // Estado: Seleccionada para inspección
-  &--selected:not(&--current) {
-    border-color: var(--color-primary-500, #10b981);
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-  }
-
-  // Estado: Futura
-  &--future {
-    opacity: 0.65;
-    background: var(--bg-secondary, #f8fafc);
-    color: var(--text-tertiary, #94a3b8);
-  }
-}
-
-// ── 5. Micro-Timeline Dinámico ───────────────────────────────────────
-.micro-timeline {
+// ── 5. Micro-Progreso: Nodos conectados y Callout Legible ─────────────
+.micro-progress {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.micro-nodes-track {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 12px;
-  padding: 2px 0;
+  padding: 2px 4px;
+  box-sizing: border-box;
 
-  &__line {
+  &__connector {
     flex: 1;
     height: 2px;
-    min-width: 8px;
+    min-width: 6px;
     background-color: var(--border-subtle, #e2e8f0);
-    margin-top: 13px;
     transition: background-color 250ms ease;
 
     &--filled {
@@ -252,84 +297,149 @@
   }
 }
 
-.micro-step {
+.micro-node {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   flex-shrink: 0;
-  max-width: 68px;
 
-  &__node {
-    position: relative;
-  }
-
-  &__circle {
-    width: 26px;
-    height: 26px;
+  &__dot {
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1.5px solid var(--border-color, #cbd5e1);
     background: var(--bg-card, #ffffff);
+    color: var(--text-tertiary, #94a3b8);
     transition: all 200ms ease;
 
-    mat-icon {
+    .dot-icon {
       font-size: 14px;
       width: 14px;
       height: 14px;
-      color: var(--text-tertiary, #94a3b8);
     }
-  }
-
-  &__label {
-    font-size: 0.6875rem;
-    color: var(--text-tertiary, #94a3b8);
-    text-align: center;
-    line-height: 1.2;
-    transition: color 200ms ease;
   }
 
   // Paso Completado
   &--completed {
-    .micro-step__circle {
+    .micro-node__dot {
       background: var(--color-primary, #10b981);
       border-color: var(--color-primary, #10b981);
+      color: #ffffff;
 
-      mat-icon {
+      .dot-icon {
         color: #ffffff;
       }
-    }
-
-    .micro-step__label {
-      color: var(--text-secondary, #475569);
-      font-weight: 500;
     }
   }
 
   // Paso Activo (En Curso)
   &--active {
-    .micro-step__circle {
+    .micro-node__dot {
       border-color: var(--color-primary, #10b981);
       background: var(--color-primary-100, #d1fae5);
+      color: var(--color-primary-700, #047857);
       box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+      transform: scale(1.15);
 
-      mat-icon {
+      .dot-icon {
         color: var(--color-primary-600, #059669);
       }
-    }
-
-    .micro-step__label {
-      color: var(--color-primary-600, #059669);
-      font-weight: 700;
     }
   }
 
   // Paso Futuro
   &--future {
-    .micro-step__circle {
-      border-style: dashed;
+    .micro-node__dot {
+      border: 1.5px solid var(--border-color, #cbd5e1);
+      background: var(--bg-secondary, #f8fafc);
+      color: var(--text-tertiary, #94a3b8);
+
+      .dot-icon {
+        color: var(--text-tertiary, #94a3b8);
+        opacity: 0.85;
+      }
     }
+  }
+}
+
+// ── 6. Tarjeta Callout de Etapa Activa ─────────────────────────────────
+.active-step-callout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+  width: 100%;
+
+  &__icon-wrap {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 6px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-primary-600, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  &__title {
+    font-size: 0.78125rem;
+    font-weight: 700;
+    color: var(--text-primary, #1e293b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__badge {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-primary-700, #047857);
+    background: var(--color-primary-50, #ecfdf5);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 1px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__desc {
+    font-size: 0.6875rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

@@ -67,6 +67,30 @@ export class MacroPhaseStepperComponent {
     return this.activePhase().steps;
   });
 
+  readonly currentActiveStep = computed<PhaseStepConfig | null>(() => {
+    if (this.isTerminal()) return null;
+    const steps = this.stepsToDisplay();
+    const idx = this.isViewingHistory()
+      ? steps.length - 1
+      : this.resolution().activeStepIndex;
+    return steps[idx] ?? steps[0] ?? null;
+  });
+
+  readonly currentActiveStepNumber = computed<number>(() => {
+    if (this.isViewingHistory()) return this.stepsToDisplay().length;
+    return this.resolution().activeStepIndex + 1;
+  });
+
+  readonly currentStepCaption = computed<string | null>(() => {
+    if (this.isTerminal()) return null;
+    if (this.isViewingHistory()) {
+      return `Historial completado: ${this.activePhase().label}`;
+    }
+    const step = this.activePhase().steps[this.resolution().activeStepIndex];
+    if (!step) return null;
+    return `${step.label}: ${step.shortDescription}`;
+  });
+
   onPhaseClick(phase: MacroPhaseConfig): void {
     if (!this.interactive() || this.isTerminal()) return;
 

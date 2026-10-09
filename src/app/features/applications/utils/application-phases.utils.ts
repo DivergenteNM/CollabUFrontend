@@ -15,6 +15,7 @@ export interface PhaseResolutionResult {
   terminalLabel?: string;
   terminalIcon?: string;
   terminalDescription?: string;
+  terminalTone?: 'error' | 'neutral';
   ctaConfig: {
     label: string;
     icon: string;
@@ -24,22 +25,25 @@ export interface PhaseResolutionResult {
 
 export const TERMINAL_STATUS_CONFIG: Record<
   string,
-  { label: string; icon: string; description: string }
+  { label: string; icon: string; description: string; tone: 'error' | 'neutral' }
 > = {
   [ApplicationStatus.REJECTED]: {
     label: 'Postulación no seleccionada',
     icon: 'cancel',
     description: 'La organización concluyó la selección con otros candidatos.',
+    tone: 'error',
   },
   [ApplicationStatus.WITHDRAWN]: {
     label: 'Postulación retirada',
     icon: 'undo',
     description: 'Retiraste voluntariamente tu postulación a esta vacante.',
+    tone: 'neutral',
   },
   [ApplicationStatus.CANCELLED]: {
     label: 'Convocatoria cancelada',
     icon: 'block',
     description: 'El proyecto o la convocatoria fue cancelada por la entidad.',
+    tone: 'neutral',
   },
 };
 
@@ -57,6 +61,7 @@ export function resolveApplicationPhase(
       label: 'Postulación cerrada',
       icon: 'close',
       description: 'El proceso para esta postulación ha finalizado.',
+      tone: 'neutral' as const,
     };
 
     return {
@@ -68,6 +73,7 @@ export function resolveApplicationPhase(
       terminalLabel: term.label,
       terminalIcon: term.icon,
       terminalDescription: term.description,
+      terminalTone: term.tone,
       ctaConfig: {
         label: 'Ver Detalle',
         icon: 'folder_open',

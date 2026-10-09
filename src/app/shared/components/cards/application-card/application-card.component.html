@@ -1,4 +1,8 @@
-<div class="app-card" [class.app-card--accepted]="isAccepted()" [class.app-card--interview]="isInterview()">
+<div
+  class="app-card"
+  [class.app-card--interview]="isInterview()"
+  [class.app-card--academic]="isAcademicPhase()"
+  [class.app-card--workspace]="isWorkspacePhase()">
   <!-- Top row: estado + indicador + menú contextual -->
   <div class="app-card__top">
     <div class="app-card__status-group">
@@ -54,7 +58,7 @@
     }
   </div>
 
-  <!-- Banner contextual destacado (Entrevista o Aceptada) -->
+  <!-- Banner contextual destacado según estado y fase -->
   @if (isInterview()) {
     <div class="app-card__highlight-banner app-card__highlight-banner--interview">
       <mat-icon>event_available</mat-icon>
@@ -67,12 +71,28 @@
         }
       </div>
     </div>
+  } @else if (isPendingSupervisor()) {
+    <div class="app-card__highlight-banner app-card__highlight-banner--academic">
+      <mat-icon>school</mat-icon>
+      <div class="highlight-text">
+        <strong>Asignación de asesor docente</strong>
+        <span>Coordinación académica está gestionando tu tutor institucional</span>
+      </div>
+    </div>
   } @else if (isAccepted()) {
     <div class="app-card__highlight-banner app-card__highlight-banner--accepted">
       <mat-icon>celebration</mat-icon>
       <div class="highlight-text">
         <strong>¡Postulación seleccionada!</strong>
-        <span>Ingresa al Workspace para completar tu vinculación</span>
+        <span>Pasa a visto bueno y asignación de asesor institucional</span>
+      </div>
+    </div>
+  } @else if (isInProgress()) {
+    <div class="app-card__highlight-banner app-card__highlight-banner--workspace">
+      <mat-icon>rocket_launch</mat-icon>
+      <div class="highlight-text">
+        <strong>Proyecto en desarrollo activo</strong>
+        <span>Accede a tus entregables y colaboración en el Workspace</span>
       </div>
     </div>
   }
@@ -125,17 +145,17 @@
     </div>
   }
 
-  <!-- Carta de presentación snippet -->
+  <!-- Carta de presentación compacta -->
   @if (application().coverLetter) {
-    <div class="app-card__cover-wrap">
-      <p class="app-card__cover" [title]="application().coverLetter">
-        "{{ application().coverLetter }}"
-      </p>
-      @if (viewMode() === 'student') {
-        <button type="button" class="app-card__cover-link" (click)="viewCoverLetter.emit(application())">
-          Ver carta completa
-        </button>
-      }
+    <div
+      class="app-card__cover-chip"
+      (click)="viewCoverLetter.emit(application())"
+      role="button"
+      tabindex="0"
+      matTooltip="Clic para ver carta completa">
+      <mat-icon>mail_outline</mat-icon>
+      <span class="cover-text">"{{ application().coverLetter }}"</span>
+      <span class="cover-more">Ver</span>
     </div>
   }
 

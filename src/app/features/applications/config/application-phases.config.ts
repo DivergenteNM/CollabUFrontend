@@ -36,7 +36,7 @@ export const MACRO_PHASES_CONFIG: MacroPhaseConfig[] = [
       },
       {
         status: ApplicationStatus.UNDER_REVIEW,
-        label: 'En revisión',
+        label: 'Revisión',
         icon: 'visibility',
         shortDescription: 'Empresa evaluando antecedentes y perfil',
       },
@@ -76,13 +76,13 @@ export const MACRO_PHASES_CONFIG: MacroPhaseConfig[] = [
       },
       {
         status: ApplicationStatus.PENDING_SUPERVISOR,
-        label: 'Asesor Docente',
+        label: 'Asesor',
         icon: 'person_search',
         shortDescription: 'Tutor institucional propuesto en espera de aceptación',
       },
       {
         status: ApplicationStatus.IN_PROGRESS,
-        label: 'Vinculación Lista',
+        label: 'Vinculación',
         icon: 'assignment_turned_in',
         shortDescription: 'Asesor confirmado, habilitado para anteproyecto',
       },
@@ -98,13 +98,13 @@ export const MACRO_PHASES_CONFIG: MacroPhaseConfig[] = [
     steps: [
       {
         status: ApplicationStatus.IN_PROGRESS,
-        label: 'En Ejecución',
+        label: 'Ejecución',
         icon: 'play_circle',
         shortDescription: 'Trabajo colaborativo y entregables en marcha',
       },
       {
         status: ApplicationStatus.COMPLETED,
-        label: 'Finalizado',
+        label: 'Completado',
         icon: 'task_alt',
         shortDescription: 'Proyecto completado y calificado con éxito',
       },

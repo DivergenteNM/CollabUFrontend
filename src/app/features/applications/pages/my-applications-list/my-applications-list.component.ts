@@ -42,14 +42,11 @@ import {
 
 export type ApplicationFilterCategory =
   | 'all'
-  | 'in_review'
-  | 'interview'
-  | 'accepted'
-  | 'completed'
-  | 'history'
   | 'phase_recruitment'
   | 'phase_academic'
-  | 'phase_workspace';
+  | 'phase_workspace'
+  | 'history'
+  | 'interview';
 
 @Component({
   selector: 'app-my-applications-list',
@@ -134,64 +131,42 @@ export class MyApplicationsListComponent {
     const apps = this.rawApplications();
     const counts = {
       total: apps.length,
-      // Conteo por Macro-Fases (para las tarjetas KPI superiores)
+      // Conteo exacto y no solapado por Macro-Fases
       recruitment: 0,
       academic: 0,
       workspace: 0,
-      // Conteo granular (para las pestañas inferiores existentes)
-      inReview: 0,
-      interview: 0,
-      accepted: 0,
-      completed: 0,
       history: 0,
+      interview: 0,
     };
 
     for (const app of apps) {
       const s = app.status;
+      const hasInterview =
+        s === ApplicationStatus.INTERVIEW ||
+        !!app.interviews?.some((i) => i.status === 'scheduled');
 
-      // 1. Clasificación por Macro-Fase
-      if (
-        s === ApplicationStatus.PENDING ||
-        s === ApplicationStatus.UNDER_REVIEW ||
-        s === ApplicationStatus.SHORTLISTED ||
-        s === ApplicationStatus.INTERVIEW
-      ) {
-        counts.recruitment++;
-      } else if (
-        s === ApplicationStatus.ACCEPTED ||
-        s === ApplicationStatus.PENDING_SUPERVISOR
-      ) {
-        counts.academic++;
-      } else if (
-        s === ApplicationStatus.IN_PROGRESS ||
-        s === ApplicationStatus.COMPLETED
-      ) {
-        counts.workspace++;
+      if (hasInterview) {
+        counts.interview++;
       }
 
-      // 2. Clasificación granular existente para pestañas
       if (
-        s === ApplicationStatus.PENDING ||
-        s === ApplicationStatus.UNDER_REVIEW ||
-        s === ApplicationStatus.SHORTLISTED
-      ) {
-        counts.inReview++;
-      } else if (s === ApplicationStatus.INTERVIEW) {
-        counts.interview++;
-      } else if (
-        s === ApplicationStatus.ACCEPTED ||
-        s === ApplicationStatus.PENDING_SUPERVISOR ||
-        s === ApplicationStatus.IN_PROGRESS
-      ) {
-        counts.accepted++;
-      } else if (s === ApplicationStatus.COMPLETED) {
-        counts.completed++;
-      } else if (
         s === ApplicationStatus.REJECTED ||
         s === ApplicationStatus.CANCELLED ||
         s === ApplicationStatus.WITHDRAWN
       ) {
         counts.history++;
+      } else if (
+        s === ApplicationStatus.IN_PROGRESS ||
+        s === ApplicationStatus.COMPLETED
+      ) {
+        counts.workspace++;
+      } else if (
+        s === ApplicationStatus.ACCEPTED ||
+        s === ApplicationStatus.PENDING_SUPERVISOR
+      ) {
+        counts.academic++;
+      } else {
+        counts.recruitment++;
       }
     }
     return counts;
@@ -204,12 +179,11 @@ export class MyApplicationsListComponent {
     const query = this.searchQuery().trim().toLowerCase();
     const sort = this.sortBy();
 
-    // 1. Category Filter
+    // 1. Category Filter (alineado 1:1 con Macro-Fases)
     if (category !== 'all') {
       list = list.filter((app) => {
         const s = app.status;
         switch (category) {
-          // Filtros de Macro-Fases activados desde los KPIs
           case 'phase_recruitment':
             return (
               s === ApplicationStatus.PENDING ||
@@ -227,28 +201,16 @@ export class MyApplicationsListComponent {
               s === ApplicationStatus.IN_PROGRESS ||
               s === ApplicationStatus.COMPLETED
             );
-          // Filtros granulares existentes de las pestañas
-          case 'in_review':
-            return (
-              s === ApplicationStatus.PENDING ||
-              s === ApplicationStatus.UNDER_REVIEW ||
-              s === ApplicationStatus.SHORTLISTED
-            );
-          case 'interview':
-            return s === ApplicationStatus.INTERVIEW;
-          case 'accepted':
-            return (
-              s === ApplicationStatus.ACCEPTED ||
-              s === ApplicationStatus.PENDING_SUPERVISOR ||
-              s === ApplicationStatus.IN_PROGRESS
-            );
-          case 'completed':
-            return s === ApplicationStatus.COMPLETED;
           case 'history':
             return (
               s === ApplicationStatus.REJECTED ||
               s === ApplicationStatus.CANCELLED ||
               s === ApplicationStatus.WITHDRAWN
+            );
+          case 'interview':
+            return (
+              s === ApplicationStatus.INTERVIEW ||
+              !!app.interviews?.some((i) => i.status === 'scheduled')
             );
           default:
             return true;
@@ -347,6 +309,11 @@ export class MyApplicationsListComponent {
   getActionConfig(app: Application) {
     const hasInterview = !!app.interviews?.some((i) => i.status === 'scheduled');
     return resolveApplicationPhase(app.status, hasInterview).ctaConfig;
+  }
+
+  getApplicationPhaseInfo(app: Application) {
+    const hasInterview = !!app.interviews?.some((i) => i.status === 'scheduled');
+    return resolveApplicationPhase(app.status, hasInterview);
   }
 
   openCoverLetter(app: Application): void {

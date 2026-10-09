@@ -103,6 +103,26 @@ export class ApplicationCardComponent {
       !!this.upcomingInterview(),
   );
 
+  readonly isPendingSupervisor = computed(
+    () => this.application().status === ApplicationStatus.PENDING_SUPERVISOR,
+  );
+
+  readonly isInProgress = computed(
+    () => this.application().status === ApplicationStatus.IN_PROGRESS,
+  );
+
+  readonly isAcademicPhase = computed(
+    () =>
+      this.application().status === ApplicationStatus.ACCEPTED ||
+      this.application().status === ApplicationStatus.PENDING_SUPERVISOR,
+  );
+
+  readonly isWorkspacePhase = computed(
+    () =>
+      this.application().status === ApplicationStatus.IN_PROGRESS ||
+      this.application().status === ApplicationStatus.COMPLETED,
+  );
+
   readonly canWithdraw = computed(
     () =>
       this.viewMode() === 'student' &&
