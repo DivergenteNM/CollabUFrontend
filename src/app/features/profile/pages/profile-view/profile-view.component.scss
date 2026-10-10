@@ -325,9 +325,9 @@
 
   .interest-chip {
     font-weight: 500;
-    --mdc-chip-label-text-color: var(--mat-sys-on-surface);
-    --mdc-chip-container-color: var(--mat-sys-surface-container-low);
-    border: 1px solid var(--mat-sys-outline-variant);
+    --mdc-chip-label-text-color: var(--text-primary);
+    --mdc-chip-container-color: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
   }
 }
 
@@ -1957,8 +1957,9 @@
       font-size: 0.725rem;
       padding: 2px 8px;
       border-radius: 6px;
-      background: #E2E8F0;
-      color: #334155;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
       font-weight: 600;
     }
   }
@@ -1973,20 +1974,26 @@
   .interest-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    background: #F1F5F9;
-    border: 1px solid var(--border-color, #E2E8F0);
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--text-primary);
+    transition: all var(--transition-fast, 150ms ease);
 
     mat-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      color: var(--color-accent-600, #276A93);
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: var(--color-primary-400, #34D399);
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(16, 185, 129, 0.35);
     }
   }
 }
@@ -2003,19 +2010,19 @@
     gap: 12px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: var(--bg-secondary, #F8FAFC);
-    border: 1px solid var(--border-color, #E2E8F0);
+    background: var(--bg-secondary, #111317);
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
     text-decoration: none;
     transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 
     &:hover {
-      background: #FFFFFF;
-      border-color: var(--color-primary-500, #46A366);
+      background: var(--bg-hover);
+      border-color: var(--color-primary-400, #34D399);
       transform: translateX(2px);
 
       .social-link-card__arrow {
         transform: translate(2px, -2px);
-        color: var(--color-primary-600, #388E53);
+        color: var(--color-primary-400, #34D399);
       }
     }
 
@@ -2035,23 +2042,23 @@
       }
 
       &--linkedin {
-        background: #EFF6FF;
-        color: #0A66C2;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-primary);
       }
 
       &--github {
-        background: #F1F5F9;
-        color: #0F172A;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-primary);
       }
 
       &--portfolio {
-        background: #F0FDF4;
-        color: #16A34A;
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--color-primary-400);
       }
 
       &--web {
-        background: #FAF5FF;
-        color: #9333EA;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-secondary);
       }
     }
 
@@ -2688,5 +2695,51 @@
     font-size: 0.775rem;
     color: var(--text-secondary, #64748B);
     line-height: 1.4;
+  }
+}
+
+:host-context(.dark-theme) .interests-pills .interest-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+
+  mat-icon {
+    color: #34D399;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+}
+
+:host-context(.dark-theme) .interests-chips .interest-chip {
+  background-color: #131519;
+  border-color: rgba(255, 255, 255, 0.10);
+  color: #FFFFFF;
+}
+
+:host-context(.dark-theme) .languages-stack .language-row {
+  background: #111317;
+  border-color: rgba(255, 255, 255, 0.08);
+
+  &__badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: #A1A1AA;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+}
+
+:host-context(.dark-theme) .links-vertical-list .social-link-card {
+  background: #111317;
+  border-color: rgba(255, 255, 255, 0.08);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #34D399;
+  }
+
+  &__icon {
+    background: rgba(255, 255, 255, 0.06);
   }
 }

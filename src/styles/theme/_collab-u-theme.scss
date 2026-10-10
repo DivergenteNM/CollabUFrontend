@@ -52,4 +52,12 @@ html {
 
   --mat-sys-primary:                   var(--color-primary-400);
   --mat-sys-on-primary:                #0C0D0F;
+
+  // Material 3 Table Tokens (WCAG AA Dark Mode)
+  --mat-table-row-item-container-color:          var(--bg-card);
+  --mat-table-row-item-label-text-color:         var(--text-primary);
+  --mat-table-row-item-outline-color:            var(--border-subtle);
+  --mat-table-header-container-background-color: var(--bg-secondary);
+  --mat-table-header-headline-color:             var(--text-secondary);
+  --mat-table-row-hover-state-layer-color:       var(--bg-hover);
 }

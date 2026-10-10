@@ -244,21 +244,65 @@ a.mat-mdc-card:hover {
 .u-table-wrap table.mat-mdc-table {
   min-width: 720px;
   width: 100%;
+  background-color: var(--bg-card);
+}
+
+tr.mat-mdc-header-row {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 table.mat-mdc-table th.mat-mdc-header-cell {
   font-weight: 600 !important;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
+  color: var(--text-secondary) !important;
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
 }
 
-table.mat-mdc-table td.mat-mdc-cell { padding: var(--space-2) var(--space-3); }
+table.mat-mdc-table td.mat-mdc-cell {
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
 
 tr.mat-mdc-row {
+  background-color: var(--bg-card);
   transition: background-color var(--transition-fast);
 
   &:hover {
-    background-color: var(--state-hover);
+    background-color: var(--bg-hover) !important;
+  }
+}
+
+.dark-theme {
+  table.mat-mdc-table,
+  .mat-mdc-table {
+    background-color: var(--bg-card) !important;
+  }
+
+  tr.mat-mdc-header-row,
+  .mat-mdc-header-row {
+    background-color: var(--bg-secondary) !important;
+  }
+
+  th.mat-mdc-header-cell,
+  .mat-mdc-header-cell {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+  }
+
+  tr.mat-mdc-row,
+  .mat-mdc-row {
+    background-color: var(--bg-card) !important;
+
+    &:hover {
+      background-color: var(--bg-hover) !important;
+    }
+  }
+
+  td.mat-mdc-cell,
+  .mat-mdc-cell {
+    color: var(--text-primary) !important;
   }
 }
 

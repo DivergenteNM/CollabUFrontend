@@ -535,8 +535,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-card, #FFFFFF);
-  border: 1px solid var(--border-color, #E2E8F0);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 24px;
   padding: 6px 12px 6px 14px;
   font-size: 0.85rem;
@@ -548,7 +548,7 @@
     font-size: 15px;
     width: 15px;
     height: 15px;
-    color: var(--color-primary, #1A56DB);
+    color: var(--color-primary-400, #34D399);
   }
 
   button {
@@ -593,4 +593,19 @@
     align-items: center;
     gap: 6px;
   }
+}
+
+:host-context(.dark-theme) .entity-chip {
+  background: #1C1E24;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+
+  .chip-dot {
+    color: #34D399;
+  }
+}
+
+:host-context(.dark-theme) .add-row {
+  background: #111317;
+  border-color: rgba(255, 255, 255, 0.08);
 }

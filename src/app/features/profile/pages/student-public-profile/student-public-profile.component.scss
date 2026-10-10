@@ -859,21 +859,42 @@
   .interest-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    background: color-mix(in srgb, var(--mat-sys-surface-variant) 40%, transparent);
-    border: 1px solid var(--mat-sys-outline-variant);
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--mat-sys-on-surface);
+    color: var(--text-primary);
+    transition: all var(--transition-fast, 150ms ease);
 
     mat-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      color: var(--mat-sys-primary);
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: var(--color-primary-400);
     }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+  }
+}
+
+:host-context(.dark-theme) .interests-pills .interest-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+
+  mat-icon {
+    color: #34D399;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(16, 185, 129, 0.4);
   }
 }
 
