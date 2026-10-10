@@ -1,6 +1,7 @@
 // environments/environment.prod.ts
 export const environment = {
   production: true,
+  siteUrl: 'https://collab-u.udenar.edu.co',
   apiUrl: 'https://collab-u.udenar.edu.co/api/v1',
   wsUrl: 'wss://collab-u.udenar.edu.co',
   wsNotificationsPath: '/ws/notifications',

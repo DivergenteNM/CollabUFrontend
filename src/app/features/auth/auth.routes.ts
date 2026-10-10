@@ -15,8 +15,10 @@ export const AUTH_ROUTES: Routes = [
           import('./pages/login/login.component').then((m) => m.LoginComponent),
         data: {
           title: 'Iniciar Sesión',
-          description: 'Accede a tu cuenta en Collab-U para gestionar prácticas profesionales, postulaciones y proyectos.',
-          robots: 'noindex, follow',
+          description: 'Accede a tu cuenta en Collab-U para gestionar prácticas profesionales, pasantías y vinculación de la Universidad de Nariño.',
+          robots: 'index, follow',
+          ogTitle: 'Collab-U — Portal de Acceso a Prácticas Profesionales',
+          ogDescription: 'Accede a la plataforma institucional de gestión de prácticas y vinculación formativa de la Universidad de Nariño.',
         },
       },
       {
@@ -26,7 +28,9 @@ export const AUTH_ROUTES: Routes = [
         data: {
           title: 'Crear Cuenta',
           description: 'Regístrate en Collab-U como estudiante o empresa para participar en el programa de prácticas profesionales de la Universidad de Nariño.',
-          robots: 'noindex, follow',
+          robots: 'index, follow',
+          ogTitle: 'Registro en Collab-U — Universidad de Nariño',
+          ogDescription: 'Únete a Collab-U como estudiante o empresa y conéctate al ecosistema de prácticas profesionales de la Universidad de Nariño.',
         },
       },
       {
@@ -37,8 +41,10 @@ export const AUTH_ROUTES: Routes = [
           ),
         data: {
           title: 'Registro de Estudiante',
-          description: 'Crea tu perfil de estudiante en Collab-U y postula a vacantes de prácticas profesionales.',
-          robots: 'noindex, follow',
+          description: 'Crea tu perfil de estudiante en Collab-U y postula a vacantes de prácticas profesionales de la Universidad de Nariño.',
+          robots: 'index, follow',
+          ogTitle: 'Registro de Estudiantes — Collab-U Udenar',
+          ogDescription: 'Estudiantes Udenar: regístrate para iniciar tu proceso de prácticas profesionales supervisadas.',
         },
       },
       {
@@ -49,8 +55,10 @@ export const AUTH_ROUTES: Routes = [
           ),
         data: {
           title: 'Registro de Empresa',
-          description: 'Registra tu organización en Collab-U y publica convocatorias para estudiantes de la Universidad de Nariño.',
-          robots: 'noindex, follow',
+          description: 'Registra tu organización en Collab-U y vincula talento universitario de la Universidad de Nariño en proyectos y prácticas.',
+          robots: 'index, follow',
+          ogTitle: 'Empresas Aliadas — Vincula Talento de la Universidad de Nariño',
+          ogDescription: 'Registra tu organización en Collab-U, publica convocatorias y conecta con estudiantes de la Universidad de Nariño.',
         },
       },
       {
@@ -62,7 +70,7 @@ export const AUTH_ROUTES: Routes = [
         data: {
           title: 'Recuperar Contraseña',
           description: 'Recupera el acceso a tu cuenta en la plataforma Collab-U.',
-          robots: 'noindex, follow',
+          robots: 'noindex, nofollow',
         },
       },
       {
@@ -74,7 +82,7 @@ export const AUTH_ROUTES: Routes = [
         data: {
           title: 'Restablecer Contraseña',
           description: 'Establece una nueva contraseña para tu cuenta de Collab-U.',
-          robots: 'noindex, follow',
+          robots: 'noindex, nofollow',
         },
       },
       {
@@ -86,7 +94,7 @@ export const AUTH_ROUTES: Routes = [
         data: {
           title: 'Verificar Correo Electrónico',
           description: 'Confirmación y verificación de correo electrónico en Collab-U.',
-          robots: 'noindex, follow',
+          robots: 'noindex, nofollow',
         },
       },
     ],
