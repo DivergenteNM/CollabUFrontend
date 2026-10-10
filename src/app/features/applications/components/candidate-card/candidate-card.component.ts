@@ -184,6 +184,7 @@ export class CandidateCardComponent {
   readonly canAccept = computed(() => {
     const s = this.application().status;
     return (
+      s === ApplicationStatus.PENDING ||
       s === ApplicationStatus.UNDER_REVIEW ||
       s === ApplicationStatus.SHORTLISTED ||
       s === ApplicationStatus.INTERVIEW

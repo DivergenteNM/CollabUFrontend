@@ -54,15 +54,18 @@
                   @case ('pending') {
                     <button mat-stroked-button (click)="changeStatus('under_review')">Mover a revisión</button>
                     <button mat-stroked-button (click)="changeStatus('shortlisted')">Preseleccionar</button>
+                    <button mat-flat-button color="primary" (click)="changeStatus('accepted')">Aceptar candidato</button>
                     <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
                   }
                   @case ('under_review') {
                     <button mat-stroked-button (click)="changeStatus('shortlisted')">Preseleccionar</button>
                     <button mat-stroked-button (click)="changeStatus('interview')">Marcar en entrevista</button>
+                    <button mat-flat-button color="primary" (click)="changeStatus('accepted')">Aceptar candidato</button>
                     <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
                   }
                   @case ('shortlisted') {
                     <button mat-stroked-button (click)="changeStatus('interview')">Marcar en entrevista</button>
+                    <button mat-flat-button color="primary" (click)="changeStatus('accepted')">Aceptar candidato</button>
                     <button mat-stroked-button color="warn" (click)="openRejectDialog()">Rechazar</button>
                   }
                   @case ('interview') {

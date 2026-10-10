@@ -176,6 +176,7 @@ export class ApplicationCardComponent {
       case ApplicationStatus.PENDING:
         actions.push(
           { status: ApplicationStatus.UNDER_REVIEW, label: 'Revisar', icon: 'visibility' },
+          { status: ApplicationStatus.ACCEPTED, label: 'Aceptar', icon: 'check_circle' },
           { status: ApplicationStatus.REJECTED, label: 'Rechazar', icon: 'cancel' },
         );
         break;

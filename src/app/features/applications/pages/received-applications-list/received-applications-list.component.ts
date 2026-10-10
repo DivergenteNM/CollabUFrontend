@@ -301,7 +301,10 @@ export class ReceivedApplicationsListComponent {
         this.snackBar.open('Estado de postulación actualizado', 'OK', { duration: 3000 });
         this.applicationsResource.reload();
       },
-      error: () => this.snackBar.open('Error al actualizar estado', 'Cerrar', { duration: 4000 }),
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al actualizar estado';
+        this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
+      },
     });
   }
 

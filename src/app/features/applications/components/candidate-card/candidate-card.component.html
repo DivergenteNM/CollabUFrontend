@@ -51,7 +51,7 @@
         class="candidate-card__menu-trigger"
         [matMenuTriggerFor]="candidateMenu"
         aria-label="Más opciones"
-        matTooltip="Opciones">
+        matTooltip="Cambiar estado / Opciones">
         <mat-icon>more_vert</mat-icon>
       </button>
 
@@ -73,6 +73,13 @@
             <mat-icon>description</mat-icon>
             <span>Ver Hoja de Vida / CV</span>
           </a>
+        }
+
+        @if (application().status === ApplicationStatus.PENDING) {
+          <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.UNDER_REVIEW })">
+            <mat-icon>visibility</mat-icon>
+            <span>Mover a revisión</span>
+          </button>
         }
 
         @if (canShortlist() && application().status !== ApplicationStatus.SHORTLISTED) {
