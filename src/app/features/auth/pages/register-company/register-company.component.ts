@@ -95,6 +95,8 @@ export class RegisterCompanyComponent {
         email: account.email,
         password: account.password,
         role: UserRole.COMPANY,
+        termsAccepted: account.termsAccepted,
+        dataTreatmentAccepted: account.termsAccepted,
       })
       .subscribe({
         next: () => {

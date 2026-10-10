@@ -96,6 +96,8 @@ export class RegisterStudentComponent {
         email: account.email,
         password: account.password,
         role: UserRole.STUDENT,
+        termsAccepted: account.termsAccepted,
+        dataTreatmentAccepted: account.termsAccepted,
       })
       .subscribe({
         next: () => {

@@ -111,6 +111,8 @@ describe('RegisterStudentComponent', () => {
       email: 'student@udenar.edu.co',
       password: 'Password123!',
       role: UserRole.STUDENT,
+      termsAccepted: true,
+      dataTreatmentAccepted: true,
     });
   });
 });

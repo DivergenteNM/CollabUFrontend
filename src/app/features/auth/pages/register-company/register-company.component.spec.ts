@@ -111,6 +111,8 @@ describe('RegisterCompanyComponent', () => {
       email: 'company@corp.com',
       password: 'Password123!',
       role: UserRole.COMPANY,
+      termsAccepted: true,
+      dataTreatmentAccepted: true,
     });
   });
 });
