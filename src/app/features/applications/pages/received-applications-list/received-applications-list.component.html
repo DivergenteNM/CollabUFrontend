@@ -1,74 +1,449 @@
-
-    <div class="received">
-      <header class="received__header">
-        <h1>Aplicaciones Recibidas</h1>
-      </header>
-
-      <!-- Filters -->
-      <div class="received__filters">
-        <mat-form-field appearance="outline" class="received__filter">
-          <mat-label>Estado</mat-label>
-          <mat-select [value]="statusFilter()" (selectionChange)="statusFilter.set($event.value); page.set(1)">
-            <mat-option value="">Todos</mat-option>
-            <mat-option [value]="ApplicationStatus.PENDING">Pendiente</mat-option>
-            <mat-option [value]="ApplicationStatus.UNDER_REVIEW">En revisión</mat-option>
-            <mat-option [value]="ApplicationStatus.INTERVIEW">Entrevista</mat-option>
-            <mat-option [value]="ApplicationStatus.ACCEPTED">Aceptada</mat-option>
-            <mat-option [value]="ApplicationStatus.REJECTED">Rechazada</mat-option>
-            <mat-option [value]="ApplicationStatus.IN_PROGRESS">En progreso</mat-option>
-            <mat-option [value]="ApplicationStatus.COMPLETED">Completada</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="received__filter">
-          <mat-label>Match mínimo</mat-label>
-          <mat-select [value]="minMatch()" (selectionChange)="minMatch.set($event.value); page.set(1)">
-            <mat-option value="">Sin filtro</mat-option>
-            <mat-option value="50">≥ 50%</mat-option>
-            <mat-option value="70">≥ 70%</mat-option>
-            <mat-option value="80">≥ 80%</mat-option>
-            <mat-option value="90">≥ 90%</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="received__filter">
-          <mat-label>Ordenar</mat-label>
-          <mat-select [value]="sortBy()" (selectionChange)="sortBy.set($event.value)">
-            <mat-option value="appliedAt">Fecha aplicación</mat-option>
-            <mat-option value="matchScore">Match score</mat-option>
-            <mat-option value="status">Estado</mat-option>
-          </mat-select>
-        </mat-form-field>
+<div class="received-page">
+  <!-- 1. Header Hero -->
+  <header class="received-hero">
+    <div class="received-hero__content">
+      <div class="received-hero__titles">
+        <div class="received-hero__badge">
+          <mat-icon>how_to_reg</mat-icon>
+          <span>Panel de Reclutamiento</span>
+        </div>
+        <h1 class="received-hero__title">Postulaciones y Gestión de Candidatos</h1>
+        <p class="received-hero__subtitle">
+          Evalúa el talento universitario postulado a tus proyectos, analiza la afinidad de competencias y avanza a los estudiantes en tu embudo de selección.
+        </p>
       </div>
 
-      <!-- List -->
-      <div class="received__list">
-        @if (applicationsResource.isLoading()) {
-          @for (_ of [1,2,3]; track $index) {
-            <app-skeleton width="100%" height="200px" />
-          }
-        } @else if (applications().length === 0) {
-          <app-empty-state
-            icon="inbox"
-            title="Sin aplicaciones"
-            message="Aún no has recibido aplicaciones. Publica un proyecto para empezar."
-            actionLabel="Mis Proyectos"
-            (actionClicked)="router.navigate(['/my-projects'])" />
-        } @else {
-          @for (app of applications(); track app.id) {
-            <app-application-card
-              [application]="app"
-              viewMode="company"
-              (viewDetail)="router.navigate(['/workspace', $event])"
-              (changeStatus)="onChangeStatus($event)" />
-          }
+      <div class="received-hero__actions">
+        <a routerLink="/my-projects" class="hero-btn hero-btn--outline">
+          <mat-icon>folder_open</mat-icon>
+          <span>Mis Proyectos</span>
+        </a>
+        <a routerLink="/projects/create" class="hero-btn hero-btn--primary">
+          <mat-icon>add</mat-icon>
+          <span>Publicar Proyecto</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 2. Embudo de Selección (KPI Cards Interactivas) -->
+    <div class="received-kpis">
+      <button
+        type="button"
+        class="kpi-card"
+        [class.kpi-card--active]="selectedFunnelStage() === 'all'"
+        (click)="setFunnelStage('all')">
+        <div class="kpi-card__icon-box kpi-card__icon-box--neutral">
+          <mat-icon>group</mat-icon>
+        </div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__count">{{ counts().total }}</span>
+          <span class="kpi-card__label">Total Postulaciones</span>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="kpi-card"
+        [class.kpi-card--active]="selectedFunnelStage() === 'pending_review'"
+        (click)="setFunnelStage('pending_review')">
+        <div class="kpi-card__icon-box kpi-card__icon-box--amber">
+          <mat-icon>pending_actions</mat-icon>
+        </div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__count">{{ counts().pendingReview }}</span>
+          <span class="kpi-card__label">Por Evaluar</span>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="kpi-card"
+        [class.kpi-card--active]="selectedFunnelStage() === 'shortlisted'"
+        (click)="setFunnelStage('shortlisted')">
+        <div class="kpi-card__icon-box kpi-card__icon-box--gold">
+          <mat-icon>star</mat-icon>
+        </div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__count">{{ counts().shortlisted }}</span>
+          <span class="kpi-card__label">Preseleccionados</span>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="kpi-card"
+        [class.kpi-card--active]="selectedFunnelStage() === 'interview'"
+        (click)="setFunnelStage('interview')">
+        <div class="kpi-card__icon-box kpi-card__icon-box--blue">
+          <mat-icon>event_available</mat-icon>
+        </div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__count">{{ counts().interview }}</span>
+          <span class="kpi-card__label">En Entrevistas</span>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="kpi-card"
+        [class.kpi-card--active]="selectedFunnelStage() === 'accepted'"
+        (click)="setFunnelStage('accepted')">
+        <div class="kpi-card__icon-box kpi-card__icon-box--green">
+          <mat-icon>task_alt</mat-icon>
+        </div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__count">{{ counts().accepted }}</span>
+          <span class="kpi-card__label">Aceptados</span>
+        </div>
+      </button>
+    </div>
+  </header>
+
+  <!-- 3. Toolbar de Búsqueda y Filtros -->
+  <section class="received-toolbar">
+    <div class="received-toolbar__top">
+      <!-- Buscador -->
+      <div class="received-search">
+        <mat-icon class="received-search__icon">search</mat-icon>
+        <input
+          type="text"
+          class="received-search__input"
+          placeholder="Buscar por estudiante, carrera, proyecto o habilidades..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)" />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            class="received-search__clear"
+            (click)="searchQuery.set('')"
+            aria-label="Limpiar búsqueda">
+            <mat-icon>close</mat-icon>
+          </button>
         }
       </div>
 
-      @if (totalItems() > 0) {
+      <!-- Selectores de filtrado -->
+      <div class="received-toolbar__selectors">
+        <!-- Selector de Proyecto -->
+        <mat-form-field appearance="outline" class="toolbar-field">
+          <mat-label>Proyecto</mat-label>
+          <mat-select
+            [value]="selectedProjectId()"
+            (selectionChange)="selectedProjectId.set($event.value); page.set(1)">
+            <mat-option value="">Todos los proyectos</mat-option>
+            @for (proj of companyProjects(); track proj.id) {
+              <mat-option [value]="proj.id">{{ proj.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Selector de Match Mínimo -->
+        <mat-form-field appearance="outline" class="toolbar-field toolbar-field--sm">
+          <mat-label>Afinidad</mat-label>
+          <mat-select
+            [value]="minMatch()"
+            (selectionChange)="minMatch.set($event.value); page.set(1)">
+            <mat-option value="">Toda afinidad</mat-option>
+            <mat-option value="50">≥ 50% Match</mat-option>
+            <mat-option value="70">≥ 70% Match</mat-option>
+            <mat-option value="80">≥ 80% Match</mat-option>
+            <mat-option value="90">≥ 90% Match</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Selector de Orden -->
+        <mat-form-field appearance="outline" class="toolbar-field toolbar-field--sm">
+          <mat-label>Ordenar por</mat-label>
+          <mat-select
+            [value]="sortBy()"
+            (selectionChange)="sortBy.set($event.value)">
+            <mat-option value="appliedAt">Más recientes</mat-option>
+            <mat-option value="matchScore">Mayor afinidad</mat-option>
+            <mat-option value="name">Nombre candidato</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Alternador de Vista (Cuadrícula / Lista) -->
+        <div class="view-toggle">
+          <button
+            type="button"
+            class="view-toggle__btn"
+            [class.view-toggle__btn--active]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')"
+            matTooltip="Vista cuadrícula de tarjetas">
+            <mat-icon>grid_view</mat-icon>
+          </button>
+          <button
+            type="button"
+            class="view-toggle__btn"
+            [class.view-toggle__btn--active]="viewMode() === 'list'"
+            (click)="viewMode.set('list')"
+            matTooltip="Vista lista de evaluación ATS">
+            <mat-icon>view_list</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestañas de Embudo / Categorías de Estado -->
+    <div class="funnel-tabs-row">
+      <div class="funnel-tabs">
+        <button
+          type="button"
+          class="funnel-tab"
+          [class.funnel-tab--active]="selectedFunnelStage() === 'all'"
+          (click)="setFunnelStage('all')">
+          <span>Todos</span>
+          <span class="funnel-tab__count">{{ counts().total }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="funnel-tab"
+          [class.funnel-tab--active]="selectedFunnelStage() === 'pending_review'"
+          (click)="setFunnelStage('pending_review')">
+          <span>Por Evaluar</span>
+          <span class="funnel-tab__count funnel-tab__count--amber">{{ counts().pendingReview }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="funnel-tab"
+          [class.funnel-tab--active]="selectedFunnelStage() === 'shortlisted'"
+          (click)="setFunnelStage('shortlisted')">
+          <span>Preseleccionados</span>
+          <span class="funnel-tab__count funnel-tab__count--gold">{{ counts().shortlisted }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="funnel-tab"
+          [class.funnel-tab--active]="selectedFunnelStage() === 'interview'"
+          (click)="setFunnelStage('interview')">
+          <span>En Entrevista</span>
+          <span class="funnel-tab__count funnel-tab__count--blue">{{ counts().interview }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="funnel-tab"
+          [class.funnel-tab--active]="selectedFunnelStage() === 'accepted'"
+          (click)="setFunnelStage('accepted')">
+          <span>Aceptados</span>
+          <span class="funnel-tab__count funnel-tab__count--green">{{ counts().accepted }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="funnel-tab"
+          [class.funnel-tab--active]="selectedFunnelStage() === 'rejected'"
+          (click)="setFunnelStage('rejected')">
+          <span>Descartados</span>
+          <span class="funnel-tab__count">{{ counts().rejected }}</span>
+        </button>
+      </div>
+
+      <!-- Conteo de resultados & Botón limpiar -->
+      <div class="results-meta">
+        <span class="results-meta__text">
+          Mostrando <strong>{{ filteredApplications().length }}</strong> candidatos
+        </span>
+        @if (hasActiveFilters()) {
+          <button type="button" class="results-meta__clear-btn" (click)="resetFilters()">
+            <mat-icon>filter_alt_off</mat-icon>
+            <span>Limpiar filtros</span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Contenido Principal de Candidatos -->
+  <main class="received-content">
+    @if (applicationsResource.isLoading()) {
+      <div class="received-skeletons">
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <app-skeleton width="100%" height="280px" />
+        }
+      </div>
+    } @else if (filteredApplications().length === 0) {
+      <div class="received-empty">
+        @if (hasActiveFilters()) {
+          <app-empty-state
+            icon="search_off"
+            title="Sin coincidencias para los filtros aplicados"
+            message="No encontramos candidatos con los criterios seleccionados. Prueba modificando los filtros o la búsqueda."
+            actionLabel="Restablecer filtros"
+            (actionClicked)="resetFilters()" />
+        } @else {
+          <app-empty-state
+            icon="inbox"
+            title="Aún no has recibido postulaciones"
+            message="Los estudiantes postulados a tus proyectos aparecerán aquí para que puedas evaluar sus perfiles y agendar entrevistas."
+            actionLabel="Publicar o Gestionar Proyectos"
+            (actionClicked)="router.navigate(['/my-projects'])" />
+        }
+      </div>
+    } @else {
+      <!-- Modo Cuadrícula de Tarjetas (Grid) -->
+      @if (viewMode() === 'grid') {
+        <div class="received-grid">
+          @for (app of filteredApplications(); track app.id) {
+            <app-candidate-card
+              [application]="app"
+              (viewDetail)="goToWorkspace($event)"
+              (changeStatus)="onChangeStatus($event)"
+              (scheduleInterview)="openScheduleInterview($event)"
+              (rejectApplication)="openRejectDialog($event)"
+              (viewProfile)="openCandidateProfile($event)"
+              (viewCoverLetter)="openCoverLetter($event)" />
+          }
+        </div>
+      }
+
+      <!-- Modo Lista / Tabla de Evaluación ATS (List) -->
+      @if (viewMode() === 'list') {
+        <div class="received-table-wrapper">
+          <table class="ats-table">
+            <thead>
+              <tr>
+                <th>Candidato</th>
+                <th>Proyecto</th>
+                <th>Afinidad</th>
+                <th>Postulado</th>
+                <th>Estado</th>
+                <th>Documentos</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (app of filteredApplications(); track app.id) {
+                <tr class="ats-row">
+                  <!-- Candidato -->
+                  <td class="ats-col-candidate">
+                    <div class="ats-candidate">
+                      <div class="ats-candidate__avatar" (click)="openCandidateProfile(app)">
+                        @if (app.student?.user?.avatarUrl) {
+                          <img [src]="app.student!.user!.avatarUrl" [alt]="app.student?.user?.firstName" />
+                        } @else {
+                          <span>{{ (app.student?.user?.firstName?.[0] || 'C') }}</span>
+                        }
+                      </div>
+                      <div class="ats-candidate__info">
+                        <strong class="ats-candidate__name" (click)="openCandidateProfile(app)">
+                          {{ app.student?.user?.firstName }} {{ app.student?.user?.lastName }}
+                        </strong>
+                        <span class="ats-candidate__program">{{ app.student?.program || 'Estudiante' }}</span>
+                        @if (app.student?.semester) {
+                          <span class="ats-candidate__semester">Semestre {{ app.student!.semester }}</span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Proyecto -->
+                  <td class="ats-col-project">
+                    <span class="ats-project-pill" [title]="app.project?.title || app.projectTitle">
+                      <mat-icon>folder_open</mat-icon>
+                      {{ app.project?.title || app.projectTitle || 'Proyecto' }}
+                    </span>
+                  </td>
+
+                  <!-- Afinidad -->
+                  <td class="ats-col-match">
+                    <div class="ats-match">
+                      <span class="ats-match__score" [class.ats-match__score--high]="(app.matchScore ?? 0) >= 70">
+                        {{ app.matchScore ?? 0 }}%
+                      </span>
+                      <div class="ats-match__bar-bg">
+                        <div
+                          class="ats-match__bar-fill"
+                          [style.width.%]="app.matchScore ?? 0"
+                          [class.ats-match__bar-fill--high]="(app.matchScore ?? 0) >= 70">
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Fecha -->
+                  <td class="ats-col-date">
+                    <span class="ats-date">{{ app.appliedAt | date:'d MMM yyyy' }}</span>
+                  </td>
+
+                  <!-- Estado -->
+                  <td class="ats-col-status">
+                    <app-status-badge [status]="app.status" size="sm" />
+                  </td>
+
+                  <!-- Documentos -->
+                  <td class="ats-col-docs">
+                    <div class="ats-docs-group">
+                      @if (app.resumeUrl || app.student?.cvUrl) {
+                        <a [href]="app.resumeUrl || app.student?.cvUrl" target="_blank" rel="noopener" class="ats-icon-btn" matTooltip="Abrir CV">
+                          <mat-icon>description</mat-icon>
+                        </a>
+                      }
+                      @if (app.portfolioUrl || app.student?.portfolioUrl) {
+                        <a [href]="app.portfolioUrl || app.student?.portfolioUrl" target="_blank" rel="noopener" class="ats-icon-btn" matTooltip="Ver Portafolio">
+                          <mat-icon>language</mat-icon>
+                        </a>
+                      }
+                      @if (app.coverLetter) {
+                        <button type="button" class="ats-icon-btn" (click)="openCoverLetter(app)" matTooltip="Ver Carta">
+                          <mat-icon>format_quote</mat-icon>
+                        </button>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- Acciones -->
+                  <td class="ats-col-actions text-right">
+                    <div class="ats-actions-group">
+                      <button
+                        type="button"
+                        class="ats-action-btn ats-action-btn--profile"
+                        (click)="openCandidateProfile(app)"
+                        matTooltip="Ver perfil completo">
+                        <mat-icon>badge</mat-icon>
+                        <span>Perfil</span>
+                      </button>
+
+                      @if (app.status === ApplicationStatus.PENDING || app.status === ApplicationStatus.UNDER_REVIEW || app.status === ApplicationStatus.SHORTLISTED) {
+                        <button
+                          type="button"
+                          class="ats-action-btn ats-action-btn--interview"
+                          (click)="openScheduleInterview(app)"
+                          matTooltip="Agendar entrevista">
+                          <mat-icon>event</mat-icon>
+                          <span>Entrevista</span>
+                        </button>
+                      }
+
+                      <button
+                        type="button"
+                        class="ats-action-btn ats-action-btn--workspace"
+                        (click)="goToWorkspace(app.id)"
+                        matTooltip="Abrir en Workspace">
+                        <mat-icon>arrow_forward</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- Paginación -->
+    @if (totalItems() > 0) {
+      <div class="received-pagination">
         <app-paginator
           [totalItems]="totalItems()"
-          [pageSize]="10"
+          [pageSize]="pageSize()"
           (pageChanged)="onPageChanged($event)" />
-      }
-    </div>
+      </div>
+    }
+  </main>
+</div>

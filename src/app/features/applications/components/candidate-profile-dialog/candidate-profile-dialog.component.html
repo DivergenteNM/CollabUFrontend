@@ -1,0 +1,389 @@
+<div class="cpd-dialog">
+  <!-- 1. Header del Modal: Identidad del Estudiante -->
+  <header class="cpd-header">
+    <div class="cpd-header__top">
+      <div class="cpd-avatar">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()!" [alt]="fullName()" class="cpd-avatar__img" />
+        } @else {
+          <span class="cpd-avatar__fallback">{{ initials() }}</span>
+        }
+      </div>
+
+      <div class="cpd-identity">
+        <div class="cpd-identity__name-row">
+          <h2 class="cpd-name">{{ fullName() }}</h2>
+          <app-status-badge [status]="application.status" size="sm" />
+          @if (gpa()) {
+            <span class="cpd-gpa-badge" matTooltip="Promedio acumulado">
+              <mat-icon>grade</mat-icon> {{ gpa() }} GPA
+            </span>
+          }
+        </div>
+
+        <p class="cpd-program">{{ program() }}</p>
+
+        <div class="cpd-meta-row">
+          <span>{{ institution() }}</span>
+          @if (semester()) {
+            <span class="cpd-bullet">•</span>
+            <span>{{ semester() }}</span>
+          }
+          @if (phone()) {
+            <span class="cpd-bullet">•</span>
+            <span class="cpd-email"><mat-icon>phone</mat-icon> {{ phone() }}</span>
+          } @else if (email()) {
+            <span class="cpd-bullet">•</span>
+            <span class="cpd-email"><mat-icon>mail</mat-icon> {{ email() }}</span>
+          }
+        </div>
+      </div>
+
+      <button type="button" class="cpd-close-btn" mat-dialog-close aria-label="Cerrar modal">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Quick profile links -->
+    <div class="cpd-links-bar">
+      @if (resumeUrl()) {
+        <a [href]="resumeUrl()!" target="_blank" rel="noopener" class="cpd-link-chip">
+          <mat-icon>description</mat-icon>
+          <span>Hoja de Vida / CV</span>
+        </a>
+      }
+      @if (portfolioUrl()) {
+        <a [href]="portfolioUrl()!" target="_blank" rel="noopener" class="cpd-link-chip">
+          <mat-icon>language</mat-icon>
+          <span>Portafolio</span>
+        </a>
+      }
+      @if (githubUrl()) {
+        <a [href]="githubUrl()!" target="_blank" rel="noopener" class="cpd-link-chip">
+          <mat-icon>code</mat-icon>
+          <span>GitHub</span>
+        </a>
+      }
+      @if (application.student?.linkedinUrl) {
+        <a [href]="application.student!.linkedinUrl!" target="_blank" rel="noopener" class="cpd-link-chip">
+          <mat-icon>link</mat-icon>
+          <span>LinkedIn</span>
+        </a>
+      }
+    </div>
+  </header>
+
+  <!-- 2. Tabs de Contenido -->
+  <mat-dialog-content class="cpd-content">
+    <mat-tab-group animationDuration="150ms" class="cpd-tabs">
+
+      <!-- TAB 1: Postulación & Compatibilidad -->
+      <mat-tab label="Postulación & Afinidad">
+        <div class="cpd-tab-pane">
+          <!-- Banner de Proyecto Postulado -->
+          <div class="cpd-project-card">
+            <div class="cpd-project-card__header">
+              <mat-icon>assignment</mat-icon>
+              <div>
+                <span class="cpd-project-card__label">Postulado al proyecto:</span>
+                <h4 class="cpd-project-card__title">{{ projectTitle() }}</h4>
+              </div>
+            </div>
+            <div class="cpd-project-card__meta">
+              <span><strong>Fecha:</strong> {{ application.appliedAt | date:'mediumDate' }}</span>
+              @if (application.project?.locationType) {
+                <span><strong>Modalidad:</strong> {{ application.project!.locationType }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Desglose de Afinidad & Match Score -->
+          <div class="cpd-match-card">
+            <div class="cpd-match-card__score-box">
+              <div class="cpd-match-card__circle">
+                <span class="cpd-match-card__percent">{{ normalizedMatchScore() ?? 0 }}%</span>
+              </div>
+              <div class="cpd-match-card__label-box">
+                <h4>Nivel de Afinidad</h4>
+                <p>Calculado a partir de habilidades, perfil académico y requisitos del proyecto.</p>
+              </div>
+            </div>
+
+            <div class="cpd-skills-breakdown">
+              <span class="cpd-skills-breakdown__title">Habilidades del Candidato & Coincidencias:</span>
+              <div class="cpd-skills-list">
+                @for (sk of matchingSkills(); track sk.name) {
+                  <span class="cpd-skill-pill" [class.cpd-skill-pill--match]="sk.isMatch">
+                    @if (sk.isMatch) {
+                      <mat-icon class="match-check">check</mat-icon>
+                    }
+                    {{ sk.name }}
+                    @if (sk.level) {
+                      <small class="skill-lvl">({{ sk.level }})</small>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Entrevista agendada si existe -->
+          @if (upcomingInterview()) {
+            <div class="cpd-interview-alert">
+              <mat-icon>event_available</mat-icon>
+              <div>
+                <strong>Entrevista programada:</strong>
+                <p>{{ upcomingInterview()!.scheduledAt | date:'fullDate' }} a las {{ upcomingInterview()!.scheduledAt | date:'shortTime' }}</p>
+                @if (upcomingInterview()!.meetingLink) {
+                  <a [href]="upcomingInterview()!.meetingLink!" target="_blank" rel="noopener" class="meeting-link">
+                    Abrir enlace de reunión
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Carta de Presentación Completa -->
+          <div class="cpd-cover-letter-card">
+            <h4 class="cpd-section-title">
+              <mat-icon>format_quote</mat-icon> Carta de Presentación del Estudiante
+            </h4>
+            @if (application.coverLetter) {
+              <div class="cpd-cover-letter-text">
+                {{ application.coverLetter }}
+              </div>
+            } @else {
+              <p class="cpd-empty-text">El estudiante no incluyó una carta de presentación para esta postulación.</p>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- TAB 2: Perfil Académico & Trayectoria -->
+      <mat-tab label="Perfil & Experiencia">
+        <div class="cpd-tab-pane">
+          <!-- Bio & Titular -->
+          @if (application.student?.headline || application.student?.bio) {
+            <div class="cpd-card">
+              @if (application.student?.headline) {
+                <h4 class="cpd-headline">{{ application.student!.headline }}</h4>
+              }
+              @if (application.student?.bio) {
+                <p class="cpd-bio">{{ application.student!.bio }}</p>
+              }
+            </div>
+          }
+
+          <!-- Formación Universitaria -->
+          <div class="cpd-card">
+            <h4 class="cpd-section-title">
+              <mat-icon>school</mat-icon> Formación Académica
+            </h4>
+            @if (application.student?.education?.length) {
+              <div class="cpd-timeline">
+                @for (edu of application.student!.education; track edu.id) {
+                  <div class="cpd-timeline__item">
+                    <div class="cpd-timeline__bullet"></div>
+                    <div class="cpd-timeline__body">
+                      <h5 class="cpd-timeline__title">{{ edu.degree }}</h5>
+                      <span class="cpd-timeline__sub">{{ edu.institution }}</span>
+                      <span class="cpd-timeline__date">
+                        {{ edu.startDate | date:'yyyy' }} - {{ edu.isCurrent ? 'Presente' : (edu.endDate | date:'yyyy') }}
+                      </span>
+                      @if (edu.description) {
+                        <p class="cpd-timeline__desc">{{ edu.description }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="cpd-empty-text">No hay registros de formación adicionales.</p>
+            }
+          </div>
+
+          <!-- Experiencias Previas -->
+          <div class="cpd-card">
+            <h4 class="cpd-section-title">
+              <mat-icon>work_outline</mat-icon> Experiencia Laboral / Proyectos
+            </h4>
+            @if (application.student?.experiences?.length) {
+              <div class="cpd-timeline">
+                @for (exp of application.student!.experiences; track exp.id) {
+                  <div class="cpd-timeline__item">
+                    <div class="cpd-timeline__bullet"></div>
+                    <div class="cpd-timeline__body">
+                      <h5 class="cpd-timeline__title">{{ exp.title }}</h5>
+                      <span class="cpd-timeline__sub">{{ exp.companyName }}</span>
+                      <span class="cpd-timeline__date">
+                        {{ exp.startDate | date:'MMM yyyy' }} - {{ exp.isCurrent ? 'Actualidad' : (exp.endDate | date:'MMM yyyy') }}
+                      </span>
+                      @if (exp.description) {
+                        <p class="cpd-timeline__desc">{{ exp.description }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="cpd-empty-text">El estudiante no ha registrado experiencias previas.</p>
+            }
+          </div>
+
+          <!-- Idiomas & Certificaciones -->
+          @if (application.student?.languages?.length || application.student?.certifications?.length) {
+            <div class="cpd-card">
+              @if (application.student?.languages?.length) {
+                <h4 class="cpd-section-title"><mat-icon>translate</mat-icon> Idiomas</h4>
+                <div class="cpd-chips-row">
+                  @for (lang of application.student!.languages; track lang.id) {
+                    <span class="cpd-tag">{{ lang.language }} ({{ lang.proficiencyLevel }})</span>
+                  }
+                </div>
+              }
+
+              @if (application.student?.certifications?.length) {
+                <h4 class="cpd-section-title" style="margin-top: 14px;"><mat-icon>verified</mat-icon> Certificaciones</h4>
+                <div class="cpd-chips-row">
+                  @for (cert of application.student!.certifications; track cert.id) {
+                    <span class="cpd-tag">{{ cert.name }} - {{ cert.issuer }}</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- TAB 3: Notas Privadas de Evaluación -->
+      <mat-tab label="Notas de Evaluación">
+        <div class="cpd-tab-pane">
+          <div class="cpd-card">
+            <h4 class="cpd-section-title">
+              <mat-icon>edit_note</mat-icon> Anotaciones Privadas del Equipo de Selección
+            </h4>
+            <p class="cpd-help-text">
+              Estas notas son confidenciales para tu empresa y nunca serán visibles para el estudiante.
+            </p>
+
+            <textarea
+              class="cpd-notes-textarea"
+              rows="6"
+              [ngModel]="privateNotes()"
+              (ngModelChange)="privateNotes.set($event)"
+              placeholder="Escribe comentarios sobre la entrevista, impresiones o puntos fuertes del candidato...">
+            </textarea>
+
+            <div class="cpd-notes-actions">
+              <button
+                type="button"
+                class="cpd-btn cpd-btn--primary"
+                [disabled]="isSavingNotes()"
+                (click)="saveNotes()">
+                <mat-icon>save</mat-icon>
+                <span>{{ isSavingNotes() ? 'Guardando...' : 'Guardar Notas' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <!-- 3. Footer con Pipeline de Acciones -->
+  <mat-dialog-actions align="end" class="cpd-footer">
+    <button type="button" class="cpd-btn cpd-btn--ghost" mat-dialog-close>
+      Cerrar
+    </button>
+
+    @if (application.status === ApplicationStatus.PENDING || application.status === ApplicationStatus.UNDER_REVIEW) {
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--gold"
+        (click)="actionChangeStatus(ApplicationStatus.SHORTLISTED)">
+        <mat-icon>star</mat-icon>
+        <span>Preseleccionar</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--accent"
+        (click)="actionScheduleInterview()">
+        <mat-icon>event</mat-icon>
+        <span>Agendar Entrevista</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--success"
+        (click)="actionChangeStatus(ApplicationStatus.ACCEPTED)">
+        <mat-icon>check_circle</mat-icon>
+        <span>Aceptar Candidato</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--danger"
+        (click)="actionReject()">
+        <mat-icon>close</mat-icon>
+        <span>Descartar</span>
+      </button>
+    } @else if (application.status === ApplicationStatus.SHORTLISTED) {
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--accent"
+        (click)="actionScheduleInterview()">
+        <mat-icon>event</mat-icon>
+        <span>Agendar Entrevista</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--success"
+        (click)="actionChangeStatus(ApplicationStatus.ACCEPTED)">
+        <mat-icon>check_circle</mat-icon>
+        <span>Aceptar Candidato</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--danger"
+        (click)="actionReject()">
+        <mat-icon>close</mat-icon>
+        <span>Descartar</span>
+      </button>
+    } @else if (application.status === ApplicationStatus.INTERVIEW) {
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--success"
+        (click)="actionChangeStatus(ApplicationStatus.ACCEPTED)">
+        <mat-icon>check_circle</mat-icon>
+        <span>Aceptar Candidato</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--accent"
+        (click)="actionScheduleInterview()">
+        <mat-icon>event_repeat</mat-icon>
+        <span>Nueva Entrevista</span>
+      </button>
+
+      <button
+        type="button"
+        class="cpd-btn cpd-btn--danger"
+        (click)="actionReject()">
+        <mat-icon>close</mat-icon>
+        <span>Descartar</span>
+      </button>
+    }
+
+    <button
+      type="button"
+      class="cpd-btn cpd-btn--primary"
+      (click)="goToWorkspace()">
+      <mat-icon>open_in_new</mat-icon>
+      <span>Ir al Workspace</span>
+    </button>
+  </mat-dialog-actions>
+</div>

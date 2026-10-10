@@ -1,0 +1,396 @@
+<article
+  class="candidate-card"
+  [class.candidate-card--interview]="!!upcomingInterview()"
+  [class.candidate-card--accepted]="isAccepted()"
+  [class.candidate-card--rejected]="isRejected()"
+  [class.candidate-card--evaluating]="isEvaluating()">
+
+  <!-- 1. Top Bar: Proyecto de destino + Estado del embudo + Menú rápido -->
+  <div class="candidate-card__top">
+    <div class="candidate-card__project-badge" [title]="'Postulado al proyecto: ' + projectTitle()">
+      <mat-icon class="candidate-card__project-icon">folder_special</mat-icon>
+      <span class="candidate-card__project-text">{{ projectTitle() }}</span>
+    </div>
+
+    <div class="candidate-card__status-cluster">
+      <app-status-badge [status]="application().status" size="sm" />
+
+      <button
+        type="button"
+        class="candidate-card__menu-trigger"
+        [matMenuTriggerFor]="candidateMenu"
+        aria-label="Opciones del candidato"
+        matTooltip="Más opciones">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <mat-menu #candidateMenu="matMenu">
+        <button mat-menu-item (click)="viewProfile.emit(application())">
+          <mat-icon>badge</mat-icon>
+          <span>Ver perfil del estudiante</span>
+        </button>
+
+        @if (application().coverLetter) {
+          <button mat-menu-item (click)="viewCoverLetter.emit(application())">
+            <mat-icon>format_quote</mat-icon>
+            <span>Ver carta de presentación</span>
+          </button>
+        }
+
+        @if (resumeUrl()) {
+          <a mat-menu-item [href]="resumeUrl()!" target="_blank" rel="noopener">
+            <mat-icon>description</mat-icon>
+            <span>Abrir Hoja de Vida / CV</span>
+          </a>
+        }
+
+        <button mat-menu-item (click)="viewDetail.emit(application().id)">
+          <mat-icon>open_in_new</mat-icon>
+          <span>Abrir en Workspace</span>
+        </button>
+
+        @if (!isRejected() && canReject()) {
+          <button mat-menu-item class="menu-item-danger" (click)="rejectApplication.emit(application())">
+            <mat-icon color="warn">close</mat-icon>
+            <span class="text-danger">Descartar postulación</span>
+          </button>
+        }
+      </mat-menu>
+    </div>
+  </div>
+
+  <!-- 2. Candidate Identity Block: Avatar, Nombre, Carrera, Semestre, Universidad, GPA -->
+  <div class="candidate-card__header">
+    <div
+      class="candidate-card__avatar"
+      (click)="viewProfile.emit(application())"
+      role="button"
+      tabindex="0"
+      matTooltip="Clic para ver perfil completo">
+      @if (avatarUrl()) {
+        <img [src]="avatarUrl()!" [alt]="fullName()" class="candidate-card__avatar-img" />
+      } @else {
+        <span class="candidate-card__avatar-fallback">{{ initials() }}</span>
+      }
+      <span class="candidate-card__avatar-dot" [class.candidate-card__avatar-dot--active]="!isRejected()"></span>
+    </div>
+
+    <div class="candidate-card__identity">
+      <div class="candidate-card__name-row">
+        <h3
+          class="candidate-card__name"
+          (click)="viewProfile.emit(application())"
+          [title]="fullName()">
+          {{ fullName() }}
+        </h3>
+        @if (gpa()) {
+          <span class="candidate-card__gpa-pill" matTooltip="Promedio académico acumulado">
+            <mat-icon>grade</mat-icon> {{ gpa() }}
+          </span>
+        }
+      </div>
+
+      <p class="candidate-card__program">{{ program() }}</p>
+
+      <div class="candidate-card__academic-details">
+        <span class="candidate-card__inst">{{ institution() }}</span>
+        @if (semester()) {
+          <span class="candidate-card__separator">•</span>
+          <span class="candidate-card__semester">{{ semester() }}</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Affinity & Match Gauge + Skills Fit -->
+  <div class="candidate-card__match-section">
+    <div class="candidate-card__gauge-box" [class]="'gauge-box--' + matchTone()">
+      @if (normalizedMatchScore() !== null) {
+        <div class="candidate-card__gauge-visual">
+          <svg viewBox="0 0 60 60" class="candidate-card__gauge-svg">
+            <circle class="candidate-card__gauge-track" cx="30" cy="30" r="24" fill="none" stroke-width="4.5" />
+            <circle
+              class="candidate-card__gauge-progress"
+              cx="30"
+              cy="30"
+              r="24"
+              fill="none"
+              stroke-width="4.5"
+              [style.strokeDasharray]="circumference"
+              [style.strokeDashoffset]="strokeDashoffset()" />
+          </svg>
+          <div class="candidate-card__gauge-number">{{ normalizedMatchScore() }}%</div>
+        </div>
+        <div class="candidate-card__gauge-info">
+          <span class="candidate-card__gauge-label">{{ matchLabel() }}</span>
+          <span class="candidate-card__gauge-sub">
+            @if (matchingSkillsCount() > 0) {
+              {{ matchingSkillsCount() }} habilidades requeridas
+            } @else {
+              Afinidad calculada
+            }
+          </span>
+        </div>
+      } @else {
+        <div class="candidate-card__gauge-empty">
+          <mat-icon>tune</mat-icon>
+          <span>Score en cálculo</span>
+        </div>
+      }
+    </div>
+
+    <!-- Skills chips -->
+    @if (skillsList().length > 0) {
+      <div class="candidate-card__skills-cluster">
+        @for (sk of skillsList(); track sk.name) {
+          <span
+            class="candidate-card__skill-tag"
+            [class.candidate-card__skill-tag--matched]="sk.isMatch"
+            [matTooltip]="sk.isMatch ? 'Habilidad requerida por el proyecto' : 'Habilidad del candidato'">
+            @if (sk.isMatch) {
+              <mat-icon class="skill-matched-icon">check</mat-icon>
+            }
+            {{ sk.name }}
+          </span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- 4. Candidate Pitch / Carta de Presentación -->
+  @if (coverLetterSnippet()) {
+    <div
+      class="candidate-card__pitch"
+      (click)="viewCoverLetter.emit(application())"
+      role="button"
+      tabindex="0"
+      matTooltip="Clic para leer carta completa">
+      <mat-icon class="candidate-card__pitch-icon">format_quote</mat-icon>
+      <p class="candidate-card__pitch-text">
+        "{{ coverLetterSnippet() }}"
+      </p>
+      <span class="candidate-card__pitch-more">Leer</span>
+    </div>
+  }
+
+  <!-- 5. Upcoming Interview Banner (si aplica) -->
+  @if (upcomingInterview()) {
+    <div class="candidate-card__interview-banner">
+      <mat-icon class="candidate-card__interview-icon">event_available</mat-icon>
+      <div class="candidate-card__interview-info">
+        <strong>Entrevista agendada</strong>
+        <span>{{ upcomingInterview()!.scheduledAt | date:'EEEE d MMMM, h:mm a' }}</span>
+      </div>
+      <button
+        type="button"
+        class="candidate-card__interview-btn"
+        (click)="viewDetail.emit(application().id)"
+        matTooltip="Ver entrevista en el Workspace">
+        <mat-icon>videocam</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- 6. Links rápidos del candidato (CV, Portafolio, GitHub, Ver perfil) -->
+  <div class="candidate-card__links-bar">
+    @if (resumeUrl()) {
+      <a
+        [href]="resumeUrl()!"
+        target="_blank"
+        rel="noopener"
+        class="candidate-card__link-pill"
+        matTooltip="Abrir Hoja de Vida / Currículum en nueva pestaña">
+        <mat-icon>description</mat-icon>
+        <span>CV / Hoja de vida</span>
+      </a>
+    }
+
+    @if (portfolioUrl()) {
+      <a
+        [href]="portfolioUrl()!"
+        target="_blank"
+        rel="noopener"
+        class="candidate-card__link-pill"
+        matTooltip="Visitar portafolio del candidato">
+        <mat-icon>language</mat-icon>
+        <span>Portafolio</span>
+      </a>
+    }
+
+    @if (githubUrl()) {
+      <a
+        [href]="githubUrl()!"
+        target="_blank"
+        rel="noopener"
+        class="candidate-card__link-pill"
+        matTooltip="Ver perfil de GitHub">
+        <mat-icon>code</mat-icon>
+        <span>GitHub</span>
+      </a>
+    }
+
+    <button
+      type="button"
+      class="candidate-card__link-pill candidate-card__link-pill--profile"
+      (click)="viewProfile.emit(application())"
+      matTooltip="Ver ficha completa y antecedentes del candidato">
+      <mat-icon>badge</mat-icon>
+      <span>Ver Perfil</span>
+    </button>
+  </div>
+
+  <!-- 7. Footer: Metadatos de fecha + Pipeline de acciones del reclutador -->
+  <div class="candidate-card__footer">
+    <div class="candidate-card__meta">
+      <span class="candidate-card__applied-date" [matTooltip]="'Fecha de postulación: ' + (application().appliedAt | date:'medium')">
+        <mat-icon>schedule</mat-icon>
+        {{ application().appliedAt | date:'d MMM yyyy' }}
+      </span>
+    </div>
+
+    <!-- Quick action buttons según etapa -->
+    <div class="candidate-card__actions">
+      @if (application().status === ApplicationStatus.PENDING) {
+        <button
+          type="button"
+          class="c-btn c-btn--outline"
+          (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.UNDER_REVIEW })"
+          matTooltip="Mover a etapa de revisión">
+          <mat-icon>visibility</mat-icon>
+          <span>Revisar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--accent"
+          (click)="scheduleInterview.emit(application())"
+          matTooltip="Agendar entrevista con el candidato">
+          <mat-icon>event</mat-icon>
+          <span>Entrevistar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--subtle-danger"
+          (click)="rejectApplication.emit(application())"
+          matTooltip="Descartar candidato">
+          <mat-icon>close</mat-icon>
+        </button>
+      } @else if (application().status === ApplicationStatus.UNDER_REVIEW) {
+        <button
+          type="button"
+          class="c-btn c-btn--gold"
+          (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.SHORTLISTED })"
+          matTooltip="Marcar como candidato preseleccionado">
+          <mat-icon>star</mat-icon>
+          <span>Preseleccionar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--accent"
+          (click)="scheduleInterview.emit(application())"
+          matTooltip="Programar entrevista">
+          <mat-icon>event</mat-icon>
+          <span>Entrevistar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--success"
+          (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.ACCEPTED })"
+          matTooltip="Aceptar y seleccionar este candidato">
+          <mat-icon>check_circle</mat-icon>
+          <span>Aceptar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--subtle-danger"
+          (click)="rejectApplication.emit(application())"
+          matTooltip="Descartar postulación">
+          <mat-icon>close</mat-icon>
+        </button>
+      } @else if (application().status === ApplicationStatus.SHORTLISTED) {
+        <button
+          type="button"
+          class="c-btn c-btn--accent"
+          (click)="scheduleInterview.emit(application())"
+          matTooltip="Programar entrevista técnica o de equipo">
+          <mat-icon>event</mat-icon>
+          <span>Entrevistar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--success"
+          (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.ACCEPTED })"
+          matTooltip="Aceptar al candidato para el proyecto">
+          <mat-icon>check_circle</mat-icon>
+          <span>Aceptar</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--subtle-danger"
+          (click)="rejectApplication.emit(application())"
+          matTooltip="Descartar">
+          <mat-icon>close</mat-icon>
+        </button>
+      } @else if (application().status === ApplicationStatus.INTERVIEW) {
+        <button
+          type="button"
+          class="c-btn c-btn--success"
+          (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.ACCEPTED })"
+          matTooltip="Aprobar postulación tras la entrevista">
+          <mat-icon>check_circle</mat-icon>
+          <span>Aceptar Candidato</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--outline"
+          (click)="scheduleInterview.emit(application())"
+          matTooltip="Agendar nueva sesión o prueba técnica">
+          <mat-icon>event_repeat</mat-icon>
+          <span>Nueva Cita</span>
+        </button>
+
+        <button
+          type="button"
+          class="c-btn c-btn--subtle-danger"
+          (click)="rejectApplication.emit(application())"
+          matTooltip="Descartar">
+          <mat-icon>close</mat-icon>
+        </button>
+      } @else if (application().status === ApplicationStatus.ACCEPTED) {
+        <button
+          type="button"
+          class="c-btn c-btn--primary"
+          (click)="viewDetail.emit(application().id)"
+          matTooltip="Acceder al workspace del proyecto">
+          <mat-icon>rocket_launch</mat-icon>
+          <span>Workspace de Proyecto</span>
+        </button>
+      } @else if (isRejected()) {
+        <button
+          type="button"
+          class="c-btn c-btn--outline"
+          (click)="changeStatus.emit({ id: application().id, status: ApplicationStatus.UNDER_REVIEW })"
+          matTooltip="Reactivar candidatura en revisión">
+          <mat-icon>undo</mat-icon>
+          <span>Reconsiderar</span>
+        </button>
+      }
+
+      <!-- Botón de acceso directo al Workspace de Selección -->
+      <button
+        type="button"
+        class="c-btn c-btn--workspace"
+        (click)="viewDetail.emit(application().id)"
+        matTooltip="Abrir espacio de gestión de la postulación">
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+  </div>
+</article>
