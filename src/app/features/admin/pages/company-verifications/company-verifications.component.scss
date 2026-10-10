@@ -219,11 +219,24 @@
   display: flex;
   gap: 4px;
   justify-content: flex-end;
+
+  button {
+    cursor: pointer;
+  }
 }
 
 .approve-btn ::ng-deep mat-icon { color: #10b981; }
 .reject-btn  ::ng-deep mat-icon { color: #ef4444; }
 .suspend-btn ::ng-deep mat-icon { color: #e65100; }
+.changes-btn {
+  cursor: pointer;
+  color: var(--color-warning);
+
+  mat-icon,
+  ::ng-deep mat-icon {
+    color: var(--color-warning);
+  }
+}
 
 // ── Empty state ───────────────────────────────────────────────────────────────
 .empty-state {

@@ -493,7 +493,7 @@ export interface ProjectReviewDialogResult {
     }
 
     @if (data.mode === 'needs_changes') {
-      <h2 mat-dialog-title class="dlg-title"><mat-icon style="color:#b45309">edit_note</mat-icon> Solicitar cambios</h2>
+      <h2 mat-dialog-title class="dlg-title"><mat-icon class="icon-needs-changes">edit_note</mat-icon> Solicitar cambios</h2>
       <mat-dialog-content class="dlg-content">
         <p class="dlg-sub">Indica a la empresa qué debe ajustar en "{{ data.project.title }}" antes de volver a enviarlo.</p>
         <mat-form-field appearance="outline" class="full-w">
@@ -504,7 +504,7 @@ export interface ProjectReviewDialogResult {
       </mat-dialog-content>
       <mat-dialog-actions align="end">
         <button mat-button (click)="dialogRef.close(null)">Cancelar</button>
-        <button mat-flat-button style="background:#b45309;color:#fff" [disabled]="!notes.trim()" (click)="confirmNeedsChanges()">
+        <button mat-flat-button class="btn-needs-changes" [disabled]="!notes.trim()" (click)="confirmNeedsChanges()">
           <mat-icon>edit_note</mat-icon> Solicitar cambios
         </button>
       </mat-dialog-actions>
@@ -546,7 +546,9 @@ export interface ProjectReviewDialogResult {
     .rev-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;color:#9ca3af;font-weight:600}
     .rev-description{font-size:.8125rem;color:#374151;margin:8px 0 0;white-space:pre-wrap}
     .rev-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-    .rev-tag{background:#ede9fe;color:#5b21b6;font-size:.7rem;padding:2px 9px;border-radius:10px}`],
+    .rev-tag{background:#ede9fe;color:#5b21b6;font-size:.7rem;padding:2px 9px;border-radius:10px}
+    .icon-needs-changes{color:var(--color-warning)}
+    .btn-needs-changes{background:var(--color-warning);color:#fff;cursor:pointer;&:disabled{cursor:not-allowed;opacity:.65}}`],
 })
 export class ProjectReviewDialogComponent {
   readonly data      = inject<ProjectReviewDialogData>(MAT_DIALOG_DATA);
