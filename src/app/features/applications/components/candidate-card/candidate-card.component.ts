@@ -4,11 +4,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
 
 import { Application } from '../../../../core/models';
 import { ApplicationStatus } from '../../../../core/enums';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
+import { MacroPhaseStepperComponent } from '../../../../shared/components/ui/macro-phase-stepper/macro-phase-stepper.component';
 
 export interface SkillMatchInfo {
   name: string;
@@ -24,8 +24,8 @@ export interface SkillMatchInfo {
     MatMenuModule,
     MatButtonModule,
     MatTooltipModule,
-    MatChipsModule,
     StatusBadgeComponent,
+    MacroPhaseStepperComponent,
   ],
   host: { 'class': 'candidate-card-host' },
   templateUrl: './candidate-card.component.html',
@@ -43,8 +43,6 @@ export class CandidateCardComponent {
   readonly viewCoverLetter = output<Application>();
 
   readonly ApplicationStatus = ApplicationStatus;
-
-  readonly circumference = 2 * Math.PI * 24; // r = 24 for gauge
 
   readonly fullName = computed(() => {
     const user = this.application().student?.user;
@@ -73,17 +71,9 @@ export class CandidateCardComponent {
     return this.application().student?.program || 'Programa Académico';
   });
 
-  readonly institution = computed(() => {
-    const student = this.application().student;
-    if (student?.education && student.education.length > 0) {
-      return student.education[0].institution;
-    }
-    return student?.faculty || 'Universidad';
-  });
-
   readonly semester = computed(() => {
     const sem = this.application().student?.semester;
-    return sem ? `${sem}.° semestre` : null;
+    return sem ? `Sem. ${sem}` : null;
   });
 
   readonly gpa = computed(() => {
@@ -101,12 +91,6 @@ export class CandidateCardComponent {
     return Math.max(0, Math.min(100, Math.round(score)));
   });
 
-  readonly strokeDashoffset = computed(() => {
-    const score = this.normalizedMatchScore();
-    if (score === null) return this.circumference;
-    return this.circumference - (score / 100) * this.circumference;
-  });
-
   readonly matchTone = computed<'excellent' | 'high' | 'moderate' | 'low'>(() => {
     const score = this.normalizedMatchScore();
     if (score === null) return 'low';
@@ -119,29 +103,29 @@ export class CandidateCardComponent {
   readonly matchLabel = computed(() => {
     switch (this.matchTone()) {
       case 'excellent':
-        return 'Excelente afinidad';
+        return 'Excelente afinidad con el perfil';
       case 'high':
-        return 'Alta afinidad';
+        return 'Alta afinidad con el perfil';
       case 'moderate':
-        return 'Afinidad moderada';
+        return 'Afinidad moderada con el perfil';
       default:
         return 'Afinidad inicial';
     }
   });
 
-  readonly skillsList = computed<SkillMatchInfo[]>(() => {
+  readonly topSkills = computed<SkillMatchInfo[]>(() => {
     const projectSkillNames = new Set(
       (this.application().project?.skills || []).map((s) => (s.name || '').toLowerCase().trim())
     );
     const studentSkills = this.application().student?.skills || [];
-    return studentSkills.slice(0, 6).map((sk) => ({
-      name: sk.name,
-      isMatch: projectSkillNames.has((sk.name || '').toLowerCase().trim()),
-    }));
-  });
+    const matched = studentSkills
+      .filter((sk) => projectSkillNames.has((sk.name || '').toLowerCase().trim()))
+      .map((sk) => ({ name: sk.name, isMatch: true }));
+    const unmatched = studentSkills
+      .filter((sk) => !projectSkillNames.has((sk.name || '').toLowerCase().trim()))
+      .map((sk) => ({ name: sk.name, isMatch: false }));
 
-  readonly matchingSkillsCount = computed(() => {
-    return this.skillsList().filter((s) => s.isMatch).length;
+    return [...matched, ...unmatched].slice(0, 3);
   });
 
   readonly upcomingInterview = computed(() => {
@@ -160,15 +144,26 @@ export class CandidateCardComponent {
     return this.application().student?.githubUrl || null;
   });
 
-  readonly coverLetterSnippet = computed(() => {
-    const cl = this.application().coverLetter;
-    if (!cl) return null;
-    return cl.length > 130 ? `${cl.substring(0, 130)}...` : cl;
-  });
-
-  // Action capabilities
-  readonly canReview = computed(() => {
-    return this.application().status === ApplicationStatus.PENDING;
+  readonly primaryAction = computed(() => {
+    const s = this.application().status;
+    switch (s) {
+      case ApplicationStatus.PENDING:
+        return { label: 'Revisar', icon: 'visibility', type: 'review' };
+      case ApplicationStatus.UNDER_REVIEW:
+        return { label: 'Entrevistar', icon: 'event', type: 'interview' };
+      case ApplicationStatus.SHORTLISTED:
+        return { label: 'Entrevistar', icon: 'event', type: 'interview' };
+      case ApplicationStatus.INTERVIEW:
+        return { label: 'Aceptar', icon: 'check_circle', type: 'accept' };
+      case ApplicationStatus.ACCEPTED:
+        return { label: 'Workspace', icon: 'rocket_launch', type: 'workspace' };
+      case ApplicationStatus.REJECTED:
+      case ApplicationStatus.CANCELLED:
+      case ApplicationStatus.WITHDRAWN:
+        return { label: 'Reconsiderar', icon: 'undo', type: 'reconsider' };
+      default:
+        return { label: 'Workspace', icon: 'arrow_forward', type: 'workspace' };
+    }
   });
 
   readonly canShortlist = computed(() => {
@@ -217,4 +212,26 @@ export class CandidateCardComponent {
       s === ApplicationStatus.WITHDRAWN
     );
   });
+
+  onPrimaryAction(): void {
+    const action = this.primaryAction();
+    switch (action.type) {
+      case 'review':
+        this.changeStatus.emit({ id: this.application().id, status: ApplicationStatus.UNDER_REVIEW });
+        break;
+      case 'interview':
+        this.scheduleInterview.emit(this.application());
+        break;
+      case 'accept':
+        this.changeStatus.emit({ id: this.application().id, status: ApplicationStatus.ACCEPTED });
+        break;
+      case 'reconsider':
+        this.changeStatus.emit({ id: this.application().id, status: ApplicationStatus.UNDER_REVIEW });
+        break;
+      case 'workspace':
+      default:
+        this.viewDetail.emit(this.application().id);
+        break;
+    }
+  }
 }
