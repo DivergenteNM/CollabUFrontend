@@ -70,61 +70,66 @@ const ACTOR_LABELS: Record<string, string> = {
     :host { display: block; overflow-x: auto; }
     .lifecycle {
       display: flex; align-items: flex-start;
-      min-width: 600px; padding: 4px 0;
+      min-width: 680px; padding: 6px 0;
     }
     .lifecycle__step {
       display: flex; flex-direction: column; align-items: center;
-      gap: 4px; flex-shrink: 0; min-width: 72px;
+      gap: 6px; flex-shrink: 0; min-width: 80px;
     }
     .lifecycle__circle {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      border: 2px solid var(--mat-sys-outline-variant);
-      background: var(--mat-sys-surface);
+      border: 2px solid var(--border-color, #d3ddd4);
+      background: var(--bg-card, #ffffff);
       transition: all 200ms ease;
     }
     .lifecycle__circle mat-icon {
-      font-size: 16px; width: 16px; height: 16px;
-      color: var(--mat-sys-outline);
+      font-size: 18px; width: 18px; height: 18px;
+      color: var(--text-tertiary, #6e7d70);
     }
     .lifecycle__step--completed .lifecycle__circle {
-      background: var(--mat-sys-primary);
-      border-color: var(--mat-sys-primary);
+      background: var(--color-primary, #388e53);
+      border-color: var(--color-primary, #388e53);
     }
     .lifecycle__step--completed .lifecycle__circle mat-icon {
-      color: var(--mat-sys-on-primary);
+      color: #ffffff;
     }
     .lifecycle__step--active .lifecycle__circle {
-      border-color: var(--mat-sys-primary);
-      background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+      border-color: var(--color-primary, #388e53);
+      background: var(--color-primary-50, #eef7f0);
+      box-shadow: 0 0 0 4px rgba(56, 142, 83, 0.18);
     }
     .lifecycle__step--active .lifecycle__circle mat-icon {
-      color: var(--mat-sys-primary);
+      color: var(--color-primary-700, #245c36);
     }
     .lifecycle__step--terminal .lifecycle__circle {
-      border-color: var(--mat-sys-error);
-      background: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+      border-color: var(--color-error, #c93b3b);
+      background: var(--color-error-bg, #fdf0f0);
     }
     .lifecycle__step--terminal .lifecycle__circle mat-icon {
-      color: var(--mat-sys-error);
+      color: var(--color-error, #c93b3b);
     }
     .lifecycle__label {
-      font-size: .625rem; color: var(--mat-sys-on-surface-variant);
-      text-align: center; max-width: 72px; line-height: 1.2;
+      font-size: 0.75rem; color: var(--text-secondary, #4a584c);
+      text-align: center; max-width: 80px; line-height: 1.25;
+      font-weight: 500;
     }
     .lifecycle__step--active .lifecycle__label {
-      color: var(--mat-sys-primary); font-weight: 600;
+      color: var(--color-primary-700, #245c36); font-weight: 700;
     }
     .lifecycle__actor {
-      font-size: .5625rem; color: var(--mat-sys-outline);
-      text-align: center;
+      font-size: 0.6875rem; color: var(--color-accent-700, #1f5374);
+      background: var(--color-accent-50, #eff6fb);
+      padding: 1px 6px; border-radius: 8px;
+      text-align: center; font-weight: 600;
     }
     .lifecycle__line {
-      flex: 1; height: 2px; min-width: 16px;
-      background: var(--mat-sys-outline-variant);
-      margin-top: 16px; transition: background 200ms ease;
+      flex: 1; height: 3px; min-width: 16px;
+      border-radius: 2px;
+      background: var(--border-color, #d3ddd4);
+      margin-top: 17px; transition: background 200ms ease;
     }
-    .lifecycle__line--filled { background: var(--mat-sys-primary); }
+    .lifecycle__line--filled { background: var(--color-primary, #388e53); }
   `],
 })
 export class LifecycleTimelineComponent {

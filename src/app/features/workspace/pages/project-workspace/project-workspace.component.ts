@@ -20,6 +20,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { ApplicationService, Permission, ProjectContext } from '../../../applications/services/application.service';
 import { ChatService } from '../../../chat/services/chat.service';
@@ -61,6 +63,7 @@ import { CompanyProfileCardComponent } from '../../../../shared/components/selec
   imports: [
     DatePipe, MatCardModule, MatTabsModule, MatIconModule, MatButtonModule,
     MatDividerModule, MatDialogModule, MatSnackBarModule, MatProgressSpinnerModule, MatBadgeModule,
+    MatTooltipModule, MatChipsModule,
     SkeletonComponent, EmptyStateComponent, StatusBadgeComponent, DeadlineChipComponent,
     TimelineComponent,
     LifecycleTimelineComponent, PeopleCardComponent,
@@ -108,6 +111,9 @@ export class ProjectWorkspaceComponent {
     this.route.queryParamMap.pipe(map((p) => p.get('anchor'))),
     { initialValue: null },
   );
+
+  readonly currentTab = signal<number>(0);
+  readonly deliverableFilter = signal<'all' | 'pending' | 'under_review' | 'approved'>('all');
 
   readonly contextResource = rxResource({
     params: () => this.applicationId(),
@@ -301,7 +307,62 @@ export class ProjectWorkspaceComponent {
     return idx >= 0 ? idx : 0;
   });
 
+  readonly deliverableStats = computed(() => {
+    const list = this.deliverables();
+    const total = list.length;
+    const approved = list.filter((d) => d.status === 'approved').length;
+    const pending = list.filter((d) => d.status === 'pending' || d.status === 'needs_revision').length;
+    const underReview = list.filter((d) => d.status === 'submitted').length;
+    const percentCompleted = total > 0 ? Math.round((approved / total) * 100) : 0;
+    return { total, approved, pending, underReview, percentCompleted };
+  });
+
+  readonly filteredDeliverables = computed<Deliverable[]>(() => {
+    const filter = this.deliverableFilter();
+    const list = this.deliverables();
+    if (filter === 'all') return list;
+    if (filter === 'pending') return list.filter((d) => d.status === 'pending' || d.status === 'needs_revision');
+    if (filter === 'under_review') return list.filter((d) => d.status === 'submitted');
+    if (filter === 'approved') return list.filter((d) => d.status === 'approved');
+    return list;
+  });
+
+  readonly nextDeliverable = computed<Deliverable | null>(() => {
+    const list = this.deliverables();
+    const pending = list.filter((d) => d.status === 'pending' || d.status === 'needs_revision');
+    if (!pending.length) return null;
+    return [...pending].sort((a, b) => {
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    })[0] ?? null;
+  });
+
+  readonly daysRemaining = computed<number | null>(() => {
+    const end = this.academicRecord()?.expectedEndDate;
+    if (!end) return null;
+    const diffMs = new Date(end).getTime() - Date.now();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  });
+
+  readonly isStudent = computed(() => {
+    const role = this.viewer()?.contextRole ?? this.viewer()?.userRole;
+    return role === 'student';
+  });
+
+  readonly keyContacts = computed(() => {
+    const parts = this.participants();
+    const mentor = parts.find((p) => p.role === 'company');
+    const advisor = parts.find((p) => p.role === 'asesor');
+    return { mentor, advisor };
+  });
+
   constructor() {
+    effect(() => {
+      const idx = this.selectedTabIndex();
+      this.currentTab.set(idx);
+    });
+
     /**
      * El deep-link puede llegar antes de que renderice el panel destino; nos
      * suscribimos al contexto para intentar el scroll cuando el DOM ya existe.
@@ -316,6 +377,75 @@ export class ProjectWorkspaceComponent {
         }, 250);
       });
     });
+  }
+
+  goToTab(target: 'summary' | 'academic' | 'deliverables' | 'evaluations' | 'chat' | 'activity'): void {
+    const tabs: string[] = ['summary'];
+    if (this.showAcademicTab()) tabs.push('academic');
+    if (this.showDeliverablesTab()) tabs.push('deliverables');
+    if (this.showEvaluationsTab()) tabs.push('evaluations');
+    if (this.can('chat')) tabs.push('chat');
+    tabs.push('activity');
+    const idx = tabs.indexOf(target);
+    if (idx >= 0) {
+      this.currentTab.set(idx);
+    }
+  }
+
+  handleActionClick(action: any): void {
+    const label = (action?.label ?? '').toLowerCase();
+    const type = (action?.type ?? '').toLowerCase();
+    if (label.includes('entregable') || type.includes('deliverable')) {
+      this.goToTab('deliverables');
+    } else if (label.includes('anteproyecto') || type.includes('anteproyecto')) {
+      this.goToTab('academic');
+      const el = document.getElementById('ws-anchor-anteproyecto');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (label.includes('document') || type.includes('document')) {
+      this.goToTab('academic');
+    } else if (label.includes('acuerdo') || label.includes('acta') || type.includes('agreement')) {
+      this.goToTab('academic');
+      const el = document.getElementById('ws-anchor-agreement');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (label.includes('evalua') || type.includes('eval')) {
+      this.goToTab('evaluations');
+    }
+  }
+
+  stageDisplayName(stageKey?: string | null): string {
+    const map: Record<string, string> = {
+      application: 'Postulación Inicial',
+      selection: 'Selección y Entrevista',
+      academic_assignment: 'Asignación de Asesor',
+      anteproyecto: 'Aprobación de Anteproyecto',
+      documents: 'Carga de Documentación Formal',
+      agreement: 'Firma de Acuerdo y Acta',
+      development: 'Desarrollo del Proyecto',
+      closure: 'Cierre y Evaluación Final',
+      completed: 'Proyecto Finalizado',
+      closed: 'Proyecto Cerrado',
+    };
+    return stageKey ? (map[stageKey] ?? stageKey) : 'En progreso';
+  }
+
+  modalityLabel(type?: string | null): string {
+    const map: Record<string, string> = {
+      remote: 'Remoto',
+      onsite: 'Presencial',
+      hybrid: 'Híbrido',
+    };
+    return type ? (map[type] ?? type) : 'Modalidad a convenir';
+  }
+
+  projectTypeLabel(type?: string | null): string {
+    const map: Record<string, string> = {
+      internship: 'Pasantía Profesional',
+      professional_practice: 'Práctica Profesional',
+      thesis: 'Trabajo de Grado',
+      research: 'Investigación Aplicada',
+      other: 'Proyecto Formativo',
+    };
+    return type ? (map[type] ?? type) : 'Proyecto Formativo';
   }
 
   goBack(): void {

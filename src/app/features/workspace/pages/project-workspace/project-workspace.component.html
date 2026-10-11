@@ -1,13 +1,20 @@
-@if (contextResource.isLoading()) {
-  <div class="ws">
-    <app-skeleton width="100%" height="80px" />
-    <app-skeleton width="100%" height="48px" />
-    <div class="ws__body">
-      <div class="ws__main">
-        <app-skeleton width="100%" height="300px" />
+@if (contextResource.isLoading() && !context()) {
+  <div class="ws-loading">
+    <div class="ws-loading__hero">
+      <app-skeleton width="180px" height="32px" />
+      <app-skeleton width="70%" height="42px" />
+      <app-skeleton width="40%" height="24px" />
+    </div>
+    <div class="ws-loading__body">
+      <div class="ws-loading__main">
+        <app-skeleton width="100%" height="110px" borderRadius="12px" />
+        <app-skeleton width="100%" height="48px" borderRadius="8px" />
+        <app-skeleton width="100%" height="400px" borderRadius="16px" />
       </div>
-      <div class="ws__side">
-        <app-skeleton width="100%" height="200px" />
+      <div class="ws-loading__side">
+        <app-skeleton width="100%" height="240px" borderRadius="16px" />
+        <app-skeleton width="100%" height="200px" borderRadius="16px" />
+        <app-skeleton width="100%" height="180px" borderRadius="16px" />
       </div>
     </div>
   </div>
@@ -15,374 +22,801 @@
   <div class="ws">
     <app-empty-state
       icon="error_outline"
-      title="No se pudo cargar el proyecto"
-      message="No tienes permiso para ver este proyecto, o no existe."
-      actionLabel="Volver"
+      title="No se pudo cargar el espacio de trabajo"
+      message="No tienes permiso para ver este proyecto, o el enlace ha caducado."
+      actionLabel="Volver a mis postulaciones"
       (actionClicked)="goBack()" />
   </div>
 } @else if (context(); as ctx) {
   <div class="ws">
-    <!-- Header -->
-    <header class="ws__header">
-      <button mat-button class="ws__back" (click)="goBack()">
-        <mat-icon>arrow_back</mat-icon> Volver
-      </button>
-      <div class="ws__header-info">
-        <h1 class="ws__title">{{ ctx.project?.title ?? 'Proyecto' }}</h1>
-        <div class="ws__meta">
-          <app-status-badge [status]="ctx.application.status" domain="application" size="sm" />
-          @if (ctx.academicRecord) {
-            <app-status-badge [status]="ctx.academicRecord.status" domain="academicRecord" size="sm" />
+
+    <!-- ========================================================================= -->
+    <!-- HERO HEADER COCKPIT -->
+    <!-- ========================================================================= -->
+    <header class="ws-hero">
+      <div class="ws-hero__nav">
+        <button mat-button class="ws-hero__back-btn" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          <span>{{ viewer()?.userRole === 'student' ? 'Mis postulaciones' : 'Volver' }}</span>
+        </button>
+        <div class="ws-hero__breadcrumb">
+          <span class="ws-hero__breadcrumb-item">Collab-U</span>
+          <mat-icon class="ws-hero__breadcrumb-sep">chevron_right</mat-icon>
+          <span class="ws-hero__breadcrumb-item">{{ isStudent() ? 'Estudiante' : roleLabel(contextRole() ?? '') }}</span>
+          <mat-icon class="ws-hero__breadcrumb-sep">chevron_right</mat-icon>
+          <span class="ws-hero__breadcrumb-item ws-hero__breadcrumb-item--active">Workspace</span>
+        </div>
+      </div>
+
+      <div class="ws-hero__main">
+        <div class="ws-hero__content">
+          <!-- Badges cluster -->
+          <div class="ws-hero__badges">
+            <app-status-badge [status]="ctx.application.status" domain="application" size="sm" />
+            @if (ctx.academicRecord) {
+              <app-status-badge [status]="ctx.academicRecord.status" domain="academicRecord" size="sm" />
+            }
+            @if (projectDetail()?.projectType; as pType) {
+              <span class="ws-hero__pill ws-hero__pill--type">
+                <mat-icon>school</mat-icon>
+                {{ projectTypeLabel(pType) }}
+              </span>
+            }
+            @if (projectDetail()?.locationType; as locType) {
+              <span class="ws-hero__pill ws-hero__pill--modality">
+                <mat-icon>{{ locType === 'remote' ? 'home_work' : 'business' }}</mat-icon>
+                {{ modalityLabel(locType) }}
+              </span>
+            }
+            @if (ctx.application.matchScore) {
+              <span class="ws-hero__pill ws-hero__pill--score" matTooltip="Compatibilidad con tu perfil">
+                <mat-icon>auto_awesome</mat-icon>
+                {{ ctx.application.matchScore }}% Afinidad
+              </span>
+            }
+          </div>
+
+          <!-- Title -->
+          <h1 class="ws-hero__title" [title]="projectTitle()">{{ projectTitle() }}</h1>
+
+          <!-- Company and metadata strip -->
+          <div class="ws-hero__company-strip">
+            <div class="ws-hero__company-avatar">
+              @if (companyProfile()?.logoUrl) {
+                <img [src]="companyProfile()!.logoUrl" [alt]="companyProfile()!.companyName" />
+              } @else {
+                <mat-icon>business</mat-icon>
+              }
+            </div>
+            <div class="ws-hero__company-info">
+              <span class="ws-hero__company-name">{{ companyProfile()?.companyName ?? 'Empresa Anfitriona' }}</span>
+              @if (companyProfile()?.industry) {
+                <span class="ws-hero__company-dot">·</span>
+                <span class="ws-hero__company-industry">{{ companyProfile()!.industry }}</span>
+              }
+              @if (projectDetail()?.location) {
+                <span class="ws-hero__company-dot">·</span>
+                <span class="ws-hero__company-location">
+                  <mat-icon>location_on</mat-icon>
+                  {{ projectDetail()!.location }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Actions -->
+        <div class="ws-hero__actions">
+          @if (can('withdraw_application') && !isReadOnly() && (ctx.application.status === 'pending' || ctx.application.status === 'under_review')) {
+            <button mat-stroked-button color="warn" class="ws-hero__btn-withdraw" (click)="withdraw()">
+              <mat-icon>undo</mat-icon>
+              <span>Retirar postulación</span>
+            </button>
+          }
+
+          @if (can('chat')) {
+            <button mat-flat-button color="primary" class="ws-hero__btn-chat"
+              (click)="startChat()" [disabled]="loadingChat()">
+              @if (loadingChat()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon [matBadge]="projectChatUnread() > 0 ? projectChatUnread() : null"
+                  matBadgeColor="warn" matBadgeSize="small">chat</mat-icon>
+              }
+              <span>{{ loadingChat() ? 'Conectando...' : 'Chat del proyecto' }}</span>
+            </button>
           }
         </div>
       </div>
-      <div class="ws__header-actions">
-        @if (can('withdraw_application') && !isReadOnly() && (ctx.application.status === 'pending' || ctx.application.status === 'under_review')) {
-          <button mat-stroked-button color="warn" (click)="withdraw()">
-            <mat-icon>undo</mat-icon> Retirar
-          </button>
-        }
-        @if (can('chat')) {
-          <button mat-flat-button color="primary" (click)="startChat()" [disabled]="loadingChat()"
-            [matBadge]="projectChatUnread() > 0 ? projectChatUnread() : null"
-            matBadgeColor="warn" matBadgeSize="small" matBadgeOverlap="true">
-            @if (loadingChat()) {
-              <mat-spinner diameter="18" />
-            } @else {
-              <ng-container><mat-icon>chat</mat-icon> Chat</ng-container>
-            }
-          </button>
-        }
-      </div>
     </header>
 
-    <!-- Banner proyecto completado/cancelado -->
+    <!-- ========================================================================= -->
+    <!-- COMPLETION / CANCELLATION BANNER -->
+    <!-- ========================================================================= -->
     @if (isCompleted()) {
-      <mat-card class="ws__completed-banner">
-        <mat-card-content>
-          <mat-icon class="ws__completed-icon">workspace_premium</mat-icon>
-          <div class="ws__completed-body">
-            <strong>Proyecto completado</strong>
+      <div class="ws-banner ws-banner--completed">
+        <div class="ws-banner__icon-wrap">
+          <mat-icon>workspace_premium</mat-icon>
+        </div>
+        <div class="ws-banner__body">
+          <h3 class="ws-banner__title">¡Proyecto completado con éxito!</h3>
+          <p class="ws-banner__desc">
+            Este proyecto formativo ha concluido satisfactoriamente todos sus requisitos académicos y empresariales.
             @if (academicRecord()?.actualEndDate; as endDate) {
-              <span>Finalizado el {{ endDate | date:'d MMMM yyyy' }}.</span>
+              <span>Finalizado el <strong>{{ endDate | date:'d MMMM yyyy' }}</strong>.</span>
             }
-          </div>
+          </p>
+        </div>
+        <div class="ws-banner__aside">
           @if (academicRecord()?.finalGradeValue; as grade) {
-            <div class="ws__completed-grade">
-              <span class="ws__grade-label">Calificación final:</span>
-              <span class="ws__grade-badge">{{ grade }}/100</span>
+            <div class="ws-banner__grade-pill">
+              <span class="ws-banner__grade-caption">Calificación Final</span>
+              <strong class="ws-banner__grade-number">{{ grade }}/100</strong>
             </div>
           }
           @if (finalGradeFileId(); as fileId) {
             <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     } @else if (isCancelled()) {
-      <mat-card class="ws__completed-banner ws__completed-banner--cancelled">
-        <mat-card-content>
+      <div class="ws-banner ws-banner--cancelled">
+        <div class="ws-banner__icon-wrap">
           <mat-icon>block</mat-icon>
-          <div class="ws__completed-body">
-            <strong>Proyecto cancelado</strong>
-            <span>Este proyecto se cerró antes de completarse. Solo se conserva el historial.</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+        <div class="ws-banner__body">
+          <h3 class="ws-banner__title">Proyecto cancelado</h3>
+          <p class="ws-banner__desc">Este proyecto se cerró antes de completarse. Se mantiene el historial de entregas y actividad para registro institucional.</p>
+        </div>
+      </div>
     }
 
-    <!-- Lifecycle timeline -->
+    <!-- ========================================================================= -->
+    <!-- PROJECT LIFECYCLE ROADMAP CARD -->
+    <!-- ========================================================================= -->
     @if (stage(); as stg) {
-      <app-lifecycle-timeline
-        [currentStage]="stg.current"
-        [completedStages]="stg.completed"
-        [waitingOn]="stg.waitingOn" />
+      <section class="ws-lifecycle-card">
+        <div class="ws-lifecycle-card__header">
+          <div class="ws-lifecycle-card__title-row">
+            <div class="ws-lifecycle-card__icon-badge">
+              <mat-icon>route</mat-icon>
+            </div>
+            <div>
+              <h2 class="ws-lifecycle-card__title">Línea de Vida del Proyecto</h2>
+              <p class="ws-lifecycle-card__subtitle">
+                Fase actual:
+                <strong class="ws-lifecycle-card__current-phase">{{ stageDisplayName(stg.current) }}</strong>
+              </p>
+            </div>
+          </div>
+
+          @if (stg.waitingOn) {
+            <div class="ws-lifecycle-card__waiting-pill">
+              <span class="ws-lifecycle-card__waiting-pulse"></span>
+              <span class="ws-lifecycle-card__waiting-text">
+                Esperando acción de: <strong>{{ roleLabel(stg.waitingOn) }}</strong>
+              </span>
+            </div>
+          }
+        </div>
+
+        <div class="ws-lifecycle-card__timeline-wrapper">
+          <app-lifecycle-timeline
+            [currentStage]="stg.current"
+            [completedStages]="stg.completed"
+            [waitingOn]="stg.waitingOn" />
+        </div>
+      </section>
     }
 
-    <!-- Pending actions -->
+    <!-- ========================================================================= -->
+    <!-- PENDING ACTIONS URGENT COCKPIT -->
+    <!-- ========================================================================= -->
     @if (pendingActions().length > 0) {
-      <mat-card class="ws__actions-card">
-        <mat-card-content>
-          <h3 class="ws__actions-title">
-            <mat-icon>assignment_late</mat-icon> Acciones pendientes
-          </h3>
+      <section class="ws-alerts-card">
+        <div class="ws-alerts-card__header">
+          <div class="ws-alerts-card__icon-wrap">
+            <mat-icon>notifications_active</mat-icon>
+          </div>
+          <div class="ws-alerts-card__header-text">
+            <h3>Acciones que requieren tu atención</h3>
+            <p>Tienes {{ pendingActions().length }} {{ pendingActions().length === 1 ? 'tarea pendiente' : 'tareas pendientes' }} en este momento.</p>
+          </div>
+          <span class="ws-alerts-card__count-badge">{{ pendingActions().length }}</span>
+        </div>
+
+        <div class="ws-alerts-card__list">
           @for (action of pendingActions(); track action.type + action.label) {
-            <div class="ws__action" [class]="'ws__action--' + action.severity">
-              <mat-icon>{{ action.severity === 'danger' ? 'error' : action.severity === 'warning' ? 'warning' : 'info' }}</mat-icon>
-              <div class="ws__action-body">
-                <strong>{{ action.label }}</strong>
-                @if (action.description) { <p>{{ action.description }}</p> }
-                @if (action.dueDate) {
-                  <app-deadline-chip [date]="action.dueDate">Fecha límite:</app-deadline-chip>
+            <div class="ws-alert-item" [class]="'ws-alert-item--' + action.severity"
+              (click)="handleActionClick(action)" tabindex="0" role="button">
+              <div class="ws-alert-item__icon">
+                <mat-icon>
+                  {{ action.severity === 'danger' ? 'error' : action.severity === 'warning' ? 'warning' : 'info' }}
+                </mat-icon>
+              </div>
+              <div class="ws-alert-item__content">
+                <div class="ws-alert-item__title-row">
+                  <strong class="ws-alert-item__label">{{ action.label }}</strong>
+                  @if (action.dueDate) {
+                    <app-deadline-chip [date]="action.dueDate">Fecha límite:</app-deadline-chip>
+                  }
+                </div>
+                @if (action.description) {
+                  <p class="ws-alert-item__desc">{{ action.description }}</p>
                 }
+              </div>
+              <div class="ws-alert-item__action">
+                <span class="ws-alert-item__btn-text">Atender</span>
+                <mat-icon>chevron_right</mat-icon>
               </div>
             </div>
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </section>
     }
 
-    <!-- Two-column layout -->
+    <!-- ========================================================================= -->
+    <!-- TWO-COLUMN WORKSPACE BODY -->
+    <!-- ========================================================================= -->
     <div class="ws__body">
-      <!-- Main column -->
-      <div class="ws__main">
-        <mat-tab-group animationDuration="200ms" [selectedIndex]="selectedTabIndex()">
-          <!-- Resumen -->
-          <mat-tab label="Resumen">
-            <div class="ws__tab">
-              <mat-card>
-                <mat-card-content>
-                  <h3>Información general</h3>
-                  <div class="ws__info-row">
-                    <span class="ws__label">Fecha de postulación</span>
-                    <span>{{ ctx.application.appliedAt | date:'d MMMM yyyy' }}</span>
-                  </div>
-                  @if (ctx.application.matchScore) {
-                    <div class="ws__info-row">
-                      <span class="ws__label">Compatibilidad</span>
-                      <span class="ws__score">{{ ctx.application.matchScore }}%</span>
-                    </div>
-                  }
-                  @if (ctx.application.acceptedAt) {
-                    <div class="ws__info-row">
-                      <span class="ws__label">Aceptado el</span>
-                      <span>{{ ctx.application.acceptedAt | date:'d MMMM yyyy' }}</span>
-                    </div>
-                  }
-                  @if (ctx.application.coverLetter) {
-                    <div class="ws__info-row ws__info-row--block">
-                      <span class="ws__label">Carta de motivación</span>
-                      <p class="ws__cover-letter">{{ ctx.application.coverLetter }}</p>
-                    </div>
-                  }
-                </mat-card-content>
-              </mat-card>
+      <!-- MAIN WORKSPACE CONTENT -->
+      <main class="ws__main">
+        <mat-tab-group class="ws-tabs" animationDuration="200ms"
+          [selectedIndex]="currentTab()"
+          (selectedIndexChange)="currentTab.set($event)">
 
+          <!-- ── TAB 1: RESUMEN / COCKPIT ────────────────────────────── -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="ws-tab-icon">dashboard</mat-icon>
+              <span>Resumen</span>
+            </ng-template>
+
+            <div class="ws-tab-pane">
+
+              <!-- KPI Metrics Grid -->
+              <div class="ws-kpi-grid">
+                <!-- KPI 1: Progreso Global -->
+                <div class="ws-kpi-card ws-kpi-card--progress">
+                  <div class="ws-kpi-card__header">
+                    <span class="ws-kpi-card__label">Progreso Global</span>
+                    <span class="ws-kpi-card__icon ws-kpi-card__icon--green">
+                      <mat-icon>trending_up</mat-icon>
+                    </span>
+                  </div>
+                  <div class="ws-kpi-card__value">
+                    {{ progressResource.value()?.overallProgress ?? 0 }}%
+                  </div>
+                  <div class="ws-kpi-card__bar-wrap">
+                    <div class="ws-kpi-card__bar-fill"
+                      [style.width.%]="progressResource.value()?.overallProgress ?? 0"></div>
+                  </div>
+                  <div class="ws-kpi-card__subtext">
+                    <span>Temporal: {{ progressResource.value()?.temporalProgress ?? 0 }}%</span>
+                    <span>Entregas: {{ progressResource.value()?.deliverableProgress ?? 0 }}%</span>
+                  </div>
+                </div>
+
+                <!-- KPI 2: Entregables -->
+                <div class="ws-kpi-card" (click)="goToTab('deliverables')" tabindex="0" role="button">
+                  <div class="ws-kpi-card__header">
+                    <span class="ws-kpi-card__label">Entregables</span>
+                    <span class="ws-kpi-card__icon ws-kpi-card__icon--blue">
+                      <mat-icon>assignment_turned_in</mat-icon>
+                    </span>
+                  </div>
+                  <div class="ws-kpi-card__value">
+                    {{ deliverableStats().approved }}<span class="ws-kpi-card__value-total">/{{ deliverableStats().total }}</span>
+                  </div>
+                  <div class="ws-kpi-card__status-pills">
+                    @if (deliverableStats().pending > 0) {
+                      <span class="ws-kpi-pill ws-kpi-pill--warning">
+                        {{ deliverableStats().pending }} pendientes
+                      </span>
+                    }
+                    @if (deliverableStats().underReview > 0) {
+                      <span class="ws-kpi-pill ws-kpi-pill--info">
+                        {{ deliverableStats().underReview }} en revisión
+                      </span>
+                    }
+                    @if (deliverableStats().approved > 0) {
+                      <span class="ws-kpi-pill ws-kpi-pill--success">
+                        {{ deliverableStats().approved }} aprobados
+                      </span>
+                    }
+                  </div>
+                  <div class="ws-kpi-card__link">
+                    <span>Ver todos</span>
+                    <mat-icon>arrow_forward</mat-icon>
+                  </div>
+                </div>
+
+                <!-- KPI 3: Plazos y Tiempo -->
+                <div class="ws-kpi-card">
+                  <div class="ws-kpi-card__header">
+                    <span class="ws-kpi-card__label">Tiempo Restante</span>
+                    <span class="ws-kpi-card__icon ws-kpi-card__icon--amber">
+                      <mat-icon>timer</mat-icon>
+                    </span>
+                  </div>
+                  <div class="ws-kpi-card__value">
+                    @if (daysRemaining() !== null) {
+                      @if (daysRemaining()! > 0) {
+                        {{ daysRemaining() }} <span class="ws-kpi-card__value-unit">días</span>
+                      } @else if (daysRemaining() === 0) {
+                        Hoy <span class="ws-kpi-card__value-unit">último día</span>
+                      } @else {
+                        Finalizado
+                      }
+                    } @else {
+                      {{ academicRecord()?.agreedDurationWeeks ?? 16 }} <span class="ws-kpi-card__value-unit">sem.</span>
+                    }
+                  </div>
+                  <div class="ws-kpi-card__subtext">
+                    @if (academicRecord()?.expectedEndDate; as expectedEnd) {
+                      <span>Fin estimado: {{ expectedEnd | date:'d MMM yyyy' }}</span>
+                    } @else {
+                      <span>Duración estimada del periodo</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- KPI 4: Afinidad / Estado -->
+                <div class="ws-kpi-card">
+                  <div class="ws-kpi-card__header">
+                    <span class="ws-kpi-card__label">Postulación</span>
+                    <span class="ws-kpi-card__icon ws-kpi-card__icon--purple">
+                      <mat-icon>verified</mat-icon>
+                    </span>
+                  </div>
+                  <div class="ws-kpi-card__value">
+                    {{ ctx.application.matchScore ? ctx.application.matchScore + '%' : '100%' }}
+                  </div>
+                  <div class="ws-kpi-card__subtext">
+                    <span>Postulado el {{ ctx.application.appliedAt | date:'d MMM yyyy' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress bar overview -->
               @if (progressResource.value(); as progress) {
                 <app-progress-bar [progress]="progress" />
               }
 
-              @if (isCompleted()) {
-                <mat-card class="ws__closure-card">
-                  <mat-card-content>
-                    <h3>Cierre académico</h3>
-                    @if (academicRecord()?.actualEndDate; as endDate) {
-                      <div class="ws__info-row">
-                        <span class="ws__label">Fecha de finalización</span>
-                        <span>{{ endDate | date:'d MMMM yyyy' }}</span>
+              <!-- Próximo Entregable Urgente / Milestone Spotlight -->
+              @if (nextDeliverable(); as nd) {
+                <div class="ws-spotlight-card">
+                  <div class="ws-spotlight-card__badge">
+                    <mat-icon>flag</mat-icon>
+                    <span>Próximo Hito a Entregar</span>
+                  </div>
+                  <div class="ws-spotlight-card__body">
+                    <div class="ws-spotlight-card__info">
+                      <h3 class="ws-spotlight-card__title">{{ nd.title }}</h3>
+                      @if (nd.description) {
+                        <p class="ws-spotlight-card__desc">{{ nd.description }}</p>
+                      }
+                      <div class="ws-spotlight-card__meta">
+                        @if (nd.dueDate) {
+                          <app-deadline-chip [date]="nd.dueDate">Fecha límite:</app-deadline-chip>
+                        }
+                        @if (nd.status === 'needs_revision') {
+                          <span class="ws-spotlight-card__weight ws-spotlight-card__weight--revision">
+                            <mat-icon>edit_note</mat-icon> Requiere corrección
+                          </span>
+                        } @else if (nd.grade != null) {
+                          <span class="ws-spotlight-card__weight">
+                            <mat-icon>star</mat-icon> Nota: {{ nd.grade }}/5
+                          </span>
+                        }
                       </div>
-                    }
-                    @if (academicRecord()?.finalGradeValue; as grade) {
-                      <div class="ws__info-row">
-                        <span class="ws__label">Nota final</span>
-                        <span><strong>{{ grade }}/100</strong></span>
-                      </div>
-                    }
-                    @if (finalGradeFileId(); as fileId) {
-                      <div class="ws__info-row ws__info-row--block">
-                        <span class="ws__label">Acta y nota final</span>
-                        <app-file-link [fileId]="fileId" downloadName="acta-final.pdf" />
-                      </div>
-                    } @else {
-                      <p class="ws__empty">El acta aún no ha sido cargada.</p>
-                    }
-                  </mat-card-content>
-                </mat-card>
+                    </div>
+                    <div class="ws-spotlight-card__cta">
+                      <button mat-flat-button color="primary" (click)="goToTab('deliverables')">
+                        <mat-icon>upload_file</mat-icon>
+                        <span>Subir entrega</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               }
 
-              <!-- Company private notes -->
-              @if (can('view_private_notes')) {
-                <mat-card>
-                  <mat-card-content>
-                    <h3>Notas privadas</h3>
-                    <p class="ws__tab-hint">Solo visibles para tu empresa.</p>
-                    @if (ctx.application.notes) {
-                      <p class="ws__cover-letter">{{ ctx.application.notes }}</p>
-                    } @else {
-                      <p class="ws__empty">Sin notas privadas.</p>
+              <!-- Direct Project Team / Contacts Section -->
+              <div class="ws-team-strip">
+                <h3 class="ws-team-strip__title">
+                  <mat-icon>diversity_3</mat-icon>
+                  <span>Contactos Clave del Proyecto</span>
+                </h3>
+
+                <div class="ws-team-strip__grid">
+                  <!-- Tutor Empresarial -->
+                  <div class="ws-contact-card">
+                    <div class="ws-contact-card__avatar">
+                      @if (keyContacts().mentor?.avatarUrl) {
+                        <img [src]="keyContacts().mentor!.avatarUrl" [alt]="keyContacts().mentor!.fullName ?? 'Tutor'" />
+                      } @else {
+                        <mat-icon>business_center</mat-icon>
+                      }
+                    </div>
+                    <div class="ws-contact-card__info">
+                      <span class="ws-contact-card__role">Tutor Empresarial</span>
+                      <strong class="ws-contact-card__name">{{ keyContacts().mentor?.fullName ?? (companyProfile()?.companyName ?? 'Empresa Anfitriona') }}</strong>
+                      <span class="ws-contact-card__email">{{ companyProfile()?.companyName ?? 'Contacto corporativo' }}</span>
+                    </div>
+                    <div class="ws-contact-card__action">
+                      <button mat-icon-button (click)="startChat(keyContacts().mentor?.userId)"
+                        matTooltip="Enviar mensaje al tutor">
+                        <mat-icon>chat</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Asesor Académico -->
+                  <div class="ws-contact-card">
+                    <div class="ws-contact-card__avatar ws-contact-card__avatar--academic">
+                      @if (keyContacts().advisor?.avatarUrl) {
+                        <img [src]="keyContacts().advisor!.avatarUrl" [alt]="keyContacts().advisor!.fullName ?? 'Asesor'" />
+                      } @else {
+                        <mat-icon>school</mat-icon>
+                      }
+                    </div>
+                    <div class="ws-contact-card__info">
+                      <span class="ws-contact-card__role">Asesor Académico</span>
+                      <strong class="ws-contact-card__name">{{ keyContacts().advisor?.fullName ?? 'Docente Asignado' }}</strong>
+                      <span class="ws-contact-card__email">Universidad de Nariño</span>
+                    </div>
+                    <div class="ws-contact-card__action">
+                      <button mat-icon-button (click)="startChat(keyContacts().advisor?.userId)"
+                        matTooltip="Enviar mensaje al asesor">
+                        <mat-icon>chat</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Application Details & Motivation Letter -->
+              <div class="ws-card">
+                <div class="ws-card__header">
+                  <div class="ws-card__title-row">
+                    <mat-icon class="ws-card__icon">assignment_ind</mat-icon>
+                    <h3>Detalles de la Postulación</h3>
+                  </div>
+                </div>
+                <div class="ws-card__content">
+                  <div class="ws-info-grid">
+                    <div class="ws-info-item">
+                      <span class="ws-info-item__label">Fecha de Envío</span>
+                      <strong class="ws-info-item__value">{{ ctx.application.appliedAt | date:'d MMMM yyyy' }}</strong>
+                    </div>
+                    @if (ctx.application.acceptedAt) {
+                      <div class="ws-info-item">
+                        <span class="ws-info-item__label">Fecha de Aceptación</span>
+                        <strong class="ws-info-item__value">{{ ctx.application.acceptedAt | date:'d MMMM yyyy' }}</strong>
+                      </div>
                     }
-                  </mat-card-content>
-                </mat-card>
+                    @if (academicRecord()?.officialStartDate) {
+                      <div class="ws-info-item">
+                        <span class="ws-info-item__label">Inicio Oficial</span>
+                        <strong class="ws-info-item__value">{{ academicRecord()!.officialStartDate | date:'d MMMM yyyy' }}</strong>
+                      </div>
+                    }
+                    @if (academicRecord()?.expectedEndDate) {
+                      <div class="ws-info-item">
+                        <span class="ws-info-item__label">Fecha de Finalización Prevista</span>
+                        <strong class="ws-info-item__value">{{ academicRecord()!.expectedEndDate | date:'d MMMM yyyy' }}</strong>
+                      </div>
+                    }
+                  </div>
+
+                  @if (ctx.application.coverLetter) {
+                    <div class="ws-cover-letter-box">
+                      <div class="ws-cover-letter-box__title">
+                        <mat-icon>format_quote</mat-icon>
+                        <span>Tu carta de motivación presentada</span>
+                      </div>
+                      <p class="ws-cover-letter-box__text">{{ ctx.application.coverLetter }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Company private notes (only visible for company) -->
+              @if (can('view_private_notes')) {
+                <div class="ws-card">
+                  <div class="ws-card__header">
+                    <div class="ws-card__title-row">
+                      <mat-icon class="ws-card__icon">lock</mat-icon>
+                      <h3>Notas Privadas de la Empresa</h3>
+                    </div>
+                    <span class="ws-card__caption">Solo visibles para tu equipo empresarial</span>
+                  </div>
+                  <div class="ws-card__content">
+                    @if (ctx.application.notes) {
+                      <p class="ws-notes-text">{{ ctx.application.notes }}</p>
+                    } @else {
+                      <p class="ws-empty-text">Sin notas internas registradas.</p>
+                    }
+                  </div>
+                </div>
               }
+
             </div>
           </mat-tab>
 
-          <!-- Proceso académico -->
+          <!-- ── TAB 2: PROCESO ACADÉMICO ────────────────────────────── -->
           @if (showAcademicTab()) {
-            <mat-tab label="Proceso académico">
-              <div class="ws__tab">
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="ws-tab-icon">school</mat-icon>
+                <span>Proceso Académico</span>
+              </ng-template>
+
+              <div class="ws-tab-pane">
                 @if (showAnteproyecto()) {
-                  <div id="ws-anchor-anteproyecto">
+                  <section id="ws-anchor-anteproyecto" class="ws-academic-section">
                     <app-anteproyecto-panel
                       [applicationId]="applicationId()"
                       [canEdit]="can('submit_anteproyecto') && !isReadOnly()" />
-                  </div>
+                  </section>
                 }
+
                 @if (showDocuments()) {
-                  @if (isWaitingDocumentsStage()) {
-                    <div class="ws__stage-banner">
-                      <mat-icon>folder_open</mat-icon>
-                      <span>Etapa: Documentos — esperando la carga de los documentos requeridos.</span>
-                    </div>
-                    @if (can('manage_document_requirements')) {
-                      <button mat-stroked-button class="ws__define-docs-btn" (click)="openSelectDocumentRequirements()">
-                        <mat-icon>playlist_add_check</mat-icon> Definir documentos requeridos
-                      </button>
+                  <section class="ws-academic-section">
+                    @if (isWaitingDocumentsStage()) {
+                      <div class="ws-stage-callout">
+                        <div class="ws-stage-callout__icon">
+                          <mat-icon>folder_open</mat-icon>
+                        </div>
+                        <div class="ws-stage-callout__text">
+                          <h4>Etapa: Carga de Documentación Formal</h4>
+                          <p>Por favor, asegúrate de adjuntar todos los documentos requeridos para formalizar tu proceso ante la facultad y la empresa.</p>
+                        </div>
+                        @if (can('manage_document_requirements')) {
+                          <button mat-stroked-button class="ws-stage-callout__btn" (click)="openSelectDocumentRequirements()">
+                            <mat-icon>playlist_add_check</mat-icon> Definir requerimientos
+                          </button>
+                        }
+                      </div>
                     }
-                  }
-                  <app-documents-panel
-                    #studentDocsPanel
-                    [applicationId]="applicationId()"
-                    actorType="student"
-                    title="Documentos del estudiante"
-                    [canUpload]="can('upload_document') && !isReadOnly() && (viewerContextRole() === 'student' || viewerContextRole() === 'admin')"
-                    [canReview]="can('review_document') && !isReadOnly()"
-                    (reviewed)="reloadAll()" />
-                  <app-documents-panel
-                    #companyDocsPanel
-                    [applicationId]="applicationId()"
-                    actorType="company"
-                    title="Documentos de la empresa"
-                    [canUpload]="can('upload_document') && !isReadOnly() && (viewerContextRole() === 'company' || viewerContextRole() === 'admin')"
-                    [canReview]="can('review_document') && !isReadOnly()"
-                    (reviewed)="reloadAll()" />
+
+                    <app-documents-panel
+                      #studentDocsPanel
+                      [applicationId]="applicationId()"
+                      actorType="student"
+                      title="Documentación del Estudiante"
+                      [canUpload]="can('upload_document') && !isReadOnly() && (viewerContextRole() === 'student' || viewerContextRole() === 'admin')"
+                      [canReview]="can('review_document') && !isReadOnly()"
+                      (reviewed)="reloadAll()" />
+
+                    <app-documents-panel
+                      #companyDocsPanel
+                      [applicationId]="applicationId()"
+                      actorType="company"
+                      title="Documentación de la Empresa"
+                      [canUpload]="can('upload_document') && !isReadOnly() && (viewerContextRole() === 'company' || viewerContextRole() === 'admin')"
+                      [canReview]="can('review_document') && !isReadOnly()"
+                      (reviewed)="reloadAll()" />
+                  </section>
                 }
+
                 @if (can('manage_initiation_agreement')) {
-                  <div id="ws-anchor-agreement">
+                  <section id="ws-anchor-agreement" class="ws-academic-section">
                     <app-initiation-agreement #initiationAgreement [applicationId]="applicationId()" />
-                  </div>
+                  </section>
                 }
+
                 @if (showFinalDocsPanel()) {
-                  <div id="ws-anchor-final-docs">
+                  <section id="ws-anchor-final-docs" class="ws-academic-section">
                     <app-final-documents-panel
                       [applicationId]="applicationId()"
                       [viewerRole]="viewerContextRole()"
                       (reviewed)="reloadAll()" />
-                  </div>
+                  </section>
                 }
+
                 @if (can('manage_finalization')) {
-                  <div id="ws-anchor-finalization">
+                  <section id="ws-anchor-finalization" class="ws-academic-section">
                     <app-finalization [applicationId]="applicationId()" />
-                  </div>
+                  </section>
                 }
               </div>
             </mat-tab>
           }
 
-          <!-- Entregables -->
+          <!-- ── TAB 3: ENTREGABLES ──────────────────────────────────── -->
           @if (showDeliverablesTab()) {
-            <mat-tab label="Entregables">
-              <div class="ws__tab">
-                <div class="ws__deliverables-header">
-                  <p class="ws__tab-hint">
-                    Pendientes: {{ counters()?.deliverablesPending ?? 0 }} ·
-                    En revisión: {{ counters()?.deliverablesAwaitingReview ?? 0 }}
-                  </p>
-                  @if (can('create_deliverable') && !isReadOnly()) {
-                    <button mat-stroked-button (click)="openCreateDeliverable()">
-                      <mat-icon>add</mat-icon> Nuevo entregable
-                    </button>
-                  }
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="ws-tab-icon"
+                  [matBadge]="deliverableStats().pending > 0 ? deliverableStats().pending : null"
+                  matBadgeColor="warn" matBadgeSize="small">assignment</mat-icon>
+                <span>Entregables</span>
+              </ng-template>
+
+              <div class="ws-tab-pane">
+                <!-- Deliverables Control Toolbar -->
+                <div class="ws-deliverables-toolbar">
+                  <div class="ws-deliverables-toolbar__left">
+                    <h3 class="ws-deliverables-toolbar__title">Entregas y Reportes Periódicos</h3>
+                    <p class="ws-deliverables-toolbar__subtitle">
+                      {{ deliverableStats().total }} {{ deliverableStats().total === 1 ? 'entregable registrado' : 'entregables registrados' }} · {{ deliverableStats().approved }} aprobados
+                    </p>
+                  </div>
+
+                  <div class="ws-deliverables-toolbar__actions">
+                    @if (can('create_deliverable') && !isReadOnly()) {
+                      <button mat-flat-button color="primary" (click)="openCreateDeliverable()">
+                        <mat-icon>add</mat-icon>
+                        <span>Nuevo entregable</span>
+                      </button>
+                    }
+                  </div>
                 </div>
 
+                <!-- Filters Strip -->
+                <div class="ws-filter-pills">
+                  <button type="button" class="ws-filter-pill"
+                    [class.ws-filter-pill--active]="deliverableFilter() === 'all'"
+                    (click)="deliverableFilter.set('all')">
+                    Todos ({{ deliverableStats().total }})
+                  </button>
+                  <button type="button" class="ws-filter-pill"
+                    [class.ws-filter-pill--active]="deliverableFilter() === 'pending'"
+                    (click)="deliverableFilter.set('pending')">
+                    Pendientes ({{ deliverableStats().pending }})
+                  </button>
+                  <button type="button" class="ws-filter-pill"
+                    [class.ws-filter-pill--active]="deliverableFilter() === 'under_review'"
+                    (click)="deliverableFilter.set('under_review')">
+                    En revisión ({{ deliverableStats().underReview }})
+                  </button>
+                  <button type="button" class="ws-filter-pill"
+                    [class.ws-filter-pill--active]="deliverableFilter() === 'approved'"
+                    (click)="deliverableFilter.set('approved')">
+                    Aprobados ({{ deliverableStats().approved }})
+                  </button>
+                </div>
+
+                <!-- Deliverables Cards List -->
                 @if (deliverablesResource.isLoading()) {
-                  <app-skeleton width="100%" height="120px" />
-                  <app-skeleton width="100%" height="120px" />
-                } @else if (deliverables().length === 0) {
+                  <div class="ws-deliverables-skeleton">
+                    <app-skeleton width="100%" height="130px" borderRadius="12px" />
+                    <app-skeleton width="100%" height="130px" borderRadius="12px" />
+                  </div>
+                } @else if (filteredDeliverables().length === 0) {
                   <app-empty-state
                     icon="assignment"
-                    title="Sin entregables"
-                    message="No hay entregables asignados todavía." />
+                    title="No hay entregables en este filtro"
+                    [message]="deliverables().length === 0 ? 'Aún no se han definido entregables para este proyecto.' : 'No hay entregables que coincidan con la categoría seleccionada.'" />
                 } @else {
-                  @for (d of deliverables(); track d.id) {
-                    <app-deliverable-card
-                      [deliverable]="d"
-                      [canSubmit]="can('submit_deliverable') && !isReadOnly()"
-                      [canReview]="can('review_deliverable') && !isReadOnly()"
-                      (submitted)="onDeliverableSubmit($event)"
-                      (reviewed)="onDeliverableReview($event)" />
-                  }
+                  <div class="ws-deliverables-list">
+                    @for (d of filteredDeliverables(); track d.id) {
+                      <app-deliverable-card
+                        [deliverable]="d"
+                        [canSubmit]="can('submit_deliverable') && !isReadOnly()"
+                        [canReview]="can('review_deliverable') && !isReadOnly()"
+                        (submitted)="onDeliverableSubmit($event)"
+                        (reviewed)="onDeliverableReview($event)" />
+                    }
+                  </div>
                 }
               </div>
             </mat-tab>
           }
 
-          <!-- Evaluaciones -->
+          <!-- ── TAB 4: EVALUACIONES ─────────────────────────────────── -->
           @if (showEvaluationsTab()) {
-            <mat-tab label="Evaluaciones">
-              <div class="ws__tab" id="ws-anchor-evaluations">
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="ws-tab-icon">rate_review</mat-icon>
+                <span>Evaluaciones</span>
+              </ng-template>
+
+              <div class="ws-tab-pane" id="ws-anchor-evaluations">
                 @if (evaluationsResource.isLoading()) {
-                  <app-skeleton width="100%" height="120px" />
+                  <app-skeleton width="100%" height="140px" borderRadius="12px" />
                 } @else {
                   @if (evaluationsAboutMe().length > 0) {
-                    <h4 class="ws__section-title">Sobre mí</h4>
-                    @for (e of evaluationsAboutMe(); track e.id) {
-                      <mat-card class="ws__eval-card"
-                        (click)="goToEvaluation(e.id)"
-                        (keydown.enter)="goToEvaluation(e.id)" tabindex="0" role="button">
-                        <mat-card-content>
-                          <div class="ws__eval-head">
-                            <strong>{{ evalTypeLabel(e.evaluationType) }}</strong>
-                            <span class="ws__eval-date">{{ e.createdAt | date:'d MMM yyyy' }}</span>
-                          </div>
-                          @if (e.status === 'completed' && e.overallScore != null) {
-                            <div class="ws__eval-rating">
-                              <mat-icon>star</mat-icon>
-                              <strong>{{ (+e.overallScore / 20).toFixed(1) }}/5</strong>
+                    <div class="ws-eval-section">
+                      <div class="ws-eval-section__header">
+                        <mat-icon>person</mat-icon>
+                        <h4>Evaluaciones Sobre Mi Desempeño</h4>
+                      </div>
+
+                      <div class="ws-eval-grid">
+                        @for (e of evaluationsAboutMe(); track e.id) {
+                          <div class="ws-eval-card"
+                            (click)="goToEvaluation(e.id)"
+                            (keydown.enter)="goToEvaluation(e.id)" tabindex="0" role="button">
+                            <div class="ws-eval-card__head">
+                              <span class="ws-eval-card__type">{{ evalTypeLabel(e.evaluationType) }}</span>
+                              <span class="ws-eval-card__date">{{ e.createdAt | date:'d MMM yyyy' }}</span>
                             </div>
-                            @if (e.overallComment) {
-                              <p class="ws__eval-comment">{{ e.overallComment }}</p>
+                            @if (e.status === 'completed' && e.overallScore != null) {
+                              <div class="ws-eval-card__score-row">
+                                <div class="ws-eval-card__rating">
+                                  <mat-icon>star</mat-icon>
+                                  <strong>{{ (+e.overallScore / 20).toFixed(1) }}/5</strong>
+                                </div>
+                                <span class="ws-eval-card__pill ws-eval-card__pill--done">Completada</span>
+                              </div>
+                              @if (e.overallComment) {
+                                <p class="ws-eval-card__comment">"{{ e.overallComment }}"</p>
+                              }
+                            } @else {
+                              <div class="ws-eval-card__pending-row">
+                                <span class="ws-eval-card__pending-text">Aún no completada por el evaluador</span>
+                              </div>
                             }
-                          } @else {
-                            <span class="ws__eval-pending">Aún no completada</span>
-                          }
-                        </mat-card-content>
-                      </mat-card>
-                    }
+                          </div>
+                        }
+                      </div>
+                    </div>
                   }
 
                   @if (evaluationsAsEvaluator().length > 0) {
-                    <h4 class="ws__section-title">Como evaluador</h4>
-                    @for (e of evaluationsAsEvaluator(); track e.id) {
-                      <mat-card class="ws__eval-card"
-                        (click)="goToEvaluation(e.id)"
-                        (keydown.enter)="goToEvaluation(e.id)" tabindex="0" role="button">
-                        <mat-card-content>
-                          <div class="ws__eval-head">
-                            <strong>{{ evalTypeLabel(e.evaluationType) }}</strong>
-                            <span class="ws__eval-date">{{ e.createdAt | date:'d MMM yyyy' }}</span>
-                          </div>
-                          @if (e.status === 'completed' && e.overallScore != null) {
-                            <div class="ws__eval-rating">
-                              <mat-icon>star</mat-icon>
-                              <strong>{{ (+e.overallScore / 20).toFixed(1) }}/5</strong>
+                    <div class="ws-eval-section">
+                      <div class="ws-eval-section__header">
+                        <mat-icon>edit_note</mat-icon>
+                        <h4>Evaluaciones Por Diligenciar (Como Evaluador)</h4>
+                      </div>
+
+                      <div class="ws-eval-grid">
+                        @for (e of evaluationsAsEvaluator(); track e.id) {
+                          <div class="ws-eval-card"
+                            (click)="goToEvaluation(e.id)"
+                            (keydown.enter)="goToEvaluation(e.id)" tabindex="0" role="button">
+                            <div class="ws-eval-card__head">
+                              <span class="ws-eval-card__type">{{ evalTypeLabel(e.evaluationType) }}</span>
+                              <span class="ws-eval-card__date">{{ e.createdAt | date:'d MMM yyyy' }}</span>
                             </div>
-                          } @else {
-                            <span class="ws__eval-pending">Pendiente de completar</span>
-                            <button mat-flat-button color="primary"
-                              (click)="$event.stopPropagation(); goToEvaluation(e.id)">
-                              <mat-icon>rate_review</mat-icon> Completar
-                            </button>
-                          }
-                        </mat-card-content>
-                      </mat-card>
-                    }
+                            @if (e.status === 'completed' && e.overallScore != null) {
+                              <div class="ws-eval-card__score-row">
+                                <div class="ws-eval-card__rating">
+                                  <mat-icon>star</mat-icon>
+                                  <strong>{{ (+e.overallScore / 20).toFixed(1) }}/5</strong>
+                                </div>
+                                <span class="ws-eval-card__pill ws-eval-card__pill--done">Completada</span>
+                              </div>
+                            } @else {
+                              <div class="ws-eval-card__action-row">
+                                <span class="ws-eval-card__pending-badge">Pendiente de completar</span>
+                                <button mat-flat-button color="primary"
+                                  (click)="$event.stopPropagation(); goToEvaluation(e.id)">
+                                  <mat-icon>rate_review</mat-icon>
+                                  <span>Completar</span>
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
                   }
 
                   @if (evaluations().length === 0) {
                     <app-empty-state
                       icon="rate_review"
-                      title="Sin evaluaciones"
-                      message="No hay evaluaciones asociadas a este proyecto." />
+                      title="Sin evaluaciones registradas"
+                      message="Las evaluaciones periódicas y finales se habilitarán a medida que avance el cronograma del proyecto." />
                   }
                 }
               </div>
             </mat-tab>
           }
 
-          <!-- Chat -->
+          <!-- ── TAB 5: CHAT INTEGRADO ───────────────────────────────── -->
           @if (can('chat')) {
-            <mat-tab label="Chat">
-              <div class="ws__tab">
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="ws-tab-icon"
+                  [matBadge]="projectChatUnread() > 0 ? projectChatUnread() : null"
+                  matBadgeColor="warn" matBadgeSize="small">chat</mat-icon>
+                <span>Chat</span>
+              </ng-template>
+
+              <div class="ws-tab-pane ws-tab-pane--chat">
                 <app-project-chat-panel
                   [applicationId]="applicationId()"
                   [projectId]="ctx.project?.id ?? null"
@@ -391,94 +825,119 @@
             </mat-tab>
           }
 
-          <!-- Actividad -->
-          <mat-tab label="Actividad">
-            <div class="ws__tab">
-              @if (timelineEvents().length > 0) {
-                <app-timeline [events]="timelineEvents()" />
-              } @else {
-                <p class="ws__empty">Sin actividad registrada.</p>
-              }
+          <!-- ── TAB 6: HISTORIAL Y ACTIVIDAD ────────────────────────── -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="ws-tab-icon">history</mat-icon>
+              <span>Actividad</span>
+            </ng-template>
+
+            <div class="ws-tab-pane">
+              <div class="ws-card">
+                <div class="ws-card__header">
+                  <div class="ws-card__title-row">
+                    <mat-icon class="ws-card__icon">history</mat-icon>
+                    <h3>Trazabilidad y Eventos del Proyecto</h3>
+                  </div>
+                </div>
+                <div class="ws-card__content">
+                  @if (timelineEvents().length > 0) {
+                    <app-timeline [events]="timelineEvents()" />
+                  } @else {
+                    <p class="ws-empty-text">Sin eventos registrados aún.</p>
+                  }
+                </div>
+              </div>
             </div>
           </mat-tab>
         </mat-tab-group>
-      </div>
+      </main>
 
-      <!-- Sidebar -->
+      <!-- SIDEBAR COCKPIT -->
       <aside class="ws__side">
+        <!-- Project details card -->
         <app-project-info-card [project]="projectDetail()" />
 
+        <!-- Company details card -->
         <app-company-profile-card [company]="companyProfile()" />
 
+        <!-- People involved card -->
         <app-people-card
           [participants]="participants()"
           [canChat]="can('chat')"
           (chatRequested)="startChat($event)" />
 
+        <!-- Key Dates Card -->
         @if (academicRecord(); as record) {
-          <mat-card class="ws__dates-card">
-            <mat-card-header>
-              <mat-card-title>Fechas clave</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
+          <div class="ws-sidebar-card">
+            <div class="ws-sidebar-card__header">
+              <mat-icon>calendar_month</mat-icon>
+              <h4>Fechas Clave</h4>
+            </div>
+            <div class="ws-sidebar-card__content">
               @if (record.officialStartDate) {
-                <div class="ws__info-row">
-                  <span class="ws__label">Inicio oficial</span>
-                  <span>{{ record.officialStartDate | date:'d MMM yyyy' }}</span>
+                <div class="ws-sidebar-row">
+                  <span class="ws-sidebar-row__label">Inicio Oficial</span>
+                  <span class="ws-sidebar-row__value">{{ record.officialStartDate | date:'d MMM yyyy' }}</span>
                 </div>
               }
               @if (record.expectedEndDate) {
-                <div class="ws__info-row">
-                  <span class="ws__label">Fin esperado</span>
+                <div class="ws-sidebar-row">
+                  <span class="ws-sidebar-row__label">Fecha de Cierre</span>
                   <app-deadline-chip [date]="record.expectedEndDate" />
                 </div>
               }
               @if (record.agreedDurationWeeks) {
-                <div class="ws__info-row">
-                  <span class="ws__label">Duración acordada</span>
-                  <span>{{ record.agreedDurationWeeks }} semanas</span>
+                <div class="ws-sidebar-row">
+                  <span class="ws-sidebar-row__label">Duración</span>
+                  <span class="ws-sidebar-row__value">{{ record.agreedDurationWeeks }} semanas</span>
                 </div>
               }
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
         }
 
-        <!-- Role context card -->
-        @if (contextRole(); as role) {
-          @if (role !== 'student' && role !== 'admin') {
-            <mat-card class="ws__role-card">
-              <mat-card-content>
-                <div class="ws__role-badge">
-                  <mat-icon>{{ roleIcon(role) }}</mat-icon>
-                  <span>{{ roleLabel(role) }}</span>
-                </div>
-                @if (role === 'company') {
-                  <p class="ws__tab-hint">
-                    Puedes gestionar entregables, revisar documentos y comunicarte con el estudiante.
-                  </p>
-                } @else if (role === 'asesor') {
-                  <p class="ws__tab-hint">
-                    Como asesor, puedes comentar el anteproyecto, revisar entregables y hacer seguimiento al progreso.
-                  </p>
-                } @else if (role === 'jurado_anteproyecto' || role === 'jurado_final') {
-                  <p class="ws__tab-hint">
-                    Como jurado, puedes evaluar y votar sobre las entregas asignadas a tu etapa.
-                  </p>
-                }
-              </mat-card-content>
-            </mat-card>
-          }
-        }
+        <!-- Role Context / Helpful Student Guidance Card -->
+        <div class="ws-sidebar-card ws-sidebar-card--guidance">
+          <div class="ws-sidebar-card__header">
+            <mat-icon>{{ isStudent() ? 'school' : roleIcon(contextRole() ?? '') }}</mat-icon>
+            <h4>{{ isStudent() ? 'Guía del Estudiante' : roleLabel(contextRole() ?? '') }}</h4>
+          </div>
+          <div class="ws-sidebar-card__content">
+            @if (isStudent()) {
+              <p class="ws-sidebar-tip">
+                Mantén una comunicación constante con tu tutor empresarial y tu asesor docente. Recuerda subir los entregables antes de las fechas límite para asegurar una evaluación oportuna.
+              </p>
+              <div class="ws-sidebar-tip-item">
+                <mat-icon>help_outline</mat-icon>
+                <span>¿Dudas sobre el proceso? Contacta a la coordinación de tu programa.</span>
+              </div>
+            } @else if (contextRole() === 'company') {
+              <p class="ws-sidebar-tip">
+                Puedes gestionar entregables, revisar documentos y comunicarte con el estudiante de forma continua.
+              </p>
+            } @else if (contextRole() === 'asesor') {
+              <p class="ws-sidebar-tip">
+                Como asesor docente, puedes comentar el anteproyecto, validar informes y acompañar al estudiante.
+              </p>
+            } @else {
+              <p class="ws-sidebar-tip">
+                Acceso con permisos de supervisión y gestión del proceso formativo institucional.
+              </p>
+            }
+          </div>
+        </div>
       </aside>
     </div>
+
   </div>
 } @else {
   <div class="ws">
     <app-empty-state
       icon="search_off"
       title="Proyecto no encontrado"
-      message="El proyecto que buscas no existe o no tienes acceso."
-      actionLabel="Volver"
+      message="El proyecto que buscas no existe o no tienes acceso autorizado."
+      actionLabel="Volver a mis postulaciones"
       (actionClicked)="goBack()" />
   </div>
 }

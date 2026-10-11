@@ -12,32 +12,82 @@
       <button mat-stroked-button (click)="reload()">Reintentar</button>
     </div>
   } @else if (context(); as ctx) {
-    <!-- Header -->
-    <div class="sw__header">
-      <button mat-icon-button (click)="goBack()" matTooltip="Volver">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      <div class="sw__header-text">
-        <h1>{{ project()?.title ?? 'Postulación' }}</h1>
-        <div class="sw__header-meta">
-          <app-status-badge [status]="application()!.status" domain="application" />
-          @if (isCompany() || isAdmin() || isAsesor()) {
-            <span class="sw__candidate-name">{{ candidateName() }}</span>
-          }
+    <!-- Header Cockpit -->
+    <header class="sw__header">
+      <div class="sw__header-nav">
+        <button mat-button class="sw__back-btn" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          <span>{{ isStudent() ? 'Mis postulaciones' : 'Volver' }}</span>
+        </button>
+        <div class="sw__breadcrumb">
+          <span>Collab-U</span>
+          <mat-icon class="sw__breadcrumb-sep">chevron_right</mat-icon>
+          <span>{{ isStudent() ? 'Estudiante' : 'Gestión' }}</span>
+          <mat-icon class="sw__breadcrumb-sep">chevron_right</mat-icon>
+          <span class="sw__breadcrumb-active">Proceso de Selección</span>
         </div>
       </div>
-      @if (can('chat') && !isTerminal()) {
-        <button mat-stroked-button (click)="startChat()" [disabled]="loadingChat()">
-          <mat-icon>chat</mat-icon> Mensaje
-        </button>
-      }
-    </div>
+
+      <div class="sw__header-main">
+        <div class="sw__header-content">
+          <div class="sw__header-badges">
+            <app-status-badge [status]="application()!.status" domain="application" />
+            @if (projectDetail()?.projectType; as pType) {
+              <span class="sw__pill sw__pill--type">
+                <mat-icon>school</mat-icon>
+                {{ pType }}
+              </span>
+            }
+            @if (projectDetail()?.locationType; as locType) {
+              <span class="sw__pill sw__pill--modality">
+                <mat-icon>{{ locType === 'remote' ? 'home_work' : 'business' }}</mat-icon>
+                {{ locType === 'remote' ? 'Remoto' : (locType === 'hybrid' ? 'Híbrido' : 'Presencial') }}
+              </span>
+            }
+            @if (isCompany() || isAdmin() || isAsesor()) {
+              <span class="sw__candidate-name">Candidato: <strong>{{ candidateName() }}</strong></span>
+            }
+          </div>
+
+          <h1 class="sw__title">{{ project()?.title ?? 'Postulación al Proyecto' }}</h1>
+
+          <div class="sw__company-strip">
+            <div class="sw__company-avatar">
+              @if (companyProfile()?.logoUrl) {
+                <img [src]="companyProfile()!.logoUrl" [alt]="companyProfile()!.companyName" />
+              } @else {
+                <mat-icon>business</mat-icon>
+              }
+            </div>
+            <span class="sw__company-name">{{ companyProfile()?.companyName ?? 'Empresa Anfitriona' }}</span>
+            @if (companyProfile()?.industry) {
+              <span class="sw__company-dot">·</span>
+              <span>{{ companyProfile()!.industry }}</span>
+            }
+          </div>
+        </div>
+
+        @if (can('chat') && !isTerminal()) {
+          <div class="sw__header-actions">
+            <button mat-flat-button color="primary" class="sw__chat-btn" (click)="startChat()" [disabled]="loadingChat()">
+              <mat-icon>chat</mat-icon>
+              <span>{{ loadingChat() ? 'Conectando...' : 'Mensaje' }}</span>
+            </button>
+          </div>
+        }
+      </div>
+    </header>
 
     <!-- Próximo paso -->
     @if (nextStep()) {
       <div class="sw__next-step" [class.sw__next-step--terminal]="isTerminal()">
-        <mat-icon>{{ isTerminal() ? 'info' : 'arrow_forward' }}</mat-icon>
-        <span>{{ nextStep() }}</span>
+        <div class="sw__next-step-icon">
+          <mat-icon>{{ isTerminal() ? 'info' : 'arrow_forward' }}</mat-icon>
+        </div>
+        <div class="sw__next-step-body">
+          <span class="sw__next-step-caption">Próximo paso en tu postulación</span>
+          <strong class="sw__next-step-text">{{ nextStep() }}</strong>
+        </div>
       </div>
     }
 

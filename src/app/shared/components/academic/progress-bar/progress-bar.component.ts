@@ -25,17 +25,51 @@ import { ProgressData } from '../../../../features/applications/services/applica
     </div>
   `,
   styles: [`
-    .progress-bar { padding: 12px 0; }
-    .progress-bar__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: .875rem; font-weight: 600; }
-    .progress-bar__label { display: flex; align-items: center; gap: 6px; }
+    .progress-bar {
+      padding: 14px 16px;
+      border-radius: var(--border-radius-sm, 8px);
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-subtle, #e2e9e3);
+    }
+    .progress-bar__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+    .progress-bar__label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--color-success, #2e854b);
+    }
     .progress-bar__label mat-icon { font-size: 18px; width: 18px; height: 18px; }
-    .progress-bar__track { height: 10px; border-radius: 6px; background: #f3f4f6; overflow: hidden; }
-    .progress-bar__fill { height: 100%; border-radius: 6px; transition: width .3s ease; background: #16a34a; }
-    .progress-bar--at_risk .progress-bar__fill { background: #d97706; }
-    .progress-bar--delayed .progress-bar__fill { background: #dc2626; }
+    .progress-bar__value { font-weight: 800; font-size: 1.125rem; color: var(--text-primary, #1a241c); }
+    .progress-bar__track {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg-tertiary, #e3e8e0);
+      overflow: hidden;
+    }
+    .progress-bar__fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+      background: linear-gradient(90deg, var(--color-primary, #388e53) 0%, var(--color-primary-light, #84c49b) 100%);
+    }
+    .progress-bar--at_risk .progress-bar__fill { background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%); }
+    .progress-bar--delayed .progress-bar__fill { background: linear-gradient(90deg, #dc2626 0%, #f87171 100%); }
     .progress-bar--at_risk .progress-bar__label { color: #d97706; }
     .progress-bar--delayed .progress-bar__label { color: #dc2626; }
-    .progress-bar__legend { display: flex; justify-content: space-between; margin-top: 4px; font-size: .75rem; color: #6b7280; }
+    .progress-bar__legend {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--text-tertiary, #6e7d70);
+    }
   `],
 })
 export class ProgressBarComponent {
