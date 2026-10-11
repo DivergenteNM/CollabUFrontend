@@ -477,3 +477,28 @@ a:focus-visible,
 .u-inline-3 { display: flex; gap: var(--space-3); align-items: center; }
 .u-inline-4 { display: flex; gap: var(--space-4); align-items: center; }
 
+// -----------------------------------------------------------------------------
+// 14.12 Dropdown de Notificaciones del Header (CDK Overlay)
+// -----------------------------------------------------------------------------
+
+.cdk-overlay-pane .mat-mdc-menu-panel.header__notif-menu-panel {
+  width: 400px;
+  max-width: min(400px, calc(100vw - 20px));
+  min-width: 320px;
+  border-radius: var(--border-radius-lg, 16px);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-card);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}
+
+.dark-theme .cdk-overlay-pane .mat-mdc-menu-panel.header__notif-menu-panel {
+  background-color: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border-subtle);
+}
+
