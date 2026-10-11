@@ -231,9 +231,10 @@ export class SelectionWorkspaceComponent {
     this.reload();
   }
 
-  private notifyError(message: string): void {
+  private notifyError(message: string, err?: any): void {
     this.busy.set(false);
-    this.snackBar.open(message, 'Cerrar', { duration: 4000 });
+    const msg = err?.error?.message || message;
+    this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
   }
 
   // ── Estado de la postulación ──
@@ -243,7 +244,7 @@ export class SelectionWorkspaceComponent {
     this.busy.set(true);
     this.applicationService.changeStatus(this.applicationId(), status as ApplicationStatus).subscribe({
       next: () => this.notifyAndReload('Estado actualizado'),
-      error: () => this.notifyError('No se pudo actualizar el estado'),
+      error: (err) => this.notifyError('No se pudo actualizar el estado', err),
     });
   }
 

@@ -74,7 +74,15 @@
               <div class="criterion">
                 <div class="criterion__head">
                   <div>
-                    <h3>{{ d.name }}</h3>
+                    <h3>
+                      {{ d.name }}
+                      <span class="criterion__required" aria-hidden="true">*</span>
+                      <mat-icon class="criterion__info-icon"
+                        [matTooltip]="categoryHint(d.category)"
+                        matTooltipPosition="above"
+                        aria-hidden="false"
+                        [attr.aria-label]="categoryHint(d.category)">info_outline</mat-icon>
+                    </h3>
                     @if (d.description) { <p>{{ d.description }}</p> }
                   </div>
                   <span class="criterion__score">{{ d.score }}<span>/100</span></span>
@@ -94,6 +102,7 @@
               </div>
               <mat-divider />
             }
+            <p class="edetail__required-note"><span class="criterion__required">*</span> Calificación obligatoria por criterio.</p>
 
             <div class="edetail__overall-form">
               <h3><mat-icon>summarize</mat-icon> Valoración global</h3>
@@ -105,18 +114,18 @@
               </div>
 
               <mat-form-field appearance="outline" class="full-w">
-                <mat-label>Comentario general</mat-label>
+                <mat-label>Comentario general (opcional)</mat-label>
                 <textarea matInput rows="3" [(ngModel)]="overallComment"></textarea>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-w">
-                <mat-label>Fortalezas</mat-label>
+                <mat-label>Fortalezas (opcional)</mat-label>
                 <textarea matInput rows="3" [(ngModel)]="strengths"
                   placeholder="Ej. Aporte técnico, iniciativa, calidad del trabajo entregado…"></textarea>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-w">
-                <mat-label>Áreas de mejora</mat-label>
+                <mat-label>Áreas de mejora (opcional)</mat-label>
                 <textarea matInput rows="3" [(ngModel)]="areasForImprovement"
                   placeholder="Ej. Comunicación, cumplimiento de plazos, profundidad del análisis…"></textarea>
               </mat-form-field>

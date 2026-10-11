@@ -96,6 +96,10 @@ export class AnalyticsService extends BaseApiService {
   getReport(id: string): Observable<Report> {
     return this.http.get<Report>(`${this.apiUrl}/reports/${id}`);
   }
+
+  downloadReportPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/reports/${id}/pdf`, { responseType: 'blob' });
+  }
 }
 
 export interface AcademicKpis {
@@ -104,7 +108,7 @@ export interface AcademicKpis {
     byRole: Record<string, number>;
     byStatus: Record<string, number>;
     avgAcceptanceHours: number | null;
-    supervisorWorkload: { supervisorId: string; activeCount: number }[];
+    supervisorWorkload: { supervisorId: string; supervisorName: string | null; activeCount: number }[];
   } | null;
   academicStats: {
     totalRecords: number;

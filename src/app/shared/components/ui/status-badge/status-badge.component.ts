@@ -8,10 +8,12 @@ import { StatusDomain, statusOf, statusColors } from '../../../../core/status/st
   imports: [MatIconModule],
   host: {
     'class': 'status-badge',
-    '[class]': '"status-badge--" + size()',
+    '[class]': '"status-badge--" + size() + " status-badge--" + resolved().tone',
     '[style.--badge-color]': 'resolved().color',
     '[style.--badge-bg]': 'resolved().bg',
+    '[style.--badge-border]': 'resolved().border',
     '[attr.aria-label]': '"Estado: " + resolved().label',
+    '[attr.title]': 'resolved().description || ("Estado: " + resolved().label)',
   },
   templateUrl: './status-badge.component.html',
   styleUrl: './status-badge.component.scss',
@@ -24,7 +26,7 @@ export class StatusBadgeComponent {
   readonly resolved = computed(() => {
     const cfg = statusOf(this.domain(), this.status());
     const colors = statusColors(cfg.tone);
-    return { label: cfg.label, icon: cfg.icon, ...colors };
+    return { label: cfg.label, icon: cfg.icon, tone: cfg.tone, description: cfg.description, ...colors };
   });
 
   readonly statusConfig = this.resolved;

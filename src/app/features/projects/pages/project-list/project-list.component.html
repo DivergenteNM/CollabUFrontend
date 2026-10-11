@@ -18,39 +18,59 @@
     <aside class="sidebar-filters desktop-only">
       <div class="sidebar-header">
         <h2 class="sidebar-title">Filtros Avanzados</h2>
-        @if (selectedCategory() || selectedDuration() || selectedSkill() || searchText()) {
+        @if (selectedProjectType() || selectedLocationType() || selectedDuration() || selectedSkill() || searchText()) {
           <button type="button" class="btn-clear-filters" (click)="clearFilters()">
             Limpiar
           </button>
         }
       </div>
 
-      <!-- Section: Categoría -->
+      <!-- Section: Tipo de proyecto -->
       <div class="filter-section">
         <button
           type="button"
           class="filter-section-header"
           (click)="categoryOpen.update(v => !v)"
           [attr.aria-expanded]="categoryOpen()">
-          <span class="section-title">Categoría</span>
+          <span class="section-title">Tipo de proyecto</span>
           <mat-icon class="section-chevron">{{ categoryOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
 
         @if (categoryOpen()) {
           <div class="filter-options">
-            @for (cat of categories; track cat.id) {
+            @for (type of projectTypes; track type.id) {
               <label class="custom-checkbox-label">
                 <input
                   type="checkbox"
                   class="custom-checkbox-input"
-                  [checked]="selectedCategory() === cat.id"
-                  (change)="toggleCategory(cat.id)" />
+                  [checked]="selectedProjectType() === type.id"
+                  (change)="toggleProjectType(type.id)" />
                 <span class="custom-checkbox-box"></span>
-                <span class="option-text">{{ cat.label }}</span>
+                <span class="option-text">{{ type.label }}</span>
               </label>
             }
           </div>
         }
+      </div>
+
+      <!-- Section: Modalidad -->
+      <div class="filter-section">
+        <div class="filter-section-header">
+          <span class="section-title">Modalidad</span>
+        </div>
+        <div class="filter-options">
+          @for (loc of locationTypes; track loc.id) {
+            <label class="custom-checkbox-label">
+              <input
+                type="checkbox"
+                class="custom-checkbox-input"
+                [checked]="selectedLocationType() === loc.id"
+                (change)="toggleLocationType(loc.id)" />
+              <span class="custom-checkbox-box"></span>
+              <span class="option-text">{{ loc.label }}</span>
+            </label>
+          }
+        </div>
       </div>
 
       <!-- Section: Duración -->
@@ -237,21 +257,41 @@
       </div>
 
       <div class="mobile-drawer-body">
-        <!-- Section: Categoría -->
+        <!-- Section: Tipo de proyecto -->
         <div class="filter-section">
           <div class="filter-section-header">
-            <span class="section-title">Categoría</span>
+            <span class="section-title">Tipo de proyecto</span>
           </div>
           <div class="filter-options">
-            @for (cat of categories; track cat.id) {
+            @for (type of projectTypes; track type.id) {
               <label class="custom-checkbox-label">
                 <input
                   type="checkbox"
                   class="custom-checkbox-input"
-                  [checked]="selectedCategory() === cat.id"
-                  (change)="toggleCategory(cat.id)" />
+                  [checked]="selectedProjectType() === type.id"
+                  (change)="toggleProjectType(type.id)" />
                 <span class="custom-checkbox-box"></span>
-                <span class="option-text">{{ cat.label }}</span>
+                <span class="option-text">{{ type.label }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Section: Modalidad -->
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <span class="section-title">Modalidad</span>
+          </div>
+          <div class="filter-options">
+            @for (loc of locationTypes; track loc.id) {
+              <label class="custom-checkbox-label">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox-input"
+                  [checked]="selectedLocationType() === loc.id"
+                  (change)="toggleLocationType(loc.id)" />
+                <span class="custom-checkbox-box"></span>
+                <span class="option-text">{{ loc.label }}</span>
               </label>
             }
           </div>

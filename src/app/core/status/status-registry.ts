@@ -3,7 +3,8 @@ import { ApplicationStatus, ProjectStatus } from '../enums';
 export interface StatusConfig {
   label: string;
   icon: string;
-  tone: 'success' | 'warning' | 'error' | 'info' | 'neutral';
+  tone: 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'interview';
+  description?: string;
 }
 
 export type StatusDomain =
@@ -17,27 +18,27 @@ export type StatusDomain =
   | 'evaluation';
 
 const APPLICATION: Record<string, StatusConfig> = {
-  [ApplicationStatus.PENDING]:            { label: 'Pendiente',            icon: 'schedule',       tone: 'warning' },
-  [ApplicationStatus.UNDER_REVIEW]:       { label: 'En revisión',          icon: 'visibility',     tone: 'info' },
-  [ApplicationStatus.SHORTLISTED]:        { label: 'Preseleccionada',      icon: 'star_outline',   tone: 'info' },
-  [ApplicationStatus.INTERVIEW]:          { label: 'Entrevista',           icon: 'event',          tone: 'info' },
-  [ApplicationStatus.ACCEPTED]:           { label: 'Aceptada',             icon: 'check_circle',   tone: 'success' },
-  [ApplicationStatus.PENDING_SUPERVISOR]: { label: 'Esperando asesor',     icon: 'person_search',  tone: 'warning' },
-  [ApplicationStatus.REJECTED]:           { label: 'Rechazada',            icon: 'cancel',         tone: 'error' },
-  [ApplicationStatus.IN_PROGRESS]:        { label: 'En progreso',          icon: 'play_circle',    tone: 'info' },
-  [ApplicationStatus.COMPLETED]:          { label: 'Completada',           icon: 'task_alt',       tone: 'success' },
-  [ApplicationStatus.CANCELLED]:          { label: 'Cancelada',            icon: 'block',          tone: 'neutral' },
-  [ApplicationStatus.WITHDRAWN]:          { label: 'Retirada',             icon: 'undo',           tone: 'neutral' },
+  [ApplicationStatus.PENDING]:            { label: 'Pendiente',            icon: 'schedule',       tone: 'warning',   description: 'Pendiente: La postulación fue enviada y está en espera de revisión por la empresa.' },
+  [ApplicationStatus.UNDER_REVIEW]:       { label: 'En revisión',          icon: 'visibility',     tone: 'info',      description: 'En revisión: La empresa está evaluando el perfil y los antecedentes del postulante.' },
+  [ApplicationStatus.SHORTLISTED]:        { label: 'Preseleccionada',      icon: 'star_outline',   tone: 'info',      description: 'Preseleccionada: El estudiante avanzó a la lista de candidatos preseleccionados.' },
+  [ApplicationStatus.INTERVIEW]:          { label: 'Entrevista',           icon: 'event',          tone: 'interview', description: 'Entrevista: Se ha programado una entrevista o evaluación con el postulante.' },
+  [ApplicationStatus.ACCEPTED]:           { label: 'Aceptada',             icon: 'check_circle',   tone: 'success',   description: 'Aceptada: El estudiante fue seleccionado e incorporado al proyecto.' },
+  [ApplicationStatus.PENDING_SUPERVISOR]: { label: 'Esperando asesor',     icon: 'person_search',  tone: 'warning',   description: 'Esperando asesor: Pendiente de asignación de tutor o asesor académico.' },
+  [ApplicationStatus.REJECTED]:           { label: 'Rechazada',            icon: 'cancel',         tone: 'error',     description: 'Rechazada: La postulación no fue seleccionada en esta convocatoria.' },
+  [ApplicationStatus.IN_PROGRESS]:        { label: 'En progreso',          icon: 'play_circle',    tone: 'info',      description: 'En progreso: El estudiante se encuentra trabajando activamente en el proyecto.' },
+  [ApplicationStatus.COMPLETED]:          { label: 'Completada',           icon: 'task_alt',       tone: 'success',   description: 'Completada: Las actividades del estudiante en el proyecto finalizaron con éxito.' },
+  [ApplicationStatus.CANCELLED]:          { label: 'Cancelada',            icon: 'block',          tone: 'neutral',   description: 'Cancelada: La postulación fue cancelada.' },
+  [ApplicationStatus.WITHDRAWN]:          { label: 'Retirada',             icon: 'undo',           tone: 'neutral',   description: 'Retirada: El estudiante retiró voluntariamente su postulación.' },
 };
 
 const PROJECT: Record<string, StatusConfig> = {
-  [ProjectStatus.DRAFT]:            { label: 'Borrador',         icon: 'edit',         tone: 'neutral' },
-  [ProjectStatus.NEEDS_CHANGES]:    { label: 'Necesita cambios', icon: 'rate_review',  tone: 'warning' },
-  [ProjectStatus.PENDING_APPROVAL]: { label: 'En revisión',      icon: 'pending',      tone: 'warning' },
-  [ProjectStatus.PUBLISHED]:        { label: 'Publicado',        icon: 'public',       tone: 'success' },
-  [ProjectStatus.IN_PROGRESS]:      { label: 'En progreso',      icon: 'play_circle',  tone: 'info' },
-  [ProjectStatus.COMPLETED]:        { label: 'Completado',       icon: 'task_alt',     tone: 'success' },
-  [ProjectStatus.CANCELLED]:        { label: 'Cancelado',        icon: 'block',        tone: 'neutral' },
+  [ProjectStatus.DRAFT]:            { label: 'Borrador',         icon: 'edit',         tone: 'neutral', description: 'Borrador: En edición preliminar. No es visible para estudiantes ni ha sido enviado a revisión.' },
+  [ProjectStatus.NEEDS_CHANGES]:    { label: 'Necesita cambios', icon: 'rate_review',  tone: 'warning', description: 'Requiere cambios: La coordinación académica revisó el proyecto y solicitó ajustes antes de su aprobación.' },
+  [ProjectStatus.PENDING_APPROVAL]: { label: 'En revisión',      icon: 'pending',      tone: 'warning', description: 'En revisión: Enviado a la facultad. Pendiente de evaluación y aprobación institucional.' },
+  [ProjectStatus.PUBLISHED]:        { label: 'Publicado',        icon: 'public',       tone: 'success', description: 'Publicado: Convocatoria abierta y aprobada. Los estudiantes pueden consultar el proyecto y postularse.' },
+  [ProjectStatus.IN_PROGRESS]:      { label: 'En progreso',      icon: 'play_circle',  tone: 'info',    description: 'En progreso: Cuenta con estudiantes asignados y se encuentra en ejecución activa.' },
+  [ProjectStatus.COMPLETED]:        { label: 'Completado',       icon: 'task_alt',     tone: 'success', description: 'Completado: Ha finalizado todas las actividades, entregables y evaluaciones exitosamente.' },
+  [ProjectStatus.CANCELLED]:        { label: 'Cancelado',        icon: 'block',        tone: 'neutral', description: 'Cancelado: Convocatoria o ejecución cancelada. No admite más postulaciones ni actividades.' },
 };
 
 const ACADEMIC_RECORD: Record<string, StatusConfig> = {
@@ -106,7 +107,7 @@ const REGISTRIES: Record<StatusDomain, Record<string, StatusConfig>> = {
   evaluation: EVALUATION,
 };
 
-const FALLBACK: StatusConfig = { label: '', icon: 'help', tone: 'neutral' };
+const FALLBACK: StatusConfig = { label: '', icon: 'help', tone: 'neutral', description: 'Estado no catalogado' };
 
 export function statusOf(domain: StatusDomain, value: string): StatusConfig {
   return REGISTRIES[domain][value] ?? { ...FALLBACK, label: value };
@@ -116,14 +117,19 @@ export function statusLabel(domain: StatusDomain, value: string): string {
   return statusOf(domain, value).label;
 }
 
-const TONE_COLORS: Record<StatusConfig['tone'], { color: string; bg: string }> = {
-  success: { color: '#18572F', bg: '#E6F5EB' },
-  warning: { color: '#834D09', bg: '#FEF5E7' },
-  error:   { color: '#8C1E1E', bg: '#FDF0F0' },
-  info:    { color: '#154D6F', bg: '#E6F2FA' },
-  neutral: { color: '#4A584C', bg: '#EEF2EC' },
+export function statusDescription(domain: StatusDomain, value: string): string {
+  return statusOf(domain, value).description ?? statusOf(domain, value).label;
+}
+
+const TONE_COLORS: Record<StatusConfig['tone'], { color: string; bg: string; border: string }> = {
+  success:   { color: 'var(--color-success-text)', bg: 'var(--color-success-bg)', border: 'var(--color-success-border)' },
+  warning:   { color: 'var(--color-warning-text)', bg: 'var(--color-warning-bg)', border: 'var(--color-warning-border)' },
+  error:     { color: 'var(--color-error-text)',   bg: 'var(--color-error-bg)',   border: 'var(--color-error-border)' },
+  info:      { color: 'var(--color-info-text)',    bg: 'var(--color-info-bg)',    border: 'var(--color-info-border)' },
+  neutral:   { color: 'var(--text-secondary)',     bg: 'var(--bg-secondary)',     border: 'var(--border-color)' },
+  interview: { color: 'var(--color-success-text)', bg: 'var(--color-success-bg)', border: 'var(--color-success-border)' },
 };
 
-export function statusColors(tone: StatusConfig['tone']): { color: string; bg: string } {
-  return TONE_COLORS[tone];
+export function statusColors(tone: StatusConfig['tone']): { color: string; bg: string; border: string } {
+  return TONE_COLORS[tone] ?? TONE_COLORS.neutral;
 }

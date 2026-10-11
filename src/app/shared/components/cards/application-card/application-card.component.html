@@ -1,64 +1,244 @@
-<mat-card class="application-card__container">
-  <mat-card-header>
-    <mat-card-title>
-      @if (viewMode() === 'student') {
-      {{ application().project?.title || application().projectTitle || 'Proyecto' }}
-      } @else {
-      <div class="application-card__title-company">
-        <div class="student-name">
-          @if (application().student?.user) {
-          Estudiante: {{ application().student!.user!.firstName }} {{ application().student!.user!.lastName }}
-          } @else {
-          Estudiante #{{ application().student?.studentCode || application().studentId }}
+<div
+  class="app-card"
+  [class.app-card--interview]="isInterview()"
+  [class.app-card--academic]="isAcademicPhase()"
+  [class.app-card--workspace]="isWorkspacePhase()">
+  <!-- Top row: estado + indicador + menú contextual -->
+  <div class="app-card__top">
+    <div class="app-card__status-group">
+      <app-status-badge [status]="application().status" size="sm" />
+      <span
+        class="app-card__indicator"
+        [class.app-card__indicator--active]="isActive()"
+        [matTooltip]="isActive() ? 'Postulación en proceso activo' : 'Postulación finalizada o cerrada'">
+        <span class="app-card__indicator-dot"></span>
+      </span>
+    </div>
+
+    <!-- Menú de opciones rápidas (Estudiante) -->
+    @if (viewMode() === 'student') {
+      <div class="app-card__options">
+        @if (application().coverLetter) {
+          <button
+            type="button"
+            class="app-card__pill-icon-btn"
+            matTooltip="Ver carta de presentación enviada"
+            (click)="viewCoverLetter.emit(application())">
+            <mat-icon>mail_outline</mat-icon>
+          </button>
+        }
+        <button
+          type="button"
+          class="app-card__menu-trigger"
+          [matMenuTriggerFor]="studentCardMenu"
+          aria-label="Más opciones"
+          matTooltip="Opciones">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #studentCardMenu="matMenu">
+          <button mat-menu-item (click)="viewDetail.emit(application().id)">
+            <mat-icon>{{ primaryAction().icon }}</mat-icon>
+            <span>{{ primaryAction().label }}</span>
+          </button>
+          @if (application().coverLetter) {
+            <button mat-menu-item (click)="viewCoverLetter.emit(application())">
+              <mat-icon>mail_outline</mat-icon>
+              <span>Ver Carta de Presentación</span>
+            </button>
           }
-        </div>
-        @if (application().project?.title || application().projectTitle) {
-        <span class="project-tag">{{ application().project?.title || application().projectTitle }}</span>
+          @if (canWithdraw()) {
+            <button mat-menu-item class="menu-item-danger" (click)="withdraw.emit(application().id)">
+              <mat-icon color="warn">undo</mat-icon>
+              <span class="text-danger">Retirar Postulación</span>
+            </button>
+          }
+        </mat-menu>
+      </div>
+    }
+  </div>
+
+  <!-- Banner contextual destacado según estado y fase -->
+  @if (isInterview()) {
+    <div class="app-card__highlight-banner app-card__highlight-banner--interview">
+      <mat-icon>event_available</mat-icon>
+      <div class="highlight-text">
+        <strong>Entrevista programada</strong>
+        @if (upcomingInterview()) {
+          <span>{{ upcomingInterview()!.scheduledAt | date:'EEE d MMM, h:mm a' }}</span>
+        } @else {
+          <span>Revisa los detalles en el workspace</span>
         }
       </div>
-      }
-    </mat-card-title>
-    <mat-card-subtitle class="application-card__subtitle">
-      <app-status-badge [status]="application().status" size="sm" />
-      <span class="application-card__date">
-        <mat-icon>calendar_today</mat-icon>
-        {{ application().appliedAt | date:'d MMM yyyy' }}
-      </span>
-    </mat-card-subtitle>
-  </mat-card-header>
-
-  <mat-card-content>
-    <app-application-progress-stepper [currentStatus]="application().status" />
-
-    @if (application().coverLetter) {
-    <p class="application-card__cover">{{ application().coverLetter }}</p>
-    }
-
-    @if (application().matchScore) {
-    <div class="application-card__score">
-      <mat-icon>star</mat-icon>
-      Match: {{ application().matchScore }}%
     </div>
-    }
-  </mat-card-content>
+  } @else if (isPendingSupervisor()) {
+    <div class="app-card__highlight-banner app-card__highlight-banner--academic">
+      <mat-icon>school</mat-icon>
+      <div class="highlight-text">
+        <strong>Asignación de asesor docente</strong>
+        <span>Coordinación académica está gestionando tu tutor institucional</span>
+      </div>
+    </div>
+  } @else if (isAccepted()) {
+    <div class="app-card__highlight-banner app-card__highlight-banner--accepted">
+      <mat-icon>celebration</mat-icon>
+      <div class="highlight-text">
+        <strong>¡Postulación seleccionada!</strong>
+        <span>Pasa a visto bueno y asignación de asesor institucional</span>
+      </div>
+    </div>
+  } @else if (isInProgress()) {
+    <div class="app-card__highlight-banner app-card__highlight-banner--workspace">
+      <mat-icon>rocket_launch</mat-icon>
+      <div class="highlight-text">
+        <strong>Proyecto en desarrollo activo</strong>
+        <span>Accede a tus entregables y colaboración en el Workspace</span>
+      </div>
+    </div>
+  }
 
-  <mat-card-actions align="end">
-    <button mat-button (click)="viewDetail.emit(application().id)">
-      <mat-icon>visibility</mat-icon> Ver Detalle
-    </button>
-
-    @if (viewMode() === 'company' && canChangeStatus()) {
-    <button mat-flat-button [matMenuTriggerFor]="statusMenu">
-      <mat-icon>edit</mat-icon> Cambiar Estado
-    </button>
-    <mat-menu #statusMenu="matMenu">
-      @for (action of availableActions(); track action.status) {
-      <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
-        <mat-icon>{{ action.icon }}</mat-icon>
-        {{ action.label }}
-      </button>
+  <!-- Header: icono temático + título + contexto -->
+  <div class="app-card__header">
+    <div class="app-card__icon-box" [class]="theme().bgClass">
+      <mat-icon [class]="theme().colorClass">{{ theme().icon }}</mat-icon>
+    </div>
+    <div class="app-card__header-body">
+      @if (viewMode() === 'student') {
+        <h3 class="app-card__title" [title]="application().project?.title || application().projectTitle || 'Proyecto'">
+          {{ application().project?.title || application().projectTitle || 'Proyecto' }}
+        </h3>
+        <div class="app-card__subtitle-row">
+          @if (application().companyName || application().project?.companyName) {
+            <span class="app-card__subtitle">
+              <mat-icon>apartment</mat-icon>{{ application().companyName || application().project?.companyName }}
+            </span>
+          }
+          @if (locationTypeLabel()) {
+            <span class="app-card__chip app-card__chip--location">
+              <mat-icon>location_on</mat-icon>{{ locationTypeLabel() }}
+            </span>
+          }
+        </div>
+      } @else {
+        <h3 class="app-card__title">
+          @if (application().student?.user) {
+            {{ application().student!.user!.firstName }} {{ application().student!.user!.lastName }}
+          } @else {
+            Estudiante #{{ application().student?.studentCode || application().studentId }}
+          }
+        </h3>
+        @if (application().project?.title || application().projectTitle) {
+          <span class="app-card__subtitle">
+            <mat-icon>folder_open</mat-icon>{{ application().project?.title || application().projectTitle }}
+          </span>
+        }
       }
-    </mat-menu>
+    </div>
+  </div>
+
+  <!-- Tags / Habilidades del proyecto (si existen) -->
+  @if (projectSkills().length > 0) {
+    <div class="app-card__skills-row">
+      @for (skill of projectSkills(); track skill.name) {
+        <span class="app-card__skill-tag">{{ skill.name }}</span>
+      }
+    </div>
+  }
+
+  <!-- Carta de presentación compacta -->
+  @if (application().coverLetter) {
+    <div
+      class="app-card__cover-chip"
+      (click)="viewCoverLetter.emit(application())"
+      role="button"
+      tabindex="0"
+      matTooltip="Clic para ver carta completa">
+      <mat-icon>mail_outline</mat-icon>
+      <span class="cover-text">"{{ application().coverLetter }}"</span>
+      <span class="cover-more">Ver</span>
+    </div>
+  }
+
+  <!-- Metadata + match score -->
+  <div class="app-card__info-row">
+    <div class="app-card__metadata">
+      <div class="app-card__meta-item">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Postulado: <strong>{{ application().appliedAt | date:'d MMM yyyy' }}</strong></span>
+      </div>
+      @if (application().reviewedAt) {
+        <div class="app-card__meta-item">
+          <mat-icon>fact_check</mat-icon>
+          <span>Revisado: <strong>{{ application().reviewedAt | date:'d MMM yyyy' }}</strong></span>
+        </div>
+      }
+    </div>
+
+    @if (normalizedMatchScore() !== null) {
+      <div class="app-card__gauge" [matTooltip]="'Nivel de afinidad con el perfil: ' + normalizedMatchScore() + '%'">
+        <svg viewBox="0 0 64 64">
+          <circle class="app-card__gauge-track" cx="32" cy="32" r="26" fill="none" stroke-width="5" />
+          <circle class="app-card__gauge-progress" cx="32" cy="32" r="26" fill="none" stroke-width="5"
+            [style.strokeDasharray]="circumference" [style.strokeDashoffset]="strokeDashoffset()" />
+        </svg>
+        <div class="app-card__gauge-label">
+          <span class="app-card__gauge-value">{{ normalizedMatchScore() }}%</span>
+          <span class="app-card__gauge-sub">Match</span>
+        </div>
+      </div>
     }
-  </mat-card-actions>
-</mat-card>
+  </div>
+
+  <!-- Progreso Modular por Macro-Fases -->
+  <div class="app-card__stepper-panel">
+    <app-macro-phase-stepper
+      [status]="application().status"
+      [hasUpcomingInterview]="!!upcomingInterview()" />
+  </div>
+
+  <!-- Acciones -->
+  <div class="app-card__actions">
+    @if (viewMode() === 'student') {
+      <button
+        type="button"
+        class="app-btn"
+        [class]="primaryAction().class"
+        (click)="viewDetail.emit(application().id)">
+        <mat-icon>{{ primaryAction().icon }}</mat-icon>
+        <span>{{ primaryAction().label }}</span>
+      </button>
+
+      @if (canWithdraw()) {
+        <button
+          type="button"
+          class="app-btn app-btn--subtle-danger"
+          matTooltip="Retirar postulación voluntariamente"
+          (click)="withdraw.emit(application().id)">
+          <mat-icon>undo</mat-icon>
+          <span>Retirar</span>
+        </button>
+      }
+    } @else {
+      <!-- Company View Mode -->
+      <button type="button" class="app-btn app-btn--detail" (click)="viewDetail.emit(application().id)">
+        <mat-icon>visibility</mat-icon>
+        <span>Ver Detalle</span>
+      </button>
+
+      @if (canChangeStatus()) {
+        <button type="button" class="app-btn app-btn--primary" [matMenuTriggerFor]="statusMenu">
+          <mat-icon>edit</mat-icon>
+          <span>Cambiar Estado</span>
+        </button>
+        <mat-menu #statusMenu="matMenu">
+          @for (action of availableActions(); track action.status) {
+            <button mat-menu-item (click)="changeStatus.emit({ id: application().id, status: action.status })">
+              <mat-icon>{{ action.icon }}</mat-icon>
+              {{ action.label }}
+            </button>
+          }
+        </mat-menu>
+      }
+    }
+  </div>
+</div>

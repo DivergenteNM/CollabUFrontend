@@ -11,9 +11,12 @@ const httpProtocol = isBrowser && window.location.protocol === 'https:' ? 'https
 const wsProtocol = httpProtocol === 'https:' ? 'wss:' : 'ws:';
 // El api-gateway se publica siempre en el puerto 3000 del mismo host que sirve el frontend.
 const gatewayPort = 3000;
+const appPort = isBrowser && window.location.port ? `:${window.location.port}` : '';
+const siteUrl = isBrowser ? `${httpProtocol}//${host}${appPort}` : 'https://collab-u.udenar.edu.co';
 
 export const environment = {
   production: false,
+  siteUrl,
   apiUrl: `${httpProtocol}//${host}:${gatewayPort}/api/v1`,
   wsUrl: `${wsProtocol}//${host}:${gatewayPort}`,
   wsNotificationsPath: '/ws/notifications',

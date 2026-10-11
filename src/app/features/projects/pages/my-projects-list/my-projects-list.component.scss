@@ -88,6 +88,44 @@
   }
 }
 
+.project-card__status-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-card__status-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.20);
+  color: #fff;
+  cursor: help;
+  transition: all var(--transition-fast, 150ms ease);
+  backdrop-filter: blur(4px);
+  outline: none;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.38);
+    border-color: rgba(255, 255, 255, 0.90);
+    transform: scale(1.08);
+  }
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 15px;
+    color: #fff;
+  }
+}
+
 .project-card__body {
   flex: 1;
   padding: 20px !important;

@@ -1,14 +1,13 @@
 import { Component, ChangeDetectionStrategy, computed, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { httpResource } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
-import { environment } from '../../../../../environments/environment';
-import { SkillTrend } from '../../../../core/models';
+import { AnalyticsService } from '../../../analytics/services/analytics.service';
 import { SkillGapChartComponent } from '../../../../shared/components/charts/skill-gap-chart/skill-gap-chart.component';
 
 @Component({
@@ -24,10 +23,11 @@ import { SkillGapChartComponent } from '../../../../shared/components/charts/ski
 })
 export class SkillTrendsComponent {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly analyticsService = inject(AnalyticsService);
 
-  readonly topSkills = httpResource<SkillTrend[]>(() => {
-    if (!isPlatformBrowser(this.platformId)) return undefined;
-    return { url: `${environment.apiUrl}/analytics/skills/top` };
+  readonly topSkills = rxResource({
+    params: () => (isPlatformBrowser(this.platformId) ? {} : undefined),
+    stream: () => this.analyticsService.getTopSkills(),
   });
 
   readonly displayedColumns = ['rank', 'skill', 'demand', 'supply', 'gap', 'trend'];

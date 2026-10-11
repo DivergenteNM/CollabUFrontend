@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { BaseApiService } from './base-api.service';
 import { ApiResponse } from '../models';
 
@@ -46,14 +47,12 @@ export class StorageService extends BaseApiService {
       map((res: any) => {
         const raw = res?.data ?? res;
         const fileId = raw.id ?? raw.fileId;
-        // Storage devuelve publicUrl solo para archivos con isPublic=true.
-        // Para archivos privados (todos los del flujo académico) construimos
-        // la URL del endpoint autenticado, así el caller puede pasarla como
-        // fileUrl sin quedar en null y el interceptor añade el Bearer.
-        const url =
-          raw.publicUrl
-          ?? raw.url
-          ?? (fileId ? `${this.apiUrl}/files/${fileId}/download` : '');
+        let url = raw.publicUrl ?? raw.url ?? '';
+        if (!url && fileId) {
+          url = `${this.apiUrl}/files/${fileId}/download`;
+        } else if (url && url.startsWith('/')) {
+          url = `${environment.apiUrl.replace(/\/api\/v1\/?$/, '')}${url}`;
+        }
         return { data: { fileId, url } } as ApiResponse<{ fileId: string; url: string }>;
       }),
     );
@@ -127,8 +126,19 @@ export class StorageService extends BaseApiService {
     return this.http.get<ApiResponse<{ usedBytes: number; totalBytes: number; percentage: number }>>(`${this.apiUrl}/quota`);
   }
 
+  getUserFiles(query?: { category?: string; page?: number; limit?: number }): Observable<{ data: StoredFileInfo[]; total: number; page: number; limit: number; totalPages: number }> {
+    const params: Record<string, string> = {};
+    if (query?.category) params['category'] = query.category;
+    if (query?.page) params['page'] = query.page.toString();
+    if (query?.limit) params['limit'] = query.limit.toString();
+    return this.http.get<{ data: StoredFileInfo[]; total: number; page: number; limit: number; totalPages: number }>(
+      `${this.apiUrl}/files`,
+      { params },
+    );
+  }
+
   deleteFile(fileId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${fileId}`);
+    return this.http.delete<void>(`${this.apiUrl}/files/${fileId}`);
   }
 }
 

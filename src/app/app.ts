@@ -37,6 +37,9 @@ export class App implements OnInit {
   private readonly seoService = inject(SeoService);
 
   ngOnInit(): void {
+    // Inyectar microdatos institucionales Schema.org en <head>
+    this.seoService.setInstitutionalStructuredData();
+
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -50,12 +53,20 @@ export class App implements OnInit {
         const description = data?.['description'];
         const keywords = data?.['keywords'];
         const robots = data?.['robots'] || 'noindex, nofollow';
+        const ogTitle = data?.['ogTitle'];
+        const ogDescription = data?.['ogDescription'];
+        const ogImage = data?.['ogImage'];
+        const ogType = data?.['ogType'];
 
         this.seoService.setMetaTags({
           title,
           description,
           keywords,
           robots,
+          ogTitle,
+          ogDescription,
+          ogImage,
+          ogType,
         });
       });
   }

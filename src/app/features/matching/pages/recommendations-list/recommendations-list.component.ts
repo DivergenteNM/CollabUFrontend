@@ -2,6 +2,7 @@ import {
   Component, ChangeDetectionStrategy, inject, signal, computed,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,6 +25,7 @@ import {
   selector: 'app-recommendations-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DecimalPipe,
     MatButtonModule, MatIconModule, MatCardModule, MatChipsModule, MatDialogModule,
     MatchScoreBarComponent, PaginatorComponent, EmptyStateComponent, SkeletonComponent,
   ],

@@ -27,7 +27,7 @@
 }
 
 .conv-section-label--group {
-  color: var(--mat-sys-secondary, #1e3a8a);
+  color: var(--color-primary-400, #34D399);
 }
 
 .conv-link {
@@ -105,8 +105,8 @@
   }
 
   &.group {
-    background: var(--color-accent-100, #D9EBF6);
-    color: var(--color-accent-800, #184059);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-primary-400);
   }
 }
 
@@ -120,7 +120,7 @@
 .conv-item__avatar-initials {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--color-primary-800, #1B4529);
+  color: var(--color-primary-400, #34D399);
   user-select: none;
 }
 
@@ -144,8 +144,8 @@
 
   &.group {
     border-radius: 14px;
-    background: var(--mat-sys-secondary-container, #e0e7ff);
-    color: var(--mat-sys-on-secondary-container, #1e3a8a);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-primary-400);
   }
 }
 

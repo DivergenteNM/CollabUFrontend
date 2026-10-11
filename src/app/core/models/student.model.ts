@@ -26,8 +26,6 @@ export interface StudentProfile {
   availableHoursPerWeek?: number;
   willingToRelocate?: boolean;
   isVisible?: boolean;
-  practiceHoursCompleted?: number;
-  practiceHoursRequired?: number;
   skills: StudentSkill[];
   experiences: StudentExperience[];
   education: StudentEducation[];

@@ -405,13 +405,13 @@ interface AssignDialogData {
     }
     .asd-header-icon {
       width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-      background: color-mix(in srgb, var(--mat-sys-primary, #1565c0) 12%, transparent);
-      color: var(--mat-sys-primary, #1565c0);
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--color-primary-400);
       display: flex; align-items: center; justify-content: center;
       mat-icon { font-size: 22px; width: 22px; height: 22px; }
     }
     .asd-title { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
-    .asd-subtitle { margin: 4px 0 0; font-size: .8125rem; color: var(--text-secondary, #666); }
+    .asd-subtitle { margin: 4px 0 0; font-size: .8125rem; color: var(--text-secondary); }
 
     .asd-content {
       min-width: 480px; max-width: 560px;
@@ -420,7 +420,8 @@ interface AssignDialogData {
     }
 
     .asd-summary {
-      background: var(--mat-sys-surface-container-low, #f5f5f5);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
       border-radius: 10px;
       padding: 12px 16px;
       display: flex; flex-direction: column; gap: 8px;
@@ -429,16 +430,16 @@ interface AssignDialogData {
     .asd-summary-row {
       display: flex; align-items: center; gap: 10px;
       font-size: .8125rem;
-      mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--text-secondary, #888); flex-shrink: 0; }
+      mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--text-tertiary); flex-shrink: 0; }
     }
-    .asd-summary-label { color: var(--text-secondary, #666); min-width: 90px; flex-shrink: 0; }
-    .asd-summary-value { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .asd-summary-label { color: var(--text-secondary); min-width: 90px; flex-shrink: 0; }
+    .asd-summary-value { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
 
     .asd-section { margin-bottom: 8px; }
     .asd-section-title {
       margin: 0 0 8px; font-size: .75rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: .04em;
-      color: var(--text-secondary, #888);
+      color: var(--text-secondary);
     }
     .asd-optional { text-transform: none; font-weight: 400; letter-spacing: normal; }
 
@@ -446,8 +447,10 @@ interface AssignDialogData {
 
     .asd-warn {
       display: flex; align-items: center; gap: 8px;
-      color: #e65100; font-size: .8125rem;
-      background: #fff3e0; padding: 10px 14px; border-radius: 8px;
+      color: #fbbf24; font-size: .8125rem;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 10px 14px; border-radius: 8px;
       margin: 4px 0 0;
       mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
     }

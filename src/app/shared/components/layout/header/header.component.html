@@ -14,42 +14,195 @@
       <span class="header__welcome">{{ welcomeMessage() }}</span>
     }
 
-    <button mat-icon-button [matMenuTriggerFor]="notifMenu" aria-label="Notificaciones">
+    <button
+      mat-icon-button
+      #notifTrigger="matMenuTrigger"
+      [matMenuTriggerFor]="notifMenu"
+      aria-label="Notificaciones"
+      matTooltip="Notificaciones"
+      class="header__notif-trigger"
+      [class.header__notif-trigger--active]="unreadCount() > 0"
+    >
       <mat-icon
-        [matBadge]="unreadCount() > 0 ? unreadCount() : null"
+        aria-hidden="false"
+        [matBadge]="unreadCount() > 0 ? (unreadCount() > 99 ? '99+' : unreadCount()) : null"
         matBadgeColor="warn"
         matBadgeSize="small"
       >
-        notifications_none
+        {{ unreadCount() > 0 ? 'notifications' : 'notifications_none' }}
       </mat-icon>
     </button>
 
-    <mat-menu #notifMenu="matMenu" class="header__notif-menu">
-      <div class="header__notif-header" (click)="$event.stopPropagation()">
-        <strong>Notificaciones</strong>
-        @if (unreadCount() > 0) {
-          <span class="header__notif-count">{{ unreadCount() }} nuevas</span>
-        }
-      </div>
-      <mat-divider></mat-divider>
-      @for (notif of recentNotifications(); track notif.id) {
-        <button mat-menu-item class="header__notif-item">
-          <mat-icon>{{ notif.isRead ? 'notifications_none' : 'notifications_active' }}</mat-icon>
-          <div class="header__notif-content">
-            <span class="header__notif-title">{{ notif.title }}</span>
-            <span class="header__notif-message">{{ notif.message }}</span>
+    <mat-menu
+      #notifMenu="matMenu"
+      class="header__notif-menu-panel"
+      panelClass="header__notif-menu-panel"
+      (opened)="onMenuOpened()"
+      xPosition="before"
+    >
+      <div class="header__notif-container" (click)="$event.stopPropagation()">
+        <!-- Header del Dropdown -->
+        <div class="header__notif-head">
+          <div class="header__notif-head-row">
+            <div class="header__notif-title-group">
+              <span class="header__notif-title">Notificaciones</span>
+              @if (unreadCount() > 0) {
+                <span class="header__notif-count-badge">{{ unreadCount() }} nuevas</span>
+              } @else {
+                <span class="header__notif-count-badge header__notif-count-badge--muted">Al día</span>
+              }
+            </div>
+
+            @if (unreadCount() > 0) {
+              <button
+                type="button"
+                class="header__notif-mark-btn"
+                (click)="markAllAsRead($event)"
+                matTooltip="Marcar todas como leídas"
+                aria-label="Marcar todas como leídas"
+              >
+                <mat-icon>done_all</mat-icon>
+                <span>Marcar leídas</span>
+              </button>
+            }
           </div>
-        </button>
-      } @empty {
-        <div class="header__notif-empty" (click)="$event.stopPropagation()">
-          <mat-icon>notifications_off</mat-icon>
-          <span>Sin notificaciones</span>
+
+          <!-- Filtros Rápidos (Todas / No leídas) -->
+          <div class="header__notif-filters">
+            <button
+              type="button"
+              class="header__notif-pill"
+              [class.header__notif-pill--active]="activeFilter() === 'all'"
+              (click)="setFilter('all', $event)"
+            >
+              <span>Todas</span>
+              <span class="header__notif-pill-count">{{ allCount() }}</span>
+            </button>
+            <button
+              type="button"
+              class="header__notif-pill"
+              [class.header__notif-pill--active]="activeFilter() === 'unread'"
+              (click)="setFilter('unread', $event)"
+            >
+              <span>No leídas</span>
+              @if (unreadCount() > 0) {
+                <span class="header__notif-pill-count header__notif-pill-count--unread">{{ unreadCount() }}</span>
+              }
+            </button>
+          </div>
         </div>
-      }
-      <mat-divider></mat-divider>
-      <button mat-menu-item routerLink="/notifications" class="header__notif-all">
-        <span>Ver todas las notificaciones</span>
-      </button>
+
+        <mat-divider></mat-divider>
+
+        <!-- Lista de Notificaciones -->
+        <div class="header__notif-body">
+          @if (isLoading()) {
+            <div class="header__notif-loading">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>Cargando notificaciones...</span>
+            </div>
+          } @else {
+            @for (notif of filteredNotifications(); track notif.id) {
+              <div
+                class="header__notif-row"
+                [class.header__notif-row--unread]="!notif.isRead"
+                (click)="onNotificationClick(notif)"
+                (keydown.enter)="onNotificationClick(notif)"
+                (keydown.space)="onNotificationClick(notif)"
+                tabindex="0"
+                role="button"
+              >
+                <!-- Indicador de barra lateral de lectura -->
+                <span class="header__notif-unread-bar" [class.header__notif-unread-bar--active]="!notif.isRead"></span>
+
+                <!-- Icono temático con color y fondo unificados -->
+                <div
+                  class="header__notif-icon-box"
+                  [attr.data-tone]="getNotificationTone(notif.type)"
+                  [style.background-color]="getNotificationToneStyle(notif.type).bg"
+                  [style.color]="getNotificationToneStyle(notif.type).color"
+                >
+                  <mat-icon>{{ getNotificationIcon(notif.type) }}</mat-icon>
+                </div>
+
+                <!-- Detalles de la notificación -->
+                <div class="header__notif-details">
+                  <div class="header__notif-row-top">
+                    <span class="header__notif-item-title">{{ notif.title }}</span>
+                    <span class="header__notif-time">{{ notif.createdAt | relativeTime }}</span>
+                  </div>
+
+                  <p class="header__notif-message">{{ notif.message }}</p>
+
+                  <div class="header__notif-tags">
+                    <span class="header__notif-tag">
+                      {{ getCategoryLabel(notif.type) }}
+                    </span>
+                    @if (notif.metadata?.['projectTitle']) {
+                      <span class="header__notif-tag-project" [title]="notif.metadata?.['projectTitle']">
+                        • {{ notif.metadata?.['projectTitle'] }}
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Botón rápido individual: Marcar como leída sin navegar -->
+                @if (!notif.isRead) {
+                  <button
+                    type="button"
+                    class="header__notif-quick-read"
+                    matTooltip="Marcar como leída"
+                    (click)="markAsReadSingle(notif.id, $event)"
+                    aria-label="Marcar como leída"
+                  >
+                    <mat-icon>done</mat-icon>
+                  </button>
+                }
+              </div>
+            } @empty {
+              <div class="header__notif-empty">
+                @if (activeFilter() === 'unread') {
+                  <div class="header__notif-empty-icon header__notif-empty-icon--success">
+                    <mat-icon>task_alt</mat-icon>
+                  </div>
+                  <h4 class="header__notif-empty-title">¡Estás al día!</h4>
+                  <p class="header__notif-empty-desc">No tienes notificaciones pendientes de lectura.</p>
+                } @else {
+                  <div class="header__notif-empty-icon">
+                    <mat-icon>notifications_none</mat-icon>
+                  </div>
+                  <h4 class="header__notif-empty-title">Sin notificaciones</h4>
+                  <p class="header__notif-empty-desc">Aquí aparecerán tus avisos y actualizaciones.</p>
+                }
+              </div>
+            }
+          }
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Footer -->
+        <div class="header__notif-footer">
+          <a
+            routerLink="/notifications"
+            class="header__notif-footer-link"
+            (click)="closeMenu()"
+          >
+            <span>Ver todas las notificaciones</span>
+            <mat-icon>arrow_forward</mat-icon>
+          </a>
+
+          <a
+            routerLink="/settings"
+            class="header__notif-footer-settings"
+            matTooltip="Configuración de notificaciones"
+            aria-label="Configuración de notificaciones"
+            (click)="closeMenu()"
+          >
+            <mat-icon>settings</mat-icon>
+          </a>
+        </div>
+      </div>
     </mat-menu>
 
     <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario" class="header__user-btn">

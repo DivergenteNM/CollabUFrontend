@@ -48,6 +48,12 @@
   color: var(--text-secondary);
 }
 
+.edetail__required-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 4px 0 16px;
+}
+
 .edetail__meta {
   margin: 8px 0 0;
   display: flex;
@@ -115,6 +121,9 @@
       margin: 0;
       font-size: 0.9375rem;
       font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     p {
@@ -122,6 +131,19 @@
       font-size: 0.8125rem;
       color: var(--text-secondary);
     }
+  }
+
+  &__required {
+    color: var(--mat-sys-error, #d32f2f);
+    font-weight: 700;
+  }
+
+  &__info-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+    cursor: help;
   }
 
   &__score {

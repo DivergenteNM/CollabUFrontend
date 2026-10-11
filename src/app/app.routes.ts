@@ -187,7 +187,11 @@ export const routes: Routes = [
       // ---- Rutas de ADMIN ----
       {
         path: 'admin',
-        canActivate: [roleGuard(UserRole.ADMIN)],
+        // ADMIN y FACULTY pueden entrar a /admin — cada ruta hija define su propio guard más
+        // estricto (solo ADMIN) salvo 'dashboard' y 'reports' (analítica institucional), que el
+        // backend ya expone a ambos roles (ver analytics.controller.ts @Roles(ADMIN, FACULTY)).
+        // No es un blanket-unlock: sin el guard hijo, cada ruta de gestión sigue bloqueada a FACULTY.
+        canActivate: [roleGuard(UserRole.ADMIN, UserRole.FACULTY)],
         loadChildren: () =>
           import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
       },

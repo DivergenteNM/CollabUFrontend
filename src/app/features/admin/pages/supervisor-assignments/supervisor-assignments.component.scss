@@ -21,7 +21,7 @@
 
   &__sub {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
     margin: 0;
     max-width: 520px;
   }
@@ -37,8 +37,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #e3f2fd;
-  color: #1565c0;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-primary-400);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 13px;
@@ -47,27 +48,99 @@
   mat-icon { font-size: 18px; height: 18px; width: 18px; }
 
   &--warn {
-    background: #fff3e0;
-    color: #e65100;
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.25);
   }
 }
 
 // ── Table ────────────────────────────────────────────────────────────────────
 .sv-table-wrap {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-subtle);
   overflow: hidden;
 }
 
 .sv-table {
   width: 100%;
+  background: var(--bg-card);
 
-  th { font-weight: 600; font-size: 13px; color: #555; background: #fafafa; }
+  tr.mat-mdc-header-row {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
 
+  th.mat-mdc-header-cell,
+  th {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase;
+    letter-spacing: .02em;
+  }
+
+  tr.mat-mdc-row,
   .data-row {
+    background: var(--bg-card);
     transition: background .12s;
-    &:hover { background: #f9fafb; }
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+  }
+
+  td.mat-mdc-cell,
+  td {
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+  }
+}
+
+:host-context(.dark-theme) .sv-table-wrap {
+  background: #1C1E24;
+  border-color: rgba(255, 255, 255, 0.08);
+
+  .sv-table {
+    background: #1C1E24;
+
+    tr.mat-mdc-header-row,
+    th.mat-mdc-header-cell {
+      background: #111317;
+      color: #A1A1AA;
+      border-bottom-color: rgba(255, 255, 255, 0.14);
+    }
+
+    tr.mat-mdc-row,
+    .data-row {
+      background: #1C1E24;
+    }
+
+    td.mat-mdc-cell {
+      color: #FFFFFF;
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+}
+
+:host-context(.dark-theme) .sv-table .data-row:hover,
+:host-context(.dark-theme) .sv-table tr.mat-mdc-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:host-context(.dark-theme) {
+  .stat-chip {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  .avatar {
+    background: #1C1E24;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #34D399;
   }
 }
 
@@ -81,8 +154,9 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #1565c0;
-  color: #fff;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  border: 1px solid var(--border-color);
+  color: var(--color-primary-400);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +170,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  .proj-icon { font-size: 18px; width: 18px; height: 18px; color: #888; }
+  .proj-icon { font-size: 18px; width: 18px; height: 18px; color: var(--text-tertiary); }
 }
 
 .match-badge {
@@ -105,8 +179,9 @@
   border-radius: var(--border-radius-pill);
   font-size: 13px;
   font-weight: 600;
-  background: var(--color-info-bg);
-  color: var(--color-info-text);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-primary-400);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 
   &.match-high { background: var(--color-success-bg); color: var(--color-success-text); }
   &.match-mid  { background: var(--color-warning-bg); color: var(--color-warning-text); }
@@ -132,13 +207,13 @@
 .sv-empty {
   padding: 60px 20px;
   text-align: center;
-  color: #999;
+  color: var(--text-tertiary);
 
   mat-icon {
     font-size: 48px;
     width: 48px;
     height: 48px;
-    color: #4caf50;
+    color: var(--color-primary-400);
     display: block;
     margin: 0 auto 12px;
   }

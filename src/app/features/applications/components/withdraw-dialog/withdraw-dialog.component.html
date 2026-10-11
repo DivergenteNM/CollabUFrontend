@@ -1,0 +1,84 @@
+<div class="withdraw-dialog">
+  <div class="withdraw-dialog__header">
+    <div class="withdraw-dialog__icon-wrap">
+      <mat-icon>undo</mat-icon>
+    </div>
+    <div class="withdraw-dialog__header-text">
+      <h2 class="withdraw-dialog__title">Retirar Postulación</h2>
+      <p class="withdraw-dialog__subtitle">Finalizar tu proceso de selección en este proyecto</p>
+    </div>
+    <button mat-icon-button class="withdraw-dialog__close" (click)="cancel()" aria-label="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="withdraw-dialog__content">
+    <!-- Context Card -->
+    <div class="withdraw-dialog__context-card">
+      <div class="context-label">Proyecto</div>
+      <div class="context-title">{{ data.projectTitle }}</div>
+      <div class="context-company">
+        <mat-icon>apartment</mat-icon>
+        <span>{{ data.companyName }}</span>
+      </div>
+    </div>
+
+    <!-- Predefined Reasons Chips -->
+    <div class="withdraw-dialog__reasons-section">
+      <label class="section-label">Selecciona el motivo principal:</label>
+      <div class="reasons-chips">
+        @for (r of predefinedReasons; track r) {
+          <button
+            type="button"
+            class="reason-chip"
+            [class.reason-chip--selected]="selectedReason() === r"
+            (click)="selectPredefined(r)">
+            {{ r }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Textarea for clarification / custom reason -->
+    <div class="withdraw-dialog__textarea-section">
+      <label for="withdraw-reason-input" class="section-label">
+        Detalle o justificación (mínimo 10 caracteres):
+      </label>
+      <textarea
+        id="withdraw-reason-input"
+        class="custom-textarea"
+        rows="3"
+        [value]="customReason()"
+        (input)="onCustomInput($any($event.target).value)"
+        placeholder="Escribe la razón de tu retiro..."></textarea>
+      <div class="textarea-footer">
+        <span class="char-count" [class.char-count--invalid]="!isValid">
+          {{ customReason().trim().length }} / 10 caracteres mínimos
+        </span>
+      </div>
+    </div>
+
+    <!-- Warning alert -->
+    <div class="withdraw-dialog__alert">
+      <mat-icon>warning_amber</mat-icon>
+      <div class="alert-text">
+        <strong>Importante:</strong> Esta acción es definitiva. La empresa ya no evaluará tu postulación y el cupo quedará libre para otros estudiantes.
+      </div>
+    </div>
+  </div>
+
+  <div class="withdraw-dialog__footer">
+    <button mat-stroked-button (click)="cancel()">
+      Cancelar
+    </button>
+    <button
+      mat-flat-button
+      color="warn"
+      [disabled]="!isValid"
+      class="confirm-danger-btn"
+      (click)="confirm()">
+      <mat-icon>undo</mat-icon>
+      <span>Confirmar Retiro</span>
+    </button>
+  </div>
+</div>

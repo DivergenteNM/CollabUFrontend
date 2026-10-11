@@ -9,12 +9,14 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { environment } from '../../../../../environments/environment';
 import { PaginatedResponse, Project } from '../../../../core/models';
 import { ProjectStatus } from '../../../../core/enums';
+import { statusDescription } from '../../../../core/status/status-registry';
 import { ProjectService } from '../../services/project.service';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { PaginatorComponent } from '../../../../shared/components/ui/paginator/paginator.component';
@@ -28,7 +30,7 @@ import { from } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule, MatMenuModule, MatChipsModule, DatePipe,
-    MatDialogModule, MatSnackBarModule,
+    MatDialogModule, MatSnackBarModule, MatTooltipModule,
     StatusBadgeComponent, PaginatorComponent, SkeletonComponent, EmptyStateComponent,
   ],
   templateUrl: './my-projects-list.component.html',
@@ -47,6 +49,10 @@ export class MyProjectsListComponent {
   readonly projectStatusDraft = ProjectStatus.DRAFT;
   readonly projectStatusNeedsChanges = ProjectStatus.NEEDS_CHANGES;
   readonly projectStatusPendingApproval = ProjectStatus.PENDING_APPROVAL;
+
+  getStatusExplanation(status: string): string {
+    return statusDescription('project', status);
+  }
 
   readonly projectsResource = httpResource<PaginatedResponse<Project>>(
     () => {

@@ -111,7 +111,7 @@ describe('StorageService', () => {
     it('hace DELETE al archivo por id', () => {
       service.deleteFile('file-1').subscribe();
 
-      const req = httpTesting.expectOne(`${baseUrl}/file-1`);
+      const req = httpTesting.expectOne(`${baseUrl}/files/file-1`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

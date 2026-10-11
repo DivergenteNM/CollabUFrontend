@@ -83,7 +83,7 @@
 .room__avatar-initials {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--color-primary-800, #1B4529);
+  color: var(--color-primary-400, #34D399);
   user-select: none;
 }
 
@@ -107,8 +107,8 @@
 
   &.group {
     border-radius: 12px;
-    background: var(--mat-sys-secondary-container, #e0e7ff);
-    color: var(--mat-sys-on-secondary-container, #1e3a8a);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-primary-400);
   }
 }
 
@@ -291,7 +291,7 @@
   }
 
   &:hover:not(:disabled) {
-    background: var(--color-primary-50, #EEF7F0);
+    background: var(--bg-hover);
     transform: scale(1.05);
   }
 

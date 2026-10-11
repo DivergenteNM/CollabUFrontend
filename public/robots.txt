@@ -1,0 +1,59 @@
+User-agent: *
+# ==============================================================================
+# Collab-U — Plataforma Institucional de Prácticas de la Universidad de Nariño
+# ==============================================================================
+
+# Páginas públicas oficiales de acceso y registro institucional
+Allow: /
+Allow: /auth/login
+Allow: /auth/register
+Allow: /auth/register/student
+Allow: /auth/register/company
+
+# Bloqueo estricto de todas las áreas privadas, operativas y de gestión
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /projects
+Disallow: /projects/*
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /workspace
+Disallow: /workspace/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /chat
+Disallow: /chat/*
+Disallow: /matching
+Disallow: /matching/*
+Disallow: /my-applications
+Disallow: /my-applications/*
+Disallow: /my-projects
+Disallow: /my-projects/*
+Disallow: /received-applications
+Disallow: /received-applications/*
+Disallow: /my-evaluations
+Disallow: /my-evaluations/*
+Disallow: /my-students
+Disallow: /my-students/*
+Disallow: /company-analytics
+Disallow: /company-analytics/*
+Disallow: /my-analytics
+Disallow: /my-analytics/*
+Disallow: /skills
+Disallow: /skills/*
+Disallow: /settings
+Disallow: /settings/*
+Disallow: /notifications
+Disallow: /notifications/*
+Disallow: /onboarding
+Disallow: /onboarding/*
+Disallow: /selection
+Disallow: /selection/*
+
+# Bloqueo de flujos técnicos de recuperación de cuenta y verificación
+Disallow: /auth/forgot-password
+Disallow: /auth/reset-password
+Disallow: /auth/verify-email
+
+# Índice de páginas públicas
+Sitemap: https://collab-u.udenar.edu.co/sitemap.xml

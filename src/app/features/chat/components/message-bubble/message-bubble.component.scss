@@ -25,7 +25,8 @@
     align-items: flex-end;
 
     .bubble__bubble {
-      background: #245C36;
+      background: #1B4529;
+      border: 1px solid rgba(16, 185, 129, 0.35);
       color: #FFFFFF;
       border-radius: 12px;
     }
@@ -44,17 +45,18 @@
     align-items: flex-start;
 
     .bubble__bubble {
-      background: #E9ECEF;
-      color: var(--text-primary, #1A241C);
+      background: var(--bg-elevated, #242730);
+      border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+      color: var(--text-primary, #FFFFFF);
       border-radius: 12px;
     }
 
     .bubble__file {
-      color: var(--color-primary-700, #245C36);
-      background: rgba(0, 0, 0, 0.05);
+      color: var(--color-primary-400, #34D399);
+      background: rgba(255, 255, 255, 0.06);
 
       &:hover {
-        background: rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 0.12);
       }
     }
   }
@@ -70,7 +72,7 @@
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-primary-600, #2E7544);
+  color: var(--color-primary-400, #34D399);
   margin-bottom: 2px;
 }
 
@@ -153,8 +155,9 @@
 
 .bubble__system {
   font-size: 0.75rem;
-  color: var(--text-secondary, #4A584C);
-  background: var(--bg-secondary, #EEF2EC);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   padding: 4px 14px;
   border-radius: var(--border-radius-pill, 999px);
   text-align: center;
@@ -165,5 +168,32 @@
 @keyframes bubble-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+:host-context(.dark-theme) .bubble__group--other .bubble__bubble {
+  background: #242730;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #FFFFFF;
+}
+
+:host-context(.dark-theme) .bubble__group--other .bubble__file {
+  color: #34D399;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:host-context(.dark-theme) .bubble__group--mine .bubble__bubble {
+  background: #1B4529;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #FFFFFF;
+}
+
+:host-context(.dark-theme) .bubble__sender {
+  color: #34D399;
+}
+
+:host-context(.dark-theme) .bubble__system {
+  background: #111317;
+  color: #A1A1AA;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 

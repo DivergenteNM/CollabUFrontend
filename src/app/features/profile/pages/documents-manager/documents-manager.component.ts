@@ -75,10 +75,17 @@ export class DocumentsManagerComponent implements OnInit {
     ref.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
       this.deleting.set(true);
-      // Use StorageService.deleteFile or inline delete
-      this.documents.update(list => list.filter(d => d.id !== doc.id));
-      this.deleting.set(false);
-      this.snackBar.open('Documento eliminado', 'Cerrar', { duration: 2000 });
+      this.studentService.deleteDocument(doc.id, doc.documentType === 'resume').subscribe({
+        next: () => {
+          this.documents.update(list => list.filter(d => d.id !== doc.id));
+          this.deleting.set(false);
+          this.snackBar.open('Documento eliminado', 'Cerrar', { duration: 2000 });
+        },
+        error: () => {
+          this.deleting.set(false);
+          this.snackBar.open('Error al eliminar el documento', 'Cerrar', { duration: 3000 });
+        },
+      });
     });
   }
 

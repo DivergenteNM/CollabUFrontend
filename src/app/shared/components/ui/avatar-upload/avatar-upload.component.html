@@ -1,4 +1,8 @@
-<div class="avatar-upload" [style.--avatar-size.px]="size()">
+<div
+  class="avatar-upload"
+  [class.avatar-upload--rounded]="shape() === 'rounded'"
+  [style.--avatar-size.px]="size()"
+>
   <div class="avatar-upload__wrapper">
     <div class="avatar-upload__circle">
       @if (uploading()) {
@@ -7,23 +11,30 @@
         </div>
       }
 
-      @if (currentAvatarUrl() && !imgLoadError()) {
+      @if (resolvedAvatarUrl() && !imgLoadError()) {
         <img
-          [src]="currentAvatarUrl()"
-          alt="Foto de perfil"
+          [src]="resolvedAvatarUrl()"
+          [alt]="label()"
           class="avatar-upload__img"
           (error)="onImgError()"
           (load)="onImgLoad()"
         />
       } @else {
         <div class="avatar-upload__placeholder">
-          <span>{{ initials }}</span>
+          @if (mode() === 'company' && !companyName()) {
+            <mat-icon class="placeholder-icon">{{ fallbackIcon() }}</mat-icon>
+          } @else {
+            <span>{{ initials }}</span>
+          }
         </div>
       }
     </div>
 
-    <label class="avatar-upload__badge" title="Cambiar foto de perfil">
-      <mat-icon>photo_camera</mat-icon>
+    <label
+      class="avatar-upload__badge"
+      [title]="mode() === 'company' ? 'Cambiar logo de la empresa' : 'Cambiar foto de perfil'"
+    >
+      <mat-icon>{{ mode() === 'company' ? 'add_photo_alternate' : 'photo_camera' }}</mat-icon>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp"
@@ -41,8 +52,8 @@
         [disabled]="uploading()"
         (click)="fileInput.click()"
       >
-        <mat-icon>upload</mat-icon>
-        {{ currentAvatarUrl() ? 'Cambiar Foto' : 'Subir Foto' }}
+        <mat-icon>{{ resolvedAvatarUrl() ? 'sync' : 'upload' }}</mat-icon>
+        {{ resolvedAvatarUrl() ? (mode() === 'company' ? 'Cambiar Logo' : 'Cambiar Foto') : (mode() === 'company' ? 'Subir Logo' : 'Subir Foto') }}
       </button>
       <input
         #fileInput
@@ -53,7 +64,7 @@
       />
     </label>
 
-    @if (currentAvatarUrl()) {
+    @if (resolvedAvatarUrl()) {
       <button
         mat-button
         color="warn"

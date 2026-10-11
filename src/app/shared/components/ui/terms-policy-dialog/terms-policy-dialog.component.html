@@ -1,0 +1,154 @@
+<div class="terms-dialog">
+  <!-- Dialog Header -->
+  <header class="terms-dialog__header">
+    <div class="terms-dialog__header-info">
+      <div class="terms-dialog__icon-wrapper">
+        <mat-icon>verified_user</mat-icon>
+      </div>
+      <div>
+        <h2 mat-dialog-title class="terms-dialog__title">Términos, Condiciones y Privacidad</h2>
+        <span class="terms-dialog__subtitle">Universidad de Nariño · Plataforma Collab-U</span>
+      </div>
+    </div>
+    <button
+      mat-icon-button
+      type="button"
+      class="terms-dialog__close-btn"
+      (click)="close()"
+      aria-label="Cerrar diálogo"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <!-- Dialog Content with Tabs -->
+  <mat-dialog-content class="terms-dialog__content">
+    <mat-tab-group
+      [selectedIndex]="selectedTab()"
+      (selectedIndexChange)="onTabChange($event)"
+      animationDuration="200ms"
+      class="terms-dialog__tabs"
+    >
+      <!-- Tab 1: Términos y Condiciones de Uso -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">description</mat-icon>
+          <span>Términos y Condiciones de Uso</span>
+        </ng-template>
+
+        <div class="terms-dialog__scrollable-pane">
+          <div class="terms-card">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">account_balance</mat-icon>
+              <h3>Propósito Institucional</h3>
+            </div>
+            <p>
+              Collab-U es una plataforma académica de la Facultad de Ingeniería de la Universidad de Nariño
+              destinada a conectar estudiantes con oportunidades de prácticas, pasantías y proyectos de grado.
+            </p>
+          </div>
+
+          <div class="terms-card">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">verified</mat-icon>
+              <h3>Veracidad de la Información</h3>
+            </div>
+            <p>
+              El usuario se compromete a ingresar información verídica, comprobable y actualizada en sus perfiles
+              académicos y profesionales.
+            </p>
+          </div>
+
+          <div class="terms-card">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">forum</mat-icon>
+              <h3>Uso de la Plataforma</h3>
+            </div>
+            <p>
+              El chat y las herramientas de seguimiento deben ser utilizados con fines estrictamente formativos y
+              profesionales.
+            </p>
+          </div>
+
+          <div class="terms-card">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">assignment_turned_in</mat-icon>
+              <h3>Alcance</h3>
+            </div>
+            <p>
+              La postulación a través de Collab-U no sustituye los trámites y avales formales requeridos por los
+              comités curriculares y reglamentos vigentes de cada departamento.
+            </p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 2: Política de Privacidad y Tratamiento de Datos -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">shield</mat-icon>
+          <span>Política de Privacidad y Tratamiento de Datos</span>
+        </ng-template>
+
+        <div class="terms-dialog__scrollable-pane">
+          <div class="terms-card terms-card--highlight">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">gavel</mat-icon>
+              <h3>Marco Legal</h3>
+            </div>
+            <p>
+              En cumplimiento de la Ley 1581 de 2012 y el Decreto 1377 de 2013 de Colombia, Collab-U garantiza
+              la debida custodia y reserva de la información personal registrada.
+            </p>
+          </div>
+
+          <div class="terms-card">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">checklist</mat-icon>
+              <h3>Finalidades</h3>
+            </div>
+            <ol class="terms-list">
+              <li>
+                <strong>Facilitar la postulación</strong> a proyectos y vacantes ofertadas por organizaciones verificadas.
+              </li>
+              <li>
+                <strong>Generar sugerencias de afinidad (matching)</strong> basadas en habilidades y requerimientos de proyectos.
+              </li>
+              <li>
+                <strong>Permitir a las empresas postuladas</strong> revisar el perfil académico y documentos de soporte cargados por el estudiante.
+              </li>
+              <li>
+                <strong>Generar reportes estadísticos</strong> de gestión académica para la Facultad.
+              </li>
+            </ol>
+          </div>
+
+          <div class="terms-card">
+            <div class="terms-card__header">
+              <mat-icon class="terms-card__icon">manage_accounts</mat-icon>
+              <h3>Derechos del Titular</h3>
+            </div>
+            <p>
+              El usuario podrá conocer, actualizar, rectificar o solicitar la eliminación de sus datos personales
+              a través de los canales institucionales de la Universidad de Nariño.
+            </p>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <!-- Dialog Actions -->
+  <mat-dialog-actions align="end" class="terms-dialog__actions">
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      (click)="close()"
+      class="terms-dialog__confirm-btn"
+    >
+      <mat-icon>check_circle</mat-icon>
+      Entendido / Cerrar
+    </button>
+  </mat-dialog-actions>
+</div>

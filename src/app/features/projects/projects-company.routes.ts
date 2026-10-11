@@ -41,4 +41,12 @@ export const PROJECTS_COMPANY_ROUTES: Routes = [
       ),
     data: { title: 'Aplicantes del Proyecto' },
   },
+  {
+    path: ':id/analytics',
+    loadComponent: () =>
+      import('./pages/project-analytics/project-analytics.component').then(
+        (m) => m.ProjectAnalyticsComponent
+      ),
+    data: { title: 'Métricas del Proyecto' },
+  },
 ];

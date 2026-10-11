@@ -1,0 +1,124 @@
+<div class="macro-stepper" [class.macro-stepper--terminal]="isTerminal()">
+  <!-- 1. Track de Macro-Fases con iconos correspondientes (sin números) -->
+  <div class="macro-track" role="tablist" aria-label="Fases de postulación">
+    @for (phase of macroPhases; track phase.id) {
+      <button
+        type="button"
+        class="macro-segment"
+        role="tab"
+        [id]="'macro-tab-' + phase.id"
+        [attr.aria-selected]="isPhaseSelected(phase)"
+        [attr.aria-controls]="'macro-panel-' + phase.id"
+        [class.macro-segment--completed]="isPhaseCompleted(phase)"
+        [class.macro-segment--current]="isPhaseCurrent(phase)"
+        [class.macro-segment--selected]="isPhaseSelected(phase)"
+        [class.macro-segment--future]="phase.order > resolution().currentPhaseIndex"
+        [class.macro-segment--interactive]="interactive() && phase.order <= resolution().currentPhaseIndex && !isTerminal()"
+        [matTooltip]="phase.label + ': ' + phase.description + (isPhaseCompleted(phase) ? ' (Completada - Clic para ver historial)' : '')"
+        (click)="onPhaseClick(phase)">
+        
+        <span class="macro-segment__indicator">
+          @if (isPhaseCompleted(phase)) {
+            <mat-icon class="seg-icon">check</mat-icon>
+          } @else {
+            @if (isPhaseCurrent(phase)) {
+              <span class="seg-dot"></span>
+            }
+            <mat-icon class="seg-icon">{{ phase.icon }}</mat-icon>
+          }
+        </span>
+
+        <span class="macro-segment__label">{{ phase.shortLabel }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- 2. Aviso de Inspección de Historial (si el usuario hizo clic en una fase pasada) -->
+  @if (isViewingHistory()) {
+    <div class="macro-stepper__history-banner">
+      <div class="history-info">
+        <mat-icon>history</mat-icon>
+        <span>Viendo historial: <strong>{{ activePhase().label }}</strong></span>
+      </div>
+      <button type="button" class="history-reset-btn" (click)="resetToActive()">
+        <span>Volver a etapa actual</span>
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- 3. Estado Terminal (Rechazada, Retirada, Cancelada) -->
+  @if (isTerminal()) {
+    <div
+      class="macro-stepper__terminal-box"
+      [class.macro-stepper__terminal-box--error]="resolution().terminalTone === 'error'"
+      [class.macro-stepper__terminal-box--neutral]="resolution().terminalTone === 'neutral'">
+      <div class="terminal-icon-wrap">
+        <mat-icon>{{ resolution().terminalIcon }}</mat-icon>
+      </div>
+      <div class="terminal-body">
+        <span class="terminal-title">{{ resolution().terminalLabel }}</span>
+        @if (resolution().terminalDescription) {
+          <span class="terminal-desc">{{ resolution().terminalDescription }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- 4. Micro-Progreso: Nodos con sus iconos correspondientes (sin números) -->
+  @else {
+    <div
+      class="micro-progress"
+      role="tabpanel"
+      [id]="'macro-panel-' + activePhase().id"
+      [attr.aria-labelledby]="'macro-tab-' + activePhase().id">
+      
+      <!-- Línea horizontal con cada icono de paso correspondiente -->
+      <div class="micro-nodes-track">
+        @for (step of stepsToDisplay(); track step.status; let i = $index; let last = $last) {
+          @let state = getStepState(i);
+
+          <div
+            class="micro-node"
+            [class.micro-node--completed]="state === 'completed'"
+            [class.micro-node--active]="state === 'active'"
+            [class.micro-node--future]="state === 'future'"
+            [matTooltip]="step.label + ': ' + step.shortDescription">
+            <div class="micro-node__dot">
+              @if (state === 'completed') {
+                <mat-icon class="dot-icon">check</mat-icon>
+              } @else {
+                <mat-icon class="dot-icon">{{ step.icon }}</mat-icon>
+              }
+            </div>
+          </div>
+
+          @if (!last) {
+            <div
+              class="micro-nodes-track__connector"
+              [class.micro-nodes-track__connector--filled]="state === 'completed'">
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Tarjeta de estado de etapa activo con su icono y descripción -->
+      @if (currentActiveStep()) {
+        <div class="active-step-callout">
+          <div class="active-step-callout__icon-wrap">
+            <mat-icon>{{ currentActiveStep()!.icon }}</mat-icon>
+          </div>
+          <div class="active-step-callout__content">
+            <div class="active-step-callout__header">
+              <strong class="active-step-callout__title">{{ currentActiveStep()!.label }}</strong>
+              <span class="active-step-callout__badge">
+                Paso {{ currentActiveStepNumber() }} de {{ stepsToDisplay().length }}
+              </span>
+            </div>
+            <p class="active-step-callout__desc">{{ currentActiveStep()!.shortDescription }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

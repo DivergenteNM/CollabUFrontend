@@ -103,7 +103,7 @@ export class SkillProgramsDialogComponent {
 @Component({
   selector: 'app-skill-catalog-management',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIconModule, MatButtonModule, MatCardModule, MatChipsModule, MatFormFieldModule, MatSelectModule, FormsModule, MatSnackBarModule, MatTooltipModule],
+  imports: [MatIconModule, MatButtonModule, MatCardModule, MatChipsModule, MatFormFieldModule, MatInputModule, MatSelectModule, FormsModule, MatSnackBarModule, MatTooltipModule],
   template: `
     <div class="cat-page">
       <div class="cat-page__header">
@@ -119,62 +119,88 @@ export class SkillProgramsDialogComponent {
         </button>
       </div>
 
-      <mat-form-field appearance="outline" class="cat-page__filter">
-        <mat-label>Filtrar por categoría</mat-label>
-        <mat-select [(ngModel)]="categoryFilter" (ngModelChange)="resource.reload()">
-          <mat-option [value]="null">Todas</mat-option>
-          @for (opt of categoryOptions; track opt.value) {
-            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <div class="cat-page__toolbar">
+        <mat-form-field appearance="outline" class="cat-page__search">
+          <mat-label>Buscar habilidad</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="searchQuery" placeholder="Ej: Python, Figma..." />
+        </mat-form-field>
 
-      <mat-card class="cat-card">
-        @if (resource.isLoading()) {
-          <div class="empty-state"><p>Cargando...</p></div>
-        } @else if (skills().length === 0) {
-          <div class="empty-state">
-            <mat-icon>psychology</mat-icon>
-            <p>No hay habilidades en el catálogo</p>
-          </div>
-        } @else {
-          @for (skill of skills(); track skill.id) {
-            <div class="cat-row" [class.cat-row--inactive]="!skill.isActive">
-              <div class="cat-row__main">
-                <span class="cat-row__name">{{ skill.displayName }}</span>
-                <span class="cat-row__cat">{{ categoryLabel(skill.category) }}</span>
-                @if (!skill.isActive) { <span class="cat-row__badge">Inactiva</span> }
+        <mat-form-field appearance="outline" class="cat-page__filter">
+          <mat-label>Categoría</mat-label>
+          <mat-select [(ngModel)]="categoryFilter" (ngModelChange)="resource.reload()">
+            <mat-option [value]="null">Todas</mat-option>
+            @for (opt of categoryOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <span class="cat-page__count">{{ filteredSkills().length }} de {{ skills().length }}</span>
+      </div>
+
+      @if (resource.isLoading()) {
+        <div class="empty-state"><p>Cargando...</p></div>
+      } @else if (filteredSkills().length === 0) {
+        <div class="empty-state">
+          <mat-icon>psychology</mat-icon>
+          <p>No hay habilidades que coincidan con la búsqueda</p>
+        </div>
+      } @else {
+        <div class="cat-grid">
+          @for (skill of filteredSkills(); track skill.id) {
+            <mat-card class="cat-tile" [class.cat-tile--inactive]="!skill.isActive">
+              <div class="cat-tile__main">
+                <span class="cat-tile__name">{{ skill.displayName }}</span>
+                <div class="cat-tile__tags">
+                  <span class="cat-tile__cat">{{ categoryLabel(skill.category) }}</span>
+                  @if (!skill.isActive) { <span class="cat-tile__badge">Inactiva</span> }
+                </div>
               </div>
-              <div class="cat-row__actions">
+              <div class="cat-tile__actions">
                 <button mat-icon-button matTooltip="Asociar a programas" (click)="openProgramsDialog(skill)">
                   <mat-icon>school</mat-icon>
                 </button>
-                <button mat-icon-button (click)="openDialog(skill)"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button matTooltip="Editar" (click)="openDialog(skill)"><mat-icon>edit</mat-icon></button>
                 @if (skill.isActive) {
-                  <button mat-icon-button (click)="deactivate(skill)"><mat-icon>visibility_off</mat-icon></button>
+                  <button mat-icon-button matTooltip="Desactivar" (click)="deactivate(skill)"><mat-icon>visibility_off</mat-icon></button>
                 }
               </div>
-            </div>
+            </mat-card>
           }
-        }
-      </mat-card>
+        </div>
+      }
     </div>
   `,
   styles: [`
-    .cat-page { padding: 24px; max-width: 900px; margin: 0 auto; }
+    .cat-page { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .cat-page__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 16px; }
     .cat-page__header h1 { margin: 0 0 4px; font-size: 1.4rem; font-weight: 700; }
-    .cat-page__subtitle { margin: 0; color: #6b7280; font-size: .875rem; max-width: 560px; }
-    .cat-page__filter { width: 240px; margin-bottom: 12px; }
-    .cat-card { padding: 8px; }
-    .cat-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; gap: 12px; }
-    .cat-row:last-child { border-bottom: none; }
-    .cat-row--inactive { opacity: .55; }
-    .cat-row__main { flex: 1; display: flex; align-items: center; gap: 10px; }
-    .cat-row__name { font-weight: 600; font-size: .9rem; }
-    .cat-row__cat { font-size: .7rem; background: #ede9fe; color: #5b21b6; padding: 2px 9px; border-radius: 10px; }
-    .cat-row__badge { font-size: .7rem; background: #f3f4f6; color: #6b7280; padding: 1px 8px; border-radius: 10px; }
-    .cat-row__actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .cat-page__subtitle { margin: 0; color: var(--mat-sys-on-surface-variant, #6b7280); font-size: .875rem; max-width: 560px; }
+    .cat-page__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .cat-page__search { width: 280px; }
+    .cat-page__filter { width: 200px; }
+    .cat-page__count { font-size: .8125rem; color: var(--mat-sys-on-surface-variant, #6b7280); margin-left: auto; }
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .cat-tile {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .cat-tile:hover { box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,.1)); transform: translateY(-1px); }
+    .cat-tile--inactive { opacity: .55; }
+    .cat-tile__main { display: flex; flex-direction: column; gap: 6px; }
+    .cat-tile__name { font-weight: 600; font-size: .9rem; }
+    .cat-tile__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cat-tile__cat { font-size: .7rem; background: #ede9fe; color: #5b21b6; padding: 2px 9px; border-radius: 10px; }
+    .cat-tile__badge { font-size: .7rem; background: #f3f4f6; color: #6b7280; padding: 1px 8px; border-radius: 10px; }
+    .cat-tile__actions { display: flex; gap: 2px; justify-content: flex-end; }
     .empty-state { display: flex; flex-direction: column; align-items: center; padding: 48px 0; color: #9ca3af; gap: 8px; }
   `],
 })
@@ -185,6 +211,7 @@ export class SkillCatalogManagementComponent {
 
   readonly categoryOptions = CATEGORY_OPTIONS;
   categoryFilter: SkillCategory | null = null;
+  readonly searchQuery = signal('');
 
   readonly programs = signal<AcademicProgram[]>([]);
 
@@ -199,6 +226,14 @@ export class SkillCatalogManagementComponent {
   );
 
   readonly skills = computed(() => this.resource.value() ?? []);
+
+  /** FAC-03: filtro de texto client-side sobre las skills ya cargadas (94 en catálogo, sin paginar). */
+  readonly filteredSkills = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const list = this.skills();
+    if (!q) return list;
+    return list.filter((s) => s.displayName.toLowerCase().includes(q));
+  });
 
   constructor() {
     this.adminService.getPrograms(true).subscribe({

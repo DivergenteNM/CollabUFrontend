@@ -9,6 +9,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: UserRole;
+  termsAccepted: boolean;
+  dataTreatmentAccepted?: boolean;
 }
 
 export interface AuthResponse {

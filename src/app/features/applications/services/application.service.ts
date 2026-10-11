@@ -83,8 +83,12 @@ export class ApplicationService extends BaseApiService {
     return this.http.patch<ApiResponse<Application>>(`${this.apiUrl}/${id}/status`, { status, notes });
   }
 
-  withdraw(id: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/withdraw`, {});
+  withdraw(id: string, reason?: string): Observable<void> {
+    const withdrawalReason =
+      reason && reason.trim().length >= 10
+        ? reason.trim()
+        : 'Retiro voluntario por parte del estudiante';
+    return this.http.patch<void>(`${this.apiUrl}/${id}/withdraw`, { withdrawalReason });
   }
 
   submitDeliverable(

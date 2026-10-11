@@ -2,32 +2,40 @@ import {
   Component, ChangeDetectionStrategy, inject, PLATFORM_ID, computed,
 } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { environment } from '../../../../../environments/environment';
-import { CompanyMetrics } from '../../../../core/models';
+import { AnalyticsService } from '../../../analytics/services/analytics.service';
 import { AuthStore } from '../../../../state/auth.store';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
+import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-company-analytics',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [MatCardModule, MatIconModule, MatProgressBarModule, DecimalPipe, StatCardComponent],
+  imports: [MatCardModule, MatIconModule, MatProgressBarModule, DecimalPipe, StatCardComponent, EmptyStateComponent],
   templateUrl: './company-analytics.component.html',
   styleUrl: './company-analytics.component.scss',
 })
 export class CompanyAnalyticsComponent {
   private readonly authStore = inject(AuthStore);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly analyticsService = inject(AnalyticsService);
 
-  readonly metrics = httpResource<CompanyMetrics>(() => {
-    if (!isPlatformBrowser(this.platformId)) return undefined;
-    const userId = this.authStore.user()?.id;
-    if (!userId) return undefined;
-    return { url: `${environment.apiUrl}/analytics/companies/${userId}/summary` };
+  readonly metrics = rxResource({
+    params: () => {
+      if (!isPlatformBrowser(this.platformId)) return undefined;
+      const userId = this.authStore.user()?.id;
+      return userId ? { userId } : undefined;
+    },
+    stream: ({ params }) => this.analyticsService.getCompanySummary(params.userId),
+  });
+
+  readonly isNotFound = computed(() => {
+    const err = this.metrics.error() as { status?: number } | undefined;
+    return err?.status === 404;
   });
 
   readonly completionRateDisplay = computed(() => {

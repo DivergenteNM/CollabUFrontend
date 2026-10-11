@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -172,13 +172,13 @@ export class UserCreateDialogComponent {
   styles: [`
     .dlg-title     { display: flex; align-items: center; gap: 8px; }
     .dlg-content   { display: flex; flex-direction: column; gap: 4px; min-width: 400px; padding-top: 8px; }
-    .section-label { font-size: 0.75rem; font-weight: 600; color: #1565c0; text-transform: uppercase;
-                     letter-spacing: 0.08em; padding: 4px 0 2px; border-bottom: 1px solid #e3f2fd; margin-bottom: 4px; }
+    .section-label { font-size: 0.75rem; font-weight: 600; color: var(--color-primary-400); text-transform: uppercase;
+                     letter-spacing: 0.08em; padding: 4px 0 2px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
     .full-w        { width: 100%; }
     .toggle-row    { display: flex; justify-content: space-between; align-items: center;
-                     padding: 12px 0; border-top: 1px solid #e0e0e0; margin-top: 4px; }
-    .toggle-label  { font-size: 0.9rem; font-weight: 500; }
-    .toggle-hint   { font-size: 0.75rem; color: #777; margin-top: 2px; }
+                     padding: 12px 0; border-top: 1px solid var(--border-subtle); margin-top: 4px; }
+    .toggle-label  { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); }
+    .toggle-hint   { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
   `],
 })
 export class UserEditDialogComponent {

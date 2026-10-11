@@ -19,11 +19,62 @@
       margin-bottom: 24px;
     }
 
+    :host ::ng-deep .recs__card {
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+      &:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+      }
+    }
+
     .recs__card-top {
       display: flex;
       gap: 16px;
       align-items: flex-start;
       margin-bottom: 16px;
+    }
+
+    .recs__score-badge {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      backdrop-filter: blur(4px);
+      border: 2px solid transparent;
+
+      &-value { font-size: 1.0625rem; font-weight: 700; line-height: 1; }
+      &-label { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.85; }
+
+      &--high {
+        background: color-mix(in srgb, var(--color-success) 16%, transparent);
+        border-color: var(--color-success);
+        color: var(--color-success-text, var(--color-success));
+      }
+      &--mid {
+        background: color-mix(in srgb, #ff9800 16%, transparent);
+        border-color: #ff9800;
+        color: #b26a00;
+      }
+      &--low {
+        background: color-mix(in srgb, var(--color-error) 14%, transparent);
+        border-color: var(--color-error);
+        color: var(--color-error-text, var(--color-error));
+      }
+    }
+
+    .recs__skills-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 4px;
+      white-space: nowrap;
+
+      &--match { color: var(--color-success); }
+      &--missing { color: var(--color-error); }
     }
 
     .recs__rank {

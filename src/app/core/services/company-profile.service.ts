@@ -5,6 +5,7 @@ import {
   ApiResponse,
   CompanyBusinessArea,
   CompanyContact,
+  CompanyLocation,
   CompanyProfile,
   normalizeApiResponse,
 } from '../models';
@@ -17,6 +18,7 @@ export interface CreateCompanyProfilePayload {
   companySize?: CompanyProfile['companySize'];
   description?: string;
   website?: string;
+  logoUrl?: string;
   foundedYear?: number;
   headquartersCity?: string;
   headquartersState?: string;
@@ -32,6 +34,16 @@ export interface CreateCompanyContactPayload {
   position?: string;
   phone?: string;
   isPrimary?: boolean;
+}
+
+export interface CreateCompanyLocationPayload {
+  city: string;
+  name?: string;
+  address?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  isHeadquarters?: boolean;
 }
 
 export interface CreateBusinessAreaPayload {
@@ -73,6 +85,18 @@ export class CompanyProfileService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<CompanyProfile>(res, 'Perfil de empresa actualizado')));
   }
 
+  uploadLogo(logoUrl: string): Observable<ApiResponse<CompanyProfile>> {
+    return this.http
+      .post<ApiResponse<CompanyProfile> | CompanyProfile>(`${this.apiUrl}/profile/logo`, { logoUrl })
+      .pipe(map((res) => normalizeApiResponse<CompanyProfile>(res, 'Logo actualizado')));
+  }
+
+  deleteLogo(): Observable<ApiResponse<CompanyProfile>> {
+    return this.http
+      .delete<ApiResponse<CompanyProfile> | CompanyProfile>(`${this.apiUrl}/profile/logo`)
+      .pipe(map((res) => normalizeApiResponse<CompanyProfile>(res, 'Logo eliminado')));
+  }
+
   getContacts(): Observable<ApiResponse<CompanyContact[]>> {
     return this.http
       .get<ApiResponse<CompanyContact[]> | CompanyContact[]>(`${this.apiUrl}/contacts`)
@@ -85,6 +109,26 @@ export class CompanyProfileService extends BaseApiService {
       .pipe(map((res) => normalizeApiResponse<CompanyContact>(res, 'Contacto agregado')));
   }
 
+  deleteContact(contactId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/contacts/${contactId}`);
+  }
+
+  getLocations(): Observable<ApiResponse<CompanyLocation[]>> {
+    return this.http
+      .get<ApiResponse<CompanyLocation[]> | CompanyLocation[]>(`${this.apiUrl}/locations`)
+      .pipe(map((res) => normalizeApiResponse<CompanyLocation[]>(res, 'Ubicaciones obtenidas')));
+  }
+
+  addLocation(data: CreateCompanyLocationPayload): Observable<ApiResponse<CompanyLocation>> {
+    return this.http
+      .post<ApiResponse<CompanyLocation> | CompanyLocation>(`${this.apiUrl}/locations`, data)
+      .pipe(map((res) => normalizeApiResponse<CompanyLocation>(res, 'Ubicación agregada')));
+  }
+
+  deleteLocation(locationId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/locations/${locationId}`);
+  }
+
   getBusinessAreas(): Observable<ApiResponse<CompanyBusinessArea[]>> {
     return this.http
       .get<ApiResponse<CompanyBusinessArea[]> | CompanyBusinessArea[]>(`${this.apiUrl}/business-areas`)
@@ -95,6 +139,10 @@ export class CompanyProfileService extends BaseApiService {
     return this.http
       .post<ApiResponse<CompanyBusinessArea> | CompanyBusinessArea>(`${this.apiUrl}/business-areas`, data)
       .pipe(map((res) => normalizeApiResponse<CompanyBusinessArea>(res, 'Área de negocio agregada')));
+  }
+
+  deleteBusinessArea(areaId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/business-areas/${areaId}`);
   }
 
   private sanitizeCompanyPayload(

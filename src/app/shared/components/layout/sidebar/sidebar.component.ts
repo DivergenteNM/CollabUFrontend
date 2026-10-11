@@ -110,6 +110,8 @@ export class SidebarComponent implements OnInit {
       [UserRole.FACULTY]: [
         { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
         { icon: 'school', label: 'Mis Estudiantes', route: '/my-students' },
+        { icon: 'analytics', label: 'Analítica Institucional', route: '/admin/dashboard' },
+        { icon: 'description', label: 'Reportes', route: '/admin/reports' },
         { icon: 'insights', label: 'Tendencias de Skills', route: '/skills' },
         { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
         { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat', badgeKind: 'chat' },

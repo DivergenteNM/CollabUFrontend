@@ -116,9 +116,45 @@ describe('AuthStore', () => {
     expect(store.isFacultyAdmin()).toBe(true);
   });
 
-  it('should compute displayName falling back to email', () => {
+  it('should compute displayName falling back to role when profile is null', () => {
     store.setAuth(mockUser, 'token', 'refresh');
-    expect(store.displayName()).toBe('test@udenar.edu.co');
+    expect(store.displayName()).toBe('Estudiante');
+  });
+
+  it('should compute displayName from profile firstName and lastName', () => {
+    store.setAuth(mockUser, 'token', 'refresh');
+    store.setProfile({
+      id: 'p1',
+      userId: '1',
+      firstName: 'Sofía',
+      lastName: 'Martínez',
+      role: 'student',
+      profileCompleteness: 100,
+      isOnboardingComplete: true,
+      createdAt: '2026-01-01',
+    } as any);
+    expect(store.displayName()).toBe('Sofía Martínez');
+  });
+
+  it('should compute hasAvatar correctly based on profile avatarUrl', () => {
+    expect(store.hasAvatar()).toBe(false);
+    store.setProfile({
+      id: 'p1',
+      userId: '1',
+      firstName: 'Sofía',
+      lastName: 'Martínez',
+      avatarUrl: 'http://example.com/avatar.jpg',
+    } as any);
+    expect(store.hasAvatar()).toBe(true);
+
+    store.setProfile({
+      id: 'p1',
+      userId: '1',
+      firstName: 'Sofía',
+      lastName: 'Martínez',
+      avatarUrl: '',
+    } as any);
+    expect(store.hasAvatar()).toBe(false);
   });
 
   it('should set loading state', () => {

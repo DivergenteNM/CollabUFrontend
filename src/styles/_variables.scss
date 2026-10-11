@@ -192,29 +192,134 @@
   --form-field-gap: var(--space-4);
   --section-gap:    var(--space-8);
   --list-item-gap:  var(--space-3);
+  /* =========================================
+     ELEVATION ALIASES & UTILITY TOKENS
+     ========================================= */
+  --background-base:     var(--bg-primary);
+  --surface-card:        var(--bg-card);
+  --surface-elevated:    var(--bg-elevated);
+  --surface-hover:       var(--bg-hover);
+  --surface-active:      var(--bg-selected);
+  --text-muted:          var(--text-tertiary);
+
+  --color-purple-bg:     #F3E8FF;
+  --color-purple-text:   #7E22CE;
+  --color-purple-border: #E9D5FF;
+
+  --color-indigo-bg:     #E0E7FF;
+  --color-indigo-text:   #4338CA;
+  --color-indigo-border: #C7D2FE;
 }
 
 // ---- Tema oscuro ----
 .dark-theme {
-  --bg-primary:    #151916;
-  --bg-secondary:  #1B211D;
-  --bg-tertiary:   #232B25;
-  --bg-card:       #1B211D;
-  --bg-elevated:   #232B25;
+  /* =========================================
+     ELEVATION & SURFACES (NEUTRAL CARBON & MATTE GRAY — NO BLUE)
+     ========================================= */
+  --bg-primary:          #0C0D0F; // Deep neutral matte black/carbon (app base, zero blue)
+  --bg-secondary:        #111317; // Neutral deep matte charcoal (sidebar, sub-bars)
+  --bg-tertiary:         #131519; // Inset matte gray (stepper sub-panels, table headers)
+  --bg-card:             #1C1E24; // Matte dark zinc/gray with visible separation from base
+  --bg-elevated:         #242730; // Elevated dropdowns, modals, popovers
 
-  --bg-hover:      #263329;
-  --bg-selected:   #213E28;
+  --background-base:     var(--bg-primary);
+  --surface-card:        var(--bg-card);
+  --surface-elevated:    var(--bg-elevated);
+  --surface-hover:       rgba(255, 255, 255, 0.05);
+  --surface-active:      rgba(16, 185, 129, 0.12);
 
-  --border-color:  #344337;
-  --border-subtle: #29352C;
-  --border-strong: #4D6151;
+  --bg-hover:            rgba(255, 255, 255, 0.05);
+  --bg-selected:         rgba(16, 185, 129, 0.12);
 
-  --text-primary:    #F0F5F0;
-  --text-secondary:  #B5C2B6;
-  --text-tertiary:   #8C9C8E;
-  --text-disabled:   #617063;
+  --border-subtle:       rgba(255, 255, 255, 0.08); // Subtle, matte card boundary
+  --border-color:        rgba(255, 255, 255, 0.14); // Visible inputs/dividers
+  --border-strong:       rgba(255, 255, 255, 0.24); // Focus/hover border
 
-  --text-on-primary: #F7FAF7;
-  --text-on-dark:    #F7FAF7;
-  --text-link:       #74B5DE;
+  /* =========================================
+     TEXT & CONTRAST (PURE WHITE & NEUTRAL ZINC GRAY — WCAG AAA/AA)
+     ========================================= */
+  --text-primary:        #FFFFFF; // Crisp pure white (16.5:1 on base, 13.5:1 on cards)
+  --text-secondary:      #A1A1AA; // Neutral Zinc 400 gray (6.2:1 on cards, WCAG AA/AAA)
+  --text-tertiary:       #71717A; // Neutral Zinc 500 gray (subtle captions & icons)
+  --text-muted:          #71717A;
+  --text-disabled:       #52525B; // Zinc 600
+
+  --text-on-primary:     #FFFFFF;
+  --text-on-dark:        #FFFFFF;
+  --text-link:           #34D399; // Emerald link accent
+
+  /* =========================================
+     BRAND / PRIMARY — MATTE EMERALD GREEN
+     ========================================= */
+  --color-primary:       #10B981; // Emerald 500
+  --color-primary-light: #34D399; // Emerald 400
+  --color-primary-dark:  #059669; // Emerald 600
+
+  --color-primary-50:    rgba(16, 185, 129, 0.08);
+  --color-primary-100:   rgba(16, 185, 129, 0.12); // Translucent green pill background
+  --color-primary-200:   rgba(16, 185, 129, 0.20);
+  --color-primary-300:   rgba(16, 185, 129, 0.35); // Border accent for active states
+  --color-primary-400:   #34D399; // Vibrant readable emerald text & icons (7.8:1)
+  --color-primary-500:   #10B981;
+  --color-primary-600:   #34D399;
+  --color-primary-700:   #34D399;
+  --color-primary-800:   #6EE7B7;
+  --color-primary-900:   #A7F3D0;
+
+  /* =========================================
+     ACCENT — HARMONIZED WITH EMERALD (NO BLUE)
+     ========================================= */
+  --color-accent:        #10B981;
+  --color-accent-light:  #34D399;
+  --color-accent-50:     rgba(16, 185, 129, 0.08);
+  --color-accent-100:    rgba(16, 185, 129, 0.12);
+  --color-accent-200:    rgba(16, 185, 129, 0.20);
+  --color-accent-300:    rgba(16, 185, 129, 0.35);
+  --color-accent-400:    #34D399;
+  --color-accent-500:    #10B981;
+  --color-accent-600:    #34D399;
+  --color-accent-700:    #6EE7B7;
+
+  /* =========================================
+     SEMANTIC BADGES & STATES (WCAG AA/AAA)
+     ========================================= */
+  --color-success:        #34D399;
+  --color-success-bg:     rgba(16, 185, 129, 0.12);
+  --color-success-border: rgba(16, 185, 129, 0.35);
+  --color-success-text:   #34D399;
+
+  --color-info:           #A1A1AA;
+  --color-info-bg:        rgba(161, 161, 170, 0.12);
+  --color-info-border:    rgba(161, 161, 170, 0.28);
+  --color-info-text:      #E4E4E7;
+
+  --color-warning:        #FBBF24;
+  --color-warning-bg:     rgba(245, 158, 11, 0.12);
+  --color-warning-border: rgba(245, 158, 11, 0.35);
+  --color-warning-text:   #FBBF24;
+
+  --color-error:          #F87171;
+  --color-error-bg:       rgba(239, 68, 68, 0.12);
+  --color-error-border:   rgba(239, 68, 68, 0.35);
+  --color-error-text:     #F87171;
+
+  --color-purple-bg:      rgba(161, 161, 170, 0.10);
+  --color-purple-text:    #E4E4E7;
+  --color-purple-border:  rgba(161, 161, 170, 0.20);
+
+  --color-indigo-bg:      rgba(16, 185, 129, 0.10);
+  --color-indigo-text:    #34D399;
+  --color-indigo-border:  rgba(16, 185, 129, 0.25);
+
+  /* States */
+  --state-hover:          rgba(255, 255, 255, 0.05);
+  --state-selected:       rgba(16, 185, 129, 0.12);
+  --state-pressed:        rgba(16, 185, 129, 0.20);
+
+  /* Shadows (dark mode) */
+  --shadow-color:         0, 0, 0;
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-xl:  0 20px 48px rgba(0, 0, 0, 0.6), 0 8px 20px rgba(0, 0, 0, 0.3);
 }

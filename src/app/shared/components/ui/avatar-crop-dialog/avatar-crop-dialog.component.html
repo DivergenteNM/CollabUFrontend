@@ -1,6 +1,6 @@
 <div class="avatar-crop-dialog">
   <h2 mat-dialog-title class="avatar-crop-dialog__title">
-    <mat-icon color="primary">crop</mat-icon> Recortar Foto de Perfil
+    <mat-icon color="primary">{{ isSquare ? 'business' : 'crop' }}</mat-icon> {{ dialogTitle }}
   </h2>
 
   <mat-dialog-content class="avatar-crop-dialog__content">

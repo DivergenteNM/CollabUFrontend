@@ -16,10 +16,17 @@ import { ProjectCardComponent } from '../../../../shared/components/cards/projec
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 import { MatchingService } from '../../../matching/services/matching.service';
+import { AdminService } from '../../../admin/services/admin.service';
 
 interface FilterOption {
   id: string;
   label: string;
+}
+
+/** Rangos de duración mostrados en el filtro — se traducen a `durationMin`/`durationMax` reales. */
+interface DurationOption extends FilterOption {
+  min?: number;
+  max?: number;
 }
 
 @Component({
@@ -39,6 +46,7 @@ export class ProjectListComponent {
   private readonly platformId = inject(PLATFORM_ID);
   readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly matchingService = inject(MatchingService);
+  private readonly adminService = inject(AdminService);
 
   readonly page = signal(1);
   readonly pageSize = 12;
@@ -52,35 +60,45 @@ export class ProjectListComponent {
 
   // Active filter selections
   readonly searchText = signal('');
-  readonly selectedCategory = signal<string>('');
+  /** `projectType` real del backend (`ProjectType` enum de project.entity.ts). */
+  readonly selectedProjectType = signal<string>('');
+  /** `locationType` real del backend (`LocationType` enum de project.entity.ts). */
+  readonly selectedLocationType = signal<string>('');
   readonly selectedDuration = signal<string>('');
   readonly selectedSkill = signal<string>('');
   readonly skillSearchQuery = signal<string>('');
   readonly selectedSort = signal<string>('createdAt');
 
-  // Filter definitions matching the mockup
-  readonly categories: FilterOption[] = [
-    { id: 'web', label: 'Desarrollo Web' },
-    { id: 'mobile', label: 'Móvil' },
-    { id: 'data', label: 'Ciencia de Datos' },
-    { id: 'design', label: 'Diseño' },
+  /** Tipo de proyecto — valores reales de `ProjectType` (project.entity.ts), sin categorías inventadas. */
+  readonly projectTypes: FilterOption[] = [
+    { id: 'professional_practice', label: 'Práctica Profesional' },
+    { id: 'internship', label: 'Pasantía' },
+    { id: 'research', label: 'Investigación' },
+    { id: 'thesis', label: 'Tesis' },
+    { id: 'other', label: 'Otro' },
   ];
 
-  readonly durationOptions: FilterOption[] = [
-    { id: '< 1 Mes', label: '< 1 Mes' },
-    { id: '1-3 Meses', label: '1-3 Meses' },
-    { id: '> 3 Meses', label: '> 3 Meses' },
+  /** Modalidad — valores reales de `LocationType` (project.entity.ts). */
+  readonly locationTypes: FilterOption[] = [
+    { id: 'onsite', label: 'Presencial' },
+    { id: 'remote', label: 'Remoto' },
+    { id: 'hybrid', label: 'Híbrido' },
   ];
 
-  readonly allSkills: string[] = [
-    'Python', 'React', 'UI/UX', 'Machine Learning',
-    'Angular', 'Node.js', 'Figma', 'TypeScript', 'SQL', 'Flutter',
+  readonly durationOptions: DurationOption[] = [
+    { id: 'lt1', label: '< 1 Mes', max: 0 },
+    { id: '1to3', label: '1-3 Meses', min: 1, max: 3 },
+    { id: 'gt3', label: '> 3 Meses', min: 4 },
   ];
+
+  /** Catálogo real de habilidades (admin-service), reemplaza la lista estática anterior. */
+  readonly allSkills = signal<string[]>([]);
 
   readonly filteredSkills = computed(() => {
     const q = this.skillSearchQuery().toLowerCase().trim();
-    if (!q) return this.allSkills;
-    return this.allSkills.filter((s) => s.toLowerCase().includes(q));
+    const skills = this.allSkills();
+    if (!q) return skills;
+    return skills.filter((s) => s.toLowerCase().includes(q));
   });
 
   /** projectId -> overallScore real ya calculado por matching-service para el estudiante actual. */
@@ -90,6 +108,13 @@ export class ProjectListComponent {
   private readonly studentId = this.authStore.isStudent() ? (this.authStore.user()?.id ?? null) : null;
 
   constructor() {
+    if (this.isBrowser) {
+      this.adminService.getSkillCatalog().subscribe({
+        next: (entries) => this.allSkills.set(entries.map((s) => s.displayName)),
+        error: () => {},
+      });
+    }
+
     if (this.isBrowser && this.studentId) {
       this.matchingService.getResultsForStudent(this.studentId).subscribe({
         next: (res) => {
@@ -175,11 +200,20 @@ export class ProjectListComponent {
     this.page.set(1);
   }
 
-  toggleCategory(categoryId: string): void {
-    if (this.selectedCategory() === categoryId) {
-      this.selectedCategory.set('');
+  toggleProjectType(typeId: string): void {
+    if (this.selectedProjectType() === typeId) {
+      this.selectedProjectType.set('');
     } else {
-      this.selectedCategory.set(categoryId);
+      this.selectedProjectType.set(typeId);
+    }
+    this.page.set(1);
+  }
+
+  toggleLocationType(locationId: string): void {
+    if (this.selectedLocationType() === locationId) {
+      this.selectedLocationType.set('');
+    } else {
+      this.selectedLocationType.set(locationId);
     }
     this.page.set(1);
   }
@@ -221,7 +255,8 @@ export class ProjectListComponent {
 
   clearFilters(): void {
     this.searchText.set('');
-    this.selectedCategory.set('');
+    this.selectedProjectType.set('');
+    this.selectedLocationType.set('');
     this.selectedDuration.set('');
     this.selectedSkill.set('');
     this.skillSearchQuery.set('');
@@ -235,19 +270,22 @@ export class ProjectListComponent {
       limit: this.pageSize,
     };
 
-    const searchParts: string[] = [];
     if (this.searchText().trim()) {
-      searchParts.push(this.searchText().trim());
-    }
-    if (this.selectedCategory()) {
-      const cat = this.categories.find((c) => c.id === this.selectedCategory());
-      if (cat) {
-        searchParts.push(cat.label);
-      }
+      params['search'] = this.searchText().trim();
     }
 
-    if (searchParts.length > 0) {
-      params['search'] = searchParts.join(' ');
+    if (this.selectedProjectType()) {
+      params['projectType'] = this.selectedProjectType();
+    }
+
+    if (this.selectedLocationType()) {
+      params['locationType'] = this.selectedLocationType();
+    }
+
+    if (this.selectedDuration()) {
+      const dur = this.durationOptions.find((d) => d.id === this.selectedDuration());
+      if (dur?.min !== undefined) params['durationMin'] = dur.min;
+      if (dur?.max !== undefined) params['durationMax'] = dur.max;
     }
 
     if (this.selectedSkill()) {

@@ -127,6 +127,7 @@ a.mat-mdc-card:hover {
 .u-chip.status-accepted,
 .u-chip.status-approved,
 .u-chip.status-completed,
+.u-chip.status-interview,
 .u-chip.status-active {
   background: var(--color-success-bg);
   color: var(--color-success-text);
@@ -149,7 +150,22 @@ a.mat-mdc-card:hover {
 }
 
 // -----------------------------------------------------------------------------
-// 14.6 Formularios — spacing consistente, textarea comfortable
+// Elevation, Surface & Typographic Utilities
+// -----------------------------------------------------------------------------
+
+.bg-base,
+.background-base { background-color: var(--background-base) !important; }
+.surface-card    { background-color: var(--surface-card) !important; }
+.surface-hover   { background-color: var(--surface-hover) !important; }
+.surface-active  { background-color: var(--surface-active) !important; }
+.border-subtle   { border-color: var(--border-subtle) !important; }
+
+.text-primary    { color: var(--text-primary) !important; }
+.text-secondary  { color: var(--text-secondary) !important; }
+.text-muted      { color: var(--text-muted) !important; }
+
+// -----------------------------------------------------------------------------
+// 14.6 Formularios — spacing consistente, selects y textareas accesibles
 // -----------------------------------------------------------------------------
 
 .u-form-row {
@@ -167,6 +183,44 @@ a.mat-mdc-card:hover {
   justify-content: flex-end;
   margin-top: var(--space-3);
   flex-wrap: wrap;
+}
+
+// Estilos globales de form-field y select para garantizar contraste
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--border-color);
+  --mdc-outlined-text-field-hover-outline-color: var(--color-primary-400);
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary-400);
+  --mdc-outlined-text-field-label-text-color: var(--text-secondary);
+  --mdc-outlined-text-field-hover-label-text-color: var(--text-primary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--color-primary-400);
+  --mdc-outlined-text-field-input-text-color: var(--text-primary);
+  --mdc-outlined-text-field-input-text-placeholder-color: var(--text-tertiary);
+}
+
+.mat-mdc-select-value {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-select-arrow {
+  color: var(--text-secondary) !important;
+}
+
+.mat-mdc-select-panel {
+  background-color: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.mat-mdc-option {
+  color: var(--text-primary) !important;
+
+  &:hover:not(.mdc-list-item--disabled) {
+    background-color: var(--bg-hover) !important;
+  }
+
+  &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+    background-color: var(--bg-selected) !important;
+    color: var(--color-primary-400) !important;
+  }
 }
 
 // Textarea con altura mínima cómoda
@@ -190,21 +244,65 @@ a.mat-mdc-card:hover {
 .u-table-wrap table.mat-mdc-table {
   min-width: 720px;
   width: 100%;
+  background-color: var(--bg-card);
+}
+
+tr.mat-mdc-header-row {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 table.mat-mdc-table th.mat-mdc-header-cell {
   font-weight: 600 !important;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
+  color: var(--text-secondary) !important;
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
 }
 
-table.mat-mdc-table td.mat-mdc-cell { padding: var(--space-2) var(--space-3); }
+table.mat-mdc-table td.mat-mdc-cell {
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
 
 tr.mat-mdc-row {
+  background-color: var(--bg-card);
   transition: background-color var(--transition-fast);
 
   &:hover {
-    background-color: var(--state-hover);
+    background-color: var(--bg-hover) !important;
+  }
+}
+
+.dark-theme {
+  table.mat-mdc-table,
+  .mat-mdc-table {
+    background-color: var(--bg-card) !important;
+  }
+
+  tr.mat-mdc-header-row,
+  .mat-mdc-header-row {
+    background-color: var(--bg-secondary) !important;
+  }
+
+  th.mat-mdc-header-cell,
+  .mat-mdc-header-cell {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+  }
+
+  tr.mat-mdc-row,
+  .mat-mdc-row {
+    background-color: var(--bg-card) !important;
+
+    &:hover {
+      background-color: var(--bg-hover) !important;
+    }
+  }
+
+  td.mat-mdc-cell,
+  .mat-mdc-cell {
+    color: var(--text-primary) !important;
   }
 }
 
@@ -378,4 +476,29 @@ a:focus-visible,
 .u-inline-2 { display: flex; gap: var(--space-2); align-items: center; }
 .u-inline-3 { display: flex; gap: var(--space-3); align-items: center; }
 .u-inline-4 { display: flex; gap: var(--space-4); align-items: center; }
+
+// -----------------------------------------------------------------------------
+// 14.12 Dropdown de Notificaciones del Header (CDK Overlay)
+// -----------------------------------------------------------------------------
+
+.cdk-overlay-pane .mat-mdc-menu-panel.header__notif-menu-panel {
+  width: 400px;
+  max-width: min(400px, calc(100vw - 20px));
+  min-width: 320px;
+  border-radius: var(--border-radius-lg, 16px);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-card);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}
+
+.dark-theme .cdk-overlay-pane .mat-mdc-menu-panel.header__notif-menu-panel {
+  background-color: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border-subtle);
+}
 

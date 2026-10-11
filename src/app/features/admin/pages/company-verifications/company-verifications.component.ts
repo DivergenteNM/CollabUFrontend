@@ -314,28 +314,28 @@ export class CompanyDetailDialogComponent {
     .det-title-block { flex:1; }
     .det-title { margin:0 0 6px; font-size:1.2rem; font-weight:700; }
     .det-tags-inline { display:flex; gap:6px; flex-wrap:wrap; }
-    .det-type-badge { background:#ede9fe; color:#5b21b6; font-size:.75rem; padding:2px 9px; border-radius:10px; font-weight:500; }
+    .det-type-badge { background: rgba(16, 185, 129, 0.12); color: var(--color-primary-400); border: 1px solid rgba(16, 185, 129, 0.25); font-size:.75rem; padding:2px 9px; border-radius:10px; font-weight:500; }
     .det-close { position:absolute; top:12px; right:12px; }
     .det-content { min-width:520px; max-width:640px; padding:12px 24px; }
     .det-section { padding:12px 0; }
     .det-section-title { display:flex; align-items:center; gap:6px; font-size:.875rem; font-weight:600;
-      color:#374151; margin:0 0 12px; mat-icon { font-size:17px; height:17px; width:17px; } }
+      color: var(--text-secondary); margin:0 0 12px; mat-icon { font-size:17px; height:17px; width:17px; } }
     .det-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; }
     .det-field { display:flex; flex-direction:column; gap:2px; }
-    .det-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; color:#9ca3af; font-weight:600; }
-    .det-value { font-size:.875rem; color:#111827; }
-    .det-description { font-size:.875rem; color:#374151; line-height:1.6; margin:0; white-space:pre-wrap; }
+    .det-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; color: var(--text-tertiary); font-weight:600; }
+    .det-value { font-size:.875rem; color: var(--text-primary); }
+    .det-description { font-size:.875rem; color: var(--text-secondary); line-height:1.6; margin:0; white-space:pre-wrap; }
     .det-req { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:6px;
-      background:#f9fafb; margin-bottom:6px; flex-wrap:wrap; }
-    .det-req--mandatory { background:#fff7ed; }
-    .det-req-name { font-weight:600; font-size:.8125rem; }
-    .det-req-type { font-size:.75rem; color:#6b7280; background:#f3f4f6; padding:1px 7px; border-radius:8px; }
-    .det-req-level { font-size:.75rem; color:#0277bd; background:#e1f5fe; padding:1px 7px; border-radius:8px; }
+      background: var(--bg-secondary); border: 1px solid var(--border-subtle); margin-bottom:6px; flex-wrap:wrap; }
+    .det-req--mandatory { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
+    .det-req-name { font-weight:600; font-size:.8125rem; color: var(--text-primary); }
+    .det-req-type { font-size:.75rem; color: var(--text-secondary); background: var(--bg-tertiary); padding:1px 7px; border-radius:8px; }
+    .det-req-level { font-size:.75rem; color: var(--color-primary-400); background: rgba(16, 185, 129, 0.10); padding:1px 7px; border-radius:8px; }
     .det-req-flag { font-size:.7rem; margin-left:auto; }
-    .det-req-flag--req { color:#b45309; font-weight:600; }
+    .det-req-flag--req { color: var(--color-warning); font-weight:600; }
     .det-tags { display:flex; flex-wrap:wrap; gap:6px; }
-    .det-tag { background:#ede9fe; color:#5b21b6; font-size:.75rem; padding:3px 10px; border-radius:10px; }
-    .det-tag--prog { background:#e0f2fe; color:#0369a1; }
+    .det-tag { background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); border: 1px solid var(--border-subtle); font-size:.75rem; padding:3px 10px; border-radius:10px; }
+    .det-tag--prog { background: rgba(16, 185, 129, 0.10); color: var(--color-primary-400); border: 1px solid rgba(16, 185, 129, 0.25); }
   `],
 })
 export class ProjectDetailDialogComponent {
@@ -493,7 +493,7 @@ export interface ProjectReviewDialogResult {
     }
 
     @if (data.mode === 'needs_changes') {
-      <h2 mat-dialog-title class="dlg-title"><mat-icon style="color:#b45309">edit_note</mat-icon> Solicitar cambios</h2>
+      <h2 mat-dialog-title class="dlg-title"><mat-icon class="icon-needs-changes">edit_note</mat-icon> Solicitar cambios</h2>
       <mat-dialog-content class="dlg-content">
         <p class="dlg-sub">Indica a la empresa qué debe ajustar en "{{ data.project.title }}" antes de volver a enviarlo.</p>
         <mat-form-field appearance="outline" class="full-w">
@@ -504,7 +504,7 @@ export interface ProjectReviewDialogResult {
       </mat-dialog-content>
       <mat-dialog-actions align="end">
         <button mat-button (click)="dialogRef.close(null)">Cancelar</button>
-        <button mat-flat-button style="background:#b45309;color:#fff" [disabled]="!notes.trim()" (click)="confirmNeedsChanges()">
+        <button mat-flat-button class="btn-needs-changes" [disabled]="!notes.trim()" (click)="confirmNeedsChanges()">
           <mat-icon>edit_note</mat-icon> Solicitar cambios
         </button>
       </mat-dialog-actions>
@@ -546,7 +546,9 @@ export interface ProjectReviewDialogResult {
     .rev-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;color:#9ca3af;font-weight:600}
     .rev-description{font-size:.8125rem;color:#374151;margin:8px 0 0;white-space:pre-wrap}
     .rev-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-    .rev-tag{background:#ede9fe;color:#5b21b6;font-size:.7rem;padding:2px 9px;border-radius:10px}`],
+    .rev-tag{background:#ede9fe;color:#5b21b6;font-size:.7rem;padding:2px 9px;border-radius:10px}
+    .icon-needs-changes{color:var(--color-warning)}
+    .btn-needs-changes{background:var(--color-warning);color:#fff;cursor:pointer;&:disabled{cursor:not-allowed;opacity:.65}}`],
 })
 export class ProjectReviewDialogComponent {
   readonly data      = inject<ProjectReviewDialogData>(MAT_DIALOG_DATA);
