@@ -3,10 +3,14 @@
   background-color: var(--bg-primary, #f6f8f5);
   min-height: 100vh;
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
 }
 
 .ws {
+  width: 100%;
   max-width: 1320px;
+  min-width: 0;
   margin: 0 auto;
   padding: 24px 24px 64px;
   display: flex;
@@ -297,17 +301,23 @@
 
 // ── 2. Completed / Cancelled Banners ──────────────────────────────────────────
 .ws-banner {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 16px;
+  gap: 16px 20px;
   padding: 16px 20px;
   border-radius: var(--border-radius-md, 12px);
   background: var(--color-success-bg, #e6f5eb);
   border: 1px solid var(--color-success-border, #a7dcb7);
   border-left: 5px solid var(--color-success, #2e854b);
   box-shadow: 0 2px 8px rgba(46, 133, 75, 0.08);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 
   &__icon-wrap {
+    grid-column: 1;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -326,7 +336,7 @@
   }
 
   &__body {
-    flex: 1;
+    grid-column: 2;
     min-width: 0;
   }
 
@@ -335,6 +345,8 @@
     font-size: 1rem;
     font-weight: 700;
     color: var(--color-success-text, #18572f);
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__desc {
@@ -342,13 +354,25 @@
     font-size: 0.8125rem;
     color: var(--text-secondary, #4a584c);
     line-height: 1.45;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__aside {
+    grid-column: 3;
     display: flex;
     align-items: center;
     gap: 14px;
     flex-shrink: 0;
+    min-width: 0;
+    max-width: 100%;
+
+    app-file-link {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      flex-shrink: 1;
+    }
   }
 
   &__grade-pill {
@@ -359,6 +383,8 @@
     padding: 6px 14px;
     border-radius: var(--border-radius-sm, 8px);
     border: 1px solid var(--color-success-border, #a7dcb7);
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 
   &__grade-caption {
@@ -367,12 +393,15 @@
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 
   &__grade-number {
     font-size: 1.25rem;
     color: var(--color-success-text, #18572f);
     font-weight: 800;
+    line-height: 1.15;
+    white-space: nowrap;
   }
 
   &--cancelled {
@@ -387,6 +416,84 @@
 
     .ws-banner__title {
       color: var(--color-error-text, #8c1e1e);
+    }
+  }
+
+  @media (max-width: 860px) {
+    grid-template-columns: auto 1fr;
+    gap: 12px 14px;
+    padding: 14px 16px;
+
+    &__icon-wrap {
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+
+    &__aside {
+      grid-column: 1 / -1;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--color-success-border, #a7dcb7);
+
+      .ws-banner__grade-pill {
+        flex: 0 0 auto;
+      }
+
+      app-file-link {
+        flex: 1 1 200px;
+        min-width: 0;
+        max-width: 100%;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 12px;
+    gap: 10px 10px;
+
+    &__icon-wrap {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    &__title {
+      font-size: 0.9375rem;
+    }
+
+    &__desc {
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    &__aside {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+
+      .ws-banner__grade-pill {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 6px 12px;
+        box-sizing: border-box;
+      }
+
+      app-file-link {
+        width: 100%;
+        box-sizing: border-box;
+      }
     }
   }
 }

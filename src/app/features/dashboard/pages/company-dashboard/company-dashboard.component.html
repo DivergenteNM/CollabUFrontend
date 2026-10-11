@@ -7,16 +7,16 @@
       <!-- Logo de la empresa con foto real o iniciales -->
       <div class="hero__avatar-container">
         @if (logoUrl()) {
-          <img [src]="logoUrl() | imageUrl" [alt]="companyName()" class="hero__avatar-img" />
+        <img [src]="logoUrl() | imageUrl" [alt]="companyName()" class="hero__avatar-img" />
         } @else {
-          <div class="hero__avatar-placeholder">
-            <span>{{ companyInitials() }}</span>
-          </div>
+        <div class="hero__avatar-placeholder">
+          <span>{{ companyInitials() }}</span>
+        </div>
         }
         @if (isVerified()) {
-          <span class="hero__avatar-verified" matTooltip="Empresa Verificada en Collab-U">
-            <mat-icon>verified</mat-icon>
-          </span>
+        <span class="hero__avatar-verified" matTooltip="Empresa Verificada en Collab-U">
+          <mat-icon>verified</mat-icon>
+        </span>
         }
       </div>
 
@@ -24,12 +24,12 @@
       <div class="hero__info">
         <div class="hero__greeting-row">
           <h1 class="hero__title">
-            {{ greetingTime() }}, <span class="hero__name">{{ companyName() }}</span>! 🏢
+            {{ greetingTime() }}, <span class="hero__name">{{ companyName() }}</span>!
           </h1>
           @if (isVerified()) {
-            <span class="company-verified-tag">
-              <mat-icon>check_circle</mat-icon> Verificada
-            </span>
+          <span class="company-verified-tag">
+            <mat-icon>check_circle</mat-icon> Verificada
+          </span>
           }
         </div>
 
@@ -39,22 +39,23 @@
             {{ companyProfile()?.industry || 'Empresa Aliada' }}
           </span>
           @if (companyProfile()?.headquartersCity) {
-            <span class="corp-badge corp-badge--subtle">
-              <mat-icon>location_on</mat-icon>
-              {{ companyProfile()?.headquartersCity }}{{ companyProfile()?.headquartersState ? ', ' + companyProfile()?.headquartersState : '' }}
-            </span>
+          <span class="corp-badge corp-badge--subtle">
+            <mat-icon>location_on</mat-icon>
+            {{ companyProfile()?.headquartersCity }}{{ companyProfile()?.headquartersState ? ', ' +
+            companyProfile()?.headquartersState : '' }}
+          </span>
           }
           @if (companyProfile()?.nit) {
-            <span class="corp-badge corp-badge--subtle">
-              <mat-icon>fingerprint</mat-icon>
-              NIT: {{ companyProfile()?.nit }}
-            </span>
+          <span class="corp-badge corp-badge--subtle">
+            <mat-icon>fingerprint</mat-icon>
+            NIT: {{ companyProfile()?.nit }}
+          </span>
           }
           @if (companyProfile()?.companySize) {
-            <span class="corp-badge corp-badge--accent">
-              <mat-icon>groups</mat-icon>
-              {{ companySizeLabel() }}
-            </span>
+          <span class="corp-badge corp-badge--accent">
+            <mat-icon>groups</mat-icon>
+            {{ companySizeLabel() }}
+          </span>
           }
         </div>
 
@@ -72,7 +73,7 @@
       <a mat-stroked-button routerLink="/received-applications" class="hero__btn">
         <mat-icon>assignment_ind</mat-icon> Postulaciones
         @if (pendingApplicationsCount() > 0) {
-          <span class="hero__btn-pill">{{ pendingApplicationsCount() }}</span>
+        <span class="hero__btn-pill">{{ pendingApplicationsCount() }}</span>
         }
       </a>
       <a mat-stroked-button routerLink="/profile" class="hero__btn">
@@ -85,28 +86,28 @@
   <!-- 2. ALERTA DE POSTULACIONES PENDIENTES (SI HAY PENDIENTES)    -->
   <!-- ============================================================ -->
   @if (pendingApplicationsCount() > 0) {
-    <section class="dashboard__pending-banner">
-      <div class="pending-banner__icon-box">
-        <mat-icon>pending_actions</mat-icon>
+  <section class="dashboard__pending-banner">
+    <div class="pending-banner__icon-box">
+      <mat-icon>pending_actions</mat-icon>
+    </div>
+    <div class="pending-banner__info">
+      <div class="pending-banner__tag">
+        <span class="live-dot"></span>
+        ACCIÓN REQUERIDA
       </div>
-      <div class="pending-banner__info">
-        <div class="pending-banner__tag">
-          <span class="live-dot"></span>
-          ACCIÓN REQUERIDA
-        </div>
-        <h3 class="pending-banner__title">
-          Tienes {{ pendingApplicationsCount() }} postulación(es) pendiente(s) por evaluar
-        </h3>
-        <p class="pending-banner__text">
-          Revisa las postulaciones recibidas para coordinar entrevistas o dar respuesta oportuna a los candidatos.
-        </p>
-      </div>
-      <div class="pending-banner__cta">
-        <a mat-flat-button color="primary" routerLink="/received-applications">
-          <mat-icon>rate_review</mat-icon> Evaluar Postulantes Ahora
-        </a>
-      </div>
-    </section>
+      <h3 class="pending-banner__title">
+        Tienes {{ pendingApplicationsCount() }} postulación(es) pendiente(s) por evaluar
+      </h3>
+      <p class="pending-banner__text">
+        Revisa las postulaciones recibidas para coordinar entrevistas o dar respuesta oportuna a los candidatos.
+      </p>
+    </div>
+    <div class="pending-banner__cta">
+      <a mat-flat-button color="primary" routerLink="/received-applications">
+        <mat-icon>rate_review</mat-icon> Evaluar Postulantes Ahora
+      </a>
+    </div>
+  </section>
   }
 
   <!-- ============================================================ -->
@@ -114,60 +115,36 @@
   <!-- ============================================================ -->
   <section class="dashboard__stats">
     @if (projectsResource.isLoading() || applicationsResource.isLoading()) {
-      @for (_ of [1, 2, 3, 4, 5]; track $index) {
-        <app-skeleton width="100%" height="110px" />
-      }
+    @for (_ of [1, 2, 3, 4, 5]; track $index) {
+    <app-skeleton width="100%" height="110px" />
+    }
     } @else {
-      <!-- 1. Proyectos Activos -->
-      <app-stat-card
-        icon="work"
-        [value]="activeProjectsCount()"
-        label="Proyectos Activos"
-        hint="Convocatorias actualmente publicadas y visibles para estudiantes"
-        trendLabel="Convocatorias vigentes"
-        color="primary"
-        [clickable]="true"
-        (clicked)="router.navigate(['/my-projects'])" />
+    <!-- 1. Proyectos Activos -->
+    <app-stat-card icon="work" [value]="activeProjectsCount()" label="Proyectos Activos"
+      hint="Convocatorias actualmente publicadas y visibles para estudiantes" trendLabel="Convocatorias vigentes"
+      color="primary" [clickable]="true" (clicked)="router.navigate(['/my-projects'])" />
 
-      <!-- 2. Aplicaciones Pendientes -->
-      <app-stat-card
-        icon="pending_actions"
-        [value]="pendingApplicationsCount()"
-        label="Postulaciones por Revisar"
-        hint="Candidatos esperando evaluación o entrevista"
-        [trendLabel]="pendingApplicationsCount() > 0 ? 'Requiere atención' : 'Al día'"
-        [color]="pendingApplicationsCount() > 0 ? 'accent' : 'primary'"
-        [clickable]="true"
-        (clicked)="router.navigate(['/received-applications'])" />
+    <!-- 2. Aplicaciones Pendientes -->
+    <app-stat-card icon="pending_actions" [value]="pendingApplicationsCount()" label="Postulaciones por Revisar"
+      hint="Candidatos esperando evaluación o entrevista"
+      [trendLabel]="pendingApplicationsCount() > 0 ? 'Requiere atención' : 'Al día'"
+      [color]="pendingApplicationsCount() > 0 ? 'accent' : 'primary'" [clickable]="true"
+      (clicked)="router.navigate(['/received-applications'])" />
 
-      <!-- 3. Estudiantes Activos -->
-      <app-stat-card
-        icon="school"
-        [value]="activeStudentsCount()"
-        label="Estudiantes en Desarrollo"
-        hint="Estudiantes actualmente vinculados a alguno de tus proyectos en desarrollo"
-        trendLabel="Talento incorporado"
-        color="primary" />
+    <!-- 3. Estudiantes Activos -->
+    <app-stat-card icon="school" [value]="activeStudentsCount()" label="Estudiantes en Desarrollo"
+      hint="Estudiantes actualmente vinculados a alguno de tus proyectos en desarrollo" trendLabel="Talento incorporado"
+      color="primary" />
 
-      <!-- 4. Rating Promedio -->
-      <app-stat-card
-        icon="star"
-        [value]="avgRating()"
-        label="Rating Promedio"
-        hint="Promedio de las evaluaciones que los estudiantes te han dado al finalizar sus procesos"
-        trendLabel="Evaluación global"
-        color="warn" />
+    <!-- 4. Rating Promedio -->
+    <app-stat-card icon="star" [value]="avgRating()" label="Rating Promedio"
+      hint="Promedio de las evaluaciones que los estudiantes te han dado al finalizar sus procesos"
+      trendLabel="Evaluación global" color="warn" />
 
-      <!-- 5. Mis Analytics -->
-      <app-stat-card
-        icon="insights"
-        [value]="completionRate() || 'Ver métricas'"
-        label="Mis Analytics"
-        hint="Métricas de rendimiento, tiempos de respuesta y cierre de convocatorias"
-        trendLabel="Métricas corporativas"
-        color="primary"
-        [clickable]="true"
-        (clicked)="router.navigate(['/company-analytics'])" />
+    <!-- 5. Mis Analytics -->
+    <app-stat-card icon="insights" [value]="completionRate() || 'Ver métricas'" label="Mis Analytics"
+      hint="Métricas de rendimiento, tiempos de respuesta y cierre de convocatorias" trendLabel="Métricas corporativas"
+      color="primary" [clickable]="true" (clicked)="router.navigate(['/company-analytics'])" />
     }
   </section>
 
@@ -195,90 +172,82 @@
             </div>
           </div>
           @if (pendingApplications().length > 0) {
-            <a mat-button color="primary" routerLink="/received-applications" class="card-header__link-btn">
-              Ver todas ({{ pendingApplicationsCount() }}) <mat-icon>chevron_right</mat-icon>
-            </a>
+          <a mat-button color="primary" routerLink="/received-applications" class="card-header__link-btn">
+            Ver todas ({{ pendingApplicationsCount() }}) <mat-icon>chevron_right</mat-icon>
+          </a>
           }
         </mat-card-header>
 
         <mat-card-content class="dashboard__card-body">
           @if (applicationsResource.isLoading()) {
-            <div class="candidates__loading-list">
-              @for (_ of [1, 2, 3]; track $index) {
-                <app-skeleton width="100%" height="96px" />
-              }
-            </div>
+          <div class="candidates__loading-list">
+            @for (_ of [1, 2, 3]; track $index) {
+            <app-skeleton width="100%" height="96px" />
+            }
+          </div>
           } @else if (pendingApplications().length === 0) {
-            <app-empty-state
-              icon="inbox"
-              title="Sin candidatos pendientes por revisar"
-              message="¡Estás al día! No tienes postulaciones en espera. Cuando los estudiantes apliquen a tus convocatorias aparecerán aquí."
-              actionLabel="Ver Mis Proyectos"
-              (actionClicked)="router.navigate(['/my-projects'])" />
+          <app-empty-state icon="inbox" title="Sin candidatos pendientes por revisar"
+            message="¡Estás al día! No tienes postulaciones en espera. Cuando los estudiantes apliquen a tus convocatorias aparecerán aquí."
+            actionLabel="Ver Mis Proyectos" (actionClicked)="router.navigate(['/my-projects'])" />
           } @else {
-            <div class="candidates__list">
-              @for (app of pendingApplications(); track app.id) {
-                <div class="candidate-card" (click)="router.navigate(['/received-applications', app.id])">
-                  <!-- Avatar del candidato -->
-                  <div class="candidate-card__avatar">
-                    @if (app.student?.user?.avatarUrl) {
-                      <img [src]="app.student!.user!.avatarUrl | imageUrl" [alt]="getStudentDisplayName(app)" />
-                    } @else {
-                      <div class="avatar-placeholder">
-                        {{ getStudentInitials(app) }}
-                      </div>
-                    }
-                  </div>
-
-                  <!-- Información del candidato -->
-                  <div class="candidate-card__info">
-                    <div class="candidate-card__name-row">
-                      <h3 class="candidate-card__name">
-                        {{ getStudentDisplayName(app) }}
-                      </h3>
-                      @if (app.matchScore != null) {
-                        <span class="candidate-card__score" [class]="getScoreBadgeClass(app.matchScore)">
-                          {{ app.matchScore }}% Match
-                        </span>
-                      }
-                    </div>
-
-                    <p class="candidate-card__project">
-                      <mat-icon>folder_open</mat-icon>
-                      <span>{{ app.project?.title || app.projectTitle || 'Convocatoria' }}</span>
-                    </p>
-
-                    <div class="candidate-card__meta">
-                      @if (app.student?.program) {
-                        <span class="meta-tag">
-                          <mat-icon>school</mat-icon> {{ app.student?.program }}
-                        </span>
-                      }
-                      <span class="meta-time">
-                        <mat-icon>schedule</mat-icon> Postulado {{ app.appliedAt | relativeTime }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Acciones del candidato -->
-                  <div class="candidate-card__actions" (click)="$event.stopPropagation()">
-                    <button
-                      mat-stroked-button
-                      class="candidate-btn"
-                      (click)="router.navigate(['/received-applications', app.id])">
-                      <mat-icon>visibility</mat-icon> Evaluar
-                    </button>
-                    <button
-                      mat-button
-                      class="candidate-btn candidate-btn--workspace"
-                      (click)="router.navigate(['/workspace', app.id])"
-                      matTooltip="Abrir seguimiento en Workspace">
-                      <mat-icon>arrow_forward</mat-icon>
-                    </button>
-                  </div>
+          <div class="candidates__list">
+            @for (app of pendingApplications(); track app.id) {
+            <div class="candidate-card" (click)="router.navigate(['/received-applications', app.id])">
+              <!-- Avatar del candidato -->
+              <div class="candidate-card__avatar">
+                @if (app.student?.user?.avatarUrl) {
+                <img [src]="app.student!.user!.avatarUrl | imageUrl" [alt]="getStudentDisplayName(app)" />
+                } @else {
+                <div class="avatar-placeholder">
+                  {{ getStudentInitials(app) }}
                 </div>
-              }
+                }
+              </div>
+
+              <!-- Información del candidato -->
+              <div class="candidate-card__info">
+                <div class="candidate-card__name-row">
+                  <h3 class="candidate-card__name">
+                    {{ getStudentDisplayName(app) }}
+                  </h3>
+                  @if (app.matchScore != null) {
+                  <span class="candidate-card__score" [class]="getScoreBadgeClass(app.matchScore)">
+                    {{ app.matchScore }}% Match
+                  </span>
+                  }
+                </div>
+
+                <p class="candidate-card__project">
+                  <mat-icon>folder_open</mat-icon>
+                  <span>{{ app.project?.title || app.projectTitle || 'Convocatoria' }}</span>
+                </p>
+
+                <div class="candidate-card__meta">
+                  @if (app.student?.program) {
+                  <span class="meta-tag">
+                    <mat-icon>school</mat-icon> {{ app.student?.program }}
+                  </span>
+                  }
+                  <span class="meta-time">
+                    <mat-icon>schedule</mat-icon> Postulado {{ app.appliedAt | relativeTime }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Acciones del candidato -->
+              <div class="candidate-card__actions" (click)="$event.stopPropagation()">
+                <button mat-stroked-button class="candidate-btn"
+                  (click)="router.navigate(['/received-applications', app.id])">
+                  <mat-icon>visibility</mat-icon> Evaluar
+                </button>
+                <button mat-button class="candidate-btn candidate-btn--workspace"
+                  (click)="router.navigate(['/workspace', app.id])" matTooltip="Abrir seguimiento en Workspace">
+                  <mat-icon>arrow_forward</mat-icon>
+                </button>
+              </div>
             </div>
+            }
+          </div>
           }
         </mat-card-content>
       </mat-card>
@@ -308,61 +277,53 @@
 
         <mat-card-content class="dashboard__card-body">
           @if (projectsResource.isLoading()) {
-            <div class="projects__loading-list">
-              @for (_ of [1, 2, 3]; track $index) {
-                <app-skeleton width="100%" height="88px" />
-              }
-            </div>
+          <div class="projects__loading-list">
+            @for (_ of [1, 2, 3]; track $index) {
+            <app-skeleton width="100%" height="88px" />
+            }
+          </div>
           } @else if (projects().length === 0) {
-            <app-empty-state
-              icon="create_new_folder"
-              title="Aún no tienes convocatorias publicadas"
-              message="Publica proyectos y ofertas de pasantía para conectar con los mejores estudiantes de la universidad."
-              actionLabel="Publicar Nuevo Proyecto"
-              (actionClicked)="router.navigate(['/my-projects', 'new'])" />
+          <app-empty-state icon="create_new_folder" title="Aún no tienes convocatorias publicadas"
+            message="Publica proyectos y ofertas de pasantía para conectar con los mejores estudiantes de la universidad."
+            actionLabel="Publicar Nuevo Proyecto" (actionClicked)="router.navigate(['/my-projects', 'new'])" />
           } @else {
-            <div class="projects__list">
-              @for (proj of projects(); track proj.id) {
-                <div class="project-tile" (click)="router.navigate(['/my-projects', proj.id, 'applicants'])">
-                  <!-- Info del proyecto -->
-                  <div class="project-tile__info">
-                    <div class="project-tile__header">
-                      <h4 class="project-tile__title">{{ proj.title }}</h4>
-                      <app-status-badge [status]="proj.status" domain="project" size="sm" />
-                    </div>
-
-                    <!-- Cobertura de posiciones con mini progress bar -->
-                    <div class="project-tile__progress-row">
-                      <div class="progress-label">
-                        <span>Posiciones cubiertas:</span>
-                        <strong>{{ proj.positionsFilled }}/{{ proj.positionsAvailable }}</strong>
-                      </div>
-                      <mat-progress-bar
-                        mode="determinate"
-                        [value]="getFillPercentage(proj)"
-                        class="positions-bar">
-                      </mat-progress-bar>
-                    </div>
-                  </div>
-
-                  <!-- Postulaciones y acciones -->
-                  <div class="project-tile__right" (click)="$event.stopPropagation()">
-                    <div class="project-tile__apps-count">
-                      <mat-icon>group</mat-icon>
-                      <span class="count-number">{{ proj.applicationsCount || 0 }}</span>
-                      <span class="count-label">postulantes</span>
-                    </div>
-
-                    <button
-                      mat-stroked-button
-                      class="project-tile__btn"
-                      (click)="router.navigate(['/my-projects', proj.id, 'applicants'])">
-                      Postulantes
-                    </button>
-                  </div>
+          <div class="projects__list">
+            @for (proj of projects(); track proj.id) {
+            <div class="project-tile" (click)="router.navigate(['/my-projects', proj.id, 'applicants'])">
+              <!-- Info del proyecto -->
+              <div class="project-tile__info">
+                <div class="project-tile__header">
+                  <h4 class="project-tile__title">{{ proj.title }}</h4>
+                  <app-status-badge [status]="proj.status" domain="project" size="sm" />
                 </div>
-              }
+
+                <!-- Cobertura de posiciones con mini progress bar -->
+                <div class="project-tile__progress-row">
+                  <div class="progress-label">
+                    <span>Posiciones cubiertas:</span>
+                    <strong>{{ proj.positionsFilled }}/{{ proj.positionsAvailable }}</strong>
+                  </div>
+                  <mat-progress-bar mode="determinate" [value]="getFillPercentage(proj)" class="positions-bar">
+                  </mat-progress-bar>
+                </div>
+              </div>
+
+              <!-- Postulaciones y acciones -->
+              <div class="project-tile__right" (click)="$event.stopPropagation()">
+                <div class="project-tile__apps-count">
+                  <mat-icon>group</mat-icon>
+                  <span class="count-number">{{ proj.applicationsCount || 0 }}</span>
+                  <span class="count-label">postulantes</span>
+                </div>
+
+                <button mat-stroked-button class="project-tile__btn"
+                  (click)="router.navigate(['/my-projects', proj.id, 'applicants'])">
+                  Postulantes
+                </button>
+              </div>
             </div>
+            }
+          </div>
           }
         </mat-card-content>
       </mat-card>
@@ -449,7 +410,8 @@
         </div>
         <h3 class="protip-card__title">Agiliza la respuesta a tus candidatos</h3>
         <p class="protip-card__text">
-          Las empresas que revisan y dan retroalimentación a las postulaciones en menos de 48 horas registran una tasa de aceptación 80% mayor por parte de los mejores perfiles universitarios.
+          Las empresas que revisan y dan retroalimentación a las postulaciones en menos de 48 horas registran una tasa
+          de aceptación 80% mayor por parte de los mejores perfiles universitarios.
         </p>
         <a mat-stroked-button routerLink="/received-applications" class="protip-card__btn">
           Revisar Postulaciones <mat-icon>arrow_forward</mat-icon>
@@ -471,45 +433,41 @@
             </div>
           </div>
           @if (notificationsStore.unreadCount() > 0) {
-            <span class="notifications__unread-pill">
-              {{ notificationsStore.unreadCount() }} nueva(s)
-            </span>
+          <span class="notifications__unread-pill">
+            {{ notificationsStore.unreadCount() }} nueva(s)
+          </span>
           }
         </mat-card-header>
 
         <mat-card-content class="dashboard__card-body">
           @if (notificationsStore.recentNotifications().length === 0) {
-            <app-empty-state
-              icon="notifications_none"
-              title="Sin actividad reciente"
-              message="Los avisos de nuevas aplicaciones y cambios de estado aparecerán aquí." />
+          <app-empty-state icon="notifications_none" title="Sin actividad reciente"
+            message="Los avisos de nuevas aplicaciones y cambios de estado aparecerán aquí." />
           } @else {
-            <div class="notifications__list">
-              @for (n of notificationsStore.recentNotifications().slice(0, 4); track n.id) {
-                <div
-                  class="notif-item"
-                  [class.notif-item--unread]="!n.isRead"
-                  (click)="router.navigate(['/notifications'])">
-                  <div class="notif-item__icon-box">
-                    <mat-icon>{{ n.isRead ? 'notifications_none' : 'notifications_active' }}</mat-icon>
-                  </div>
-                  <div class="notif-item__content">
-                    <div class="notif-item__header">
-                      <span class="notif-item__title">{{ n.title }}</span>
-                      @if (!n.isRead) {
-                        <span class="notif-item__dot"></span>
-                      }
-                    </div>
-                    <p class="notif-item__message">{{ n.message }}</p>
-                    <span class="notif-item__time">{{ n.createdAt | relativeTime }}</span>
-                  </div>
+          <div class="notifications__list">
+            @for (n of notificationsStore.recentNotifications().slice(0, 4); track n.id) {
+            <div class="notif-item" [class.notif-item--unread]="!n.isRead"
+              (click)="router.navigate(['/notifications'])">
+              <div class="notif-item__icon-box">
+                <mat-icon>{{ n.isRead ? 'notifications_none' : 'notifications_active' }}</mat-icon>
+              </div>
+              <div class="notif-item__content">
+                <div class="notif-item__header">
+                  <span class="notif-item__title">{{ n.title }}</span>
+                  @if (!n.isRead) {
+                  <span class="notif-item__dot"></span>
+                  }
                 </div>
-              }
+                <p class="notif-item__message">{{ n.message }}</p>
+                <span class="notif-item__time">{{ n.createdAt | relativeTime }}</span>
+              </div>
             </div>
+            }
+          </div>
 
-            <button mat-button class="sidebar__view-all-btn" (click)="router.navigate(['/notifications'])">
-              Ver todas las notificaciones <mat-icon>chevron_right</mat-icon>
-            </button>
+          <button mat-button class="sidebar__view-all-btn" (click)="router.navigate(['/notifications'])">
+            Ver todas las notificaciones <mat-icon>chevron_right</mat-icon>
+          </button>
           }
         </mat-card-content>
       </mat-card>

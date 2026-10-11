@@ -19,11 +19,9 @@
   flex-direction: column;
   gap: 20px;
   padding: 28px 32px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-card) 0%,
-    color-mix(in srgb, var(--color-primary-50, #EEF7F0) 65%, var(--bg-card)) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--bg-card) 0%,
+      color-mix(in srgb, var(--color-primary-50, #EEF7F0) 65%, var(--bg-card)) 100%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-xl, 20px);
   margin-bottom: 28px;
@@ -38,11 +36,9 @@
     right: -8%;
     width: 360px;
     height: 360px;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-500) 10%, transparent) 0%,
-      transparent 70%
-    );
+    background: radial-gradient(circle,
+        color-mix(in srgb, var(--color-primary-500) 10%, transparent) 0%,
+        transparent 70%);
     pointer-events: none;
     border-radius: 50%;
   }
@@ -176,10 +172,6 @@
 
   .admin-hero__name {
     color: var(--color-primary-600);
-  }
-
-  .admin-hero__emoji {
-    display: inline-block;
   }
 }
 
@@ -384,11 +376,9 @@
 // 4. PULSO DE CRECIMIENTO MENSUAL (MOMENTUM BAR)
 // =============================================================================
 .admin-momentum {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-primary-500) 8%, var(--bg-card)),
-    color-mix(in srgb, var(--color-accent-500) 6%, var(--bg-card))
-  );
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--color-primary-500) 8%, var(--bg-card)),
+      color-mix(in srgb, var(--color-accent-500) 6%, var(--bg-card)));
   border: 1px solid color-mix(in srgb, var(--color-primary-500) 22%, var(--border-subtle));
   border-radius: 18px;
   padding: 22px 28px;
@@ -706,19 +696,22 @@
   .skeleton-shimmer {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      color-mix(in srgb, var(--bg-card) 60%, transparent) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--bg-card) 60%, transparent) 50%,
+        transparent 100%);
     animation: shimmer-anim 1.6s infinite;
   }
 }
 
 @keyframes shimmer-anim {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 // =============================================================================

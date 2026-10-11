@@ -7,16 +7,16 @@
       <!-- Avatar con soporte de foto real o iniciales -->
       <div class="hero__avatar-container">
         @if (avatarUrl()) {
-          <img [src]="avatarUrl() | imageUrl" [alt]="authStore.displayName()" class="hero__avatar-img" />
+        <img [src]="avatarUrl() | imageUrl" [alt]="authStore.displayName()" class="hero__avatar-img" />
         } @else {
-          <div class="hero__avatar-placeholder">
-            <span>{{ userInitials() }}</span>
-          </div>
+        <div class="hero__avatar-placeholder">
+          <span>{{ userInitials() }}</span>
+        </div>
         }
         @if (profileCompleteness() === 100) {
-          <span class="hero__avatar-verified" matTooltip="Perfil 100% verificado">
-            <mat-icon>verified</mat-icon>
-          </span>
+        <span class="hero__avatar-verified" matTooltip="Perfil 100% verificado">
+          <mat-icon>verified</mat-icon>
+        </span>
         }
       </div>
 
@@ -24,7 +24,7 @@
       <div class="hero__info">
         <div class="hero__greeting-row">
           <h1 class="hero__title">
-            {{ greetingTime() }}, <span class="hero__name">{{ authStore.displayName() }}</span>! 👋
+            {{ greetingTime() }}, <span class="hero__name">{{ authStore.displayName() }}</span>!
           </h1>
         </div>
 
@@ -34,22 +34,22 @@
             {{ profile()?.program || 'Estudiante Universitario' }}
           </span>
           @if (profile()?.semester) {
-            <span class="academic-badge academic-badge--subtle">
-              <mat-icon>event_repeat</mat-icon>
-              Semestre {{ profile()?.semester }}
-            </span>
+          <span class="academic-badge academic-badge--subtle">
+            <mat-icon>event_repeat</mat-icon>
+            Semestre {{ profile()?.semester }}
+          </span>
           }
           @if (profile()?.studentCode) {
-            <span class="academic-badge academic-badge--subtle">
-              <mat-icon>badge</mat-icon>
-              {{ profile()?.studentCode }}
-            </span>
+          <span class="academic-badge academic-badge--subtle">
+            <mat-icon>badge</mat-icon>
+            {{ profile()?.studentCode }}
+          </span>
           }
           @if (profile()?.gpa) {
-            <span class="academic-badge academic-badge--accent" matTooltip="Promedio académico acumulado">
-              <mat-icon>grade</mat-icon>
-              GPA: {{ profile()?.gpa }}
-            </span>
+          <span class="academic-badge academic-badge--accent" matTooltip="Promedio académico acumulado">
+            <mat-icon>grade</mat-icon>
+            GPA: {{ profile()?.gpa }}
+          </span>
           }
         </div>
 
@@ -60,20 +60,16 @@
               <mat-icon class="completeness__icon">tune</mat-icon>
               Progreso del Perfil: <strong>{{ profileCompleteness() }}%</strong>
             </span>
-            @if (profileCompleteness() < 100) {
-              <a routerLink="/profile/edit" class="completeness__action">
-                Completar información <mat-icon>arrow_forward</mat-icon>
+            @if (profileCompleteness() < 100) { <a routerLink="/profile/edit" class="completeness__action">
+              Completar información <mat-icon>arrow_forward</mat-icon>
               </a>
-            } @else {
+              } @else {
               <span class="completeness__complete-badge">
                 <mat-icon>check_circle</mat-icon> Perfil Completo
               </span>
-            }
+              }
           </div>
-          <mat-progress-bar
-            mode="determinate"
-            [value]="profileCompleteness()"
-            class="completeness__bar"
+          <mat-progress-bar mode="determinate" [value]="profileCompleteness()" class="completeness__bar"
             [class.completeness__bar--full]="profileCompleteness() === 100">
           </mat-progress-bar>
         </div>
@@ -98,38 +94,38 @@
   <!-- 2. ALERTA DE PRÓXIMA ENTREVISTA PROGRAMADA (SI EXISTE)       -->
   <!-- ============================================================ -->
   @if (upcomingInterview(); as up) {
-    <section class="dashboard__interview-banner">
-      <div class="interview-banner__icon-box">
-        <mat-icon>videocam</mat-icon>
+  <section class="dashboard__interview-banner">
+    <div class="interview-banner__icon-box">
+      <mat-icon>videocam</mat-icon>
+    </div>
+    <div class="interview-banner__info">
+      <div class="interview-banner__tag">
+        <span class="live-dot"></span>
+        PRÓXIMA ENTREVISTA AGENDADA
       </div>
-      <div class="interview-banner__info">
-        <div class="interview-banner__tag">
-          <span class="live-dot"></span>
-          PRÓXIMA ENTREVISTA AGENDADA
-        </div>
-        <h3 class="interview-banner__title">
-          {{ up.app.project?.title || up.app.projectTitle || 'Entrevista de Proyecto' }}
-        </h3>
-        <p class="interview-banner__meta">
-          <span><mat-icon>apartment</mat-icon> {{ up.app.companyName || 'Empresa Colaboradora' }}</span>
-          <span><mat-icon>calendar_month</mat-icon> {{ up.interview.scheduledAt | date:'EEEE, d MMMM yyyy' }}</span>
-          <span><mat-icon>schedule</mat-icon> {{ up.interview.scheduledAt | date:'shortTime' }}</span>
-          @if (up.interview.durationMinutes) {
-            <span>({{ up.interview.durationMinutes }} min)</span>
-          }
-        </p>
-      </div>
-      <div class="interview-banner__cta">
-        @if (up.interview.meetingLink) {
-          <a mat-flat-button color="primary" [href]="up.interview.meetingLink" target="_blank" rel="noopener noreferrer">
-            <mat-icon>call</mat-icon> Unirse a la Reunión
-          </a>
+      <h3 class="interview-banner__title">
+        {{ up.app.project?.title || up.app.projectTitle || 'Entrevista de Proyecto' }}
+      </h3>
+      <p class="interview-banner__meta">
+        <span><mat-icon>apartment</mat-icon> {{ up.app.companyName || 'Empresa Colaboradora' }}</span>
+        <span><mat-icon>calendar_month</mat-icon> {{ up.interview.scheduledAt | date:'EEEE, d MMMM yyyy' }}</span>
+        <span><mat-icon>schedule</mat-icon> {{ up.interview.scheduledAt | date:'shortTime' }}</span>
+        @if (up.interview.durationMinutes) {
+        <span>({{ up.interview.durationMinutes }} min)</span>
         }
-        <button mat-stroked-button (click)="router.navigate(['/workspace', up.app.id])">
-          <mat-icon>assignment</mat-icon> Ver en Workspace
-        </button>
-      </div>
-    </section>
+      </p>
+    </div>
+    <div class="interview-banner__cta">
+      @if (up.interview.meetingLink) {
+      <a mat-flat-button color="primary" [href]="up.interview.meetingLink" target="_blank" rel="noopener noreferrer">
+        <mat-icon>call</mat-icon> Unirse a la Reunión
+      </a>
+      }
+      <button mat-stroked-button (click)="router.navigate(['/workspace', up.app.id])">
+        <mat-icon>assignment</mat-icon> Ver en Workspace
+      </button>
+    </div>
+  </section>
   }
 
   <!-- ============================================================ -->
@@ -137,53 +133,32 @@
   <!-- ============================================================ -->
   <section class="dashboard__stats">
     @if (profileResource.isLoading() || applicationsResource.isLoading()) {
-      @for (_ of [1, 2, 3, 4]; track $index) {
-        <app-skeleton width="100%" height="110px" />
-      }
+    @for (_ of [1, 2, 3, 4]; track $index) {
+    <app-skeleton width="100%" height="110px" />
+    }
     } @else {
-      <!-- 1. Recomendaciones & Smart Match -->
-      <app-stat-card
-        icon="auto_awesome"
-        [value]="recommendationsCount()"
-        label="Proyectos Compatibles"
-        [hint]="'Proyectos identificados con alta compatibilidad para tus habilidades'"
-        [trendLabel]="bestMatchScore() ? 'Hasta ' + bestMatchScore() + '% afinidad' : 'Basado en IA'"
-        color="primary"
-        [clickable]="true"
-        (clicked)="router.navigate(['/matching'])" />
+    <!-- 1. Recomendaciones & Smart Match -->
+    <app-stat-card icon="auto_awesome" [value]="recommendationsCount()" label="Proyectos Compatibles"
+      [hint]="'Proyectos identificados con alta compatibilidad para tus habilidades'"
+      [trendLabel]="bestMatchScore() ? 'Hasta ' + bestMatchScore() + '% afinidad' : 'Basado en IA'" color="primary"
+      [clickable]="true" (clicked)="router.navigate(['/matching'])" />
 
-      <!-- 2. Postulaciones Activas -->
-      <app-stat-card
-        icon="send"
-        [value]="activeApplicationsCount()"
-        label="Postulaciones Activas"
-        [hint]="'Tus postulaciones en curso y procesos de selección'"
-        [trendLabel]="applicationCountsSummary().inReview + ' en revisión · ' + applicationCountsSummary().inInterview + ' entrevistas'"
-        color="accent"
-        [clickable]="true"
-        (clicked)="router.navigate(['/my-applications'])" />
+    <!-- 2. Postulaciones Activas -->
+    <app-stat-card icon="send" [value]="activeApplicationsCount()" label="Postulaciones Activas"
+      [hint]="'Tus postulaciones en curso y procesos de selección'"
+      [trendLabel]="applicationCountsSummary().inReview + ' en revisión · ' + applicationCountsSummary().inInterview + ' entrevistas'"
+      color="accent" [clickable]="true" (clicked)="router.navigate(['/my-applications'])" />
 
-      <!-- 3. Completitud del Perfil -->
-      <app-stat-card
-        icon="badge"
-        [value]="profileCompleteness() + '%'"
-        label="Completitud de Perfil"
-        [hint]="'Un perfil completo aumenta hasta un 70% tus recomendaciones'"
-        [trendLabel]="profileCompleteness() >= 80 ? 'Nivel Sobresaliente' : 'Agrega habilidades'"
-        color="primary"
-        [clickable]="true"
-        (clicked)="router.navigate(['/profile'])" />
+    <!-- 3. Completitud del Perfil -->
+    <app-stat-card icon="badge" [value]="profileCompleteness() + '%'" label="Completitud de Perfil"
+      [hint]="'Un perfil completo aumenta hasta un 70% tus recomendaciones'"
+      [trendLabel]="profileCompleteness() >= 80 ? 'Nivel Sobresaliente' : 'Agrega habilidades'" color="primary"
+      [clickable]="true" (clicked)="router.navigate(['/profile'])" />
 
-      <!-- 4. Habilidades Registradas -->
-      <app-stat-card
-        icon="insights"
-        [value]="profile()?.skills?.length || 0"
-        label="Habilidades Registradas"
-        [hint]="'Habilidades técnicas y blandas registradas en tu perfil'"
-        trendLabel="Ver demanda de mercado"
-        color="accent"
-        [clickable]="true"
-        (clicked)="router.navigate(['/my-analytics'])" />
+    <!-- 4. Habilidades Registradas -->
+    <app-stat-card icon="insights" [value]="profile()?.skills?.length || 0" label="Habilidades Registradas"
+      [hint]="'Habilidades técnicas y blandas registradas en tu perfil'" trendLabel="Ver demanda de mercado"
+      color="accent" [clickable]="true" (clicked)="router.navigate(['/my-analytics'])" />
     }
   </section>
 
@@ -204,95 +179,87 @@
               <mat-icon>auto_awesome</mat-icon>
             </div>
             <div>
-              <h2 class="card-header__title">Proyectos Recomendados con IA</h2>
+              <h2 class="card-header__title">Proyectos Recomendados para tí</h2>
               <p class="card-header__subtitle">
                 Oportunidades seleccionadas automáticamente según tus competencias y programa
               </p>
             </div>
           </div>
           @if (recommendations().length > 0) {
-            <a mat-button color="primary" routerLink="/matching" class="card-header__link-btn">
-              Ver todos ({{ recommendationsCount() }}) <mat-icon>chevron_right</mat-icon>
-            </a>
+          <a mat-button color="primary" routerLink="/matching" class="card-header__link-btn">
+            Ver todos ({{ recommendationsCount() }}) <mat-icon>chevron_right</mat-icon>
+          </a>
           }
         </mat-card-header>
 
         <mat-card-content class="dashboard__card-body">
           @if (recommendationsResource.isLoading()) {
-            <div class="recommendations__loading-grid">
-              @for (_ of [1, 2]; track $index) {
-                <app-skeleton width="100%" height="160px" />
-              }
-            </div>
+          <div class="recommendations__loading-grid">
+            @for (_ of [1, 2]; track $index) {
+            <app-skeleton width="100%" height="160px" />
+            }
+          </div>
           } @else if (recommendations().length === 0) {
-            <app-empty-state
-              icon="psychology"
-              title="Aún no hay recomendaciones de match"
-              message="Nuestro motor de afinidad analiza tus habilidades técnicas y académicas. Agrega más competencias a tu perfil para descubrir proyectos ideales."
-              actionLabel="Completar Habilidades"
-              (actionClicked)="router.navigate(['/profile/edit'])" />
+          <app-empty-state icon="psychology" title="Aún no hay recomendaciones de match"
+            message="Nuestro motor de afinidad analiza tus habilidades técnicas y académicas. Agrega más competencias a tu perfil para descubrir proyectos ideales."
+            actionLabel="Completar Habilidades" (actionClicked)="router.navigate(['/profile/edit'])" />
           } @else {
-            <div class="recommendations__grid">
-              @for (rec of recommendations(); track rec.id) {
-                <div class="rec-card" (click)="router.navigate(['/projects', rec.matchResult.projectId])">
-                  <!-- Top: Título y Score Pill -->
-                  <div class="rec-card__top">
-                    <div class="rec-card__header-info">
-                      <h3 class="rec-card__title">
-                        {{ rec.projectTitle || 'Proyecto de Innovación' }}
-                      </h3>
-                      @if (rec.matchResult.compatibilityLevel) {
-                        <span class="rec-card__compat-badge">
-                          <mat-icon>verified</mat-icon>
-                          {{ rec.matchResult.compatibilityLevel === 'high' ? 'Alta Afinidad' : 'Match Recomendado' }}
-                        </span>
-                      }
-                    </div>
-
-                    <div class="rec-card__score-badge" [class]="getScoreBadgeClass(rec.matchResult.overallScore)">
-                      <span class="score-badge__value">{{ rec.matchResult.overallScore }}%</span>
-                      <span class="score-badge__label">Match</span>
-                    </div>
-                  </div>
-
-                  <!-- Barra de afinidad visual -->
-                  <div class="rec-card__score-bar">
-                    <app-match-score-bar [score]="rec.matchResult.overallScore" size="sm" />
-                  </div>
-
-                  <!-- Habilidades coincidentes (Matched Skills) -->
-                  @if (getMatchedSkills(rec).length > 0) {
-                    <div class="rec-card__skills-row">
-                      <span class="skills-row__label">Habilidades coincidentes:</span>
-                      <div class="skills-row__chips">
-                        @for (skill of getMatchedSkills(rec); track skill) {
-                          <span class="skill-pill">
-                            <mat-icon>check</mat-icon> {{ skill }}
-                          </span>
-                        }
-                      </div>
-                    </div>
+          <div class="recommendations__grid">
+            @for (rec of recommendations(); track rec.id) {
+            <div class="rec-card" (click)="router.navigate(['/projects', rec.matchResult.projectId])">
+              <!-- Top: Título y Score Pill -->
+              <div class="rec-card__top">
+                <div class="rec-card__header-info">
+                  <h3 class="rec-card__title">
+                    {{ rec.projectTitle || 'Proyecto de Innovación' }}
+                  </h3>
+                  @if (rec.matchResult.compatibilityLevel) {
+                  <span class="rec-card__compat-badge">
+                    <mat-icon>verified</mat-icon>
+                    {{ rec.matchResult.compatibilityLevel === 'high' ? 'Alta Afinidad' : 'Match Recomendado' }}
+                  </span>
                   }
-
-                  <!-- Acciones de la tarjeta -->
-                  <div class="rec-card__actions" (click)="$event.stopPropagation()">
-                    <button
-                      mat-stroked-button
-                      class="rec-btn"
-                      (click)="router.navigate(['/matching/project', rec.matchResult.projectId])">
-                      <mat-icon>analytics</mat-icon> Detalle de Match
-                    </button>
-                    <button
-                      mat-flat-button
-                      color="primary"
-                      class="rec-btn rec-btn--primary"
-                      (click)="router.navigate(['/projects', rec.matchResult.projectId])">
-                      <mat-icon>visibility</mat-icon> Ver Proyecto
-                    </button>
-                  </div>
                 </div>
+
+                <div class="rec-card__score-badge" [class]="getScoreBadgeClass(rec.matchResult.overallScore)">
+                  <span class="score-badge__value">{{ rec.matchResult.overallScore }}%</span>
+                  <span class="score-badge__label">Match</span>
+                </div>
+              </div>
+
+              <!-- Barra de afinidad visual -->
+              <div class="rec-card__score-bar">
+                <app-match-score-bar [score]="rec.matchResult.overallScore" size="sm" />
+              </div>
+
+              <!-- Habilidades coincidentes (Matched Skills) -->
+              @if (getMatchedSkills(rec).length > 0) {
+              <div class="rec-card__skills-row">
+                <span class="skills-row__label">Habilidades coincidentes:</span>
+                <div class="skills-row__chips">
+                  @for (skill of getMatchedSkills(rec); track skill) {
+                  <span class="skill-pill">
+                    <mat-icon>check</mat-icon> {{ skill }}
+                  </span>
+                  }
+                </div>
+              </div>
               }
+
+              <!-- Acciones de la tarjeta -->
+              <div class="rec-card__actions" (click)="$event.stopPropagation()">
+                <button mat-stroked-button class="rec-btn"
+                  (click)="router.navigate(['/matching/project', rec.matchResult.projectId])">
+                  <mat-icon>analytics</mat-icon> Detalle de Match
+                </button>
+                <button mat-flat-button color="primary" class="rec-btn rec-btn--primary"
+                  (click)="router.navigate(['/projects', rec.matchResult.projectId])">
+                  <mat-icon>visibility</mat-icon> Ver Proyecto
+                </button>
+              </div>
             </div>
+            }
+          </div>
           }
         </mat-card-content>
       </mat-card>
@@ -314,126 +281,105 @@
             </div>
           </div>
           @if (applications().length > 0) {
-            <a mat-button color="primary" routerLink="/my-applications" class="card-header__link-btn">
-              Ver todas ({{ activeApplicationsCount() }}) <mat-icon>chevron_right</mat-icon>
-            </a>
+          <a mat-button color="primary" routerLink="/my-applications" class="card-header__link-btn">
+            Ver todas ({{ activeApplicationsCount() }}) <mat-icon>chevron_right</mat-icon>
+          </a>
           }
         </mat-card-header>
 
         <!-- Filtros interactivos por estado -->
         @if (applications().length > 0) {
-          <div class="applications__filter-tabs">
-            <button
-              type="button"
-              class="filter-tab"
-              [class.filter-tab--active]="activeFilter() === 'all'"
-              (click)="setFilter('all')">
-              Todas <span class="tab-count">{{ applications().length }}</span>
-            </button>
-            <button
-              type="button"
-              class="filter-tab"
-              [class.filter-tab--active]="activeFilter() === 'in_review'"
-              (click)="setFilter('in_review')">
-              En Revisión <span class="tab-count">{{ applicationCountsSummary().inReview }}</span>
-            </button>
-            <button
-              type="button"
-              class="filter-tab"
-              [class.filter-tab--active]="activeFilter() === 'interview'"
-              (click)="setFilter('interview')">
-              Entrevistas <span class="tab-count">{{ applicationCountsSummary().inInterview }}</span>
-            </button>
-            <button
-              type="button"
-              class="filter-tab"
-              [class.filter-tab--active]="activeFilter() === 'accepted'"
-              (click)="setFilter('accepted')">
-              Aceptadas <span class="tab-count">{{ applicationCountsSummary().accepted }}</span>
-            </button>
-          </div>
+        <div class="applications__filter-tabs">
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter() === 'all'"
+            (click)="setFilter('all')">
+            Todas <span class="tab-count">{{ applications().length }}</span>
+          </button>
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter() === 'in_review'"
+            (click)="setFilter('in_review')">
+            En Revisión <span class="tab-count">{{ applicationCountsSummary().inReview }}</span>
+          </button>
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter() === 'interview'"
+            (click)="setFilter('interview')">
+            Entrevistas <span class="tab-count">{{ applicationCountsSummary().inInterview }}</span>
+          </button>
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter() === 'accepted'"
+            (click)="setFilter('accepted')">
+            Aceptadas <span class="tab-count">{{ applicationCountsSummary().accepted }}</span>
+          </button>
+        </div>
         }
 
         <mat-card-content class="dashboard__card-body">
           @if (applicationsResource.isLoading()) {
-            <div class="applications__loading-list">
-              @for (_ of [1, 2, 3]; track $index) {
-                <app-skeleton width="100%" height="84px" />
-              }
-            </div>
+          <div class="applications__loading-list">
+            @for (_ of [1, 2, 3]; track $index) {
+            <app-skeleton width="100%" height="84px" />
+            }
+          </div>
           } @else if (filteredApplications().length === 0) {
-            <app-empty-state
-              icon="assignment_late"
-              title="No hay postulaciones en esta categoría"
-              message="Explora los proyectos publicados por empresas aliadas y envía tu postulación."
-              actionLabel="Explorar Proyectos"
-              (actionClicked)="router.navigate(['/projects'])" />
+          <app-empty-state icon="assignment_late" title="No hay postulaciones en esta categoría"
+            message="Explora los proyectos publicados por empresas aliadas y envía tu postulación."
+            actionLabel="Explorar Proyectos" (actionClicked)="router.navigate(['/projects'])" />
           } @else {
-            <div class="applications__list">
-              @for (app of filteredApplications(); track app.id) {
-                <div
-                  class="app-item"
-                  (click)="router.navigate(['/workspace', app.id])"
-                  (keydown.enter)="router.navigate(['/workspace', app.id])"
-                  tabindex="0"
-                  role="button">
-                  <!-- Icono de proyecto -->
-                  <div class="app-item__icon-box">
-                    <mat-icon>business_center</mat-icon>
-                  </div>
+          <div class="applications__list">
+            @for (app of filteredApplications(); track app.id) {
+            <div class="app-item" (click)="router.navigate(['/workspace', app.id])"
+              (keydown.enter)="router.navigate(['/workspace', app.id])" tabindex="0" role="button">
+              <!-- Icono de proyecto -->
+              <div class="app-item__icon-box">
+                <mat-icon>business_center</mat-icon>
+              </div>
 
-                  <!-- Información principal -->
-                  <div class="app-item__info">
-                    <div class="app-item__title-row">
-                      <h4 class="app-item__title">
-                        {{ app.project?.title || app.projectTitle || 'Proyecto sin título' }}
-                      </h4>
-                    </div>
-                    <div class="app-item__meta-row">
-                      <span class="meta-element">
-                        <mat-icon>apartment</mat-icon>
-                        {{ app.project?.companyName || app.companyName || 'Empresa' }}
-                      </span>
-                      <span class="meta-dot">·</span>
-                      <span class="meta-element">
-                        <mat-icon>calendar_today</mat-icon>
-                        Postulado {{ app.appliedAt | relativeTime }}
-                      </span>
-                      @if (app.interviews && app.interviews.length > 0) {
-                        <span class="meta-dot">·</span>
-                        <span class="meta-element meta-element--highlight">
-                          <mat-icon>videocam</mat-icon> {{ app.interviews.length }} entrevista(s)
-                        </span>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- Match Score (si existe) -->
-                  @if (app.matchScore) {
-                    <div class="app-item__match">
-                      <span class="match-label">Afinidad</span>
-                      <span class="match-value">{{ app.matchScore }}%</span>
-                    </div>
-                  }
-
-                  <!-- Estado -->
-                  <div class="app-item__status">
-                    <app-status-badge [status]="app.status" size="sm" />
-                  </div>
-
-                  <!-- Botón de acción / Workspace -->
-                  <div class="app-item__action">
-                    <button
-                      mat-stroked-button
-                      class="app-action-btn"
-                      (click)="$event.stopPropagation(); router.navigate(['/workspace', app.id])">
-                      <span>Seguimiento</span>
-                      <mat-icon>arrow_forward</mat-icon>
-                    </button>
-                  </div>
+              <!-- Información principal -->
+              <div class="app-item__info">
+                <div class="app-item__title-row">
+                  <h4 class="app-item__title">
+                    {{ app.project?.title || app.projectTitle || 'Proyecto sin título' }}
+                  </h4>
                 </div>
+                <div class="app-item__meta-row">
+                  <span class="meta-element">
+                    <mat-icon>apartment</mat-icon>
+                    {{ app.project?.companyName || app.companyName || 'Empresa' }}
+                  </span>
+                  <span class="meta-dot">·</span>
+                  <span class="meta-element">
+                    <mat-icon>calendar_today</mat-icon>
+                    Postulado {{ app.appliedAt | relativeTime }}
+                  </span>
+                  @if (app.interviews && app.interviews.length > 0) {
+                  <span class="meta-dot">·</span>
+                  <span class="meta-element meta-element--highlight">
+                    <mat-icon>videocam</mat-icon> {{ app.interviews.length }} entrevista(s)
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <!-- Match Score (si existe) -->
+              @if (app.matchScore) {
+              <div class="app-item__match">
+                <span class="match-label">Afinidad</span>
+                <span class="match-value">{{ app.matchScore }}%</span>
+              </div>
               }
+
+              <!-- Estado -->
+              <div class="app-item__status">
+                <app-status-badge [status]="app.status" size="sm" />
+              </div>
+
+              <!-- Botón de acción / Workspace -->
+              <div class="app-item__action">
+                <button mat-stroked-button class="app-action-btn"
+                  (click)="$event.stopPropagation(); router.navigate(['/workspace', app.id])">
+                  <span>Seguimiento</span>
+                  <mat-icon>arrow_forward</mat-icon>
+                </button>
+              </div>
             </div>
+            }
+          </div>
           }
         </mat-card-content>
       </mat-card>
@@ -540,45 +486,41 @@
             </div>
           </div>
           @if (notificationsStore.unreadCount() > 0) {
-            <span class="notifications__unread-pill">
-              {{ notificationsStore.unreadCount() }} nueva(s)
-            </span>
+          <span class="notifications__unread-pill">
+            {{ notificationsStore.unreadCount() }} nueva(s)
+          </span>
           }
         </mat-card-header>
 
         <mat-card-content class="dashboard__card-body">
           @if (notificationsStore.recentNotifications().length === 0) {
-            <app-empty-state
-              icon="notifications_none"
-              title="Sin notificaciones pendientes"
-              message="Te notificaremos sobre actualizaciones de postulaciones, entrevistas y mensajes." />
+          <app-empty-state icon="notifications_none" title="Sin notificaciones pendientes"
+            message="Te notificaremos sobre actualizaciones de postulaciones, entrevistas y mensajes." />
           } @else {
-            <div class="notifications__list">
-              @for (n of notificationsStore.recentNotifications().slice(0, 4); track n.id) {
-                <div
-                  class="notif-item"
-                  [class.notif-item--unread]="!n.isRead"
-                  (click)="router.navigate(['/notifications'])">
-                  <div class="notif-item__icon-box">
-                    <mat-icon>{{ n.isRead ? 'notifications_none' : 'notifications_active' }}</mat-icon>
-                  </div>
-                  <div class="notif-item__content">
-                    <div class="notif-item__header">
-                      <span class="notif-item__title">{{ n.title }}</span>
-                      @if (!n.isRead) {
-                        <span class="notif-item__dot"></span>
-                      }
-                    </div>
-                    <p class="notif-item__message">{{ n.message }}</p>
-                    <span class="notif-item__time">{{ n.createdAt | relativeTime }}</span>
-                  </div>
+          <div class="notifications__list">
+            @for (n of notificationsStore.recentNotifications().slice(0, 4); track n.id) {
+            <div class="notif-item" [class.notif-item--unread]="!n.isRead"
+              (click)="router.navigate(['/notifications'])">
+              <div class="notif-item__icon-box">
+                <mat-icon>{{ n.isRead ? 'notifications_none' : 'notifications_active' }}</mat-icon>
+              </div>
+              <div class="notif-item__content">
+                <div class="notif-item__header">
+                  <span class="notif-item__title">{{ n.title }}</span>
+                  @if (!n.isRead) {
+                  <span class="notif-item__dot"></span>
+                  }
                 </div>
-              }
+                <p class="notif-item__message">{{ n.message }}</p>
+                <span class="notif-item__time">{{ n.createdAt | relativeTime }}</span>
+              </div>
             </div>
+            }
+          </div>
 
-            <button mat-button class="sidebar__view-all-btn" (click)="router.navigate(['/notifications'])">
-              Ver centro de notificaciones <mat-icon>chevron_right</mat-icon>
-            </button>
+          <button mat-button class="sidebar__view-all-btn" (click)="router.navigate(['/notifications'])">
+            Ver centro de notificaciones <mat-icon>chevron_right</mat-icon>
+          </button>
           }
         </mat-card-content>
       </mat-card>
