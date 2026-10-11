@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
@@ -21,7 +22,17 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ApiResponse, CompanyProfile, CompanyContact, CompanyLocation, CompanyBusinessArea, UserProfile, AcademicProgram } from '../../../../core/models';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  ApiResponse,
+  CompanyProfile,
+  CompanyContact,
+  CompanyLocation,
+  CompanyBusinessArea,
+  UserProfile,
+  AcademicProgram,
+  StudentDocument,
+} from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { StudentService } from '../../../students/services/student.service';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
@@ -30,16 +41,21 @@ import { FacultyService } from '../../../faculty/services/faculty.service';
 import { AdminService } from '../../../admin/services/admin.service';
 
 import { AvatarUploadComponent } from '../../../../shared/components/ui/avatar-upload/avatar-upload.component';
+import { FileUploadComponent } from '../../../../shared/components/ui/file-upload/file-upload.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    RouterLink, ReactiveFormsModule, FormsModule,
+    RouterLink, ReactiveFormsModule, FormsModule, DatePipe,
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatSnackBarModule, MatTabsModule, MatCheckboxModule,
-    AvatarUploadComponent,
+    AvatarUploadComponent, FileUploadComponent,
   ],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.scss',
@@ -54,9 +70,35 @@ export class ProfileEditComponent implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
   readonly saving = signal(false);
   readonly userProfileExists = signal(false);
   readonly roleProfileExists = signal(false);
+
+  // ── Documentos y Hoja de Vida (CV) para Perfil Base ──
+  readonly documents = signal<StudentDocument[]>([]);
+  readonly loadingDocs = signal(false);
+  readonly uploadingDoc = signal(false);
+  readonly deletingDoc = signal(false);
+  readonly selectedDocType = signal<StudentDocument['documentType']>('resume');
+
+  readonly activeCv = computed(() => {
+    const docs = this.documents();
+    const resumeDoc = docs.find((d) => d.documentType === 'resume');
+    if (resumeDoc) return resumeDoc;
+    const formCvUrl = this.studentForm.controls['cvUrl']?.value;
+    if (formCvUrl && typeof formCvUrl === 'string' && formCvUrl.trim()) {
+      return {
+        id: 'custom_cv',
+        fileId: 'custom_cv',
+        documentType: 'resume' as const,
+        originalName: 'Curriculum Vitae (Enlace registrado)',
+        fileUrl: formCvUrl.trim(),
+        uploadedAt: '',
+      };
+    }
+    return null;
+  });
 
   readonly programs = signal<AcademicProgram[]>([]);
   /** programId real seleccionado — fuente de verdad al guardar, igual que en onboarding-flow. */
@@ -187,6 +229,7 @@ export class ProfileEditComponent implements OnInit {
     });
 
     if (this.authStore.isStudent()) {
+      this.loadStudentDocuments();
       this.adminService.getPrograms(true).subscribe({
         next: (programs) => {
           this.programs.set(programs);
@@ -333,6 +376,95 @@ export class ProfileEditComponent implements OnInit {
         this.saving.set(false);
       },
     });
+  }
+
+  // ── Documentos y CV en Perfil Base ──
+
+  loadStudentDocuments(): void {
+    this.loadingDocs.set(true);
+    this.studentService.getDocuments().subscribe({
+      next: (resp) => {
+        this.documents.set(resp.data);
+        this.loadingDocs.set(false);
+      },
+      error: () => this.loadingDocs.set(false),
+    });
+  }
+
+  onDocumentSelected(files: File[]): void {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const type = this.selectedDocType();
+
+    this.uploadingDoc.set(true);
+    this.studentService.uploadDocument(file, type).subscribe({
+      next: (resp) => {
+        this.uploadingDoc.set(false);
+        const newDoc = resp.data;
+        this.documents.update((list) => [
+          ...(type === 'resume' ? list.filter((d) => d.documentType !== 'resume') : list),
+          newDoc,
+        ]);
+
+        if (type === 'resume') {
+          this.studentForm.patchValue({ cvUrl: newDoc.fileUrl });
+          this.snackBar.open('¡Curriculum Vitae (CV) subido y vinculado a tu perfil!', 'Cerrar', { duration: 3500 });
+        } else {
+          this.snackBar.open('Documento subido exitosamente', 'Cerrar', { duration: 3000 });
+        }
+      },
+      error: () => {
+        this.uploadingDoc.set(false);
+        this.snackBar.open('Error al subir el documento. Intenta nuevamente.', 'Cerrar', { duration: 3500 });
+      },
+    });
+  }
+
+  onDeleteDocument(doc: StudentDocument): void {
+    const isCv = doc.documentType === 'resume';
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: isCv ? 'Eliminar Curriculum Vitae (CV)' : 'Eliminar Documento',
+        message: `¿Estás seguro de eliminar "${doc.originalName}"?`,
+        confirmText: 'Eliminar',
+        type: 'danger',
+      } satisfies ConfirmDialogData,
+    });
+
+    ref.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.deletingDoc.set(true);
+      this.studentService.deleteDocument(doc.id, isCv).subscribe({
+        next: () => {
+          this.documents.update((list) => list.filter((d) => d.id !== doc.id));
+          if (isCv) {
+            this.studentForm.patchValue({ cvUrl: '' });
+          }
+          this.deletingDoc.set(false);
+          this.snackBar.open('Documento eliminado', 'Cerrar', { duration: 2500 });
+        },
+        error: () => {
+          this.deletingDoc.set(false);
+          this.snackBar.open('Error al eliminar el documento', 'Cerrar', { duration: 3000 });
+        },
+      });
+    });
+  }
+
+  docTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      resume: 'Hoja de Vida (CV)',
+      transcript: 'Certificado de Notas',
+      certificate: 'Certificado Académico',
+      id_document: 'Documento de Identidad',
+      other: 'Otro Soporte',
+    };
+    return labels[type] ?? type;
+  }
+
+  cleanUrl(url?: string | null): string | null {
+    if (!url) return null;
+    return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
   }
 
   saveStudent(): void {

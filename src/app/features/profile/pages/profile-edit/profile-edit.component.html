@@ -79,6 +79,158 @@
               </button>
             </div>
           </form>
+
+          <!-- ─── Gestor de Documentos y Hoja de Vida (CV) en Perfil Base ─── -->
+          <div class="form-section-card profile-edit__docs-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <mat-icon>folder_shared</mat-icon>
+              </div>
+              <div class="header-text-block">
+                <h3>Gestor de Documentos y Hoja de Vida (CV)</h3>
+                <p>Sube y gestiona tu Hoja de Vida (CV) y documentos de soporte académico directamente desde tu perfil base.</p>
+              </div>
+            </div>
+
+            <!-- Card de Estado de CV Principal -->
+            @if (activeCv(); as cv) {
+              <div class="active-cv-card">
+                <div class="active-cv-card__icon">
+                  <mat-icon>picture_as_pdf</mat-icon>
+                </div>
+                <div class="active-cv-card__info">
+                  <div class="active-cv-card__headline">
+                    <span class="active-cv-card__title">{{ cv.originalName }}</span>
+                    <span class="active-cv-badge">
+                      <mat-icon>check_circle</mat-icon> CV Activo
+                    </span>
+                  </div>
+                  <span class="active-cv-card__meta">
+                    @if (cv.uploadedAt) {
+                      Subido el {{ cv.uploadedAt | date:'d MMM yyyy, h:mm a' }}
+                    } @else {
+                      Enlace de CV activo en tu perfil
+                    }
+                  </span>
+                </div>
+                <div class="active-cv-card__actions">
+                  @if (cleanUrl(cv.fileUrl); as fileLink) {
+                    <a mat-stroked-button [href]="fileLink" target="_blank" rel="noopener noreferrer" class="cv-action-btn">
+                      <mat-icon>visibility</mat-icon>
+                      <span>Ver CV</span>
+                    </a>
+                  }
+                  @if (cv.id !== 'custom_cv') {
+                    <button mat-icon-button color="warn" (click)="onDeleteDocument(cv)" [disabled]="deletingDoc()" title="Eliminar CV" aria-label="Eliminar CV">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="no-cv-notice">
+                <div class="no-cv-notice__icon">
+                  <mat-icon>info</mat-icon>
+                </div>
+                <div class="no-cv-notice__content">
+                  <strong>Aún no has cargado tu Hoja de Vida (CV)</strong>
+                  <p>Sube tu CV en formato PDF a continuación para que las empresas conozcan tu perfil al postularte a proyectos y retos.</p>
+                </div>
+              </div>
+            }
+
+            <!-- Subida de nuevos documentos -->
+            <div class="doc-upload-box">
+              <div class="doc-upload-box__header">
+                <mat-form-field appearance="outline" class="doc-type-select">
+                  <mat-label>Tipo de documento a subir</mat-label>
+                  <mat-select [value]="selectedDocType()" (selectionChange)="selectedDocType.set($event.value)">
+                    <mat-option value="resume">Hoja de Vida (CV)</mat-option>
+                    <mat-option value="transcript">Certificado de Notas</mat-option>
+                    <mat-option value="certificate">Certificado Académico / Profesional</mat-option>
+                    <mat-option value="id_document">Documento de Identidad</mat-option>
+                    <mat-option value="other">Otro Soporte</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <div class="doc-type-hint">
+                  @if (selectedDocType() === 'resume') {
+                    <span><mat-icon>star</mat-icon> Al subirlo, se vinculará automáticamente como tu <strong>Hoja de Vida oficial</strong>.</span>
+                  } @else {
+                    <span><mat-icon>description</mat-icon> Se guardará en tu repositorio de documentos de soporte.</span>
+                  }
+                </div>
+              </div>
+
+              @if (uploadingDoc()) {
+                <div class="upload-progress-container">
+                  <mat-icon class="spin-icon">hourglass_top</mat-icon>
+                  <span>Subiendo y procesando documento...</span>
+                </div>
+              } @else {
+                <app-file-upload
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  [maxSizeMB]="10"
+                  [label]="selectedDocType() === 'resume' ? 'Arrastra tu Hoja de Vida (PDF) aquí o haz clic para seleccionarla' : 'Arrastra tu archivo aquí o haz clic para seleccionarlo'"
+                  (fileSelected)="onDocumentSelected($event)"
+                />
+              }
+            </div>
+
+            <!-- Historial de Documentos del Estudiante -->
+            <div class="uploaded-docs-list">
+              <div class="uploaded-docs-list__header">
+                <h4>Documentos en tu perfil ({{ documents().length }})</h4>
+                <a mat-button color="primary" routerLink="/profile/documents" class="view-all-link">
+                  <mat-icon>open_in_new</mat-icon>
+                  <span>Módulo completo</span>
+                </a>
+              </div>
+
+              @if (loadingDocs()) {
+                <div class="docs-loading">
+                  <mat-icon class="spin-icon">hourglass_top</mat-icon>
+                  <p>Cargando documentos...</p>
+                </div>
+              } @else {
+                <div class="docs-stack">
+                  @for (doc of documents(); track doc.id) {
+                    <div class="doc-row-item">
+                      <div class="doc-row-item__icon" [class.is-resume]="doc.documentType === 'resume'">
+                        <mat-icon>{{ doc.documentType === 'resume' ? 'picture_as_pdf' : (doc.documentType === 'certificate' ? 'workspace_premium' : 'description') }}</mat-icon>
+                      </div>
+                      <div class="doc-row-item__info">
+                        <div class="doc-row-item__title-row">
+                          <strong class="doc-row-item__name" [title]="doc.originalName">{{ doc.originalName }}</strong>
+                          <span class="doc-type-pill" [class.is-resume]="doc.documentType === 'resume'">
+                            {{ docTypeLabel(doc.documentType) }}
+                          </span>
+                        </div>
+                        <span class="doc-row-item__meta">
+                          Subido el {{ doc.uploadedAt | date:'d MMM yyyy' }}
+                        </span>
+                      </div>
+                      <div class="doc-row-item__actions">
+                        @if (cleanUrl(doc.fileUrl); as docLink) {
+                          <a mat-icon-button [href]="docLink" target="_blank" rel="noopener noreferrer" aria-label="Ver / Descargar" title="Ver documento">
+                            <mat-icon>visibility</mat-icon>
+                          </a>
+                        }
+                        <button mat-icon-button (click)="onDeleteDocument(doc)" [disabled]="deletingDoc()" aria-label="Eliminar" title="Eliminar documento">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="docs-empty-state">
+                      <mat-icon>folder_open</mat-icon>
+                      <p>No tienes documentos subidos todavía.</p>
+                      <span>Sube tu CV en formato PDF arriba para completar tu perfil.</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
         </div>
       </mat-tab>
 
@@ -263,6 +415,9 @@
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>URL del Curriculum Vitae (CV)</mat-label>
                 <input matInput formControlName="cvUrl" placeholder="https://drive.google.com/... o enlace directo a tu PDF" />
+                <mat-hint>
+                  También puedes subir o reemplazar tu archivo PDF directamente en la pestaña <strong>Perfil Base</strong>.
+                </mat-hint>
               </mat-form-field>
 
               <div class="form-row">

@@ -2743,3 +2743,243 @@
     background: rgba(255, 255, 255, 0.06);
   }
 }
+
+// ── CV & Documentos Widget Card ────────────────────────
+.cv-widget-card {
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: 16px;
+  background: var(--bg-card, #FFFFFF);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(26, 86, 219, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  .cv-widget-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: #DC2626;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cv-status-box {
+    padding: 14px 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &--active {
+      background: linear-gradient(135deg, rgba(26, 86, 219, 0.04) 0%, rgba(13, 148, 136, 0.04) 100%);
+      border: 1px solid rgba(26, 86, 219, 0.18);
+    }
+
+    &--empty {
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px dashed rgba(245, 158, 11, 0.35);
+      text-align: center;
+      padding: 18px 16px;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    &__file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+
+      mat-icon {
+        color: #DC2626;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+      }
+
+      strong {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    &__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.725rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+      }
+    }
+
+    &__desc {
+      margin: 0 0 14px;
+      font-size: 0.8rem;
+      color: var(--text-secondary, #64748B);
+      line-height: 1.4;
+    }
+
+    &__actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .cv-status-btn {
+        font-size: 0.8rem;
+        font-weight: 600;
+        height: 34px;
+        padding: 0 12px;
+        border-radius: 8px;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          margin-right: 4px;
+        }
+      }
+
+      .docs-link-btn {
+        font-size: 0.8rem;
+        font-weight: 500;
+        height: 34px;
+        padding: 0 10px;
+        color: var(--text-secondary, #64748B);
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          margin-right: 4px;
+          color: var(--color-primary, #1A56DB);
+        }
+
+        &:hover {
+          color: var(--color-primary, #1A56DB);
+        }
+      }
+    }
+
+    // Empty state inner styling
+    .empty-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #D97706;
+      margin-bottom: 6px;
+    }
+
+    .empty-text-wrap {
+      margin-bottom: 12px;
+
+      strong {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.775rem;
+        color: var(--text-secondary, #64748B);
+      }
+    }
+
+    .upload-cv-btn {
+      font-size: 0.8rem;
+      font-weight: 600;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+    }
+  }
+
+  .cv-widget-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color, #E2E8F0);
+    font-size: 0.775rem;
+    color: var(--text-secondary, #64748B);
+
+    .footer-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      mat-icon {
+        font-size: 15px;
+        width: 15px;
+        height: 15px;
+        color: var(--color-primary, #1A56DB);
+      }
+    }
+
+    .footer-link {
+      font-weight: 600;
+      color: var(--color-primary, #1A56DB);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Dark theme
+:host-context(.dark-theme) {
+  .cv-widget-card {
+    background: #181A20;
+    border-color: rgba(255, 255, 255, 0.08);
+
+    .cv-status-box--active {
+      background: rgba(30, 58, 138, 0.12);
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+
+    .cv-status-box--empty {
+      background: rgba(120, 53, 15, 0.15);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .cv-widget-footer {
+      border-top-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+}

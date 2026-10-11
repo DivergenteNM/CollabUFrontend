@@ -68,6 +68,20 @@ export class ProfileViewComponent {
     return name.slice(0, 2).toUpperCase();
   });
 
+  readonly studentCvUrl = computed(() => {
+    const s = this.student();
+    if (!s) return null;
+    if (s.cvUrl) return this.cleanUrl(s.cvUrl);
+    const resumeDoc = s.documents?.find((d) => d.documentType === 'resume');
+    return resumeDoc ? this.cleanUrl(resumeDoc.fileUrl) : null;
+  });
+
+  readonly studentCvName = computed(() => {
+    const s = this.student();
+    const resumeDoc = s?.documents?.find((d) => d.documentType === 'resume');
+    return resumeDoc?.originalName ?? 'Curriculum Vitae (CV)';
+  });
+
   readonly missingCompanyCompleteness = computed(() => {
     const c = this.company();
     if (!c) return [];
@@ -107,7 +121,7 @@ export class ProfileViewComponent {
     if (!s.languages || s.languages.length === 0) {
       missing.push({ key: 'languages', label: 'Idiomas', route: '/profile/edit' });
     }
-    if (!s.cvUrl) {
+    if (!this.studentCvUrl()) {
       missing.push({ key: 'cv', label: 'Curriculum Vitae (CV)', route: '/profile/edit' });
     }
     if (!s.githubUrl && !s.portfolioUrl && !this.authStore.profile()?.linkedinUrl) {
@@ -321,6 +335,17 @@ export class ProfileViewComponent {
             next: (intRes) => {
               this.student.update(s => s ? { ...s, interests: intRes.data } : null);
             }
+          });
+          this.studentService.getDocuments().subscribe({
+            next: (docRes) => {
+              this.student.update((s) => {
+                if (!s) return null;
+                const docs = docRes.data ?? [];
+                const cvDoc = docs.find((d) => d.documentType === 'resume');
+                const cvUrl = s.cvUrl || cvDoc?.fileUrl || null;
+                return { ...s, documents: docs, cvUrl: cvUrl ?? undefined };
+              });
+            },
           });
 
           this.loading.set(false);

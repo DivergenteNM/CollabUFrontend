@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { BaseApiService } from '../../../core/services/base-api.service';
+import { StorageService } from '../../../core/services/storage.service';
+import { environment } from '../../../../environments/environment';
 import {
   ApiResponse,
   normalizeApiResponse,
@@ -14,6 +16,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class StudentService extends BaseApiService {
   protected readonly basePath = '/students';
+  private readonly storageService = inject(StorageService);
 
   createProfile(data: Partial<StudentProfile>): Observable<ApiResponse<StudentProfile>> {
     return this.http
@@ -142,19 +145,87 @@ export class StudentService extends BaseApiService {
   }
 
   getDocuments(): Observable<ApiResponse<StudentDocument[]>> {
-    return this.http
-      .get<ApiResponse<StudentDocument[]> | StudentDocument[]>(`${this.apiUrl}/documents`)
-      .pipe(map((res) => normalizeApiResponse<StudentDocument[]>(res, 'Documentos obtenidos')));
+    return this.storageService.getUserFiles({ limit: 50 }).pipe(
+      map((res) => {
+        const files = Array.isArray(res?.data) ? res.data : [];
+        const docs: StudentDocument[] = files
+          .filter((f) => f.category !== 'avatar' && f.category !== 'company_logo')
+          .map((f) => {
+            let docType: StudentDocument['documentType'] = 'other';
+            if (f.category === 'cv') {
+              docType = 'resume';
+            } else if (
+              f.entityType === 'transcript' ||
+              f.entityType === 'certificate' ||
+              f.entityType === 'id_document' ||
+              f.entityType === 'resume'
+            ) {
+              docType = f.entityType as StudentDocument['documentType'];
+            } else if (f.category === 'academic_document') {
+              docType = 'certificate';
+            }
+
+            let fileUrl = f.publicUrl ?? '';
+            if (!fileUrl && f.id) {
+              fileUrl = `${environment.apiUrl}/storage/files/${f.id}/download`;
+            } else if (fileUrl && fileUrl.startsWith('/')) {
+              fileUrl = `${environment.apiUrl.replace(/\/api\/v1\/?$/, '')}${fileUrl}`;
+            }
+
+            return {
+              id: f.id,
+              fileId: f.id,
+              documentType: docType,
+              originalName: f.originalName,
+              fileUrl,
+              uploadedAt: f.createdAt,
+            };
+          });
+        return { data: docs } as unknown as ApiResponse<StudentDocument[]>;
+      }),
+      catchError(() => of({ data: [] } as unknown as ApiResponse<StudentDocument[]>)),
+    );
   }
 
   uploadDocument(file: File, type: string): Observable<ApiResponse<StudentDocument>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('documentType', type);
+    const category = type === 'resume' ? 'cv' : 'academic_document';
+    return this.storageService.upload(file, category, true).pipe(
+      switchMap((uploadRes) => {
+        const fileId = uploadRes.data.fileId;
+        const fileUrl = uploadRes.data.url;
+        const doc: StudentDocument = {
+          id: fileId,
+          fileId,
+          documentType: type as any,
+          originalName: file.name,
+          fileUrl,
+          uploadedAt: new Date().toISOString(),
+        };
 
-    return this.http
-      .post<ApiResponse<StudentDocument> | StudentDocument>(`${this.apiUrl}/documents`, formData)
-      .pipe(map((res) => normalizeApiResponse<StudentDocument>(res, 'Documento subido')));
+        if (type === 'resume') {
+          return this.updateProfile({ cvUrl: fileUrl }).pipe(
+            map(() => ({ data: doc } as ApiResponse<StudentDocument>)),
+            catchError(() => of({ data: doc } as ApiResponse<StudentDocument>)),
+          );
+        }
+
+        return of({ data: doc } as ApiResponse<StudentDocument>);
+      }),
+    );
+  }
+
+  deleteDocument(docId: string, isCv = false): Observable<void> {
+    return this.storageService.deleteFile(docId).pipe(
+      switchMap(() => {
+        if (isCv) {
+          return this.updateProfile({ cvUrl: '' }).pipe(
+            map(() => undefined),
+            catchError(() => of(undefined)),
+          );
+        }
+        return of(undefined);
+      }),
+    );
   }
 
   private mapSkillCategory(rawCategory?: string): 'language' | 'framework' | 'tool' | 'concept' | 'soft_skill' {

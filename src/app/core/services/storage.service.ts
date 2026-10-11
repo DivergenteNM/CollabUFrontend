@@ -126,8 +126,19 @@ export class StorageService extends BaseApiService {
     return this.http.get<ApiResponse<{ usedBytes: number; totalBytes: number; percentage: number }>>(`${this.apiUrl}/quota`);
   }
 
+  getUserFiles(query?: { category?: string; page?: number; limit?: number }): Observable<{ data: StoredFileInfo[]; total: number; page: number; limit: number; totalPages: number }> {
+    const params: Record<string, string> = {};
+    if (query?.category) params['category'] = query.category;
+    if (query?.page) params['page'] = query.page.toString();
+    if (query?.limit) params['limit'] = query.limit.toString();
+    return this.http.get<{ data: StoredFileInfo[]; total: number; page: number; limit: number; totalPages: number }>(
+      `${this.apiUrl}/files`,
+      { params },
+    );
+  }
+
   deleteFile(fileId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${fileId}`);
+    return this.http.delete<void>(`${this.apiUrl}/files/${fileId}`);
   }
 }
 
