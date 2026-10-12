@@ -334,6 +334,22 @@
       box-shadow: none;
     }
   }
+
+  &--locked {
+    background: var(--bg-hover, #f3f5f4);
+    border: 1px dashed var(--border-color, #c8d3cb);
+    color: var(--text-secondary, #526356);
+    cursor: not-allowed;
+    opacity: 0.9;
+    padding: 0 12px;
+
+    .btn-icon {
+      color: var(--text-tertiary, #76877a);
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
 }
 
 

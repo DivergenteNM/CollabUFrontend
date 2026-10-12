@@ -80,3 +80,40 @@ describe('SidebarComponent — menú administrativo', () => {
     ]));
   });
 });
+
+describe('SidebarComponent — menú de estudiante reactivo', () => {
+  const mockStudent: AuthUser = {
+    id: 'student-1',
+    email: 'estudiante@udenar.edu.co',
+    role: UserRole.STUDENT,
+    isEmailVerified: true,
+    isActive: true,
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: '**', component: class {} }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+  });
+
+  it('muestra Mis Aplicaciones y Recomendaciones si no tiene proyecto activo', () => {
+    const authStore = TestBed.inject(AuthStore);
+    authStore.setAuth(mockStudent, 'token', 'refresh');
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const labels = component.menuItems().map((i) => i.label);
+    expect(labels).toContain('Mis Aplicaciones');
+    expect(labels).toContain('Recomendaciones');
+    expect(labels).not.toContain('Mi Proyecto');
+  });
+});
+
