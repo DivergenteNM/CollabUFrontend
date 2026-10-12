@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { environment } from '../../../../../environments/environment';
 import {
@@ -32,6 +33,8 @@ import { StatusBadgeComponent } from '../../../../shared/components/ui/status-ba
 import { MatchScoreBarComponent } from '../../../../shared/components/ui/match-score-bar/match-score-bar.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
+import { MacroPhaseStepperComponent } from '../../../../shared/components/ui/macro-phase-stepper/macro-phase-stepper.component';
+import { StudentProjectStore } from '../../../../state/student-project.store';
 import { RelativeTimePipe, ImageUrlPipe } from '../../../../shared/pipes';
 
 export type ApplicationFilterTab = 'all' | 'in_review' | 'interview' | 'accepted';
@@ -47,11 +50,13 @@ export type ApplicationFilterTab = 'all' | 'in_review' | 'interview' | 'accepted
     MatButtonModule,
     MatTooltipModule,
     MatProgressBarModule,
+    MatDividerModule,
     StatCardComponent,
     StatusBadgeComponent,
     MatchScoreBarComponent,
     SkeletonComponent,
     EmptyStateComponent,
+    MacroPhaseStepperComponent,
     RelativeTimePipe,
     ImageUrlPipe,
   ],
@@ -62,7 +67,56 @@ export class StudentDashboardComponent {
   readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
   readonly notificationsStore = inject(NotificationsStore);
+  readonly studentProjectStore = inject(StudentProjectStore);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  // --- Estado reactivo del proyecto activo ---
+  readonly hasActiveProject = this.studentProjectStore.hasActiveProject;
+  readonly activeApplication = this.studentProjectStore.activeApplication;
+  readonly activeProject = this.studentProjectStore.activeProject;
+  readonly activeProjectTitle = this.studentProjectStore.activeProjectTitle;
+  readonly activeCompanyName = this.studentProjectStore.activeCompanyName;
+  readonly projectRoute = this.studentProjectStore.projectRoute;
+
+  readonly activeProjectNextAction = computed(() => {
+    const app = this.activeApplication();
+    if (!app) return null;
+    const status = app.status;
+
+    if (status === ApplicationStatus.ACCEPTED) {
+      return {
+        icon: 'schedule',
+        badge: 'Trámite Académico',
+        title: 'Esperando asignación de tutor institucional',
+        description:
+          '¡Felicitaciones! Has sido seleccionado por la empresa aliada. La coordinación académica está procesando la designación de tu docente tutor para el aval curricular.',
+        actionLabel: 'Ver Detalle del Trámite',
+        route: this.projectRoute(),
+      };
+    }
+
+    if (status === ApplicationStatus.PENDING_SUPERVISOR) {
+      return {
+        icon: 'person_search',
+        badge: 'Validación Docente',
+        title: 'Tutor institucional propuesto',
+        description:
+          'Se ha propuesto un docente tutor para la supervisión de tu proyecto. En breve se habilitará el anteproyecto y la legalización de inicio.',
+        actionLabel: 'Ver Seguimiento Académico',
+        route: this.projectRoute(),
+      };
+    }
+
+    return {
+      icon: 'rocket_launch',
+      badge: 'Proyecto en Ejecución',
+      title: 'Workspace Activo y Entregables',
+      description:
+        'Tu vinculación académica está aprobada y el proyecto está en curso. Ingresa a tu espacio de trabajo para registrar entregables y consultar sprints.',
+      actionLabel: 'Ir al Workspace del Proyecto',
+      route: this.projectRoute(),
+    };
+  });
 
   // --- Filtro interactivo de postulaciones ---
   readonly activeFilter = signal<ApplicationFilterTab>('all');

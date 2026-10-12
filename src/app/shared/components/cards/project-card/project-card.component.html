@@ -109,6 +109,15 @@
           <mat-icon class="btn-icon">send</mat-icon>
           <span>Aplicar</span>
         </button>
+      } @else if (hasActiveProject()) {
+        <button
+          type="button"
+          class="btn-action btn-action--locked"
+          disabled
+          aria-label="Proyecto ya asignado">
+          <mat-icon class="btn-icon">lock</mat-icon>
+          <span>Proyecto ya asignado</span>
+        </button>
       }
     </div>
   }

@@ -13,18 +13,23 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { environment } from '../../../../../environments/environment';
 import {
-  PaginatedResponse, Conversation, ChatMessage, ApiResponse,
+  PaginatedResponse, Conversation, ConversationParticipant, ChatMessage, ApiResponse, UserProfile,
 } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { UiStore } from '../../../../state/ui.store';
 import { ChatRealtimeService } from '../../../../core/services/chat-realtime.service';
 import { ChatService } from '../../services/chat.service';
 import { ProjectService } from '../../../projects/services/project.service';
+import { UserProfileService } from '../../../../core/services/user-profile.service';
 import { MessageBubbleComponent } from '../../components/message-bubble/message-bubble.component';
 import { TypingIndicatorComponent } from '../../components/typing-indicator/typing-indicator.component';
+import { EmojiPickerComponent } from '../../components/emoji-picker/emoji-picker.component';
+import { ChatContactInfoComponent } from '../../components/chat-contact-info/chat-contact-info.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { InitialsPipe } from '../../../../shared/pipes/initials.pipe';
 
@@ -36,7 +41,9 @@ const MESSAGE_SEND_TIMEOUT_MS = 10000;
   imports: [
     FormsModule, ScrollingModule,
     MatButtonModule, MatIconModule, MatInputModule, MatFormFieldModule, MatProgressSpinnerModule,
+    MatSnackBarModule, MatTooltipModule,
     MessageBubbleComponent, TypingIndicatorComponent, SkeletonComponent, InitialsPipe,
+    EmojiPickerComponent, ChatContactInfoComponent,
   ],
   templateUrl: './chat-room.component.html',
   styleUrl: './chat-room.component.scss',
@@ -46,11 +53,14 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   private readonly chatRealtime = inject(ChatRealtimeService);
   private readonly chatService = inject(ChatService);
   private readonly projectService = inject(ProjectService);
+  private readonly userProfileService = inject(UserProfileService);
+  private readonly snackBar = inject(MatSnackBar);
   readonly authStore = inject(AuthStore);
   readonly uiStore = inject(UiStore);
 
   readonly conversationId = input.required<string>();
   readonly messagesContainer = viewChild<ElementRef<HTMLElement>>('messagesContainer');
+  readonly messageInput = viewChild<ElementRef<HTMLTextAreaElement>>('messageInput');
 
   readonly messageText = signal('');
   readonly page = signal(1);
@@ -59,6 +69,20 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   readonly otherParticipantName = signal('Usuario');
   readonly otherParticipantOnline = signal(false);
   readonly otherParticipantAvatar = signal<string | undefined>(undefined);
+  readonly otherParticipant = signal<ConversationParticipant | null>(null);
+  readonly currentConversation = signal<Conversation | null>(null);
+  readonly contactUserProfile = signal<UserProfile | null>(null);
+  readonly linkedProject = signal<any | null>(null);
+
+  // Modals & Panels state
+  readonly showEmojiPicker = signal(false);
+  readonly showContactInfo = signal(false);
+  readonly pendingFiles = signal<File[]>([]);
+  readonly isUploadingFiles = signal(false);
+
+  readonly canSend = computed(() =>
+    this.messageText().trim().length > 0 || this.pendingFiles().length > 0
+  );
 
   // Optimistic: messages being sent (temporary ids)
   readonly pendingMessageIds = signal<Set<string>>(new Set());
@@ -246,10 +270,112 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.sendMessage();
   }
 
+  toggleEmojiPicker(): void {
+    this.showEmojiPicker.update(v => !v);
+  }
+
+  onEmojiSelected(emoji: string): void {
+    const textarea = this.messageInput()?.nativeElement;
+    const current = this.messageText();
+    if (textarea) {
+      const start = textarea.selectionStart ?? current.length;
+      const end = textarea.selectionEnd ?? current.length;
+      const next = current.slice(0, start) + emoji + current.slice(end);
+      this.messageText.set(next);
+      this.typingSubject.next(next);
+      setTimeout(() => {
+        textarea.focus();
+        const nextPos = start + emoji.length;
+        textarea.setSelectionRange(nextPos, nextPos);
+      }, 0);
+    } else {
+      const next = current + emoji;
+      this.messageText.set(next);
+      this.typingSubject.next(next);
+    }
+  }
+
+  toggleContactInfo(): void {
+    this.showContactInfo.update(v => !v);
+  }
+
+  openContactInfo(): void {
+    this.showContactInfo.set(true);
+  }
+
+  closeContactInfo(): void {
+    this.showContactInfo.set(false);
+  }
+
+  onCallClick(type: 'audio' | 'video'): void {
+    const label = type === 'audio' ? 'Llamadas de voz' : 'Videollamadas';
+    this.snackBar.open(
+      `${label}: esta funcionalidad estará disponible próximamente en CollabU.`,
+      'Entendido',
+      { duration: 4000 },
+    );
+  }
+
+  onFilesSelected(event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    if (inputEl.files && inputEl.files.length > 0) {
+      const newFiles = Array.from(inputEl.files);
+      this.pendingFiles.update(files => [...files, ...newFiles]);
+      inputEl.value = '';
+    }
+  }
+
+  removePendingFile(index: number): void {
+    this.pendingFiles.update(files => files.filter((_, i) => i !== index));
+  }
+
+  isImageFile(file: File): boolean {
+    return file.type.startsWith('image/');
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  onViewContactProfile(userId: string): void {
+    const participant = this.otherParticipant();
+    if (participant?.role === 'student') {
+      this.router.navigate(['/profile/student', userId]);
+    } else if (participant?.role === 'company') {
+      this.router.navigate(['/profile/company', userId]);
+    } else {
+      this.router.navigate(['/profile/view']);
+    }
+  }
+
   sendMessage(): void {
     const content = this.messageText().trim();
-    if (!content) return;
+    if (!content && this.pendingFiles().length === 0) return;
     this.messageText.set('');
+    this.showEmojiPicker.set(false);
+
+    if (this.pendingFiles().length > 0) {
+      const filesToSend = [...this.pendingFiles()];
+      this.pendingFiles.set([]);
+      this.isUploadingFiles.set(true);
+      this.chatService.sendMessageWithFiles(this.conversationId(), content, filesToSend).subscribe({
+        next: (res) => {
+          this.isUploadingFiles.set(false);
+          if (res.data) {
+            this.realtimeMessages.update(msgs => [...msgs, res.data!]);
+            this.scrollToBottom();
+          }
+        },
+        error: () => {
+          this.isUploadingFiles.set(false);
+          this.snackBar.open('No se pudieron enviar los archivos adjuntos', 'Cerrar', { duration: 4000 });
+        },
+      });
+      return;
+    }
+
     this.sendOptimistic(content);
   }
 
@@ -352,12 +478,31 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.chatService.getConversations().subscribe(res => {
       const conv = res.data?.find(c => c.id === this.conversationId());
       if (conv) {
+        this.currentConversation.set(conv);
         const other = conv.participants.find(p => p.userId !== this.currentUserId())
           ?? conv.participants[0];
         if (other) {
+          this.otherParticipant.set(other);
           this.otherParticipantName.set(other.displayName);
           this.otherParticipantOnline.set(other.isOnline);
           this.otherParticipantAvatar.set(other.avatarUrl);
+
+          if (other.userId) {
+            this.userProfileService.getProfileById(other.userId).subscribe({
+              next: pRes => this.contactUserProfile.set(pRes.data ?? null),
+              error: () => this.contactUserProfile.set(null),
+            });
+          }
+        }
+
+        if (conv.projectId) {
+          this.projectService.getById(conv.projectId).subscribe({
+            next: (pRes: any) => {
+              const pData = pRes?.data ?? pRes;
+              this.linkedProject.set(pData);
+            },
+            error: () => this.linkedProject.set(null),
+          });
         }
       }
     });

@@ -78,15 +78,27 @@
 
     <!-- Botones de acción rápida en el Hero -->
     <div class="hero__actions">
-      <a mat-flat-button color="primary" routerLink="/projects" class="hero__btn hero__btn--primary">
-        <mat-icon>explore</mat-icon> Explorar Proyectos
-      </a>
-      <a mat-stroked-button routerLink="/matching" class="hero__btn">
-        <mat-icon>auto_awesome</mat-icon> Smart Matching
-      </a>
-      <a mat-stroked-button routerLink="/profile" class="hero__btn">
-        <mat-icon>account_circle</mat-icon> Mi Perfil
-      </a>
+      @if (hasActiveProject()) {
+        <a mat-flat-button color="primary" [routerLink]="projectRoute()" class="hero__btn hero__btn--primary">
+          <mat-icon>rocket_launch</mat-icon> Ir a Mi Proyecto
+        </a>
+        <a mat-stroked-button routerLink="/projects" class="hero__btn">
+          <mat-icon>folder_open</mat-icon> Ver Convocatorias
+        </a>
+        <a mat-stroked-button routerLink="/profile" class="hero__btn">
+          <mat-icon>account_circle</mat-icon> Mi Perfil
+        </a>
+      } @else {
+        <a mat-flat-button color="primary" routerLink="/projects" class="hero__btn hero__btn--primary">
+          <mat-icon>explore</mat-icon> Explorar Proyectos
+        </a>
+        <a mat-stroked-button routerLink="/matching" class="hero__btn">
+          <mat-icon>auto_awesome</mat-icon> Smart Matching
+        </a>
+        <a mat-stroked-button routerLink="/profile" class="hero__btn">
+          <mat-icon>account_circle</mat-icon> Mi Perfil
+        </a>
+      }
     </div>
   </header>
 
@@ -128,8 +140,154 @@
   </section>
   }
 
+  @if (hasActiveProject()) {
   <!-- ============================================================ -->
-  <!-- 3. CARDS DE ESTADÍSTICAS / KPIS DEL ESTUDIANTE               -->
+  <!-- MODO PROYECTO ACTIVO: CENTRO DE CONTROL DEL PROYECTO ASIGNADO-->
+  <!-- ============================================================ -->
+  <section class="dashboard__active-project-section">
+    <!-- 1. Tarjeta Principal del Proyecto Vinculado -->
+    <mat-card class="active-project-hero-card">
+      <div class="active-project-hero-card__header">
+        <div class="active-project-hero-card__brand">
+          <div class="active-project-hero-card__logo-wrap">
+            @if (activeProject()?.companyLogoUrl) {
+              <img [src]="activeProject()!.companyLogoUrl" alt="Logo de la empresa" class="active-project-hero-card__logo" />
+            } @else {
+              <mat-icon class="active-project-hero-card__icon">domain</mat-icon>
+            }
+          </div>
+          <div class="active-project-hero-card__titles">
+            <span class="active-project-hero-card__badge">
+              <mat-icon>verified</mat-icon> Proyecto Asignado Activo
+            </span>
+            <h2 class="active-project-hero-card__title">{{ activeProjectTitle() }}</h2>
+            <div class="active-project-hero-card__meta">
+              <span class="meta-tag"><mat-icon>business</mat-icon> {{ activeCompanyName() }}</span>
+              @if (activeProject()?.projectType) {
+                <span class="meta-tag"><mat-icon>assignment</mat-icon> {{ activeProject()?.projectType }}</span>
+              }
+              @if (activeApplication()?.appliedAt) {
+                <span class="meta-tag"><mat-icon>event</mat-icon> Postulación: {{ activeApplication()?.appliedAt | date:'mediumDate' }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="active-project-hero-card__cta">
+          <button mat-flat-button color="primary" class="btn-hero-workspace" (click)="router.navigate([projectRoute()])">
+            <mat-icon>rocket_launch</mat-icon> Ir a Mi Proyecto
+          </button>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- 2. Stepper Macro de Progreso General -->
+      <div class="active-project-hero-card__stepper-wrap">
+        <div class="stepper-section-title">
+          <mat-icon>timeline</mat-icon>
+          <span>Progreso General del Ciclo de Vida</span>
+        </div>
+        <app-macro-phase-stepper
+          [status]="activeApplication()!.status"
+          [hasUpcomingInterview]="!!upcomingInterview()"
+          [interactive]="true" />
+      </div>
+    </mat-card>
+
+    <!-- 2. Grid de Acción Inmediata + Herramientas del Proyecto -->
+    <div class="active-project-grid">
+      <!-- Acción Requerida / Estado Inmediato -->
+      @if (activeProjectNextAction(); as next) {
+        <mat-card class="next-action-card">
+          <mat-card-header class="next-action-card__header">
+            <div class="next-action-card__badge">
+              <mat-icon>{{ next.icon }}</mat-icon>
+              <span>{{ next.badge }}</span>
+            </div>
+          </mat-card-header>
+          <mat-card-content class="next-action-card__body">
+            <h3 class="next-action-card__title">{{ next.title }}</h3>
+            <p class="next-action-card__desc">{{ next.description }}</p>
+          </mat-card-content>
+          <mat-card-actions class="next-action-card__actions">
+            <button mat-flat-button color="primary" (click)="router.navigate([next.route])">
+              <mat-icon>{{ next.icon }}</mat-icon> {{ next.actionLabel }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+
+      <!-- Accesos Rápidos del Proyecto -->
+      <mat-card class="project-shortcuts-card">
+        <mat-card-header class="shortcuts-card__header">
+          <h3 class="shortcuts-card__title">
+            <mat-icon>apps</mat-icon> Herramientas del Proyecto
+          </h3>
+        </mat-card-header>
+        <mat-card-content class="shortcuts-card__body">
+          <div class="shortcuts-list">
+            <button type="button" class="shortcut-item" (click)="router.navigate([projectRoute()])">
+              <div class="shortcut-item__icon shortcut-item__icon--primary">
+                <mat-icon>dashboard_customize</mat-icon>
+              </div>
+              <div class="shortcut-item__content">
+                <strong>Espacio de Trabajo</strong>
+                <span>Entregables, anteproyecto y acuerdos</span>
+              </div>
+              <mat-icon class="shortcut-item__arrow">chevron_right</mat-icon>
+            </button>
+
+            <button type="button" class="shortcut-item" (click)="router.navigate(['/chat'])">
+              <div class="shortcut-item__icon shortcut-item__icon--accent">
+                <mat-icon>chat</mat-icon>
+              </div>
+              <div class="shortcut-item__content">
+                <strong>Mensajería y Chat</strong>
+                <span>Comunícate con la empresa y tu asesor</span>
+              </div>
+              <mat-icon class="shortcut-item__arrow">chevron_right</mat-icon>
+            </button>
+
+            <button type="button" class="shortcut-item" (click)="router.navigate(['/my-evaluations'])">
+              <div class="shortcut-item__icon shortcut-item__icon--warning">
+                <mat-icon>rate_review</mat-icon>
+              </div>
+              <div class="shortcut-item__content">
+                <strong>Evaluaciones</strong>
+                <span>Rúbricas de desempeño institucional</span>
+              </div>
+              <mat-icon class="shortcut-item__arrow">chevron_right</mat-icon>
+            </button>
+
+            <button type="button" class="shortcut-item" (click)="router.navigate(['/projects'])">
+              <div class="shortcut-item__icon shortcut-item__icon--neutral">
+                <mat-icon>folder_open</mat-icon>
+              </div>
+              <div class="shortcut-item__content">
+                <strong>Catálogo de Proyectos</strong>
+                <span>Explorar convocatorias (modo informativo)</span>
+              </div>
+              <mat-icon class="shortcut-item__arrow">chevron_right</mat-icon>
+            </button>
+
+            <button type="button" class="shortcut-item" (click)="router.navigate(['/my-applications'])">
+              <div class="shortcut-item__icon shortcut-item__icon--info">
+                <mat-icon>assignment</mat-icon>
+              </div>
+              <div class="shortcut-item__content">
+                <strong>Mis Postulaciones</strong>
+                <span>Historial de convocatorias y solicitudes anteriores</span>
+              </div>
+              <mat-icon class="shortcut-item__arrow">chevron_right</mat-icon>
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+  } @else {
+  <!-- ============================================================ -->
+  <!-- 3. CARDS DE ESTADÍSTICAS / KPIS DEL ESTUDIANTE (MODO BÚSQUEDA)-->
   <!-- ============================================================ -->
   <section class="dashboard__stats">
     @if (profileResource.isLoading() || applicationsResource.isLoading()) {
@@ -527,4 +685,5 @@
 
     </aside>
   </section>
+  }
 </div>

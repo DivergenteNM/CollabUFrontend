@@ -22,11 +22,11 @@ describe('MacroPhaseStepperComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('debe renderizar 3 macro-pills', () => {
+  it('debe renderizar 3 macro-segmentos', () => {
     fixture.componentRef.setInput('status', ApplicationStatus.PENDING);
     fixture.detectChanges();
 
-    const pills = fixture.nativeElement.querySelectorAll('.macro-pill');
+    const pills = fixture.nativeElement.querySelectorAll('.macro-segment');
     expect(pills.length).toBe(3);
     expect(pills[0].textContent).toContain('Selección');
     expect(pills[1].textContent).toContain('Académico');
@@ -38,8 +38,8 @@ describe('MacroPhaseStepperComponent', () => {
     fixture.detectChanges();
 
     expect(component.resolution().currentPhase.id).toBe('RECRUITMENT');
-    const pills = fixture.nativeElement.querySelectorAll('.macro-pill');
-    expect(pills[0].classList).toContain('macro-pill--current');
+    const pills = fixture.nativeElement.querySelectorAll('.macro-segment');
+    expect(pills[0].classList).toContain('macro-segment--current');
   });
 
   it('debe marcar Reclutamiento como completada y Académico como activa para status ACCEPTED', () => {
@@ -47,9 +47,9 @@ describe('MacroPhaseStepperComponent', () => {
     fixture.detectChanges();
 
     expect(component.resolution().currentPhase.id).toBe('ACADEMIC');
-    const pills = fixture.nativeElement.querySelectorAll('.macro-pill');
-    expect(pills[0].classList).toContain('macro-pill--completed');
-    expect(pills[1].classList).toContain('macro-pill--current');
+    const pills = fixture.nativeElement.querySelectorAll('.macro-segment');
+    expect(pills[0].classList).toContain('macro-segment--completed');
+    expect(pills[1].classList).toContain('macro-segment--current');
   });
 
   it('debe mostrar banner terminal y no mostrar micro-timeline para status REJECTED', () => {
@@ -69,7 +69,7 @@ describe('MacroPhaseStepperComponent', () => {
     fixture.componentRef.setInput('status', ApplicationStatus.IN_PROGRESS); // Workspace activa
     fixture.detectChanges();
 
-    const pills = fixture.nativeElement.querySelectorAll('.macro-pill');
+    const pills = fixture.nativeElement.querySelectorAll('.macro-segment');
     // Clic en la fase 1 (Selección)
     pills[0].click();
     fixture.detectChanges();

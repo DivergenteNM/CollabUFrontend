@@ -2,7 +2,7 @@ import {
   Component, ChangeDetectionStrategy, inject, signal, computed, effect, PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +12,7 @@ import { environment } from '../../../../../environments/environment';
 import { PaginatedResponse, Project } from '../../../../core/models';
 import { AuthStore } from '../../../../state/auth.store';
 import { UiStore } from '../../../../state/ui.store';
+import { StudentProjectStore } from '../../../../state/student-project.store';
 import { ProjectCardComponent } from '../../../../shared/components/cards/project-card/project-card.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
@@ -33,7 +34,7 @@ interface DurationOption extends FilterOption {
   selector: 'app-project-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatButtonModule, MatIconModule, FormsModule,
+    RouterLink, MatButtonModule, MatIconModule, FormsModule,
     ProjectCardComponent, SkeletonComponent, EmptyStateComponent,
   ],
   templateUrl: './project-list.component.html',
@@ -43,10 +44,15 @@ export class ProjectListComponent {
   readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
   readonly uiStore = inject(UiStore);
+  readonly studentProjectStore = inject(StudentProjectStore);
   private readonly platformId = inject(PLATFORM_ID);
   readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly matchingService = inject(MatchingService);
   private readonly adminService = inject(AdminService);
+
+  readonly hasActiveProject = this.studentProjectStore.hasActiveProject;
+  readonly activeProjectTitle = this.studentProjectStore.activeProjectTitle;
+  readonly canApply = computed(() => this.authStore.isStudent() && !this.studentProjectStore.hasActiveProject());
 
   readonly page = signal(1);
   readonly pageSize = 12;

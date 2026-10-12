@@ -1,0 +1,103 @@
+<div class="emoji-picker" role="dialog" aria-label="Selector de emojis">
+  <div class="emoji-picker__header">
+    <div class="emoji-picker__search-box">
+      <mat-icon class="emoji-picker__search-icon">search</mat-icon>
+      <input
+        type="text"
+        class="emoji-picker__search-input"
+        placeholder="Buscar emoji..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        aria-label="Buscar emojis" />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          class="emoji-picker__search-clear"
+          (click)="clearSearch()"
+          aria-label="Limpiar búsqueda">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
+    <button
+      type="button"
+      class="emoji-picker__close-btn"
+      (click)="close.emit()"
+      aria-label="Cerrar selector">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  @if (!isSearching()) {
+    <nav class="emoji-picker__tabs" aria-label="Categorías de emojis">
+      @if (recentEmojis().length > 0) {
+        <button
+          type="button"
+          class="emoji-picker__tab"
+          [class.emoji-picker__tab--active]="activeCategory() === 'recent'"
+          (click)="setCategory('recent')"
+          title="Recientes"
+          aria-label="Recientes">
+          <mat-icon>schedule</mat-icon>
+        </button>
+      }
+      @for (cat of categories; track cat.id) {
+        <button
+          type="button"
+          class="emoji-picker__tab"
+          [class.emoji-picker__tab--active]="activeCategory() === cat.id"
+          (click)="setCategory(cat.id)"
+          [title]="cat.name"
+          [attr.aria-label]="cat.name">
+          <mat-icon>{{ cat.icon }}</mat-icon>
+        </button>
+      }
+    </nav>
+  }
+
+  <div class="emoji-picker__body">
+    @if (isSearching()) {
+      <div class="emoji-picker__section-title">Resultados de búsqueda</div>
+      @if (searchResults().length > 0) {
+        <div class="emoji-picker__grid">
+          @for (emoji of searchResults(); track $index) {
+            <button
+              type="button"
+              class="emoji-picker__item"
+              (click)="onSelectEmoji(emoji)"
+              [attr.aria-label]="emoji">
+              {{ emoji }}
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="emoji-picker__empty">
+          <mat-icon class="emoji-picker__empty-icon">sentiment_dissatisfied</mat-icon>
+          <span>No se encontraron emojis para "{{ searchQuery() }}"</span>
+        </div>
+      }
+    } @else {
+      <div class="emoji-picker__section-title">
+        {{ currentCategoryData().name }}
+      </div>
+      @if (currentCategoryData().emojis.length > 0) {
+        <div class="emoji-picker__grid">
+          @for (emoji of currentCategoryData().emojis; track $index) {
+            <button
+              type="button"
+              class="emoji-picker__item"
+              (click)="onSelectEmoji(emoji)"
+              [attr.aria-label]="emoji">
+              {{ emoji }}
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="emoji-picker__empty">
+          <mat-icon class="emoji-picker__empty-icon">schedule</mat-icon>
+          <span>Aún no tienes emojis recientes</span>
+        </div>
+      }
+    }
+  </div>
+</div>

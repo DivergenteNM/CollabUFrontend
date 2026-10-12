@@ -63,12 +63,12 @@ describe('ApplicationService', () => {
     req.flush({ data: { id: 'app-1' } });
   });
 
-  it('withdraw hace PATCH a /applications/:id/withdraw sin body', () => {
+  it('withdraw hace PATCH a /applications/:id/withdraw con withdrawalReason', () => {
     service.withdraw('app-1').subscribe();
 
     const req = httpTesting.expectOne(`${baseUrl}/app-1/withdraw`);
     expect(req.request.method).toBe('PATCH');
-    expect(req.request.body).toEqual({});
+    expect(req.request.body).toEqual({ withdrawalReason: 'Retiro voluntario por parte del estudiante' });
     req.flush(null);
   });
 

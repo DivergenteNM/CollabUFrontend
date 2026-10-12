@@ -9,6 +9,9 @@ import { Subject, of } from 'rxjs';
 import { ChatRoomComponent } from './chat-room.component';
 import { ChatRealtimeService } from '../../../../core/services/chat-realtime.service';
 import { ChatService } from '../../services/chat.service';
+import { UserProfileService } from '../../../../core/services/user-profile.service';
+import { ProjectService } from '../../../projects/services/project.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  * Regresión de UX (hallazgo H7, pruebas con usuarios finales — rol
@@ -26,12 +29,14 @@ describe('ChatRoomComponent — confirmación de mensajes', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     // jsdom no implementa matchMedia — UiStore (inyectado por ChatRoomComponent
-    // para el estado responsive) lo usa en un effect al arrancar.
-    window.matchMedia = window.matchMedia ?? (() => ({
-      matches: false, media: '', onchange: null,
-      addListener: () => {}, removeListener: () => {},
-      addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => false,
-    }) as unknown as MediaQueryList);
+    const win = typeof window !== 'undefined' ? window : (globalThis as any).window;
+    if (win) {
+      win.matchMedia = win.matchMedia ?? (() => ({
+        matches: false, media: '', onchange: null,
+        addListener: () => {}, removeListener: () => {},
+        addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => false,
+      }) as unknown as MediaQueryList);
+    }
 
     messages$ = new Subject();
     sendMessageSpy = vi.fn();
@@ -56,6 +61,9 @@ describe('ChatRoomComponent — confirmación de mensajes', () => {
           },
         },
         { provide: ChatService, useValue: { getConversations: () => of({ data: [] }) } },
+        { provide: UserProfileService, useValue: { getProfileById: () => of({ data: null }) } },
+        { provide: ProjectService, useValue: { getById: () => of({ data: null }) } },
+        { provide: MatSnackBar, useValue: { open: vi.fn() } },
       ],
     });
 
@@ -109,5 +117,34 @@ describe('ChatRoomComponent — confirmación de mensajes', () => {
 
     expect(component.isFailed(tempId)).toBe(false);
     expect(sendMessageSpy).toHaveBeenCalledWith('conv-1', 'hola');
+  });
+
+  it('permite alternar el selector de emojis e insertar un emoji', () => {
+    expect(component.showEmojiPicker()).toBe(false);
+    component.toggleEmojiPicker();
+    expect(component.showEmojiPicker()).toBe(true);
+
+    component.messageText.set('Hola');
+    component.onEmojiSelected('👋');
+    expect(component.messageText()).toContain('👋');
+  });
+
+  it('permite abrir y cerrar el panel de información del contacto', () => {
+    expect(component.showContactInfo()).toBe(false);
+    component.openContactInfo();
+    expect(component.showContactInfo()).toBe(true);
+
+    component.closeContactInfo();
+    expect(component.showContactInfo()).toBe(false);
+  });
+
+  it('muestra retroalimentación informativa al presionar llamadas de voz o video', () => {
+    const spy = vi.spyOn((component as any).snackBar, 'open');
+    component.onCallClick('audio');
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('Llamadas de voz'),
+      'Entendido',
+      expect.any(Object),
+    );
   });
 });

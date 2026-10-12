@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthStore } from '../../../../state/auth.store';
 import { NotificationsStore } from '../../../../state/notifications.store';
 import { ChatUnreadStore } from '../../../../state/chat-unread.store';
+import { StudentProjectStore } from '../../../../state/student-project.store';
 import { UserRole } from '../../../../core/enums/user-role.enum';
 import {
   CATEGORY_LABELS, NotificationCategory,
@@ -48,12 +49,19 @@ export class SidebarComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly notificationsStore = inject(NotificationsStore);
   private readonly chatUnreadStore = inject(ChatUnreadStore);
+  private readonly studentProjectStore = inject(StudentProjectStore);
 
   readonly unreadCount = this.notificationsStore.unreadCount;
   readonly unreadByCategory = this.notificationsStore.unreadByCategory;
   readonly chatUnread = this.chatUnreadStore.total;
 
-  readonly menuItems = computed(() => this.getMenuByRole(this.authStore.role()));
+  readonly menuItems = computed(() =>
+    this.getMenuByRole(
+      this.authStore.role(),
+      this.studentProjectStore.hasActiveProject(),
+      this.studentProjectStore.projectRoute()
+    )
+  );
 
   /**
    * Desglose de no leídos por categoría, filtrando las que están en cero.
@@ -75,23 +83,41 @@ export class SidebarComponent implements OnInit {
     if (this.authStore.role()) this.chatUnreadStore.loadInitial();
   }
 
-  private getMenuByRole(role: UserRole | null): MenuItem[] {
+  private getMenuByRole(
+    role: UserRole | null,
+    hasActiveProject = false,
+    projectRoute = '/dashboard'
+  ): MenuItem[] {
     if (!role) return [];
 
+    const studentMenu: MenuItem[] = hasActiveProject
+      ? [
+          { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
+          { icon: 'rocket_launch', label: 'Mi Proyecto', route: projectRoute },
+          { icon: 'folder_open', label: 'Proyectos', route: '/projects' },
+          { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat', badgeKind: 'chat' },
+          { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
+          { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications', badgeKind: 'notifications' },
+          { divider: true },
+          { icon: 'person_outline', label: 'Mi Perfil', route: '/profile/view' },
+          { icon: 'settings', label: 'Configuración', route: '/settings' },
+        ]
+      : [
+          { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
+          { icon: 'folder_open', label: 'Proyectos', route: '/projects' },
+          { icon: 'mail_outline', label: 'Mis Aplicaciones', route: '/my-applications' },
+          { icon: 'star_outline', label: 'Recomendaciones', route: '/matching' },
+          { icon: 'insights', label: 'Tendencias de Skills', route: '/skills' },
+          { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat', badgeKind: 'chat' },
+          { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
+          { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications', badgeKind: 'notifications' },
+          { divider: true },
+          { icon: 'person_outline', label: 'Mi Perfil', route: '/profile/view' },
+          { icon: 'settings', label: 'Configuración', route: '/settings' },
+        ];
+
     const menus: Record<UserRole, MenuItem[]> = {
-      [UserRole.STUDENT]: [
-        { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
-        { icon: 'folder_open', label: 'Proyectos', route: '/projects' },
-        { icon: 'mail_outline', label: 'Mis Aplicaciones', route: '/my-applications' },
-        { icon: 'star_outline', label: 'Recomendaciones', route: '/matching' },
-        { icon: 'insights', label: 'Tendencias de Skills', route: '/skills' },
-        { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat', badgeKind: 'chat' },
-        { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
-        { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications', badgeKind: 'notifications' },
-        { divider: true },
-        { icon: 'person_outline', label: 'Mi Perfil', route: '/profile/view' },
-        { icon: 'settings', label: 'Configuración', route: '/settings' },
-      ],
+      [UserRole.STUDENT]: studentMenu,
       [UserRole.COMPANY]: [
         { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
         {
