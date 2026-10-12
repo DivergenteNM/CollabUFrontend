@@ -1,8 +1,43 @@
 <div class="explorer-page">
   <!-- Page Header -->
   <header class="explorer-header">
-    <h1 class="explorer-title">Explorador de Proyectos Avanzado V2.</h1>
+    <div class="explorer-header-inner">
+      <h1 class="explorer-title">Explorador de Proyectos Avanzado V2.</h1>
+      @if (authStore.isStudent()) {
+        <a routerLink="/my-applications" class="btn-explorer-applications">
+          <mat-icon>assignment</mat-icon>
+          <span>Mis Postulaciones</span>
+        </a>
+      }
+    </div>
   </header>
+
+  @if (hasActiveProject()) {
+    <div class="active-project-catalog-banner">
+      <div class="banner-icon-box">
+        <mat-icon>info</mat-icon>
+      </div>
+      <div class="banner-text-box">
+        <strong class="banner-title">Modo Catálogo Informativo</strong>
+        <p class="banner-desc">
+          Actualmente estás vinculado al proyecto <strong>{{ activeProjectTitle() }}</strong>. Las convocatorias se muestran únicamente con fines informativos.
+        </p>
+      </div>
+      <div class="banner-actions-group">
+        <a routerLink="/my-applications" class="btn-banner-applications">
+          <mat-icon>assignment</mat-icon>
+          <span>Mis Postulaciones</span>
+        </a>
+        <button
+          type="button"
+          class="btn-banner-project"
+          (click)="router.navigate([studentProjectStore.projectRoute()])">
+          <mat-icon>rocket_launch</mat-icon>
+          <span>Ir a Mi Proyecto</span>
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Mobile filter button -->
   <div class="mobile-filter-bar">
@@ -205,7 +240,8 @@
               [project]="project"
               [matchScore]="matchScoreFor(project.id)"
               [showActions]="true"
-              [canApply]="authStore.isStudent()"
+              [canApply]="canApply()"
+              [hasActiveProject]="hasActiveProject()"
               (viewDetail)="router.navigate(['/projects', $event])"
               (apply)="router.navigate(['/projects', $event])" />
           }

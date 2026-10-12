@@ -238,13 +238,33 @@
 
           <mat-card class="detail__apply-card">
             <mat-card-content>
-              <button mat-flat-button class="detail__apply-btn"
-                      (click)="openApplyDialog(p)">
-                <mat-icon>send</mat-icon> Aplicar a este proyecto
-              </button>
-              <p class="detail__apply-hint">
-                Fecha límite: {{ p.applicationDeadline | date:'d MMM yyyy' }}
-              </p>
+              @if (hasActiveProject()) {
+                <div class="detail__locked-box">
+                  <div class="detail__locked-header">
+                    <mat-icon>lock</mat-icon>
+                    <strong>Proyecto ya asignado</strong>
+                  </div>
+                  <p class="detail__locked-text">
+                    Actualmente estás vinculado al proyecto <strong>{{ activeProjectTitle() }}</strong>. No puedes postularte a nuevas convocatorias mientras mantengas un proyecto en curso.
+                  </p>
+                  <div class="detail__locked-actions">
+                    <button mat-stroked-button class="detail__locked-btn" (click)="router.navigate([studentProjectStore.projectRoute()])">
+                      <mat-icon>rocket_launch</mat-icon> Ver Mi Proyecto
+                    </button>
+                    <button mat-button class="detail__locked-sub-btn" (click)="router.navigate(['/my-applications'])">
+                      <mat-icon>assignment</mat-icon> Ver Mis Postulaciones
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <button mat-flat-button class="detail__apply-btn"
+                        (click)="openApplyDialog(p)">
+                  <mat-icon>send</mat-icon> Aplicar a este proyecto
+                </button>
+                <p class="detail__apply-hint">
+                  Fecha límite: {{ p.applicationDeadline | date:'d MMM yyyy' }}
+                </p>
+              }
             </mat-card-content>
           </mat-card>
         </aside>

@@ -16,6 +16,7 @@ import { environment } from '../../../../../environments/environment';
 import { ApiResponse, CompanyProfile, Project } from '../../../../core/models';
 import { MatchResult, MatResultBreakdown } from '../../../../core/models/matching.model';
 import { AuthStore } from '../../../../state/auth.store';
+import { StudentProjectStore } from '../../../../state/student-project.store';
 import { StatusBadgeComponent } from '../../../../shared/components/ui/status-badge/status-badge.component';
 import { MatchScoreCardComponent } from '../../../../shared/components/cards/match-score-card/match-score-card.component';
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
@@ -41,12 +42,16 @@ import { AcademicProgram } from '../../../../core/models';
 export class ProjectDetailComponent {
   readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
+  readonly studentProjectStore = inject(StudentProjectStore);
   private readonly dialog = inject(MatDialog);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   readonly location = inject(Location);
   private readonly adminService = inject(AdminService);
   private readonly companyProfileService = inject(CompanyProfileService);
+
+  readonly hasActiveProject = this.studentProjectStore.hasActiveProject;
+  readonly activeProjectTitle = this.studentProjectStore.activeProjectTitle;
 
   readonly id = input.required<string>();
   private readonly programs = signal<AcademicProgram[]>([]);

@@ -1230,3 +1230,339 @@
     height: 16px;
   }
 }
+
+// =============================================================================
+// MODO PROYECTO ACTIVO (CENTRO DE CONTROL)
+// =============================================================================
+.dashboard__active-project-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.active-project-hero-card {
+  border-radius: var(--border-radius-xl, 20px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  padding: 0;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px 28px;
+
+    @media (max-width: 860px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+
+  &__logo-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: var(--color-primary-50, #f0fdf4);
+    border: 1px solid var(--color-primary-200, #bbf7d0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    .active-project-hero-card__logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .active-project-hero-card__icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: var(--color-primary-700, #15803d);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-primary-700, #15803d);
+    background: var(--color-primary-100, #dcfce7);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  &__title {
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--text-tertiary);
+      }
+    }
+  }
+
+  &__cta {
+    flex-shrink: 0;
+
+    .btn-hero-workspace {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      font-weight: 700;
+      font-size: 0.9375rem;
+      border-radius: var(--border-radius-md, 12px);
+    }
+  }
+
+  &__stepper-wrap {
+    padding: 24px 28px;
+    background: color-mix(in srgb, var(--bg-card) 94%, var(--bg-hover));
+
+    .stepper-section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--color-primary);
+      }
+    }
+  }
+}
+
+.active-project-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.next-action-card {
+  border-radius: var(--border-radius-xl, 20px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-warning-bg, #fef3c7);
+    color: var(--color-warning, #d97706);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 10px;
+  }
+
+  &__desc {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0 0 20px;
+  }
+
+  &__actions {
+    padding: 0;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+  }
+}
+
+.project-shortcuts-card {
+  border-radius: var(--border-radius-xl, 20px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+
+  .shortcuts-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 16px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: var(--color-primary);
+    }
+  }
+
+  .shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--border-radius-md, 12px);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--color-primary-300, #84c49b);
+      transform: translateX(2px);
+    }
+
+    &__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      &--primary {
+        background: var(--color-primary-100, #dcfce7);
+        color: var(--color-primary-700, #15803d);
+      }
+      &--accent {
+        background: #e0f2fe;
+        color: #0284c7;
+      }
+      &--warning {
+        background: #fef3c7;
+        color: #d97706;
+      }
+      &--neutral {
+        background: #f3f4f6;
+        color: #4b5563;
+      }
+      &--info {
+        background: #ede9fe;
+        color: #7c3aed;
+      }
+    }
+
+    &__content {
+      flex: 1;
+
+      strong {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      span {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+      }
+    }
+
+    &__arrow {
+      color: var(--text-tertiary);
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+

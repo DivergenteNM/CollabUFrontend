@@ -11,6 +11,14 @@
 // 1. Header
 .explorer-header {
   margin-bottom: 20px;
+
+  .explorer-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 }
 
 .explorer-title {
@@ -19,6 +27,161 @@
   color: var(--text-primary, #1a241c);
   margin: 0;
   letter-spacing: -0.02em;
+}
+
+.btn-explorer-applications {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--surface-card, #ffffff);
+  color: var(--color-primary-700, #15803d);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: var(--color-primary-50, #f0fdf4);
+    border-color: var(--color-primary-300, #86efac);
+    color: var(--color-primary-800, #166534);
+    transform: translateY(-1px);
+  }
+}
+
+// Banner informativo para estudiantes con proyecto activo asignado
+.active-project-catalog-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: var(--border-radius-md, 12px);
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .banner-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--color-primary-100, #dcfce7);
+    color: var(--color-primary-700, #15803d);
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  .banner-text-box {
+    flex: 1;
+
+    .banner-title {
+      display: block;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--color-primary-900, #14532d);
+      margin-bottom: 2px;
+    }
+
+    .banner-desc {
+      font-size: 0.875rem;
+      color: var(--color-primary-800, #166534);
+      margin: 0;
+      line-height: 1.4;
+
+      strong {
+        font-weight: 700;
+      }
+    }
+  }
+
+  .banner-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+
+  .btn-banner-applications {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--surface-card, #ffffff);
+    color: var(--color-primary-700, #15803d);
+    border: 1px solid var(--color-primary-200, #bbf7d0);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: var(--color-primary-100, #dcfce7);
+      color: var(--color-primary-800, #166534);
+    }
+  }
+
+  .btn-banner-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: var(--color-primary, #16a34a);
+    color: var(--text-on-primary, #ffffff);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: var(--color-primary-600, #15803d);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 // Mobile Filter Trigger Bar
