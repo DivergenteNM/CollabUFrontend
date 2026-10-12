@@ -1,0 +1,171 @@
+<aside class="contact-info" role="dialog" aria-label="Información del contacto">
+  <header class="contact-info__header">
+    <button
+      type="button"
+      class="contact-info__close-btn"
+      (click)="close.emit()"
+      aria-label="Cerrar información">
+      <mat-icon>close</mat-icon>
+    </button>
+    <h2 class="contact-info__title">Info. del contacto</h2>
+  </header>
+
+  <div class="contact-info__body">
+    <!-- Hero / Avatar y Nombre -->
+    <section class="contact-info__hero">
+      <div class="contact-info__avatar-wrap">
+        @if (participant()?.avatarUrl) {
+          <img
+            [src]="participant()?.avatarUrl"
+            [alt]="participant()?.displayName ?? 'Contacto'"
+            class="contact-info__avatar-img" />
+        } @else {
+          <span class="contact-info__avatar-initials">
+            {{ (participant()?.displayName ?? 'Usuario') | initials:2 }}
+          </span>
+        }
+        <span
+          class="contact-info__status-dot"
+          [class.contact-info__status-dot--online]="participant()?.isOnline"
+          [class.contact-info__status-dot--offline]="!participant()?.isOnline">
+        </span>
+      </div>
+
+      <h3 class="contact-info__name">{{ participant()?.displayName }}</h3>
+
+      <div class="contact-info__badges">
+        <span class="contact-info__role-badge">
+          <mat-icon>{{ roleIcon() }}</mat-icon>
+          <span>{{ roleLabel() }}</span>
+        </span>
+        <span class="contact-info__status-text" [class.online]="participant()?.isOnline">
+          {{ participant()?.isOnline ? 'En línea' : 'Desconectado' }}
+        </span>
+      </div>
+    </section>
+
+    <!-- Acerca de / Bio -->
+    @if (userProfile()?.bio) {
+      <section class="contact-info__section">
+        <h4 class="contact-info__section-heading">Acerca de</h4>
+        <p class="contact-info__bio">{{ userProfile()?.bio }}</p>
+      </section>
+    }
+
+    <!-- Información de Contacto -->
+    <section class="contact-info__section">
+      <h4 class="contact-info__section-heading">Datos de contacto</h4>
+      <div class="contact-info__details-list">
+        @if (userProfile()?.phone) {
+          <div class="contact-info__detail-item">
+            <mat-icon class="contact-info__detail-icon">phone</mat-icon>
+            <div class="contact-info__detail-content">
+              <span class="contact-info__detail-label">Teléfono</span>
+              <span class="contact-info__detail-value">{{ userProfile()?.phone }}</span>
+            </div>
+          </div>
+        }
+
+        @if (userProfile()?.city || userProfile()?.country) {
+          <div class="contact-info__detail-item">
+            <mat-icon class="contact-info__detail-icon">location_on</mat-icon>
+            <div class="contact-info__detail-content">
+              <span class="contact-info__detail-label">Ubicación</span>
+              <span class="contact-info__detail-value">
+                {{ userProfile()?.city }}{{ userProfile()?.city && userProfile()?.country ? ', ' : '' }}{{ userProfile()?.country }}
+              </span>
+            </div>
+          </div>
+        }
+
+        @if (userProfile()?.linkedinUrl) {
+          <a
+            [href]="userProfile()?.linkedinUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="contact-info__detail-item contact-info__detail-item--link">
+            <mat-icon class="contact-info__detail-icon">open_in_new</mat-icon>
+            <div class="contact-info__detail-content">
+              <span class="contact-info__detail-label">Perfil en LinkedIn</span>
+              <span class="contact-info__detail-value">Ver perfil externo</span>
+            </div>
+          </a>
+        }
+      </div>
+    </section>
+
+    <!-- Contexto: Proyecto en común -->
+    @if (project(); as proj) {
+      <section class="contact-info__section">
+        <h4 class="contact-info__section-heading">Proyecto vinculado</h4>
+        <div class="contact-info__project-card">
+          <div class="contact-info__project-header">
+            <mat-icon class="contact-info__project-icon">folder_open</mat-icon>
+            <span class="contact-info__project-title">{{ proj.title }}</span>
+          </div>
+          @if (proj.category) {
+            <span class="contact-info__project-category">{{ proj.category }}</span>
+          }
+          <a
+            [routerLink]="['/projects', proj.id]"
+            class="contact-info__project-link">
+            <span>Ver detalles del proyecto</span>
+            <mat-icon>arrow_forward</mat-icon>
+          </a>
+        </div>
+      </section>
+    }
+
+    <!-- Archivos y Enlaces Compartidos -->
+    <section class="contact-info__section">
+      <div class="contact-info__section-header">
+        <h4 class="contact-info__section-heading">Archivos compartidos</h4>
+        <span class="contact-info__counter-badge">{{ sharedFiles().length }}</span>
+      </div>
+
+      @if (sharedFiles().length > 0) {
+        <div class="contact-info__files-list">
+          @for (file of sharedFiles().slice(0, 5); track $index) {
+            <a
+              [href]="file.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="contact-info__file-item">
+              <mat-icon class="contact-info__file-icon">
+                {{ file.isImage ? 'image' : 'insert_drive_file' }}
+              </mat-icon>
+              <div class="contact-info__file-meta">
+                <span class="contact-info__file-name">{{ file.name }}</span>
+                <span class="contact-info__file-date">{{ file.date | date:'dd MMM yyyy' }}</span>
+              </div>
+              <mat-icon class="contact-info__file-download">download</mat-icon>
+            </a>
+          }
+        </div>
+      } @else {
+        <p class="contact-info__empty-text">No hay archivos compartidos en esta conversación.</p>
+      }
+    </section>
+
+    <!-- Acciones -->
+    <section class="contact-info__section contact-info__section--actions">
+      <button
+        type="button"
+        class="contact-info__action-btn"
+        (click)="toggleMute()">
+        <mat-icon>{{ isMuted() ? 'notifications_off' : 'notifications_none' }}</mat-icon>
+        <span>{{ isMuted() ? 'Desactivar silencio' : 'Silenciar notificaciones' }}</span>
+      </button>
+
+      @if (participant()?.userId) {
+        <button
+          type="button"
+          class="contact-info__action-btn"
+          (click)="onViewProfileClick()">
+          <mat-icon>account_circle</mat-icon>
+          <span>Ver perfil completo</span>
+        </button>
+      }
+    </section>
+  </div>
+</aside>
