@@ -95,7 +95,6 @@ export class SidebarComponent implements OnInit {
           { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
           { icon: 'rocket_launch', label: 'Mi Proyecto', route: projectRoute },
           { icon: 'folder_open', label: 'Proyectos', route: '/projects' },
-          { icon: 'insights', label: 'Tendencias de Skills', route: '/skills' },
           { icon: 'chat_bubble_outline', label: 'Chat', route: '/chat', badgeKind: 'chat' },
           { icon: 'rate_review', label: 'Evaluaciones', route: '/my-evaluations' },
           { icon: 'notifications_none', label: 'Notificaciones', route: '/notifications', badgeKind: 'notifications' },

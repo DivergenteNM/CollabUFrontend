@@ -6,7 +6,8 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { SidebarComponent } from './sidebar.component';
 import { AuthStore } from '../../../../state/auth.store';
-import { UserRole } from '../../../../core/enums/user-role.enum';
+import { StudentProjectStore } from '../../../../state/student-project.store';
+import { UserRole, ApplicationStatus } from '../../../../core/enums';
 import { AuthUser } from '../../../../core/models';
 
 /**
@@ -113,7 +114,35 @@ describe('SidebarComponent — menú de estudiante reactivo', () => {
     const labels = component.menuItems().map((i) => i.label);
     expect(labels).toContain('Mis Aplicaciones');
     expect(labels).toContain('Recomendaciones');
+    expect(labels).toContain('Tendencias de Skills');
     expect(labels).not.toContain('Mi Proyecto');
+  });
+
+  it('oculta Mis Aplicaciones, Recomendaciones y Tendencias de Skills cuando tiene proyecto activo', () => {
+    const authStore = TestBed.inject(AuthStore);
+    authStore.setAuth(mockStudent, 'token', 'refresh');
+
+    const studentProjectStore = TestBed.inject(StudentProjectStore);
+    studentProjectStore.setApplications([
+      {
+        id: 'app-active',
+        studentId: 'student-1',
+        projectId: 'proj-1',
+        status: ApplicationStatus.IN_PROGRESS,
+        createdAt: '2026-03-01',
+        updatedAt: '2026-03-01',
+      } as any,
+    ]);
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const labels = component.menuItems().map((i) => i.label);
+    expect(labels).toContain('Mi Proyecto');
+    expect(labels).not.toContain('Mis Aplicaciones');
+    expect(labels).not.toContain('Recomendaciones');
+    expect(labels).not.toContain('Tendencias de Skills');
   });
 });
 
