@@ -141,9 +141,20 @@ export class CompanyDashboardComponent {
     return (val as any)?.total ?? val?.meta?.total ?? this.projects().length;
   });
 
+  // Proyectos en curso: sus estudiantes también están "en desarrollo".
+  readonly inProgressProjectsResource = httpResource<PaginatedResponse<Project>>(
+    () =>
+      this.isBrowser
+        ? { url: `${environment.apiUrl}/projects/my-projects`, params: { status: 'in_progress' } }
+        : undefined
+  );
+
   readonly activeStudentsCount = computed(() => {
-    const projects = this.projects();
-    return projects.reduce((sum, p) => sum + (p.positionsFilled || 0), 0);
+    const inProgress = this.inProgressProjectsResource.value()?.data ?? [];
+    return [...this.projects(), ...inProgress].reduce(
+      (sum, p) => sum + (p.positionsFilled || 0),
+      0
+    );
   });
 
   // --- Aplicaciones recibidas pendientes ---
