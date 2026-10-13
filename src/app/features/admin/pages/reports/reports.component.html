@@ -1,9 +1,15 @@
 <div class="reports-container">
   <div class="page-header">
-    <h1>Reportes</h1>
+    <div>
+      <h1>Reportes</h1>
+      <p class="page-subtitle">
+        Genera informes en PDF con resumen, indicadores, gráficos y hallazgos sobre la plataforma completa
+        o sobre una empresa, un estudiante o un docente. Descárgalos para compartirlos o archivarlos.
+      </p>
+    </div>
     <button mat-flat-button (click)="openGenerateDialog()">
       <mat-icon>add</mat-icon>
-      Generar Reporte
+      Generar reporte
     </button>
   </div>
 
@@ -29,14 +35,14 @@
           <th mat-header-cell *matHeaderCellDef>Estado</th>
           <td mat-cell *matCellDef="let r">
             <mat-chip [color]="statusColor(r.status)" highlighted>
-              {{ r.status }}
+              {{ statusLabel(r.status) }}
             </mat-chip>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="createdAt">
           <th mat-header-cell *matHeaderCellDef>Fecha</th>
-          <td mat-cell *matCellDef="let r">{{ r.createdAt | date:'short' }}</td>
+          <td mat-cell *matCellDef="let r">{{ r.createdAt | date:'medium' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
@@ -56,7 +62,7 @@
       </table>
 
       @if ((reports.value() ?? []).length === 0 && !reports.isLoading()) {
-        <p class="empty-state">No hay reportes generados. Crea el primero con el botón de arriba.</p>
+        <p class="empty-state">Todavía no hay reportes. Pulsa «Generar reporte» y elige qué quieres analizar.</p>
       }
     </mat-card-content>
   </mat-card>

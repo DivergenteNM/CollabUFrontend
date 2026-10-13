@@ -510,7 +510,8 @@ export class SupervisorAssignmentsComponent implements OnInit {
   // ── Page state ──
   readonly page = signal(1);
   readonly limit = 10;
-  _lastTotal = 0;
+  /** Último total conocido: se conserva mientras se recarga otra página para que el paginador no parpadee. */
+  private readonly lastTotal = signal(0);
   readonly assigning = signal(false);
 
   // ── Supervisors + period (loaded once) ──
@@ -532,17 +533,18 @@ export class SupervisorAssignmentsComponent implements OnInit {
     })
   );
 
-  readonly rows = computed(() => {
-    const v = this.resource.value();
-    if (v) this._lastTotal = v.total;
-    return v?.data ?? [];
-  });
+  readonly rows = computed(() => this.resource.value()?.data ?? []);
 
-  readonly total = computed(() => this._lastTotal);
+  readonly total = this.lastTotal.asReadonly();
 
   readonly columns = ['student', 'project', 'matchScore', 'acceptedAt', 'actions'];
 
   constructor() {
+    effect(() => {
+      const v = this.resource.value();
+      if (v) this.lastTotal.set(v.total);
+    });
+
     effect(() => {
       const appId = this.deepLinkAppId();
       const rows = this.rows();

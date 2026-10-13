@@ -23,6 +23,14 @@ import { GenerateReportDialogComponent } from './generate-report-dialog.componen
     MatCardModule, MatProgressBarModule, MatChipsModule, MatTooltipModule,
   ],
   templateUrl: './reports.component.html',
+  styles: [`
+    .reports-container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .page-header h1 { margin: 0 0 6px; }
+    .page-subtitle { margin: 0; max-width: 640px; font-size: 0.875rem; line-height: 1.5; color: var(--mat-sys-on-surface-variant); }
+    .empty-state { padding: 24px 8px; text-align: center; color: var(--mat-sys-on-surface-variant); }
+    table { width: 100%; }
+  `],
 })
 export class ReportsComponent {
   private readonly analyticsService = inject(AnalyticsService);
@@ -37,7 +45,7 @@ export class ReportsComponent {
   readonly downloadingId = signal<string | null>(null);
 
   openGenerateDialog(): void {
-    const ref = this.dialog.open(GenerateReportDialogComponent, { width: '500px' });
+    const ref = this.dialog.open(GenerateReportDialogComponent, { width: '680px', maxWidth: '95vw' });
 
     ref.afterClosed().subscribe((payload: GenerateReportPayload | undefined) => {
       if (!payload) return;
@@ -86,6 +94,11 @@ export class ReportsComponent {
       custom: 'Personalizado',
     };
     return map[type] ?? type;
+  }
+
+  statusLabel(status: string): string {
+    const map: Record<string, string> = { completed: 'Completado', failed: 'Fallido', generating: 'Generando' };
+    return map[status] ?? status;
   }
 
   statusColor(status: string): 'primary' | 'warn' | 'accent' {

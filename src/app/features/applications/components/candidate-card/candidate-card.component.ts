@@ -78,7 +78,9 @@ export class CandidateCardComponent {
 
   readonly gpa = computed(() => {
     const g = this.application().student?.gpa;
-    return g !== undefined && g !== null && g > 0 ? g.toFixed(1) : null;
+    // El backend serializa decimales como string ("4.20"): normalizar a número.
+    const n = g == null ? NaN : Number(g);
+    return Number.isFinite(n) && n > 0 ? n.toFixed(1) : null;
   });
 
   readonly projectTitle = computed(() => {
