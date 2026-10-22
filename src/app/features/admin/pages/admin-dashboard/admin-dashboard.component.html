@@ -23,7 +23,7 @@
         <div class="admin-hero__badges-row">
           <span class="admin-badge admin-badge--role">
             <mat-icon>shield</mat-icon>
-            <span>Administrador de Plataforma</span>
+            <span>{{ authStore.isDepartmentAdmin() ? 'Administrador de Departamento' : 'Administrador de Facultad' }}</span>
           </span>
           <span class="admin-badge admin-badge--subtle">
             <mat-icon>today</mat-icon>
@@ -49,6 +49,9 @@
         <span>Accesos Rápidos</span>
       </div>
 
+      <app-department-filter class="admin-hero__department" label="Ver datos de"
+        [value]="departmentFilter()" (changed)="departmentFilter.set($event)" />
+
       <div class="admin-hero__actions">
         <a mat-flat-button color="primary" routerLink="/admin/reports" class="admin-hero__btn admin-hero__btn--primary">
           <mat-icon>assessment</mat-icon>
@@ -62,10 +65,12 @@
           <mat-icon>verified</mat-icon>
           <span>Verificar Empresas</span>
         </a>
-        <a mat-stroked-button routerLink="/admin/users" class="admin-hero__btn">
+        @if (authStore.isSuperAdmin()) {
+<a mat-stroked-button routerLink="/admin/users" class="admin-hero__btn">
           <mat-icon>manage_accounts</mat-icon>
           <span>Gestión de Usuarios</span>
         </a>
+}
       </div>
     </div>
   </header>
@@ -236,22 +241,12 @@
             </div>
           </div>
           <span class="admin-chart-card__badge admin-chart-card__badge--accent">
-            <mat-icon>auto_graph</mat-icon> Top 10 Skills
+            <mat-icon>auto_graph</mat-icon> Filtrable
           </span>
         </mat-card-header>
 
         <mat-card-content class="admin-chart-card__content admin-chart-card__content--tall">
-          @if (topSkillsForChart().length > 0) {
-          <div class="chart-wrapper chart-wrapper--tall">
-            <app-skill-gap-chart [skills]="topSkillsForChart()" />
-          </div>
-          } @else {
-          <div class="admin-empty-state">
-            <mat-icon>bar_chart</mat-icon>
-            <h4>Sin datos comparativos de habilidades</h4>
-            <p>Se generarán automáticamente al publicarse proyectos con requerimientos técnicos.</p>
-          </div>
-          }
+          <app-skill-supply-demand-panel [programId]="departmentFilter()" [externalDepartment]="true" [defaultLimit]="10" />
         </mat-card-content>
       </mat-card>
 
@@ -314,7 +309,8 @@
               <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
             </a>
 
-            <a routerLink="/admin/periods" class="action-nav-item">
+            @if (authStore.isSuperAdmin()) {
+<a routerLink="/admin/periods" class="action-nav-item">
               <div class="action-nav-item__icon action-nav-item__icon--teal">
                 <mat-icon>calendar_month</mat-icon>
               </div>
@@ -324,6 +320,7 @@
               </div>
               <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
             </a>
+}
 
             <a routerLink="/admin/skills" class="action-nav-item">
               <div class="action-nav-item__icon action-nav-item__icon--purple">
@@ -336,7 +333,8 @@
               <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
             </a>
 
-            <a routerLink="/admin/users" class="action-nav-item">
+            @if (authStore.isSuperAdmin()) {
+<a routerLink="/admin/users" class="action-nav-item">
               <div class="action-nav-item__icon action-nav-item__icon--indigo">
                 <mat-icon>manage_accounts</mat-icon>
               </div>
@@ -346,6 +344,7 @@
               </div>
               <mat-icon class="action-nav-item__arrow">arrow_forward</mat-icon>
             </a>
+}
           </div>
         </mat-card-content>
       </mat-card>

@@ -22,6 +22,9 @@
     </div>
   </div>
 
+  <!-- Filtro de departamento (solo Facultad) -->
+  <app-department-filter [value]="departmentFilter()" (changed)="departmentFilter.set($event); page.set(1)" />
+
   <!-- Progress bar -->
   @if (resource.isLoading()) {
     <mat-progress-bar mode="indeterminate" />
@@ -44,6 +47,7 @@
             <div class="cell-student">
               <div class="avatar">{{ (row.studentName | slice:0:1) }}</div>
               <span>{{ row.studentName }}</span>
+              <app-department-chips [ids]="row.programId" />
             </div>
           </td>
         </ng-container>

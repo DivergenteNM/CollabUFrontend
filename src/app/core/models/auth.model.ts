@@ -33,6 +33,10 @@ export interface AuthUser {
   isVerified?: boolean;
   isEmailVerified?: boolean;
   isActive: boolean;
+  /** Solo admin: 'super' = Facultad (ve todo) · 'department' = admin de un departamento. */
+  adminLevel?: 'super' | 'department' | null;
+  /** Solo admin de departamento: id del programa académico que administra. */
+  departmentId?: string | null;
 }
 
 export interface ForgotPasswordRequest {

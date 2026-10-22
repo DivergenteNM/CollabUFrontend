@@ -1,5 +1,5 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
+import { Injector, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
@@ -19,7 +19,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const authService = inject(AuthService);
-  const authStore = inject(AuthStore);
+  // El AuthStore se resuelve de forma perezosa: al recargar la página el store carga el perfil durante su
+  // construcción y esa petición pasa por este interceptor; inyectarlo aquí de inmediato es una dependencia circular
+  // (NG0200) que dejaba el perfil sin cargar (saludo genérico «Estudiante» tras recargar).
+  const injector = inject(Injector);
+  const authStore = {
+    updateTokens: (access: string, refresh: string) => injector.get(AuthStore).updateTokens(access, refresh),
+    clearAuth: () => injector.get(AuthStore).clearAuth(),
+  };
   const snackBar = inject(MatSnackBar);
 
   return next(req).pipe(

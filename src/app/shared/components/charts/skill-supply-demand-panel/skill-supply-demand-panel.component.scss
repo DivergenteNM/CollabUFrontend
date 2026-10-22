@@ -1,0 +1,58 @@
+.ssd {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  &__field {
+    min-width: 170px;
+
+    &--small { min-width: 120px; }
+    &--search { min-width: 200px; }
+  }
+
+  &__toggle { height: 40px; margin-bottom: 22px; }
+
+  &__reset {
+    margin-bottom: 22px;
+    border: 0;
+    background: transparent;
+    color: var(--mat-sys-primary);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  &__legend {
+    margin: 0;
+    font-size: 12px;
+    color: var(--mat-sys-on-surface-variant);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+  }
+
+  &__dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 4px;
+
+    &--deficit { background: rgba(198, 40, 40, 0.75); }
+    &--surplus { background: rgba(56, 142, 83, 0.78); }
+  }
+
+  &__empty {
+    margin: 24px 0;
+    text-align: center;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}

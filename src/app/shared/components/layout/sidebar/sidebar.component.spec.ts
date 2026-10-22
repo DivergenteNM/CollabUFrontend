@@ -82,6 +82,53 @@ describe('SidebarComponent — menú administrativo', () => {
   });
 });
 
+describe('SidebarComponent — alcance del administrador', () => {
+  function build(user: AuthUser): SidebarComponent {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: '**', component: class {} }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+    TestBed.inject(AuthStore).setAuth(user, 'token', 'refresh');
+    const fixture = TestBed.createComponent(SidebarComponent);
+    fixture.detectChanges();
+    return fixture.componentInstance;
+  }
+
+  it('el admin de departamento NO ve períodos, categorías de rechazo ni usuarios (globales de la Facultad)', () => {
+    const component = build({ ...mockAdmin, adminLevel: 'department', departmentId: 'dept-sis' });
+    const routes = component.menuItems().filter((i) => i.route).map((i) => i.route);
+
+    expect(routes).not.toContain('/admin/periods');
+    expect(routes).not.toContain('/admin/rejection-categories');
+    expect(routes).not.toContain('/admin/users');
+    // lo suyo sí
+    expect(routes).toEqual(expect.arrayContaining(['/admin/skills', '/admin/templates', '/admin/supervisors', '/admin/verifications']));
+  });
+
+  it('no deja encabezados de sección vacíos', () => {
+    const component = build({ ...mockAdmin, adminLevel: 'department', departmentId: 'dept-sis' });
+    const items = component.menuItems();
+    items.forEach((item, i) => {
+      if (item.sectionLabel) {
+        const next = items[i + 1];
+        expect(next && !next.sectionLabel && !next.divider).toBe(true);
+      }
+    });
+  });
+
+  it('el superadmin (o admin sin nivel) conserva el menú completo', () => {
+    const component = build({ ...mockAdmin, adminLevel: 'super' });
+    const routes = component.menuItems().filter((i) => i.route).map((i) => i.route);
+
+    expect(routes).toEqual(expect.arrayContaining(['/admin/periods', '/admin/rejection-categories', '/admin/users']));
+  });
+});
+
 describe('SidebarComponent — menú de estudiante reactivo', () => {
   const mockStudent: AuthUser = {
     id: 'student-1',

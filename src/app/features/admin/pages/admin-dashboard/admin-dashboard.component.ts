@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, PLATFORM_ID, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, PLATFORM_ID, computed, signal } from '@angular/core';
 import { isPlatformBrowser, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,11 +9,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRippleModule } from '@angular/material/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ChartData } from 'chart.js';
-import { SkillTrend } from '../../../../core/models';
 import { AnalyticsService } from '../../../analytics/services/analytics.service';
 import { StatCardComponent } from '../../../../shared/components/ui/stat-card/stat-card.component';
 import { LineChartComponent } from '../../../../shared/components/charts/line-chart/line-chart.component';
-import { SkillGapChartComponent } from '../../../../shared/components/charts/skill-gap-chart/skill-gap-chart.component';
+import { SkillSupplyDemandPanelComponent } from '../../../../shared/components/charts/skill-supply-demand-panel/skill-supply-demand-panel.component';
+import { DepartmentFilterComponent } from '../../../../shared/components/department-filter/department-filter.component';
 import { AuthStore } from '../../../../state/auth.store';
 import { RelativeTimePipe, ImageUrlPipe } from '../../../../shared/pipes';
 
@@ -31,7 +31,7 @@ import { RelativeTimePipe, ImageUrlPipe } from '../../../../shared/pipes';
     RouterLink,
     StatCardComponent,
     LineChartComponent,
-    SkillGapChartComponent,
+    SkillSupplyDemandPanelComponent, DepartmentFilterComponent,
     RelativeTimePipe,
     ImageUrlPipe,
   ],
@@ -45,19 +45,22 @@ export class AdminAnalyticsComponent {
 
   private readonly browserReady = computed(() => (isPlatformBrowser(this.platformId) ? {} : undefined));
 
+  /** Filtro global de departamento (solo superadmin; '' = toda la Facultad). El admin de departamento queda fijo en el servidor. */
+  readonly departmentFilter = signal('');
+
   readonly dashboard = rxResource({
-    params: () => this.browserReady(),
-    stream: () => this.analyticsService.getDashboard(),
+    params: () => (this.browserReady() ? { programId: this.departmentFilter() } : undefined),
+    stream: ({ params }) => this.analyticsService.getDashboard(params.programId),
   });
 
   readonly platformHistory = rxResource({
-    params: () => this.browserReady(),
-    stream: () => this.analyticsService.getPlatformMetrics(),
+    params: () => (this.browserReady() ? { programId: this.departmentFilter() } : undefined),
+    stream: ({ params }) => this.analyticsService.getPlatformMetrics({ programId: params.programId }),
   });
 
   readonly academicKpis = rxResource({
-    params: () => this.browserReady(),
-    stream: () => this.analyticsService.getAcademicKpis(),
+    params: () => (this.browserReady() ? { programId: this.departmentFilter() } : undefined),
+    stream: ({ params }) => this.analyticsService.getAcademicKpis(params.programId),
   });
 
   readonly avatarUrl = computed(() => {
@@ -134,22 +137,6 @@ export class AdminAnalyticsComponent {
         },
       ],
     };
-  });
-
-  readonly topSkillsForChart = computed<SkillTrend[]>(() => {
-    const dash = this.dashboard.value();
-    if (!dash) return [];
-    return dash.topSkills.map((s) => ({
-      id: s.name,
-      skillName: s.name,
-      demandCount: s.demand,
-      supplyCount: s.supply,
-      gapIndex: s.gap,
-      avgProficiencyLevel: null,
-      trendDirection: s.trend,
-      snapshotDate: '',
-      createdAt: '',
-    }));
   });
 
   trendIcon(direction: string | null): string {

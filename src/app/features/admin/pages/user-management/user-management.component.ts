@@ -16,6 +16,7 @@ import { DatePipe } from '@angular/common';
 import { httpResource, HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { PaginatedResponse } from '../../../../core/models';
+import { DepartmentCatalogService } from '../../../../core/services/department-catalog.service';
 
 export interface UserRow {
   id: string;
@@ -25,9 +26,12 @@ export interface UserRow {
   isVerified: boolean;
   lastLogin: string | null;
   createdAt: string;
+  /** Solo admin: 'super' (Facultad) o 'department'. */
+  adminLevel?: 'super' | 'department' | null;
+  departmentId?: string | null;
 }
 
-// â”€â”€â”€ Create User Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Create User Dialog ───────────────────────────────────────────────────────
 @Component({
   selector: 'app-user-create-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,30 +42,30 @@ export interface UserRow {
       <mat-icon>person_add</mat-icon> Crear usuario
     </h2>
     <mat-dialog-content class="dlg-content">
-      <p class="dlg-hint">El usuario se crea verificado y activo. CompletarÃ¡ su perfil en el onboarding.</p>
+      <p class="dlg-hint">El usuario se crea verificado y activo. Completará su perfil en el onboarding.</p>
 
       <mat-form-field appearance="outline" class="full-w">
-        <mat-label>Correo electrÃ³nico</mat-label>
+        <mat-label>Correo electrónico</mat-label>
         <input matInput type="email" [(ngModel)]="email" placeholder="usuario@ejemplo.com" />
         <mat-icon matPrefix>email</mat-icon>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-w">
-        <mat-label>ContraseÃ±a</mat-label>
+        <mat-label>Contraseña</mat-label>
         <input matInput [type]="showPwd() ? 'text' : 'password'" [(ngModel)]="password" />
         <mat-icon matPrefix>lock</mat-icon>
         <button mat-icon-button matSuffix type="button" (click)="showPwd.set(!showPwd())">
           <mat-icon>{{ showPwd() ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
-        <mat-hint>MÃ­nimo 8 caracteres</mat-hint>
+        <mat-hint>Mínimo 8 caracteres</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-w">
-        <mat-label>Confirmar contraseÃ±a</mat-label>
+        <mat-label>Confirmar contraseña</mat-label>
         <input matInput [type]="showPwd() ? 'text' : 'password'" [(ngModel)]="confirmPassword" />
         <mat-icon matPrefix>lock_reset</mat-icon>
         @if (confirmPassword && password !== confirmPassword) {
-          <mat-error>Las contraseÃ±as no coinciden</mat-error>
+          <mat-error>Las contraseñas no coinciden</mat-error>
         }
       </mat-form-field>
 
@@ -75,6 +79,29 @@ export interface UserRow {
         </mat-select>
         <mat-icon matPrefix>badge</mat-icon>
       </mat-form-field>
+
+      @if (role === 'admin') {
+        <mat-form-field appearance="outline" class="full-w">
+          <mat-label>Nivel de administración</mat-label>
+          <mat-select [(ngModel)]="adminLevel" data-testid="admin-level">
+            <mat-option value="super">Facultad (ve todos los departamentos)</mat-option>
+            <mat-option value="department">Departamento (solo el suyo)</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>admin_panel_settings</mat-icon>
+        </mat-form-field>
+
+        @if (adminLevel === 'department') {
+          <mat-form-field appearance="outline" class="full-w">
+            <mat-label>Departamento</mat-label>
+            <mat-select [(ngModel)]="departmentId" data-testid="admin-department">
+              @for (d of departments.departments(); track d.id) {
+                <mat-option [value]="d.id">{{ d.name }}</mat-option>
+              }
+            </mat-select>
+            <mat-icon matPrefix>apartment</mat-icon>
+          </mat-form-field>
+        }
+      }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="dialogRef.close()">Cancelar</button>
@@ -97,17 +124,33 @@ export class UserCreateDialogComponent {
   password = '';
   confirmPassword = '';
   role = 'student';
+  adminLevel: 'super' | 'department' = 'department';
+  departmentId = '';
   readonly showPwd = signal(false);
+  readonly departments = inject(DepartmentCatalogService);
+
+  constructor() {
+    void this.departments.load();
+  }
 
   canSave(): boolean {
-    return !!this.email && this.password.length >= 8 && this.password === this.confirmPassword && !!this.role;
+    const base = !!this.email && this.password.length >= 8 && this.password === this.confirmPassword && !!this.role;
+    if (!base) return false;
+    // Un admin de departamento exige departamento.
+    return this.role !== 'admin' || this.adminLevel === 'super' || !!this.departmentId;
   }
   save(): void {
-    if (this.canSave()) this.dialogRef.close({ email: this.email, password: this.password, role: this.role });
+    if (!this.canSave()) return;
+    const payload: Record<string, unknown> = { email: this.email, password: this.password, role: this.role };
+    if (this.role === 'admin') {
+      payload['adminLevel'] = this.adminLevel;
+      if (this.adminLevel === 'department') payload['departmentId'] = this.departmentId;
+    }
+    this.dialogRef.close(payload);
   }
 }
 
-// â”€â”€â”€ Edit Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Edit Dialog ──────────────────────────────────────────────────────────────
 @Component({
   selector: 'app-user-edit-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -119,28 +162,28 @@ export class UserCreateDialogComponent {
     </h2>
     <mat-dialog-content class="dlg-content">
 
-      <!-- SecciÃ³n: Credenciales -->
+      <!-- Sección: Credenciales -->
       <div class="section-label">Credenciales</div>
 
       <mat-form-field appearance="outline" class="full-w">
-        <mat-label>Correo electrÃ³nico</mat-label>
+        <mat-label>Correo electrónico</mat-label>
         <input matInput type="email" [(ngModel)]="editEmail" />
         <mat-icon matPrefix>email</mat-icon>
         <mat-hint>Deja igual si no deseas cambiarlo</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-w">
-        <mat-label>Nueva contraseÃ±a</mat-label>
+        <mat-label>Nueva contraseña</mat-label>
         <input matInput [type]="showPwd() ? 'text' : 'password'" [(ngModel)]="newPassword"
-          placeholder="Dejar vacÃ­o para no cambiar" />
+          placeholder="Dejar vacío para no cambiar" />
         <mat-icon matPrefix>lock</mat-icon>
         <button mat-icon-button matSuffix type="button" (click)="showPwd.set(!showPwd())">
           <mat-icon>{{ showPwd() ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
-        <mat-hint>MÃ­nimo 8 caracteres Â· VacÃ­o = sin cambio</mat-hint>
+        <mat-hint>Mínimo 8 caracteres · Vacío = sin cambio</mat-hint>
       </mat-form-field>
 
-      <!-- SecciÃ³n: Rol y estado -->
+      <!-- Sección: Rol y estado -->
       <div class="section-label" style="margin-top:8px">Rol y estado</div>
 
       <mat-form-field appearance="outline" class="full-w">
@@ -153,6 +196,29 @@ export class UserCreateDialogComponent {
         </mat-select>
         <mat-icon matPrefix>badge</mat-icon>
       </mat-form-field>
+
+      @if (editRole === 'admin') {
+        <mat-form-field appearance="outline" class="full-w">
+          <mat-label>Nivel de administración</mat-label>
+          <mat-select [(ngModel)]="editLevel">
+            <mat-option value="super">Facultad (ve todos los departamentos)</mat-option>
+            <mat-option value="department">Departamento (solo el suyo)</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>admin_panel_settings</mat-icon>
+        </mat-form-field>
+
+        @if (editLevel === 'department') {
+          <mat-form-field appearance="outline" class="full-w">
+            <mat-label>Departamento</mat-label>
+            <mat-select [(ngModel)]="editDepartmentId">
+              @for (d of departments.departments(); track d.id) {
+                <mat-option [value]="d.id">{{ d.name }}</mat-option>
+              }
+            </mat-select>
+            <mat-icon matPrefix>apartment</mat-icon>
+          </mat-form-field>
+        }
+      }
 
       <div class="toggle-row">
         <div>
@@ -187,12 +253,20 @@ export class UserEditDialogComponent {
   editEmail = this.data.email;
   editRole = this.data.role;
   editActive = this.data.isActive;
+  editLevel: 'super' | 'department' = this.data.adminLevel ?? 'super';
+  editDepartmentId = this.data.departmentId ?? '';
   newPassword = '';
   readonly showPwd = signal(false);
+  readonly departments = inject(DepartmentCatalogService);
+
+  constructor() {
+    void this.departments.load();
+  }
 
   canSave(): boolean {
     if (!this.editEmail) return false;
     if (this.newPassword && this.newPassword.length < 8) return false;
+    if (this.editRole === 'admin' && this.editLevel === 'department' && !this.editDepartmentId) return false;
     return true;
   }
 
@@ -201,24 +275,28 @@ export class UserEditDialogComponent {
       role: this.editRole,
       isActive: this.editActive,
     };
+    if (this.editRole === 'admin') {
+      result['adminLevel'] = this.editLevel;
+      result['departmentId'] = this.editLevel === 'department' ? this.editDepartmentId : null;
+    }
     if (this.editEmail !== this.data.email) result['email'] = this.editEmail;
     if (this.newPassword) result['password'] = this.newPassword;
     this.dialogRef.close(result);
   }
 }
 
-// â”€â”€â”€ Delete Confirm Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Delete Confirm Dialog ────────────────────────────────────────────────────
 @Component({
   selector: 'app-confirm-delete-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
     <h2 mat-dialog-title class="del-title">
-      <mat-icon color="warn">warning</mat-icon> Confirmar eliminaciÃ³n
+      <mat-icon color="warn">warning</mat-icon> Confirmar eliminación
     </h2>
     <mat-dialog-content>
-      <p>Â¿Eliminar al usuario <strong>{{ data.email }}</strong>?</p>
-      <p class="del-warn">Esta acciÃ³n es permanente y no se puede deshacer.</p>
+      <p>¿Eliminar al usuario <strong>{{ data.email }}</strong>?</p>
+      <p class="del-warn">Esta acción es permanente y no se puede deshacer.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="dialogRef.close(false)">Cancelar</button>
@@ -237,7 +315,7 @@ export class ConfirmDeleteDialogComponent {
   readonly dialogRef = inject(MatDialogRef<ConfirmDeleteDialogComponent>);
 }
 
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main Component ───────────────────────────────────────────────────────────
 @Component({
   selector: 'app-user-management',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -292,7 +370,23 @@ export class UserManagementComponent {
     admin: 'Administrador',
   };
 
+  readonly departments = inject(DepartmentCatalogService);
+
+  constructor() {
+    void this.departments.load();
+  }
+
   getRoleLabel(role: string): string { return this.roleLabels[role] ?? role; }
+
+  /** "Facultad" o "Depto. Sistemas" para administradores; vacío para el resto. */
+  adminScopeLabel(user: UserRow): string {
+    if (user.role !== 'admin') return '';
+    if (user.adminLevel === 'department') {
+      const name = this.departments.shortName(user.departmentId);
+      return name ? `Depto. ${name}` : 'Departamento';
+    }
+    return 'Facultad';
+  }
 
   onPage(event: PageEvent): void { this.page.set(event.pageIndex + 1); }
 

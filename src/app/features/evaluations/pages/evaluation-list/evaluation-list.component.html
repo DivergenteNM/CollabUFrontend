@@ -6,6 +6,13 @@
     </p>
   </header>
 
+  @if (enrichmentFailed()) {
+    <div class="evals__notice" role="status">
+      <mat-icon>info</mat-icon>
+      No pudimos cargar algunos nombres y títulos en este momento. Las calificaciones son correctas; vuelve a intentar en unos minutos.
+    </div>
+  }
+
   <mat-tab-group [selectedIndex]="activeTab()" (selectedIndexChange)="onTabChange($event)"
     animationDuration="200ms" class="evals__tabs">
 

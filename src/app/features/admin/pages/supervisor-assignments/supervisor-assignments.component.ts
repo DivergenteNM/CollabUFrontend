@@ -25,6 +25,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { httpResource } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { AdminService, PendingApplicationRow, SupervisorRow } from '../../services/admin.service';
+import { AssignSupervisorDialogComponent, AssignDialogData } from './assign-supervisor-dialog.component';
+import { DepartmentChipsComponent } from '../../../../shared/components/department-chips/department-chips.component';
+import { DepartmentFilterComponent } from '../../../../shared/components/department-filter/department-filter.component';
 
 // ─── Project Detail Dialog ────────────────────────────────────────────────────
 interface ProjectDetailData {
@@ -291,192 +294,6 @@ export class ProjectDetailDialogComponent implements OnInit {
   }
 }
 
-// ─── Assign Supervisor Dialog ─────────────────────────────────────────────────
-interface AssignDialogData {
-  application: PendingApplicationRow;
-  supervisors: SupervisorRow[];
-  periodId: string | null;
-}
-
-@Component({
-  selector: 'app-assign-supervisor-dialog',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatDialogModule, MatButtonModule, MatIconModule,
-    MatFormFieldModule, MatSelectModule, MatInputModule,
-    MatChipsModule, FormsModule, DecimalPipe,
-  ],
-  template: `
-    <div class="asd-header">
-      <div class="asd-header-icon"><mat-icon>school</mat-icon></div>
-      <div>
-        <h2 mat-dialog-title class="asd-title">Asignar asesor académico</h2>
-        <p class="asd-subtitle">Vincula un docente y, opcionalmente, jurado(s) de anteproyecto a esta postulación.</p>
-      </div>
-    </div>
-
-    <mat-dialog-content class="asd-content">
-      <section class="asd-summary">
-        <div class="asd-summary-row">
-          <mat-icon>person</mat-icon>
-          <span class="asd-summary-label">Estudiante</span>
-          <span class="asd-summary-value">{{ data.application.studentName }}</span>
-        </div>
-        <div class="asd-summary-row">
-          <mat-icon>work</mat-icon>
-          <span class="asd-summary-label">Proyecto</span>
-          <span class="asd-summary-value">{{ data.application.projectTitle }}</span>
-        </div>
-        @if (data.application.matchScore) {
-          <div class="asd-summary-row">
-            <mat-icon>insights</mat-icon>
-            <span class="asd-summary-label">Match score</span>
-            <span class="asd-summary-value">{{ data.application.matchScore | number:'1.0-0' }}%</span>
-          </div>
-        }
-      </section>
-
-      <section class="asd-section">
-        <h3 class="asd-section-title">Asesor</h3>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Asesor académico</mat-label>
-          <mat-select [(ngModel)]="selectedSupervisorId">
-            @for (sup of data.supervisors; track sup.id) {
-              <mat-option [value]="sup.id" [disabled]="sup.currentStudents >= sup.maxStudents">
-                {{ sup.fullName ?? sup.userId }} — {{ sup.department }} ({{ sup.currentStudents }}/{{ sup.maxStudents }})
-              </mat-option>
-            }
-          </mat-select>
-          <mat-hint>El asesor debe aceptar la asignación antes de que el proyecto inicie.</mat-hint>
-        </mat-form-field>
-      </section>
-
-      <section class="asd-section">
-        <h3 class="asd-section-title">Jurado de anteproyecto <span class="asd-optional">(opcional)</span></h3>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Jurado(s)</mat-label>
-          <mat-select [(ngModel)]="selectedJuradoIds" multiple>
-            @for (sup of data.supervisors; track sup.id) {
-              <mat-option [value]="sup.id" [disabled]="sup.id === selectedSupervisorId">
-                {{ sup.fullName ?? sup.userId }} — {{ sup.department }}
-              </mat-option>
-            }
-          </mat-select>
-          <mat-hint>Se auto-acepta y revisa el anteproyecto — no puede ser la misma persona que el asesor.</mat-hint>
-        </mat-form-field>
-      </section>
-
-      <section class="asd-section">
-        <h3 class="asd-section-title">Fecha e inicio</h3>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Fecha de inicio</mat-label>
-          <input matInput type="date" [(ngModel)]="startDate" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Notas <span class="asd-optional">(opcional)</span></mat-label>
-          <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
-        </mat-form-field>
-      </section>
-
-      @if (!data.periodId) {
-        <p class="asd-warn">
-          <mat-icon>warning</mat-icon>
-          No hay período académico activo. Crea uno en "Períodos" antes de asignar.
-        </p>
-      }
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end" class="asd-actions">
-      <button mat-button mat-dialog-close>Cancelar</button>
-      <button mat-flat-button color="primary"
-        [disabled]="!selectedSupervisorId || !startDate || !data.periodId"
-        (click)="confirm()">
-        <mat-icon>check</mat-icon>
-        Asignar
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .asd-header {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 20px 24px 4px;
-    }
-    .asd-header-icon {
-      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-      background: rgba(16, 185, 129, 0.12);
-      color: var(--color-primary-400);
-      display: flex; align-items: center; justify-content: center;
-      mat-icon { font-size: 22px; width: 22px; height: 22px; }
-    }
-    .asd-title { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
-    .asd-subtitle { margin: 4px 0 0; font-size: .8125rem; color: var(--text-secondary); }
-
-    .asd-content {
-      min-width: 480px; max-width: 560px;
-      display: flex; flex-direction: column; gap: 4px;
-      padding: 8px 24px 4px;
-    }
-
-    .asd-summary {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px 16px;
-      display: flex; flex-direction: column; gap: 8px;
-      margin-bottom: 12px;
-    }
-    .asd-summary-row {
-      display: flex; align-items: center; gap: 10px;
-      font-size: .8125rem;
-      mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--text-tertiary); flex-shrink: 0; }
-    }
-    .asd-summary-label { color: var(--text-secondary); min-width: 90px; flex-shrink: 0; }
-    .asd-summary-value { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
-
-    .asd-section { margin-bottom: 8px; }
-    .asd-section-title {
-      margin: 0 0 8px; font-size: .75rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .04em;
-      color: var(--text-secondary);
-    }
-    .asd-optional { text-transform: none; font-weight: 400; letter-spacing: normal; }
-
-    .full-width { width: 100%; }
-
-    .asd-warn {
-      display: flex; align-items: center; gap: 8px;
-      color: #fbbf24; font-size: .8125rem;
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      padding: 10px 14px; border-radius: 8px;
-      margin: 4px 0 0;
-      mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
-    }
-
-    .asd-actions { padding: 12px 24px 20px; }
-  `],
-})
-export class AssignSupervisorDialogComponent {
-  readonly data = inject<AssignDialogData>(MAT_DIALOG_DATA);
-  private readonly ref = inject(MatDialogRef<AssignSupervisorDialogComponent>);
-
-  selectedSupervisorId = '';
-  selectedJuradoIds: string[] = [];
-  startDate = new Date().toISOString().slice(0, 10);
-  notes = '';
-
-  confirm() {
-    this.ref.close({
-      supervisorId: this.selectedSupervisorId,
-      juradoIds: this.selectedJuradoIds.length ? this.selectedJuradoIds : undefined,
-      startDate: this.startDate,
-      notes: this.notes || undefined,
-    });
-  }
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 @Component({
   selector: 'app-supervisor-assignments',
@@ -488,7 +305,7 @@ export class AssignSupervisorDialogComponent {
     MatTableModule, MatPaginatorModule,
     MatTooltipModule, MatProgressBarModule, MatChipsModule,
     MatDividerModule, MatDialogModule, MatSnackBarModule,
-    FormsModule, DatePipe, DecimalPipe, SlicePipe,
+    FormsModule, DatePipe, DecimalPipe, SlicePipe, DepartmentChipsComponent, DepartmentFilterComponent,
   ],
   templateUrl: './supervisor-assignments.component.html',
   styleUrl: './supervisor-assignments.component.scss',
@@ -509,6 +326,8 @@ export class SupervisorAssignmentsComponent implements OnInit {
 
   // ── Page state ──
   readonly page = signal(1);
+  /** Solo superadmin: acota la cola a un departamento ('' = todos). */
+  readonly departmentFilter = signal('');
   readonly limit = 10;
   /** Último total conocido: se conserva mientras se recarga otra página para que el paginador no parpadee. */
   private readonly lastTotal = signal(0);
@@ -529,7 +348,11 @@ export class SupervisorAssignmentsComponent implements OnInit {
   }>(
     () => ({
       url: `${environment.apiUrl}/applications/admin/pending`,
-      params: { page: String(this.page()), limit: String(this.limit) },
+      params: {
+        page: String(this.page()),
+        limit: String(this.limit),
+        ...(this.departmentFilter() ? { programId: this.departmentFilter() } : {}),
+      },
     })
   );
 
@@ -608,9 +431,13 @@ export class SupervisorAssignmentsComponent implements OnInit {
         startDate: result.startDate,
         notes: result.notes,
       }).subscribe({
-        next: () => {
+        next: (res) => {
           this.assigning.set(false);
-          this.snackBar.open('Asesor y jurado asignados. El proyecto iniciará cuando el asesor acepte.', 'OK', { duration: 6000 });
+          const skipped = res.skipped?.length ?? 0;
+          const msg = skipped > 0
+            ? `Asignación registrada (${res.created.length} nuevas, ${skipped} ya estaban asignadas). El proyecto iniciará cuando el asesor acepte.`
+            : 'Asesor y jurado asignados. El proyecto iniciará cuando el asesor acepte.';
+          this.snackBar.open(msg, 'OK', { duration: 6000 });
           this.resource.reload();
         },
         error: (err) => {

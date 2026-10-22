@@ -183,6 +183,8 @@ export interface SupervisorProfile {
   userId: string;
   employeeCode: string | null;
   department: string | null;
+  /** Departamento (programa académico) del docente. */
+  programId?: string | null;
   role: SupervisorRole;
   specialization: string | null;
   maxStudents: number;
@@ -196,6 +198,7 @@ export interface SupervisorProfile {
 export interface UpdateSupervisorProfile {
   employeeCode?: string;
   department?: string;
+  programId?: string;
   role?: SupervisorRole;
   specialization?: string;
 }

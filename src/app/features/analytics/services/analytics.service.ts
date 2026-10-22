@@ -11,6 +11,7 @@ import {
   Report,
   GenerateReportPayload,
   MetricsQuery,
+  SkillTrendsQuery,
 } from '../../../core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -19,12 +20,13 @@ export class AnalyticsService extends BaseApiService {
 
   // ─── Dashboard ──────────────────────────────────────────────────────────────
 
-  getDashboard(): Observable<AnalyticsDashboard> {
-    return this.http.get<AnalyticsDashboard>(`${this.apiUrl}/dashboard`);
+  /** `programId` solo lo respeta el servidor para el superadmin; el admin de departamento queda en el suyo. */
+  getDashboard(programId?: string): Observable<AnalyticsDashboard> {
+    return this.http.get<AnalyticsDashboard>(`${this.apiUrl}/dashboard`, { params: this.buildParams({ programId }) });
   }
 
-  getAcademicKpis(): Observable<AcademicKpis> {
-    return this.http.get<AcademicKpis>(`${this.apiUrl}/academic-kpis`);
+  getAcademicKpis(programId?: string): Observable<AcademicKpis> {
+    return this.http.get<AcademicKpis>(`${this.apiUrl}/academic-kpis`, { params: this.buildParams({ programId }) });
   }
 
   // ─── Plataforma ─────────────────────────────────────────────────────────────
@@ -73,7 +75,7 @@ export class AnalyticsService extends BaseApiService {
 
   // ─── Skills ─────────────────────────────────────────────────────────────────
 
-  getSkillTrends(query: MetricsQuery = {}): Observable<SkillTrend[]> {
+  getSkillTrends(query: SkillTrendsQuery = {}): Observable<SkillTrend[]> {
     return this.http.get<SkillTrend[]>(`${this.apiUrl}/skills/trends`, {
       params: this.buildParams(query),
     });
@@ -85,6 +87,7 @@ export class AnalyticsService extends BaseApiService {
 
   // ─── Reportes ───────────────────────────────────────────────────────────────
 
+  // programId opcional en el payload (ver GenerateReportPayload)
   generateReport(payload: GenerateReportPayload): Observable<Report> {
     return this.http.post<Report>(`${this.apiUrl}/reports`, payload);
   }

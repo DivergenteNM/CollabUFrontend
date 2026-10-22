@@ -152,6 +152,8 @@ export class OnboardingFlowComponent implements OnInit {
     headquartersCity: ['', Validators.required],
     companySize: ['small'],
     website: ['', [this.optionalHttpUrlValidator('website')]],
+    // Departamentos en cuya área trabaja la empresa (mínimo uno): define qué admin de departamento la revisa.
+    programIds: [[] as string[], [Validators.required, Validators.minLength(1)]],
   });
 
   readonly contactForm = this.fb.nonNullable.group({
@@ -170,6 +172,7 @@ export class OnboardingFlowComponent implements OnInit {
   readonly facultyForm = this.fb.nonNullable.group({
     employeeCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
     department: ['', [Validators.required, Validators.minLength(2)]],
+    programId: ['', Validators.required],
     role: ['', Validators.required],
     specialization: [''],
   });
@@ -282,7 +285,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.tryLoadUserProfile(),
       this.tryLoadRoleProfile(),
       this.tryLoadRoleRequirements(),
-      this.isStudent ? this.loadPrograms() : Promise.resolve(),
+      this.loadPrograms(),
     ]);
 
     if (this.isStudent) {
@@ -395,6 +398,7 @@ export class OnboardingFlowComponent implements OnInit {
           headquartersCity: response.data.headquartersCity ?? response.data.city ?? '',
           companySize: response.data.companySize ?? 'small',
           website: response.data.website ?? response.data.websiteUrl ?? '',
+          programIds: response.data.programIds ?? [],
         });
       } catch (error) {
         if (!this.isNotFound(error)) {
@@ -411,6 +415,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.facultyForm.patchValue({
           employeeCode: response.employeeCode ?? '',
           department: response.department ?? '',
+          programId: response.programId ?? '',
           role: response.role ?? '',
           specialization: response.specialization ?? '',
         });
@@ -530,6 +535,7 @@ export class OnboardingFlowComponent implements OnInit {
         headquartersCity: raw.headquartersCity,
         companySize: raw.companySize as CompanyProfile['companySize'],
         website: this.normalizeOptionalText(raw.website),
+        programIds: raw.programIds,
       };
 
       if (this.roleProfileExists()) {
@@ -563,6 +569,7 @@ export class OnboardingFlowComponent implements OnInit {
       const payload = {
         employeeCode: raw.employeeCode,
         department: raw.department,
+        programId: raw.programId,
         role: raw.role as 'academic_director' | 'internship_coordinator' | 'thesis_advisor' | 'faculty_supervisor',
         specialization: this.normalizeOptionalText(raw.specialization),
       };

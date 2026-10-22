@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../../environments/environment';
 import { GenerateReportPayload, ReportType, ReportScope } from '../../../../core/models';
 import { AdminService } from '../../services/admin.service';
+import { DepartmentFilterComponent } from '../../../../shared/components/department-filter/department-filter.component';
 
 interface EntityOption {
   id: string;
@@ -138,7 +139,7 @@ const REPORT_TYPES: Record<ReportScope, ReportTypeInfo[]> = {
   imports: [
     MatDialogModule, MatFormFieldModule, MatInputModule,
     MatSelectModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, FormsModule,
-    LowerCasePipe,
+    LowerCasePipe, DepartmentFilterComponent,
   ],
   template: `
     <h2 mat-dialog-title class="grd__title">
@@ -213,6 +214,13 @@ const REPORT_TYPES: Record<ReportScope, ReportTypeInfo[]> = {
         }
       </section>
 
+      @if (scope() === 'platform') {
+        <section class="grd__step">
+          <h3><span class="grd__num">+</span> Departamento (opcional)</h3>
+          <app-department-filter label="Acotar el reporte a" [value]="programId()" (changed)="programId.set($event)" />
+        </section>
+      }
+
       <section class="grd__step">
         <h3><span class="grd__num">3</span> Ponle un nombre</h3>
         <mat-form-field appearance="outline" class="grd__full">
@@ -275,6 +283,8 @@ export class GenerateReportDialogComponent {
   readonly scope = signal<ReportScope>('platform');
   readonly reportType = signal<ReportType | ''>('period_summary');
   readonly name = signal('');
+  /** Solo superadmin: acota un reporte de plataforma a un departamento ('' = Facultad completa). */
+  readonly programId = signal('');
   entityId = '';
   private nameTouched = false;
 
@@ -377,6 +387,7 @@ export class GenerateReportDialogComponent {
       name: this.name().trim(),
       reportType: this.reportType() as ReportType,
       ...(this.scope() !== 'platform' ? { entityId: this.entityId } : {}),
+      ...(this.scope() === 'platform' && this.programId() ? { programId: this.programId() } : {}),
     };
     this.dialogRef.close(payload);
   }

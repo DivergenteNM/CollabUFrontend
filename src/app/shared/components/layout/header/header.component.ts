@@ -30,6 +30,7 @@ import {
   NotificationTone,
 } from '../../../../core/notifications/notification-registry';
 import { RelativeTimePipe } from '../../../pipes/relative-time.pipe';
+import { DepartmentCatalogService } from '../../../../core/services/department-catalog.service';
 
 @Component({
   selector: 'app-header',
@@ -58,6 +59,17 @@ export class HeaderComponent implements OnInit {
   private readonly notificationsStore = inject(NotificationsStore);
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
+  private readonly departments = inject(DepartmentCatalogService);
+
+  /** Alcance del administrador: "Facultad" (todo) o el nombre de su departamento. */
+  readonly scopeLabel = computed(() => {
+    if (this.authStore.isSuperAdmin()) return 'Facultad';
+    if (this.authStore.isDepartmentAdmin()) {
+      const short = this.departments.shortName(this.authStore.departmentId());
+      return short ? `Depto. ${short}` : 'Departamento';
+    }
+    return '';
+  });
 
   @ViewChild('notifTrigger') notifTrigger?: MatMenuTrigger;
 
@@ -98,6 +110,9 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     if (this.authStore.isAuthenticated()) {
       this.loadNotifications();
+    }
+    if (this.authStore.isDepartmentAdmin()) {
+      void this.departments.load();
     }
   }
 

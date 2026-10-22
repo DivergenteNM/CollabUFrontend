@@ -28,6 +28,9 @@
           <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
 
+        <app-department-filter [value]="departmentFilter()"
+          (changed)="departmentFilter.set($event); companyPage.set(1); projectPage.set(1)" />
+
         <mat-form-field appearance="outline">
           <mat-label>Estado</mat-label>
           <mat-select [value]="companyStatus()" (selectionChange)="companyStatus.set($event.value); companyPage.set(1)">
@@ -53,6 +56,7 @@
                 <div>
                   <div class="entity-name">{{ row.companyName }}</div>
                   <div class="entity-sub">{{ row.legalName }}</div>
+                  <app-department-chips [ids]="row.programIds" [showEmpty]="true" />
                 </div>
               </div>
             </td>
@@ -192,6 +196,7 @@
                 </div>
                 <div>
                   <div class="entity-name">{{ row.title }}</div>
+                  <app-department-chips [ids]="row.academicPrograms" />
                   @if (row.skills?.length) {
                     <div class="tag-list">
                       @for (skill of row.skills.slice(0, 3); track skill.name) {

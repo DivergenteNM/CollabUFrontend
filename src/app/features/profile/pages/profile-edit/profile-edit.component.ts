@@ -168,6 +168,7 @@ export class ProfileEditComponent implements OnInit {
     headquartersCity: ['', Validators.required],
     headquartersState: [''],
     website: ['', [this.optionalHttpUrlValidator('website')]],
+    programIds: [[] as string[], [Validators.required, Validators.minLength(1)]],
   });
 
   // Company nested signals
@@ -205,6 +206,7 @@ export class ProfileEditComponent implements OnInit {
   readonly facultyForm: FormGroup = this.fb.group({
     employeeCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
     department: ['', [Validators.required, Validators.minLength(2)]],
+    programId: ['', Validators.required],
     role: ['', Validators.required],
     specialization: [''],
   });
@@ -228,15 +230,17 @@ export class ProfileEditComponent implements OnInit {
       },
     });
 
+    // Catálogo de departamentos: lo usan estudiante (programa), empresa (departamentos de trabajo) y docente.
+    this.adminService.getPrograms(true).subscribe({
+      next: (programs) => {
+        this.programs.set(programs);
+        if (this.authStore.isStudent()) this.resolveLegacyProgramIfNeeded();
+      },
+      error: () => {},
+    });
+
     if (this.authStore.isStudent()) {
       this.loadStudentDocuments();
-      this.adminService.getPrograms(true).subscribe({
-        next: (programs) => {
-          this.programs.set(programs);
-          this.resolveLegacyProgramIfNeeded();
-        },
-        error: () => {},
-      });
 
       this.studentService.getProfile().subscribe({
         next: (resp) => {
@@ -301,6 +305,7 @@ export class ProfileEditComponent implements OnInit {
             headquartersCity: c.headquartersCity ?? c.city ?? '',
             headquartersState: c.headquartersState ?? c.department ?? '',
             website: c.website ?? c.websiteUrl ?? '',
+            programIds: c.programIds ?? [],
           });
         },
         error: (error: HttpErrorResponse) => {
@@ -318,6 +323,7 @@ export class ProfileEditComponent implements OnInit {
           this.facultyForm.patchValue({
             employeeCode: res.employeeCode ?? '',
             department: res.department ?? '',
+            programId: res.programId ?? '',
             role: res.role ?? '',
             specialization: res.specialization ?? '',
           });
@@ -546,6 +552,7 @@ export class ProfileEditComponent implements OnInit {
         const payload = {
           employeeCode: raw.employeeCode,
           department: raw.department,
+          programId: raw.programId,
           role: raw.role as any,
           specialization: raw.specialization || undefined,
         };
@@ -622,6 +629,7 @@ export class ProfileEditComponent implements OnInit {
       headquartersCity: raw.headquartersCity,
       headquartersState: this.normalizeOptionalText(raw.headquartersState),
       website: this.normalizeOptionalText(raw.website),
+      programIds: raw.programIds as string[],
       logoUrl: this.companyLogoUrl() || undefined,
     };
   }

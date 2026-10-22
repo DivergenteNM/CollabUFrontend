@@ -40,6 +40,17 @@ export const AuthStore = signalStore(
     isCompany: computed(() => store.user()?.role === UserRole.COMPANY),
     isFaculty: computed(() => store.user()?.role === UserRole.FACULTY),
     isAdmin: computed(() => store.user()?.role === UserRole.ADMIN),
+    /** Admin sin nivel explícito (cuentas previas a la división) cuenta como Facultad. */
+    isSuperAdmin: computed(() => {
+      const u = store.user();
+      return u?.role === UserRole.ADMIN && (u.adminLevel ?? 'super') === 'super';
+    }),
+    isDepartmentAdmin: computed(() => {
+      const u = store.user();
+      return u?.role === UserRole.ADMIN && u.adminLevel === 'department';
+    }),
+    /** Departamento que administra (solo admin de departamento). */
+    departmentId: computed(() => store.user()?.departmentId ?? null),
     isFacultyAdmin: computed(() => {
       const role = store.user()?.role;
       return role === UserRole.FACULTY || role === UserRole.ADMIN || (role as string) === 'faculty_admin';

@@ -50,10 +50,8 @@ test.describe('13.5 Estados de error', () => {
     await page.fill('[formControlName="email"], input[name="email"]', 'test@collabu.dev');
     await page.fill('[formControlName="password"], input[name="password"]', 'CollabU2026!');
     await page.locator('button[type="submit"]').click();
-    // Después de ~5s el botón debe volver a estar habilitado o mostrar error
-    await page.waitForTimeout(6_000);
-    const btnDisabled = await page.locator('button[type="submit"]').first().isDisabled();
-    expect(btnDisabled).toBeFalsy();
+    // El login tiene un timeout de 10 s: pasado ese tiempo el botón vuelve a estar habilitado y se muestra el aviso.
+    await expect(page.locator('button[type="submit"]').first()).toBeEnabled({ timeout: 15_000 });
   });
 
   test('empty state vs error: /my-applications sin datos muestra empty', async ({ page }) => {

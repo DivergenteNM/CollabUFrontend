@@ -13,6 +13,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 
 import { Evaluation } from '../../../../core/models';
+import { formatStars } from '../../../../core/utils/evaluation-score';
 import { EvaluationService, EvalPaginated } from '../../services/evaluation.service';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
@@ -53,7 +54,7 @@ export class EvaluationListComponent {
   readonly pendingResource = rxResource({
     params: () => this.pendingPage(),
     stream: ({ params: page }) =>
-      this.evaluationService.getAsEvaluator({ page, limit: 10, status: 'pending' })
+      this.evaluationService.getAsEvaluator({ page, limit: 10, status: 'pending,in_progress' })
         .pipe(catchError(() => of(this.empty()))),
   });
 
@@ -78,6 +79,11 @@ export class EvaluationListComponent {
   readonly received = computed(() => this.receivedResource.value()?.data ?? []);
   readonly receivedTotal = computed(() => this.receivedResource.value()?.total ?? 0);
 
+  /** El backend no pudo resolver nombres/títulos (otro servicio caído): se avisa en vez de mostrar placeholders mudos. */
+  readonly enrichmentFailed = computed(() =>
+    [...this.pending(), ...this.sent(), ...this.received()].some((e) => e.enrichmentFailed),
+  );
+
   readonly typeLabel: Record<string, string> = {
     company_evaluates_student: 'Empresa → Estudiante',
     student_evaluates_company: 'Estudiante → Empresa',
@@ -100,10 +106,9 @@ export class EvaluationListComponent {
     expired: 'Vencida',
   };
 
+  /** Backend usa escala 0-100; se muestra en 0-5 (única conversión: core/utils/evaluation-score). */
   scoreOutOf5(score: number | null): string {
-    if (score == null) return '—';
-    // Backend usa escala 0-100; se convierte a 5 estrellas para display.
-    return (score / 20).toFixed(1);
+    return formatStars(score);
   }
 
   openEvaluation(id: string): void {

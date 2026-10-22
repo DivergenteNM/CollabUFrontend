@@ -46,14 +46,16 @@ export interface EvaluationRating {
   criterionId: string;
   score: number;
   comment?: string | null;
-  criterion?: EvaluationCriteria;
+  /** Criterio calificado; lo adjunta el backend (nombre, categoría, peso). */
+  criterion?: Pick<EvaluationCriteria, 'id' | 'name' | 'description' | 'category' | 'weight' | 'ratingScale'> | null;
 }
 
 export interface Evaluation {
   id: string;
   applicationId: string;
   projectId: string;
-  evaluatorId: string;
+  /** null cuando la evaluación es anónima y quien consulta no es el evaluador. */
+  evaluatorId: string | null;
   evaluatedId: string;
   evaluationType: EvaluationType;
   status: EvaluationStatus;
@@ -73,6 +75,8 @@ export interface Evaluation {
   projectTitle?: string;
   evaluatorName?: string;
   evaluatedName?: string;
+  /** true si el backend no pudo resolver título/nombres (se muestra un aviso en vez de placeholders mudos). */
+  enrichmentFailed?: boolean;
 }
 
 /** Alias legacy que otros componentes aún importan. */

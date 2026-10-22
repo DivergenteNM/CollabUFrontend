@@ -69,6 +69,9 @@
           <span class="role-badge role-badge--{{ row.role }}">
             {{ getRoleLabel(row.role) }}
           </span>
+          @if (adminScopeLabel(row)) {
+            <span class="scope-chip" [class.scope-chip--faculty]="row.adminLevel !== 'department'">{{ adminScopeLabel(row) }}</span>
+          }
         </td>
       </ng-container>
 

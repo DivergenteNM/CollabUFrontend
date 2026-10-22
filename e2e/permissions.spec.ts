@@ -10,9 +10,8 @@ test.describe('13.3 Pruebas de permisos', () => {
   test('student no puede acceder a rutas admin', async ({ page }) => {
     await loginAs(page, 'student').catch(() => {});
     await page.goto('/admin/dashboard');
-    // Debe redirigir fuera del panel admin
-    await page.waitForURL(/dashboard|forbidden|login/, { timeout: 5_000 }).catch(() => {});
-    expect(page.url()).not.toMatch(/\/admin\/dashboard$/);
+    // El guard redirige en el cliente tras cargar la app: se espera a que la URL salga del panel admin.
+    await expect.poll(() => page.url(), { timeout: 20_000 }).not.toMatch(/\/admin\/dashboard$/);
   });
 
   test('student no ve controles de admin en su sidebar', async ({ page }) => {
@@ -26,16 +25,16 @@ test.describe('13.3 Pruebas de permisos', () => {
   test('company no puede ver rutas de admin ni faculty', async ({ page }) => {
     await loginAs(page, 'company').catch(() => {});
     await page.goto('/admin/users');
-    expect(page.url()).not.toMatch(/\/admin\/users$/);
+    await expect.poll(() => page.url(), { timeout: 20_000 }).not.toMatch(/\/admin\/users$/);
 
     await page.goto('/my-students');
-    expect(page.url()).not.toMatch(/\/my-students$/);
+    await expect.poll(() => page.url(), { timeout: 20_000 }).not.toMatch(/\/my-students$/);
   });
 
   test('faculty no accede a rutas admin exclusivas', async ({ page }) => {
     await loginAs(page, 'faculty').catch(() => {});
     await page.goto('/admin/users');
-    expect(page.url()).not.toMatch(/\/admin\/users$/);
+    await expect.poll(() => page.url(), { timeout: 20_000 }).not.toMatch(/\/admin\/users$/);
   });
 
   test('admin puede acceder al panel de configuración', async ({ page }) => {

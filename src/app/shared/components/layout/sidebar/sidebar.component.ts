@@ -59,7 +59,8 @@ export class SidebarComponent implements OnInit {
     this.getMenuByRole(
       this.authStore.role(),
       this.studentProjectStore.hasActiveProject(),
-      this.studentProjectStore.projectRoute()
+      this.studentProjectStore.projectRoute(),
+      this.authStore.isDepartmentAdmin()
     )
   );
 
@@ -86,7 +87,8 @@ export class SidebarComponent implements OnInit {
   private getMenuByRole(
     role: UserRole | null,
     hasActiveProject = false,
-    projectRoute = '/dashboard'
+    projectRoute = '/dashboard',
+    isDepartmentAdmin = false
   ): MenuItem[] {
     if (!role) return [];
 
@@ -173,6 +175,22 @@ export class SidebarComponent implements OnInit {
       ],
     };
 
-    return menus[role] ?? [];
+    const menu = menus[role] ?? [];
+    return role === UserRole.ADMIN && isDepartmentAdmin ? this.forDepartmentAdmin(menu) : menu;
+  }
+
+  /**
+   * El admin de departamento no ve lo que es global de la Facultad (períodos, categorías de rechazo,
+   * usuarios administradores). El backend lo bloquea igualmente: esto solo evita mostrar enlaces muertos.
+   */
+  private forDepartmentAdmin(menu: MenuItem[]): MenuItem[] {
+    const facultyOnly = new Set(['/admin/periods', '/admin/rejection-categories', '/admin/users']);
+    const kept = menu.filter((item) => !item.route || !facultyOnly.has(item.route));
+    // Quita encabezados que quedaron sin elementos debajo.
+    return kept.filter((item, i) => {
+      if (!item.sectionLabel) return true;
+      const next = kept[i + 1];
+      return !!next && !next.sectionLabel && !next.divider;
+    });
   }
 }

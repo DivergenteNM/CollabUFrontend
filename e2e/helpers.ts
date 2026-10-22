@@ -8,7 +8,7 @@ export const SEED_PASSWORD = 'CollabU2026!';
 
 export const SEED_USERS = {
   student: 'student11@collabu.dev',       // Camila Vargas — proyecto activo
-  studentNew: 'student16@collabu.dev',    // Santiago López — sin onboarding
+  studentNew: 'karol.pabon@collabu.dev',  // Karol Pabón (Electrónica) — sin onboarding (seed de departamentos)
   company: 'company01@collabu.dev',       // Carlos Gómez
   faculty: 'faculty01@collabu.dev',       // Ana Ruiz — asesor
   facultyMulti: 'faculty04@collabu.dev',  // Jorge Salas — doble rol (E20)
@@ -23,10 +23,19 @@ export type SeedUser = keyof typeof SEED_USERS;
  */
 export async function loginAs(page: Page, user: SeedUser): Promise<void> {
   await page.goto('/auth/login');
-  await page.fill('[formControlName="email"], input[name="email"]', SEED_USERS[user]);
-  await page.fill('[formControlName="password"], input[name="password"]', SEED_PASSWORD);
+  const email = page.locator('[formControlName="email"], input[name="email"]').first();
+  const password = page.locator('[formControlName="password"], input[name="password"]').first();
+  // Con SSR en desarrollo la hidratación puede reiniciar el formulario justo después de escribir:
+  // se vuelve a rellenar hasta que los valores se mantengan.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    await email.fill(SEED_USERS[user]);
+    await password.fill(SEED_PASSWORD);
+    await page.waitForTimeout(400);
+    if ((await email.inputValue()) === SEED_USERS[user] && (await password.inputValue()) === SEED_PASSWORD) break;
+  }
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL(/dashboard|onboarding|admin|projects|my-|received-/, { timeout: 10_000 });
+  // Con `ng serve` la primera carga de cada ruta compila chunks: el margen debe cubrir ese arranque en frío.
+  await page.waitForURL(/dashboard|onboarding|admin|projects|my-|received-/, { timeout: 30_000 });
 }
 
 /**

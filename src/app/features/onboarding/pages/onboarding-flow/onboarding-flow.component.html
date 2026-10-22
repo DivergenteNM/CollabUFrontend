@@ -286,6 +286,19 @@
                 </div>
 
                 <mat-form-field appearance="outline" class="onboarding-flow__full">
+                  <mat-label>Departamentos de trabajo</mat-label>
+                  <mat-select formControlName="programIds" multiple data-testid="company-programs">
+                    @for (program of programs(); track program.id) {
+                      <mat-option [value]="program.id">{{ program.name }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>Áreas de la Facultad con las que trabaja tu empresa. Cada departamento revisa a sus empresas.</mat-hint>
+                  @if (companyForm.controls.programIds.invalid && companyForm.controls.programIds.touched) {
+                    <mat-error>Selecciona al menos un departamento.</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="onboarding-flow__full">
                   <mat-label>Descripción</mat-label>
                   <textarea matInput rows="4" formControlName="description"></textarea>
                 </mat-form-field>
@@ -394,6 +407,20 @@
 
                   <mat-form-field appearance="outline">
                     <mat-label>Departamento</mat-label>
+                    <mat-select formControlName="programId" data-testid="faculty-program">
+                      @for (program of programs(); track program.id) {
+                        <mat-option [value]="program.id">{{ program.name }}</mat-option>
+                      }
+                    </mat-select>
+                    @if (facultyForm.controls.programId.invalid && facultyForm.controls.programId.touched) {
+                      <mat-error>Selecciona tu departamento.</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+
+                <div class="onboarding-flow__row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Cargo / dependencia</mat-label>
                     <input matInput formControlName="department" placeholder="Ej: Facultad de Ingeniería" />
                   </mat-form-field>
                 </div>

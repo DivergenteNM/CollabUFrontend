@@ -7,8 +7,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { timeout } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AuthStore } from '../../../../state/auth.store';
+
+/** Tiempo máximo de espera de la respuesta de login antes de liberar el formulario. */
+const LOGIN_TIMEOUT_MS = 10_000;
 
 @Component({
   selector: 'app-login',
@@ -54,7 +58,8 @@ export class LoginComponent {
 
     const { email, password } = this.form.getRawValue();
 
-    this.authService.login({ email, password }).subscribe({
+    // Si el servidor no responde, el formulario no puede quedar bloqueado indefinidamente.
+    this.authService.login({ email, password }).pipe(timeout(LOGIN_TIMEOUT_MS)).subscribe({
       next: (res) => {
         if (!res?.user || !res?.accessToken || !res?.refreshToken) {
           this.isSubmitting.set(false);
@@ -75,7 +80,11 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        this.errorMessage.set(err.error?.message ?? 'Error al iniciar sesión');
+        this.errorMessage.set(
+          err?.name === 'TimeoutError'
+            ? 'El servidor tardó demasiado en responder. Intenta de nuevo en unos segundos.'
+            : (err.error?.message ?? 'Error al iniciar sesión'),
+        );
       },
     });
   }

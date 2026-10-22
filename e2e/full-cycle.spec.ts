@@ -61,15 +61,13 @@ test.describe.serial('13.2 Ciclo completo (requiere backend + seed)', () => {
   test('deep link ?tab=academic&anchor=anteproyecto navega correcto', async ({ page }) => {
     await loginAs(page, 'student');
     await page.goto('/workspace/70000000-0000-0000-0000-000000000006?tab=academic&anchor=anteproyecto');
-    await page.waitForTimeout(2000);
-    // El ancla se aplica: elemento con id ws-anchor-anteproyecto entra en viewport
+    // El ancla se aplica: elemento con id ws-anchor-anteproyecto entra en viewport (puede tardar en renderizar y desplazarse)
     const anchor = page.locator('#ws-anchor-anteproyecto');
+    await page.waitForTimeout(2000);
     if (await anchor.count() > 0) {
-      const inView = await anchor.evaluate((el) => {
-        const rect = el.getBoundingClientRect();
-        return rect.top < window.innerHeight && rect.bottom > 0;
-      });
-      expect(inView).toBeTruthy();
+      await expect
+        .poll(() => anchor.evaluate((el) => { const rect = el.getBoundingClientRect(); return rect.top < window.innerHeight && rect.bottom > 0; }), { timeout: 15_000 })
+        .toBeTruthy();
     }
   });
 });

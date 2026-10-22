@@ -27,6 +27,7 @@ import { StarRatingComponent } from '../../../../shared/components/ui/star-ratin
 import { MatchScoreBarComponent } from '../../../../shared/components/ui/match-score-bar/match-score-bar.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
+import { formatStars } from '../../../../core/utils/evaluation-score';
 
 interface CriterionDraft {
   criterionId: string;
@@ -210,8 +211,7 @@ export class EvaluationDetailComponent {
 
   /** Backend usa escala 0-100; frontend muestra en 0-5 para UX consistente. */
   displayScore(score: number | null | undefined): string {
-    if (score == null) return '—';
-    return (Number(score) / 20).toFixed(1);
+    return formatStars(score);
   }
 
   /** EST-09: aclara qué mide cada categoría de criterio al pasar el cursor (CriterionCategory, enums.ts). */

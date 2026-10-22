@@ -20,6 +20,8 @@ export interface CompanyProfile {
   totalProjects?: number;
   profileCompleteness?: number;
   isActive?: boolean;
+  /** Departamentos (programas académicos) en cuya área trabaja la empresa. */
+  programIds?: string[];
 
   // Aliases legacy para vistas previas.
   city?: string;

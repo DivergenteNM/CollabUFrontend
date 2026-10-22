@@ -1,0 +1,71 @@
+<div class="ssd">
+  <div class="ssd__filters" role="group" aria-label="Filtros de oferta y demanda de habilidades">
+    @if (!externalDepartment()) {
+      <app-department-filter [value]="ownDepartment()" (changed)="ownDepartment.set($event)" />
+    }
+
+    <mat-form-field appearance="outline" class="ssd__field">
+      <mat-label>Categoría</mat-label>
+      <mat-select [value]="category()" (selectionChange)="category.set($event.value)" data-testid="skill-category">
+        @for (c of categories; track c.value) {
+          <mat-option [value]="c.value">{{ c.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="ssd__field ssd__field--small">
+      <mat-label>Mostrar</mat-label>
+      <mat-select [value]="effectiveLimit()" (selectionChange)="limit.set($event.value)" data-testid="skill-limit">
+        @for (n of limits; track n) {
+          <mat-option [value]="n">Top {{ n }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="ssd__field">
+      <mat-label>Ordenar por</mat-label>
+      <mat-select [value]="sort()" (selectionChange)="sort.set($event.value)" data-testid="skill-sort">
+        @for (s of sorts; track s.value) {
+          <mat-option [value]="s.value">{{ s.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="ssd__field ssd__field--search">
+      <mat-label>Buscar habilidad</mat-label>
+      <input matInput [value]="search()" (input)="onSearch($event)" placeholder="Ej: Docker" data-testid="skill-search" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-button-toggle-group [value]="view()" (change)="view.set($event.value)" aria-label="Tipo de vista" class="ssd__toggle">
+      <mat-button-toggle value="grouped">Demanda y oferta</mat-button-toggle>
+      <mat-button-toggle value="gap">Brecha</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    @if (hasFilters()) {
+      <button type="button" class="ssd__reset" (click)="reset()">Limpiar filtros</button>
+    }
+  </div>
+
+  @if (trends.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (trends.error()) {
+    <p class="ssd__empty">No se pudieron cargar los datos. Verifica que el servicio de analytics esté activo.</p>
+  } @else if (skills().length) {
+    <app-skill-gap-chart [skills]="skills()" [mode]="view()" [height]="chartHeight()" />
+    <p class="ssd__legend">
+      @if (view() === 'gap') {
+        <span><span class="ssd__dot ssd__dot--deficit"></span> Déficit: la demanda supera a la oferta</span>
+        <span><span class="ssd__dot ssd__dot--surplus"></span> Superávit: hay más estudiantes que demanda</span>
+      } @else {
+        Demanda: veces que las empresas piden la habilidad · Oferta: estudiantes que la tienen
+      }
+    </p>
+  } @else if (!trends.isLoading()) {
+    <p class="ssd__empty" data-testid="skills-empty">
+      No hay habilidades para estos filtros. Prueba con otra categoría o limpia la búsqueda.
+    </p>
+  }
+</div>

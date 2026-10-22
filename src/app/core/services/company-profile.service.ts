@@ -23,6 +23,8 @@ export interface CreateCompanyProfilePayload {
   headquartersCity?: string;
   headquartersState?: string;
   employeeCount?: number;
+  /** Departamentos en cuya área trabaja la empresa (mínimo uno). */
+  programIds?: string[];
 }
 
 export interface UpdateCompanyProfilePayload extends Partial<CreateCompanyProfilePayload> {}

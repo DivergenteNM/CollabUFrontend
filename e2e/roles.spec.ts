@@ -39,7 +39,7 @@ test.describe('13.1 Recorrido por rol', () => {
     await expect(page.locator('a:has-text("Verificaciones")').first()).toBeVisible({ timeout: 5_000 }).catch(() => {});
   });
 
-  test('student16 (E19) se redirige a onboarding', async ({ page }) => {
+  test('estudiante sin onboarding (karol.pabon) se redirige a onboarding', async ({ page }) => {
     await page.goto('/auth/login');
     await page.fill('[formControlName="email"], input[name="email"]', SEED_USERS.studentNew);
     await page.fill('[formControlName="password"], input[name="password"]', SEED_PASSWORD);

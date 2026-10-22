@@ -21,6 +21,8 @@ import { httpResource, HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { RejectionCategory, AdminService } from '../../services/admin.service';
 import { AcademicProgram } from '../../../../core/models';
+import { DepartmentChipsComponent } from '../../../../shared/components/department-chips/department-chips.component';
+import { DepartmentFilterComponent } from '../../../../shared/components/department-filter/department-filter.component';
 import { StorageService } from '../../../../core/services/storage.service';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -43,6 +45,7 @@ export interface CompanyRow {
   createdAt: string;
   contacts?: { firstName: string; lastName: string; position: string; email: string; phone: string; isPrimary: boolean }[];
   businessAreas?: { areaName: string }[];
+  programIds?: string[];
 }
 
 export interface ProjectRow {
@@ -645,6 +648,7 @@ export class SuspendDialogComponent {
     MatTabsModule, MatTableModule, MatPaginatorModule,
     MatTooltipModule, MatProgressBarModule, MatChipsModule,
     MatDividerModule, MatCheckboxModule, FormsModule, DatePipe,
+    DepartmentChipsComponent, DepartmentFilterComponent,
   ],
   templateUrl: './company-verifications.component.html',
   styleUrl:    './company-verifications.component.scss',
@@ -662,6 +666,8 @@ export class CompanyVerificationsComponent {
   readonly companySearch = signal('');
   readonly companyStatus = signal('pending');
   readonly companyPage   = signal(1);
+  /** Solo superadmin: filtra empresas y proyectos por departamento ('' = todos). */
+  readonly departmentFilter = signal('');
 
   readonly companyResource = httpResource<Paginated<CompanyRow>>(
     () => ({
@@ -671,6 +677,7 @@ export class CompanyVerificationsComponent {
         limit:  '10',
         status: this.companyStatus(),
         ...(this.companySearch() ? { search: this.companySearch() } : {}),
+        ...(this.departmentFilter() ? { programId: this.departmentFilter() } : {}),
       },
     })
   );
@@ -694,6 +701,7 @@ export class CompanyVerificationsComponent {
         page:  this.projectPage().toString(),
         limit: '10',
         ...(this.projectSearch() ? { search: this.projectSearch() } : {}),
+        ...(this.departmentFilter() ? { programId: this.departmentFilter() } : {}),
       },
     })
   );

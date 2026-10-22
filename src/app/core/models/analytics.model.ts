@@ -25,7 +25,19 @@ export interface MetricsQuery {
   from?: string;
   to?: string;
   periodId?: string;
+  /** Departamento (programa académico). Un admin de departamento siempre queda en el suyo. */
+  programId?: string;
   groupBy?: 'day' | 'week' | 'month';
+}
+
+export type SkillCategoryKey = 'language' | 'framework' | 'tool' | 'concept' | 'soft_skill';
+
+export interface SkillTrendsQuery extends MetricsQuery {
+  category?: SkillCategoryKey | '';
+  limit?: number;
+  sort?: 'gap' | 'demand' | 'supply' | 'name';
+  order?: 'asc' | 'desc';
+  search?: string;
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
@@ -142,6 +154,8 @@ export interface SkillTrend {
   gapIndex: number | null;
   avgProficiencyLevel: number | null;
   trendDirection: TrendDirection | null;
+  category?: SkillCategoryKey | null;
+  programId?: string | null;
   snapshotDate: string;
   createdAt: string;
 }
@@ -167,5 +181,7 @@ export interface GenerateReportPayload {
   reportType: ReportType;
   entityId?: string;
   periodId?: string;
+  /** Departamento al que se acota el reporte (vacío = Facultad). */
+  programId?: string;
   parameters?: Record<string, unknown>;
 }

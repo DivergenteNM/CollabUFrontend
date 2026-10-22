@@ -1,40 +1,36 @@
-import { Component, ChangeDetectionStrategy, computed, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { Component, ChangeDetectionStrategy, computed, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
-import { MatChipsModule } from '@angular/material/chips';
-import { AnalyticsService } from '../../../analytics/services/analytics.service';
-import { SkillGapChartComponent } from '../../../../shared/components/charts/skill-gap-chart/skill-gap-chart.component';
+import { SkillTrend } from '../../../../core/models';
+import { SkillSupplyDemandPanelComponent } from '../../../../shared/components/charts/skill-supply-demand-panel/skill-supply-demand-panel.component';
 
 @Component({
   selector: 'app-skill-trends',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatCardModule, MatButtonModule,
-    MatIconModule, MatProgressBarModule, MatTableModule, MatChipsModule,
-    SkillGapChartComponent,
-  ],
+  imports: [MatCardModule, MatIconModule, MatTableModule, SkillSupplyDemandPanelComponent],
   templateUrl: './skill-trends.component.html',
   styleUrl: './skill-trends.component.scss',
 })
 export class SkillTrendsComponent {
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly analyticsService = inject(AnalyticsService);
+  readonly displayedColumns = ['rank', 'skill', 'category', 'demand', 'supply', 'gap', 'trend'];
 
-  readonly topSkills = rxResource({
-    params: () => (isPlatformBrowser(this.platformId) ? {} : undefined),
-    stream: () => this.analyticsService.getTopSkills(),
-  });
+  /** Lo que muestra el panel (ya filtrado y ordenado): la tabla usa exactamente los mismos datos. */
+  readonly visibleSkills = signal<SkillTrend[]>([]);
 
-  readonly displayedColumns = ['rank', 'skill', 'demand', 'supply', 'gap', 'trend'];
+  readonly rankedSkills = computed(() => this.visibleSkills().map((s, i) => ({ ...s, rank: i + 1 })));
 
-  readonly rankedSkills = computed(() =>
-    (this.topSkills.value() ?? []).map((s, i) => ({ ...s, rank: i + 1 }))
-  );
+  readonly categoryLabels: Record<string, string> = {
+    language: 'Lenguaje',
+    framework: 'Framework',
+    tool: 'Herramienta',
+    concept: 'Concepto',
+    soft_skill: 'Habilidad blanda',
+  };
+
+  categoryLabel(category: string | null | undefined): string {
+    return category ? (this.categoryLabels[category] ?? category) : '—';
+  }
 
   trendIcon(direction: string | null): string {
     if (direction === 'rising') return 'trending_up';

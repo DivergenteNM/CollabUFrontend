@@ -36,6 +36,19 @@ export interface PendingApplicationRow {
   studentName: string;
   projectTitle: string;
   companyId: string | null;
+  /** Departamento del estudiante (programa académico). */
+  programId?: string | null;
+}
+
+/** Código estable de error de asignación (el backend lo envía junto al mensaje). */
+export type AssignmentErrorCode =
+  | 'PERIOD_NOT_FOUND' | 'PERIOD_NOT_ASSIGNABLE' | 'APPLICATION_UNAVAILABLE' | 'APPLICATION_MISMATCH'
+  | 'APPLICATION_NOT_ASSIGNABLE' | 'SUPERVISOR_INACTIVE' | 'SUPERVISOR_FULL' | 'ASESOR_ALREADY_ASSIGNED'
+  | 'JURADO_IS_ASESOR' | 'ASSIGNMENT_NOT_REPLACEABLE' | 'SAME_SUPERVISOR';
+
+export interface AssignmentResult {
+  created: SupervisorAssignment[];
+  skipped: Array<{ supervisorId: string; role: string; reason: 'already_assigned' }>;
 }
 
 export interface RejectionCategory {
@@ -84,6 +97,10 @@ export interface SupervisorRow {
   firstName: string | null;
   lastName: string | null;
   fullName: string | null;
+  /** Departamento del docente. */
+  programId?: string | null;
+  /** Solo admin de departamento: el docente es de otro departamento (se asigna con aviso). */
+  crossDepartment?: boolean;
 }
 
 export interface AcademicQueueRow {
@@ -135,9 +152,10 @@ export class AdminService extends BaseApiService {
     );
   }
 
-  getSupervisors(isActive = true): Observable<SupervisorRow[]> {
+  /** `includeOtherDepartments`: el admin de departamento ve además docentes de otros departamentos (marcados crossDepartment). */
+  getSupervisors(isActive = true, includeOtherDepartments = false): Observable<SupervisorRow[]> {
     return this.http.get<SupervisorRow[]>(`${this.apiUrl}/supervisors`, {
-      params: { isActive: String(isActive) }
+      params: { isActive: String(isActive), ...(includeOtherDepartments ? { includeOtherDepartments: 'true' } : {}) }
     });
   }
 
@@ -175,6 +193,7 @@ export class AdminService extends BaseApiService {
     return this.http.post(`${this.apiUrl}/skills/${skillId}/programs`, { programIds });
   }
 
+  /** Respuesta de la asignación: lo creado y lo omitido (con motivo) — ya no se ignora nada en silencio. */
   assignSupervisor(data: {
     supervisorId: string;
     juradoIds?: string[];
@@ -185,8 +204,8 @@ export class AdminService extends BaseApiService {
     startDate: string;
     endDate?: string;
     notes?: string;
-  }): Observable<SupervisorAssignment[]> {
-    return this.http.post<SupervisorAssignment[]>(`${this.apiUrl}/supervisors/assign`, data);
+  }): Observable<AssignmentResult> {
+    return this.http.post<AssignmentResult>(`${this.apiUrl}/supervisors/assign`, data);
   }
 
   getAssignments(params: PaginationParams): Observable<PaginatedResponse<SupervisorAssignment>> {

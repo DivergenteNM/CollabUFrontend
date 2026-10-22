@@ -58,6 +58,9 @@ describe('HeaderComponent - Notification Dropdown', () => {
       displayName: signal('Nicolas Test'),
       role: signal(UserRole.STUDENT),
       isAuthenticated: signal(true),
+      isSuperAdmin: signal(false),
+      isDepartmentAdmin: signal(false),
+      departmentId: signal(null),
       user: signal({ email: 'nicolas@collabu.edu' }),
       clearAuth: vi.fn(),
     };

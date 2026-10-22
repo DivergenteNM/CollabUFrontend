@@ -10,6 +10,14 @@
   </div>
 
   <div class="header__right">
+    @if (scopeLabel()) {
+      <span class="header__scope" [class.header__scope--faculty]="authStore.isSuperAdmin()"
+        [matTooltip]="authStore.isSuperAdmin() ? 'Ves la información de todos los departamentos' : 'Solo ves la información de tu departamento'">
+        <mat-icon aria-hidden="true">{{ authStore.isSuperAdmin() ? 'account_balance' : 'apartment' }}</mat-icon>
+        {{ scopeLabel() }}
+      </span>
+    }
+
     @if (welcomeMessage()) {
       <span class="header__welcome">{{ welcomeMessage() }}</span>
     }

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { roleGuard } from '../../core/guards';
+import { roleGuard, superAdminGuard } from '../../core/guards';
 import { UserRole } from '../../core/enums/user-role.enum';
 
 export const ADMIN_ROUTES: Routes = [
@@ -30,7 +30,8 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'periods',
-    canActivate: [roleGuard(UserRole.ADMIN)],
+    // Catálogo global: solo el administrador de Facultad.
+    canActivate: [superAdminGuard],
     loadComponent: () =>
       import('./pages/period-management/period-management.component').then(
         (m) => m.PeriodManagementComponent
@@ -38,7 +39,8 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'users',
-    canActivate: [roleGuard(UserRole.ADMIN)],
+    // Catálogo global: solo el administrador de Facultad.
+    canActivate: [superAdminGuard],
     loadComponent: () =>
       import('./pages/user-management/user-management.component').then(
         (m) => m.UserManagementComponent
@@ -54,7 +56,8 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'rejection-categories',
-    canActivate: [roleGuard(UserRole.ADMIN)],
+    // Catálogo global: solo el administrador de Facultad.
+    canActivate: [superAdminGuard],
     loadComponent: () =>
       import('./pages/rejection-categories/rejection-categories.component').then(
         (m) => m.RejectionCategoriesComponent
