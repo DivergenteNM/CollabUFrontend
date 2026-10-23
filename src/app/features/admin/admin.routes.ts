@@ -5,8 +5,9 @@ import { UserRole } from '../../core/enums/user-role.enum';
 export const ADMIN_ROUTES: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   {
-    // Analítica institucional — abierta a ADMIN y FACULTY (hereda el guard del padre en app.routes.ts).
+    // Analítica institucional — solo ADMIN (el docente ya no tiene esta vista).
     path: 'dashboard',
+    canActivate: [roleGuard(UserRole.ADMIN)],
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-dashboard.component').then(
         (m) => m.AdminAnalyticsComponent
@@ -47,8 +48,9 @@ export const ADMIN_ROUTES: Routes = [
       ),
   },
   {
-    // Reportes analíticos — abierta a ADMIN y FACULTY, igual que 'dashboard' (ver comentario arriba).
+    // Reportes analíticos — solo ADMIN (el docente ya no tiene esta vista).
     path: 'reports',
+    canActivate: [roleGuard(UserRole.ADMIN)],
     loadComponent: () =>
       import('./pages/reports/reports.component').then(
         (m) => m.ReportsComponent
