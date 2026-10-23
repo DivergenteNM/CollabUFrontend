@@ -152,10 +152,26 @@
                   <mat-icon class="detail__company-icon--large">business</mat-icon>
                 }
                 <div>
-                  <h3>{{ company.legalName || company.companyName }}</h3>
+                  <div class="detail__company-title-row">
+                    <h3>{{ company.legalName || company.companyName }}</h3>
+                    @if (company.verificationStatus === 'verified' || company.isVerified) {
+                      <span class="detail__company-badge detail__company-badge--verified" title="Empresa verificada">
+                        <mat-icon>verified</mat-icon> Verificada
+                      </span>
+                    }
+                  </div>
                   @if (company.industry) {
                     <p class="detail__company-industry">{{ company.industry }}</p>
                   }
+                  <div class="detail__company-rating-row">
+                    @if ((company.totalReviews ?? 0) > 0 || (company.rating ?? 0) > 0) {
+                      <app-star-rating [value]="company.rating ?? 5" [readonly]="true" size="sm" />
+                      <span class="detail__company-rating-val">{{ (company.rating ?? 5) | number:'1.1-1' }}</span>
+                      <span class="detail__company-reviews-count">({{ company.totalReviews ?? 0 }} valoraciones)</span>
+                    } @else {
+                      <span class="detail__company-no-rating">Sin calificaciones aún</span>
+                    }
+                  </div>
                 </div>
               </div>
 
@@ -181,6 +197,17 @@
                     <mat-icon>language</mat-icon> Sitio web
                   </a>
                 }
+              </div>
+
+              <div class="detail__company-actions">
+                <a
+                  mat-stroked-button
+                  color="primary"
+                  class="detail__company-public-btn"
+                  [routerLink]="['/profile/company', company.id || company.userId]"
+                >
+                  <mat-icon>visibility</mat-icon> Ver perfil público y reseñas
+                </a>
               </div>
 
               @if (company.locations?.length) {

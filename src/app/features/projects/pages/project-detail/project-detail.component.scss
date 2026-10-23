@@ -226,6 +226,81 @@
   }
 }
 
+.detail__company-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail__company-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &--verified {
+    background: var(--mat-sys-primary-container, #dbeafe);
+    color: var(--mat-sys-on-primary-container, #1e40af);
+  }
+}
+
+.detail__company-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.detail__company-rating-val {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.detail__company-reviews-count {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__company-no-rating {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--mat-sys-outline);
+}
+
+.detail__company-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.detail__company-public-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .detail__company-logo {
   width: 56px;
   height: 56px;

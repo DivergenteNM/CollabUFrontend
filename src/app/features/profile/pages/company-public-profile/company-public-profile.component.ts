@@ -7,8 +7,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { httpResource } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { CompanyProfile } from '../../../../core/models';
+import { CompanyProfile, Evaluation } from '../../../../core/models';
+import { PublicEvaluationsResponse, PublicReviewsStats } from '../../../../features/evaluations/services/evaluation.service';
 import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
+import { ProfileReviewsComponent } from '../../../../shared/components/ui/profile-reviews/profile-reviews.component';
 import { resolveImageUrl } from '../../../../shared/utils';
 
 @Component({
@@ -17,7 +19,7 @@ import { resolveImageUrl } from '../../../../shared/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DecimalPipe, MatIconModule, MatButtonModule, MatCardModule,
-    MatChipsModule, StarRatingComponent,
+    MatChipsModule, StarRatingComponent, ProfileReviewsComponent,
   ],
   templateUrl: './company-public-profile.component.html',
   styleUrl: './company-public-profile.component.scss',
@@ -38,11 +40,33 @@ export class CompanyPublicProfileComponent {
     return { url: `${environment.apiUrl}/companies/profile/${id}` };
   });
 
+  readonly reviewsResource = httpResource<any>(() => {
+    const id = this.profileId();
+    if (!id) return undefined;
+    return { url: `${environment.apiUrl}/evaluations/company/${id}` };
+  });
+
   readonly company = computed(() => {
     const res: any = this.resource.value();
     if (!res) return null;
     return (res.data ?? res) as CompanyProfile;
   });
+
+  readonly reviewsData = computed<PublicEvaluationsResponse | null>(() => {
+    const res: any = this.reviewsResource.value();
+    if (!res) return null;
+    return (res.data ?? res) as PublicEvaluationsResponse;
+  });
+
+  readonly evaluations = computed<Evaluation[]>(() => {
+    return this.reviewsData()?.evaluations ?? [];
+  });
+
+  readonly reviewStats = computed<PublicReviewsStats | null>(() => {
+    return this.reviewsData()?.stats ?? null;
+  });
+
+  readonly reviewsLoading = computed(() => this.reviewsResource.isLoading());
 
   readonly resolvedLogoUrl = computed(() => {
     const c = this.company();

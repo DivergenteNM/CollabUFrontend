@@ -1,8 +1,8 @@
 import {
   Component, ChangeDetectionStrategy, inject, computed, signal, PLATFORM_ID, input, effect,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { isPlatformBrowser, DatePipe, DecimalPipe, Location } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +10,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe, Location } from '@angular/common';
 
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse, CompanyProfile, Project } from '../../../../core/models';
@@ -22,6 +21,7 @@ import { MatchScoreCardComponent } from '../../../../shared/components/cards/mat
 import { SkillChipListComponent } from '../../../../shared/components/ui/skill-chip-list/skill-chip-list.component';
 import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 import { FileLinkComponent } from '../../../../shared/components/ui/file-link/file-link.component';
+import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
 import { ApplyDialogComponent, ApplyDialogData } from '../../components/apply-dialog/apply-dialog.component';
 import { AdminService } from '../../../admin/services/admin.service';
 import { CompanyProfileService } from '../../../../core/services/company-profile.service';
@@ -32,9 +32,9 @@ import { AcademicProgram } from '../../../../core/models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCardModule, MatIconModule, MatButtonModule, MatChipsModule,
-    MatDividerModule, DatePipe,
+    MatDividerModule, DatePipe, DecimalPipe, RouterLink,
     StatusBadgeComponent, MatchScoreCardComponent, SkillChipListComponent,
-    SkeletonComponent, FileLinkComponent,
+    SkeletonComponent, FileLinkComponent, StarRatingComponent,
   ],
   templateUrl: './project-detail.component.html',
   styleUrl: './project-detail.component.scss',
@@ -186,8 +186,14 @@ export class ProjectDetailComponent {
   }
 
   openApplyDialog(project: Project): void {
+    const comp = this.companyProfile();
     this.dialog.open(ApplyDialogComponent, {
-      data: { projectId: project.id, projectTitle: project.title } as ApplyDialogData,
+      data: {
+        projectId: project.id,
+        projectTitle: project.title,
+        companyId: comp?.id || comp?.userId || project.companyId,
+        companyName: comp?.companyName || comp?.legalName,
+      } as ApplyDialogData,
       width: '600px',
       disableClose: true,
     });

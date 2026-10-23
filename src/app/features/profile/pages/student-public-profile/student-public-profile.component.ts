@@ -7,8 +7,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { httpResource } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { StudentProfile, UserProfile } from '../../../../core/models';
+import { StudentProfile, UserProfile, Evaluation } from '../../../../core/models';
+import { PublicEvaluationsResponse, PublicReviewsStats } from '../../../../features/evaluations/services/evaluation.service';
 import { StarRatingComponent } from '../../../../shared/components/ui/star-rating/star-rating.component';
+import { ProfileReviewsComponent } from '../../../../shared/components/ui/profile-reviews/profile-reviews.component';
 import { resolveImageUrl } from '../../../../shared/utils';
 
 @Component({
@@ -17,7 +19,7 @@ import { resolveImageUrl } from '../../../../shared/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DecimalPipe, MatIconModule, MatButtonModule, MatCardModule,
-    MatChipsModule, StarRatingComponent,
+    MatChipsModule, StarRatingComponent, ProfileReviewsComponent,
   ],
   templateUrl: './student-public-profile.component.html',
   styleUrl: './student-public-profile.component.scss',
@@ -45,6 +47,28 @@ export class StudentPublicProfileComponent {
   });
 
   readonly studentUserId = computed(() => this.student()?.userId ?? this.profileId());
+
+  readonly reviewsResource = httpResource<any>(() => {
+    const userId = this.studentUserId();
+    if (!userId) return undefined;
+    return { url: `${environment.apiUrl}/evaluations/student/${userId}` };
+  });
+
+  readonly reviewsData = computed<PublicEvaluationsResponse | null>(() => {
+    const res: any = this.reviewsResource.value();
+    if (!res) return null;
+    return (res.data ?? res) as PublicEvaluationsResponse;
+  });
+
+  readonly evaluations = computed<Evaluation[]>(() => {
+    return this.reviewsData()?.evaluations ?? [];
+  });
+
+  readonly reviewStats = computed<PublicReviewsStats | null>(() => {
+    return this.reviewsData()?.stats ?? null;
+  });
+
+  readonly reviewsLoading = computed(() => this.reviewsResource.isLoading());
 
   readonly userResource = httpResource<any>(() => {
     const userId = this.studentUserId();

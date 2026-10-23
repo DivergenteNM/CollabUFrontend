@@ -20,6 +20,23 @@ export interface EvalPaginated<T> {
   limit: number;
 }
 
+export interface PublicReviewsStats {
+  averageRating: number | null;
+  totalReviews: number;
+  distribution: Record<number, number>;
+}
+
+export interface PublicEvaluationsResponse {
+  evaluations: Evaluation[];
+  stats: PublicReviewsStats;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 export interface CreateEvaluationPayload {
   applicationId: string;
   projectId: string;
@@ -99,6 +116,28 @@ export class EvaluationService extends BaseApiService {
     byType: Record<string, number | null>;
   }> {
     return this.http.get<any>(`${this.apiUrl}/aggregate/${userId}`);
+  }
+
+  /** Evaluaciones y reseñas públicas de una empresa (visibles para estudiantes y público). */
+  getCompanyPublicEvaluations(
+    companyId: string,
+    params: PaginationParams = {} as any,
+  ): Observable<PublicEvaluationsResponse> {
+    return this.http.get<PublicEvaluationsResponse>(
+      `${this.apiUrl}/company/${companyId}`,
+      { params: this.buildParams(params) },
+    );
+  }
+
+  /** Evaluaciones y reseñas públicas recibidas por un estudiante (visibles en su perfil público). */
+  getStudentPublicEvaluations(
+    studentId: string,
+    params: PaginationParams = {} as any,
+  ): Observable<PublicEvaluationsResponse> {
+    return this.http.get<PublicEvaluationsResponse>(
+      `${this.apiUrl}/student/${studentId}`,
+      { params: this.buildParams(params) },
+    );
   }
 
   // ── Aliases legacy: mantienen callers antiguos funcionando durante la migración ──

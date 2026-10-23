@@ -1,0 +1,179 @@
+<mat-card class="profile-reviews-card">
+  <!-- Card Header -->
+  <mat-card-header class="profile-reviews-card__header">
+    <div mat-card-avatar class="card-header-icon">
+      <mat-icon>rate_review</mat-icon>
+    </div>
+    <div class="profile-reviews-card__header-texts">
+      <div class="profile-reviews-card__title-row">
+        <mat-card-title>{{ title() }}</mat-card-title>
+        @if (totalReviews() > 0) {
+          <span class="reviews-count-badge">
+            <mat-icon>verified</mat-icon> {{ totalReviews() }} {{ totalReviews() === 1 ? 'reseña' : 'reseñas' }}
+          </span>
+        }
+      </div>
+      <mat-card-subtitle>{{ subtitle() }}</mat-card-subtitle>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content class="profile-reviews-card__content">
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="reviews-loading">
+        <div class="reviews-skeleton-summary">
+          <div class="skeleton-box skeleton-box--score"></div>
+          <div class="skeleton-box skeleton-box--bars"></div>
+        </div>
+        <div class="reviews-skeleton-card"></div>
+        <div class="reviews-skeleton-card"></div>
+      </div>
+    } @else if (hasReviews() || totalReviews() > 0) {
+      <!-- ─── RATING OVERVIEW SUMMARY ─── -->
+      <div class="rating-overview">
+        <!-- Left: Big Rating Number & Stars -->
+        <div class="rating-overview__score-box">
+          <div class="rating-overview__number-wrap">
+            <span class="rating-overview__number">{{ (averageRating() ?? 5.0) | number:'1.1-1' }}</span>
+            <span class="rating-overview__max">/ 5.0</span>
+          </div>
+          <div class="rating-overview__stars">
+            <app-star-rating [value]="averageRating() ?? 5.0" [readonly]="true" size="md" />
+          </div>
+          <span class="rating-overview__caption">
+            Basado en {{ totalReviews() }} {{ totalReviews() === 1 ? 'evaluación final' : 'evaluaciones finales' }}
+          </span>
+          <div class="rating-overview__verified-note">
+            <mat-icon>shield</mat-icon>
+            <span>Verificado por cierre de proyecto</span>
+          </div>
+        </div>
+
+        <!-- Right: Star Breakdown Progress Bars -->
+        <div class="rating-overview__breakdown">
+          @for (row of starDistribution(); track row.stars) {
+            <div class="rating-row">
+              <span class="rating-row__label">
+                {{ row.stars }} <mat-icon class="rating-row__star-icon">star</mat-icon>
+              </span>
+              <div class="rating-row__bar-track">
+                <div class="rating-row__bar-fill" [style.width.%]="row.percentage"></div>
+              </div>
+              <span class="rating-row__count">{{ row.count }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ─── REVIEWS LIST ─── -->
+      <div class="reviews-list">
+        @for (rev of visibleReviews(); track rev.id) {
+          <div class="review-item">
+            <!-- Review Header -->
+            <div class="review-item__head">
+              <div class="review-item__author">
+                <div class="review-item__avatar" [class.review-item__avatar--anon]="rev.isAnonymous">
+                  @if (rev.isAnonymous) {
+                    <mat-icon>visibility_off</mat-icon>
+                  } @else {
+                    <span>{{ getInitials(rev.evaluatorName) }}</span>
+                  }
+                </div>
+                <div class="review-item__author-meta">
+                  <div class="review-item__author-name-row">
+                    <strong class="review-item__name">
+                      {{ rev.isAnonymous ? 'Estudiante Collab-U' : (rev.evaluatorName || 'Estudiante') }}
+                    </strong>
+                    @if (rev.isAnonymous) {
+                      <span class="anon-chip">
+                        <mat-icon>lock</mat-icon> Anónimo
+                      </span>
+                    }
+                  </div>
+                  <span class="review-item__date">
+                    {{ (rev.completedAt || rev.createdAt) | date:'d MMMM, y' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Rating Score Badge -->
+              <div class="review-item__rating">
+                <app-star-rating [value]="getScoreStars(rev.overallScore)" [readonly]="true" size="sm" />
+                <span class="review-item__rating-score">{{ getScoreStars(rev.overallScore) | number:'1.1-1' }}</span>
+              </div>
+            </div>
+
+            <!-- Project Context Pill -->
+            @if (rev.projectTitle) {
+              <div class="review-item__project">
+                <mat-icon>rocket_launch</mat-icon>
+                <span>Proyecto: <strong>{{ rev.projectTitle }}</strong></span>
+              </div>
+            }
+
+            <!-- Overall Comment -->
+            @if (rev.overallComment) {
+              <p class="review-item__comment">"{{ rev.overallComment }}"</p>
+            }
+
+            <!-- Strengths & Improvements -->
+            @if (rev.strengths || rev.areasForImprovement) {
+              <div class="review-item__feedback-grid">
+                @if (rev.strengths) {
+                  <div class="feedback-box feedback-box--strength">
+                    <mat-icon>thumb_up</mat-icon>
+                    <div class="feedback-box__text">
+                      <span class="feedback-box__label">Fortalezas destacadas</span>
+                      <p>{{ rev.strengths }}</p>
+                    </div>
+                  </div>
+                }
+                @if (rev.areasForImprovement) {
+                  <div class="feedback-box feedback-box--improvement">
+                    <mat-icon>tips_and_updates</mat-icon>
+                    <div class="feedback-box__text">
+                      <span class="feedback-box__label">Oportunidad de mejora</span>
+                      <p>{{ rev.areasForImprovement }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Criteria breakdown chips if present -->
+            @if (rev.ratings.length) {
+              <div class="review-item__criteria">
+                @for (r of rev.ratings; track r.criterionId) {
+                  @if (r.criterion?.name) {
+                    <span class="criterion-chip">
+                      {{ r.criterion?.name }}: <strong>{{ (r.score / 20) | number:'1.0-1' }}★</strong>
+                    </span>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Show More Button -->
+        @if (canShowMore()) {
+          <div class="reviews-list__actions">
+            <button mat-stroked-button (click)="showMore()" class="show-more-btn">
+              <mat-icon>expand_more</mat-icon>
+              Mostrar más reseñas ({{ evaluations().length - visibleReviews().length }} restantes)
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- ─── EMPTY STATE ─── -->
+      <div class="reviews-empty">
+        <div class="reviews-empty__icon-box">
+          <mat-icon>rate_review</mat-icon>
+        </div>
+        <h4 class="reviews-empty__title">{{ emptyTitle() }}</h4>
+        <p class="reviews-empty__desc">{{ emptyMessage() }}</p>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,141 @@
+.cpc__logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mat-sys-surface-container, var(--bg-tertiary, #f1f5f9));
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.cpc__verified {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-success, #16a34a);
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.cpc__rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 0.8125rem;
+}
+
+.cpc__star {
+  color: #f5a623;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.cpc__no-rating {
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #64748b));
+  font-style: italic;
+}
+
+.cpc__desc {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #475569));
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.cpc__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.cpc__stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #64748b));
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.cpc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.cpc__chip {
+  background: var(--mat-sys-surface-container-high, var(--bg-tertiary, #f1f5f9));
+  color: var(--mat-sys-on-surface, #334155);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.cpc__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.cpc__btn-public {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.cpc__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-primary, var(--color-primary, #0284c7));
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.cpc__empty {
+  color: var(--mat-sys-outline, var(--text-secondary, #94a3b8));
+  font-size: 0.8125rem;
+  font-style: italic;
+}

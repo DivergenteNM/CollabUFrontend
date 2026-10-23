@@ -113,11 +113,11 @@
             </div>
 
             <!-- Star Rating row if available -->
-            @if (s.averageRating) {
+            @if (s.averageRating || (reviewStats()?.totalReviews ?? 0) > 0) {
               <div class="student-hero-card__rating-row">
-                <app-star-rating [value]="s.averageRating" [readonly]="true" size="sm" />
-                <span class="rating-value">{{ s.averageRating | number:'1.1-1' }}</span>
-                <span class="rating-count">({{ s.totalRatings ?? 0 }} valoraciones)</span>
+                <app-star-rating [value]="reviewStats()?.averageRating ?? s.averageRating ?? 5" [readonly]="true" size="sm" />
+                <span class="rating-value">{{ (reviewStats()?.averageRating ?? s.averageRating ?? 5) | number:'1.1-1' }}</span>
+                <span class="rating-count">({{ reviewStats()?.totalReviews ?? s.totalRatings ?? 0 }} valoraciones)</span>
               </div>
             }
           </div>
@@ -219,6 +219,17 @@
             }
           </mat-card-content>
         </mat-card>
+
+        <!-- Reseñas y Evaluaciones Recibidas -->
+        <app-profile-reviews
+          [evaluations]="evaluations()"
+          [stats]="reviewStats()"
+          [isLoading]="reviewsLoading()"
+          title="Reseñas y Evaluaciones Recibidas"
+          subtitle="Comentarios y calificaciones de empresas y tutores académicos tras culminar proyectos"
+          emptyTitle="Sin reseñas todavía"
+          emptyMessage="Este estudiante aún no cuenta con evaluaciones registradas. Las reseñas se publican cuando las organizaciones y asesores califican su desempeño al finalizar un proyecto."
+        />
 
         <!-- Habilidades y Competencias -->
         @if (s.skills.length > 0) {
