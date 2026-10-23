@@ -65,4 +65,25 @@ describe('ChatContactInfoComponent', () => {
     component.close.emit();
     expect(closed).toBe(true);
   });
+
+  it('soporta conversaciones de grupo mostrando participantes y título del equipo', () => {
+    fixture.componentRef.setInput('conversation', {
+      id: 'c-grp',
+      type: 'project',
+      name: 'Equipo Proyecto Alpha',
+      participants: [
+        { userId: 'u-1', displayName: 'Estudiante', role: 'student', isOnline: true },
+        { userId: 'u-2', displayName: 'Tutor', role: 'company', isOnline: false },
+      ],
+      unreadCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    fixture.detectChanges();
+
+    expect(component.isGroup()).toBe(true);
+    expect(component.groupTitle()).toBe('Equipo Proyecto Alpha');
+    expect(component.participants().length).toBe(2);
+    expect(component.formatMemberRole('company')).toBe('Tutor Empresarial');
+  });
 });

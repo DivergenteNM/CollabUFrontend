@@ -74,6 +74,27 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   readonly contactUserProfile = signal<UserProfile | null>(null);
   readonly linkedProject = signal<any | null>(null);
 
+  readonly isGroupConversation = computed(() => {
+    const type = this.currentConversation()?.type;
+    return type === 'group' || type === 'project';
+  });
+
+  readonly displayHeaderTitle = computed(() => {
+    if (this.isGroupConversation()) {
+      return this.currentConversation()?.name || this.linkedProject()?.title || 'Chat del proyecto';
+    }
+    return this.otherParticipantName();
+  });
+
+  readonly displayHeaderSubtitle = computed(() => {
+    if (this.isGroupConversation()) {
+      const parts = this.currentConversation()?.participants ?? [];
+      const onlineCount = parts.filter(p => p.isOnline).length;
+      return `${parts.length} participante${parts.length === 1 ? '' : 's'}${onlineCount > 0 ? ` • ${onlineCount} en línea` : ''}`;
+    }
+    return this.otherParticipantOnline() ? 'En línea' : 'Desconectado';
+  });
+
   // Modals & Panels state
   readonly showEmojiPicker = signal(false);
   readonly showContactInfo = signal(false);
@@ -277,7 +298,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   onEmojiSelected(emoji: string): void {
     const textarea = this.messageInput()?.nativeElement;
     const current = this.messageText();
-    if (textarea) {
+    if (textarea && document.activeElement === textarea) {
       const start = textarea.selectionStart ?? current.length;
       const end = textarea.selectionEnd ?? current.length;
       const next = current.slice(0, start) + emoji + current.slice(end);

@@ -85,6 +85,23 @@
   }
 }
 
+.room__avatar-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary, #388E53) 14%, transparent);
+  color: var(--color-primary, #388E53);
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
 .room__avatar-img {
   width: 100%;
   height: 100%;

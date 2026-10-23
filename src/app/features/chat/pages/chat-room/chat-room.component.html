@@ -14,15 +14,21 @@
           role="button"
           tabindex="0"
           (keydown.enter)="openContactInfo()"
-          aria-label="Ver información del contacto">
-          @if (otherParticipantAvatar()) {
-          <img [src]="otherParticipantAvatar()" [alt]="otherParticipantName()" class="room__avatar-img" />
+          [attr.aria-label]="isGroupConversation() ? 'Ver información del grupo' : 'Ver información del contacto'">
+          @if (isGroupConversation()) {
+          <div class="room__avatar-group">
+            <mat-icon>groups</mat-icon>
+          </div>
+          } @else if (otherParticipantAvatar()) {
+          <img [src]="otherParticipantAvatar()" [alt]="displayHeaderTitle()" class="room__avatar-img" />
           } @else {
-          <span class="room__avatar-initials">{{ otherParticipantName() | initials:2 }}</span>
+          <span class="room__avatar-initials">{{ displayHeaderTitle() | initials:2 }}</span>
           }
+          @if (!isGroupConversation()) {
           <span class="room__status-dot" [class.online]="otherParticipantOnline()"
             [class.offline]="!otherParticipantOnline()">
           </span>
+          }
         </div>
 
         <div
@@ -31,10 +37,10 @@
           role="button"
           tabindex="0"
           (keydown.enter)="openContactInfo()"
-          aria-label="Ver información del contacto">
-          <span class="room__header-name">{{ otherParticipantName() }}</span>
+          [attr.aria-label]="isGroupConversation() ? 'Ver información del grupo' : 'Ver información del contacto'">
+          <span class="room__header-name">{{ displayHeaderTitle() }}</span>
           <span class="room__header-status">
-            {{ otherParticipantOnline() ? 'En línea' : 'Desconectado' }}
+            {{ displayHeaderSubtitle() }}
           </span>
         </div>
       </div>
@@ -60,8 +66,8 @@
           type="button"
           class="room__action-btn"
           [class.room__action-btn--active]="showContactInfo()"
-          aria-label="Información del contacto"
-          matTooltip="Info. del contacto"
+          [attr.aria-label]="isGroupConversation() ? 'Información del grupo' : 'Información del contacto'"
+          [matTooltip]="isGroupConversation() ? 'Info. del grupo' : 'Info. del contacto'"
           (click)="toggleContactInfo()">
           <mat-icon>info</mat-icon>
         </button>

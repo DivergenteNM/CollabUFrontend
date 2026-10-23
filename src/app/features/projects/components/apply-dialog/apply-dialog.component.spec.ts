@@ -8,6 +8,7 @@ import { ApplyDialogComponent, ApplyDialogData } from './apply-dialog.component'
 import { ApplicationService } from '../../../applications/services/application.service';
 import { StorageService } from '../../../../core/services/storage.service';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 describe('ApplyDialogComponent', () => {
   let fixture: ComponentFixture<ApplyDialogComponent>;
@@ -42,6 +43,7 @@ describe('ApplyDialogComponent', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
+        provideNativeDateAdapter(),
         { provide: MAT_DIALOG_DATA, useValue: mockDialogData },
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: ApplicationService, useValue: mockApplicationService },
