@@ -1,0 +1,79 @@
+<mat-card class="cpc">
+  <mat-card-header>
+    <div class="cpc__logo" mat-card-avatar>
+      @if (company()?.logoUrl) {
+        <img [src]="company()!.logoUrl" [alt]="company()!.companyName" />
+      } @else {
+        <mat-icon>business</mat-icon>
+      }
+    </div>
+    <mat-card-title>{{ company()?.companyName ?? 'Empresa' }}</mat-card-title>
+    <mat-card-subtitle>
+      @if (company()?.industry) { {{ company()!.industry }} }
+      @if (company()?.headquartersCity) { · {{ company()!.headquartersCity }} }
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (company()?.verificationStatus === 'verified') {
+      <span class="cpc__verified"><mat-icon>verified</mat-icon> Empresa verificada</span>
+    }
+
+    <div class="cpc__rating">
+      @if ((company()?.totalReviews ?? 0) > 0) {
+        <mat-icon class="cpc__star">star</mat-icon>
+        <span>{{ company()!.rating }}/5 · {{ company()!.totalReviews }} reseñas</span>
+      } @else {
+        <span class="cpc__no-rating">Sin calificaciones aún</span>
+      }
+    </div>
+
+    @if (company()?.description) {
+      <p class="cpc__desc">{{ company()!.description }}</p>
+    }
+
+    <div class="cpc__stats">
+      @if (company()?.companySize) {
+        <span class="cpc__stat"><mat-icon>groups</mat-icon> {{ sizeLabel() }}</span>
+      }
+      @if (company()?.foundedYear) {
+        <span class="cpc__stat"><mat-icon>event</mat-icon> Desde {{ company()!.foundedYear }}</span>
+      }
+      @if ((company()?.totalProjects ?? 0) > 0) {
+        <span class="cpc__stat"><mat-icon>work_outline</mat-icon> {{ company()!.totalProjects }} proyectos</span>
+      }
+    </div>
+
+    @if (company()?.businessAreas?.length) {
+      <div class="cpc__chips">
+        @for (a of company()!.businessAreas; track a) {
+          <span class="cpc__chip">{{ a }}</span>
+        }
+      </div>
+    }
+
+    <div class="cpc__actions">
+      @if (publicProfileId(); as profileId) {
+        <a
+          mat-stroked-button
+          color="primary"
+          class="cpc__btn-public"
+          [routerLink]="['/profile/company', profileId]"
+          target="_blank"
+          rel="noopener"
+        >
+          <mat-icon>visibility</mat-icon> Ver perfil público y reseñas
+        </a>
+      }
+      @if (company()?.website) {
+        <a class="cpc__link" [href]="company()!.website" target="_blank" rel="noopener">
+          <mat-icon>language</mat-icon> Sitio web
+        </a>
+      }
+    </div>
+
+    @if (!company()) {
+      <p class="cpc__empty">Esta empresa no completó su perfil todavía.</p>
+    }
+  </mat-card-content>
+</mat-card>

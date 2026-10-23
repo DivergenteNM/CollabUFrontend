@@ -28,12 +28,12 @@ export class MatchScoreCardComponent {
   readonly breakdownItems = computed<BreakdownItem[]>(() => {
     const b = this.breakdown();
     return [
-      { label: 'Skills',         score: b.skillsScore ?? 0 },
-      { label: 'Nivel',          score: b.proficiencyScore ?? 0 },
-      { label: 'Programa',       score: b.programScore ?? 0 },
-      { label: 'Semestre',       score: b.semesterScore ?? 0 },
-      { label: 'Disponibilidad', score: b.availabilityScore ?? 0 },
-      { label: 'Idioma',         score: b.languageScore ?? 0 },
+      { label: 'Skills',            score: b.skillsScore ?? 0 },
+      { label: 'Nivel',             score: b.proficiencyScore ?? 0 },
+      { label: 'Programa',          score: b.programScore ?? 0 },
+      { label: 'Semestre',          score: b.semesterScore ?? 0 },
+      { label: 'Disponibilidad',    score: b.availabilityScore ?? 0 },
+      { label: 'Idioma extranjero', score: b.languageScore ?? 0 },
     ];
   });
 }

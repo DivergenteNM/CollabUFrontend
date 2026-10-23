@@ -53,6 +53,29 @@ export class ChatContactInfoComponent {
 
   readonly isMuted = signal(false);
 
+  readonly isGroup = computed(() => {
+    const type = this.conversation()?.type;
+    return type === 'group' || type === 'project';
+  });
+
+  readonly groupTitle = computed(() => {
+    return this.conversation()?.name || this.project()?.title || 'Chat del equipo';
+  });
+
+  readonly participants = computed(() => {
+    return this.conversation()?.participants ?? [];
+  });
+
+  formatMemberRole(role?: string): string {
+    switch (role) {
+      case 'student': return 'Estudiante';
+      case 'company': return 'Tutor Empresarial';
+      case 'faculty': return 'Asesor Docente';
+      case 'admin': return 'Coordinador';
+      default: return 'Miembro';
+    }
+  }
+
   readonly roleLabel = computed(() => {
     const role = this.participant()?.role;
     switch (role) {

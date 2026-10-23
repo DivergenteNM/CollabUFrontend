@@ -1,0 +1,330 @@
+<div class="pcp">
+  <!-- Encabezado del chat grupal estilo WhatsApp / CollabU -->
+  <header class="pcp__header">
+    <div class="pcp__header-left">
+      <div
+        class="pcp__header-avatar"
+        (click)="toggleGroupInfo()"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="toggleGroupInfo()"
+        aria-label="Ver información del grupo">
+        <mat-icon>groups</mat-icon>
+      </div>
+
+      <div
+        class="pcp__header-info"
+        (click)="toggleGroupInfo()"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="toggleGroupInfo()"
+        aria-label="Ver información del grupo">
+        <h3 class="pcp__header-title">{{ groupTitle() }}</h3>
+        <div class="pcp__header-sub">
+          <span class="pcp__header-status-dot" [class]="'pcp__header-status-dot--' + connectionStatus()"></span>
+          <span class="pcp__header-sub-text">{{ subtitleText() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pcp__header-actions">
+      @if (conversationId()) {
+        <button
+          type="button"
+          class="pcp__header-btn"
+          (click)="openInFullChat()"
+          matTooltip="Abrir en pantalla completa"
+          aria-label="Abrir en pantalla completa">
+          <mat-icon>open_in_new</mat-icon>
+        </button>
+      }
+
+      <button
+        type="button"
+        class="pcp__header-btn"
+        [class.pcp__header-btn--active]="showGroupInfo()"
+        (click)="toggleGroupInfo()"
+        matTooltip="Información del grupo"
+        aria-label="Información del grupo">
+        <mat-icon>info</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- Cuerpo del chat -->
+  <div class="pcp__body">
+    <div class="pcp__body-content">
+      @if (loadingConversation()) {
+        <div class="pcp__center">
+          <mat-spinner diameter="32" />
+          <span class="pcp__center-title">Conectando al chat del proyecto...</span>
+          <span class="pcp__center-desc">Sincronizando participantes y mensajes</span>
+        </div>
+      } @else if (loadError()) {
+        <div class="pcp__center pcp__center--error">
+          <mat-icon class="pcp__center-icon">error_outline</mat-icon>
+          <span class="pcp__center-title">No se pudo abrir el chat</span>
+          <span class="pcp__center-desc">Ocurrió un error de conexión al cargar la sala grupal.</span>
+          <button type="button" class="pcp__center-btn" (click)="initConversation()">
+            <mat-icon>refresh</mat-icon>
+            <span>Reintentar</span>
+          </button>
+        </div>
+      } @else if (!conversationId()) {
+        <div class="pcp__center">
+          <mat-icon class="pcp__center-icon">chat_bubble_outline</mat-icon>
+          <span class="pcp__center-title">Chat no disponible</span>
+          <span class="pcp__center-desc">El chat grupal se habilitará cuando se configuren los participantes del proyecto.</span>
+        </div>
+      } @else {
+        <!-- Lista de mensajes con scroll automático -->
+        <div class="pcp__messages" #scrollContainer>
+          @if (displayMessages().length === 0) {
+            <div class="pcp__empty">
+              <div class="pcp__empty-icon-wrap">
+                <mat-icon class="pcp__empty-icon">groups</mat-icon>
+              </div>
+              <h4 class="pcp__empty-title">¡Bienvenidos al chat del equipo!</h4>
+              <p class="pcp__empty-desc">
+                Este es el espacio compartido para coordinar actividades entre el estudiante, la empresa y el asesor docente.
+              </p>
+            </div>
+          } @else {
+            @for (m of displayMessages(); track m.id; let idx = $index) {
+              @if (shouldShowDateDivider(m, idx > 0 ? displayMessages()[idx - 1] : null)) {
+                <div class="pcp__date-divider">
+                  <span>{{ getDateLabel(m.createdAt) }}</span>
+                </div>
+              }
+
+              <div
+                class="pcp__msg-row"
+                [class.pcp__msg-row--mine]="m.senderId === currentUserId()"
+                [class.pcp__msg-row--other]="m.senderId !== currentUserId()">
+                
+                @if (m.senderId !== currentUserId()) {
+                  <div
+                    class="pcp__msg-avatar"
+                    [matTooltip]="m.senderName">
+                    <span>{{ m.senderName | initials:2 }}</span>
+                  </div>
+                }
+
+                <div
+                  class="pcp__bubble"
+                  [class.pcp__bubble--mine]="m.senderId === currentUserId()"
+                  [class.pcp__bubble--other]="m.senderId !== currentUserId()"
+                  [class.pcp__bubble--pending]="m.isPending"
+                  [class.pcp__bubble--failed]="m.isFailed">
+                  
+                  @if (m.senderId !== currentUserId()) {
+                    <span
+                      class="pcp__sender-name"
+                      [style.color]="getSenderColor(m.senderId)">
+                      {{ m.senderName }}
+                    </span>
+                  }
+
+                  @if (m.attachments && m.attachments.length > 0) {
+                    <div class="pcp__attachments">
+                      @for (att of m.attachments; track att.id ?? att.fileUrl) {
+                        <a
+                          class="pcp__attachment"
+                          [href]="downloadUrlFor(att)"
+                          target="_blank"
+                          rel="noopener">
+                          <mat-icon class="pcp__attachment-icon">{{ iconForMime(att.mimeType) }}</mat-icon>
+                          <div class="pcp__attachment-info">
+                            <span class="pcp__attachment-name">{{ att.fileName }}</span>
+                            @if (att.fileSizeBytes) {
+                              <span class="pcp__attachment-size">{{ formatSize(att.fileSizeBytes) }}</span>
+                            }
+                          </div>
+                          <mat-icon class="pcp__attachment-download">download</mat-icon>
+                        </a>
+                      }
+                    </div>
+                  }
+
+                  @if (m.content) {
+                    <p class="pcp__msg-text">{{ m.content }}</p>
+                  }
+
+                  <div class="pcp__msg-meta">
+                    <span class="pcp__msg-time">{{ m.createdAt | relativeTime }}</span>
+                    @if (m.senderId === currentUserId()) {
+                      @if (m.isFailed) {
+                        <button
+                          type="button"
+                          class="pcp__retry-btn"
+                          (click)="retryMessage(m.tempId!)"
+                          matTooltip="Error al enviar. Clic para reintentar">
+                          <mat-icon>error_outline</mat-icon>
+                        </button>
+                      } @else if (m.isPending) {
+                        <mat-icon class="pcp__msg-status pcp__msg-status--pending">schedule</mat-icon>
+                      } @else {
+                        <mat-icon class="pcp__msg-status pcp__msg-status--read">done_all</mat-icon>
+                      }
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Barra inferior de entrada estilo WhatsApp -->
+        <footer class="pcp__footer">
+          @if (showEmojiPicker()) {
+            <div class="pcp__emoji-popover">
+              <app-emoji-picker
+                (emojiSelect)="onEmojiSelected($event)"
+                (close)="showEmojiPicker.set(false)" />
+            </div>
+          }
+
+          @if (selectedFiles().length > 0) {
+            <div class="pcp__staged">
+              <div class="pcp__staged-chips">
+                @for (f of selectedFiles(); track f.name + f.size) {
+                  <div class="pcp__staged-chip">
+                    <mat-icon class="pcp__staged-icon">{{ iconForMime(f.type) }}</mat-icon>
+                    <div class="pcp__staged-info">
+                      <span class="pcp__staged-name">{{ f.name }}</span>
+                      <span class="pcp__staged-size">{{ formatSize(f.size) }}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="pcp__staged-remove"
+                      (click)="removeStagedFile(f)"
+                      aria-label="Quitar archivo">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <form class="pcp__composer" (submit)="$event.preventDefault(); send()">
+            <button
+              type="button"
+              class="pcp__tool-btn"
+              [class.pcp__tool-btn--active]="showEmojiPicker()"
+              (click)="toggleEmojiPicker()"
+              aria-label="Seleccionar emoji">
+              <mat-icon>{{ showEmojiPicker() ? 'keyboard' : 'sentiment_satisfied_alt' }}</mat-icon>
+            </button>
+
+            <input
+              #fileInput
+              type="file"
+              hidden
+              multiple
+              (change)="onFilesPicked($event)" />
+
+            <button
+              type="button"
+              class="pcp__tool-btn"
+              [disabled]="sending()"
+              (click)="fileInput.click()"
+              matTooltip="Adjuntar archivo"
+              aria-label="Adjuntar archivo">
+              <mat-icon>attach_file</mat-icon>
+            </button>
+
+            <textarea
+              #messageInput
+              class="pcp__input"
+              rows="1"
+              [(ngModel)]="draft"
+              name="draft"
+              placeholder="Escribe un mensaje al equipo..."
+              (keydown.enter)="onEnterPressed($event)"
+              [disabled]="sending()">
+            </textarea>
+
+            <button
+              type="submit"
+              class="pcp__send-btn"
+              [disabled]="sending() || (!draft.trim() && selectedFiles().length === 0)"
+              aria-label="Enviar mensaje">
+              @if (sending()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon>send</mat-icon>
+              }
+            </button>
+          </form>
+        </footer>
+      }
+    </div>
+
+    <!-- Panel deslizable de información y participantes del grupo -->
+    @if (showGroupInfo()) {
+      <div class="pcp__drawer">
+        <header class="pcp__drawer-header">
+          <h4 class="pcp__drawer-title">Info. del grupo</h4>
+          <button
+            type="button"
+            class="pcp__drawer-close"
+            (click)="showGroupInfo.set(false)"
+            aria-label="Cerrar panel">
+            <mat-icon>close</mat-icon>
+          </button>
+        </header>
+
+        <div class="pcp__drawer-body">
+          <div class="pcp__drawer-hero">
+            <div class="pcp__drawer-avatar">
+              <mat-icon>groups</mat-icon>
+            </div>
+            <h5 class="pcp__drawer-name">{{ groupTitle() }}</h5>
+            <span class="pcp__drawer-sub">Proyecto activo en desarrollo</span>
+          </div>
+
+          <div class="pcp__drawer-section">
+            <h6 class="pcp__drawer-section-title">Participantes ({{ participants().length }})</h6>
+            <div class="pcp__participant-list">
+              @for (p of participants(); track p.userId) {
+                <div class="pcp__participant-item">
+                  <div class="pcp__participant-avatar">
+                    @if (p.avatarUrl) {
+                      <img [src]="p.avatarUrl" [alt]="p.displayName" class="pcp__participant-img" />
+                    } @else {
+                      <span>{{ p.displayName | initials:2 }}</span>
+                    }
+                    <span
+                      class="pcp__participant-dot"
+                      [class.pcp__participant-dot--online]="p.isOnline">
+                    </span>
+                  </div>
+                  <div class="pcp__participant-info">
+                    <span class="pcp__participant-name">
+                      {{ p.displayName }}
+                      @if (p.userId === currentUserId()) {
+                        <span class="pcp__participant-you">(Tú)</span>
+                      }
+                    </span>
+                    <span class="pcp__participant-role">{{ formatRole(p.role) }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pcp__drawer-section">
+            <button
+              type="button"
+              class="pcp__drawer-action-btn"
+              (click)="openInFullChat()">
+              <mat-icon>open_in_new</mat-icon>
+              <span>Abrir en módulo de chat completo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

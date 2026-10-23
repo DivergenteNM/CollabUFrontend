@@ -1,6 +1,27 @@
 <h2 mat-dialog-title>Aplicar a: {{ data.projectTitle }}</h2>
 
 <mat-dialog-content>
+  @if (data.companyName) {
+    <div class="apply-dialog__company-banner">
+      <div class="apply-dialog__company-info">
+        <mat-icon>business</mat-icon>
+        <span>Empresa: <strong>{{ data.companyName }}</strong></span>
+      </div>
+      @if (data.companyId) {
+        <a
+          mat-stroked-button
+          color="primary"
+          class="apply-dialog__company-link"
+          [routerLink]="['/profile/company', data.companyId]"
+          target="_blank"
+          rel="noopener"
+        >
+          <mat-icon>visibility</mat-icon> Ver perfil y reseñas
+        </a>
+      }
+    </div>
+  }
+
   <form [formGroup]="form" class="apply-form">
     <mat-form-field appearance="outline" class="apply-form__field--full">
       <mat-label>Carta de motivación</mat-label>

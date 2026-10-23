@@ -123,11 +123,11 @@
             </div>
 
             <!-- Star Rating row if available -->
-            @if (c.rating || c.averageRating) {
+            @if (c.rating || c.averageRating || (reviewStats()?.totalReviews ?? 0) > 0) {
               <div class="company-hero-card__rating-row">
-                <app-star-rating [value]="c.rating ?? c.averageRating ?? 5" [readonly]="true" size="sm" />
-                <span class="rating-value">{{ (c.rating ?? c.averageRating ?? 5) | number:'1.1-1' }}</span>
-                <span class="rating-count">({{ c.totalReviews ?? c.totalProjects ?? 0 }} valoraciones)</span>
+                <app-star-rating [value]="reviewStats()?.averageRating ?? c.rating ?? c.averageRating ?? 5" [readonly]="true" size="sm" />
+                <span class="rating-value">{{ (reviewStats()?.averageRating ?? c.rating ?? c.averageRating ?? 5) | number:'1.1-1' }}</span>
+                <span class="rating-count">({{ reviewStats()?.totalReviews ?? c.totalReviews ?? c.totalProjects ?? 0 }} valoraciones)</span>
               </div>
             }
           </div>
@@ -177,7 +177,7 @@
           <mat-icon>star</mat-icon>
         </div>
         <div class="bento-card__content">
-          <span class="bento-card__value">{{ c.rating ? (c.rating | number:'1.1-1') : '5.0' }}</span>
+          <span class="bento-card__value">{{ (reviewStats()?.averageRating ?? c.rating) ? ((reviewStats()?.averageRating ?? c.rating) | number:'1.1-1') : '5.0' }}</span>
           <span class="bento-card__label">Calificación Institucional</span>
         </div>
       </div>
@@ -222,6 +222,17 @@
             }
           </mat-card-content>
         </mat-card>
+
+        <!-- Reseñas y Evaluaciones de Estudiantes -->
+        <app-profile-reviews
+          [evaluations]="evaluations()"
+          [stats]="reviewStats()"
+          [isLoading]="reviewsLoading()"
+          title="Reseñas y Evaluaciones de Estudiantes"
+          subtitle="Comentarios y calificaciones de estudiantes que han completado proyectos con esta organización"
+          emptyTitle="Sin reseñas todavía"
+          emptyMessage="Esta empresa aún no cuenta con reseñas de proyectos finalizados. Las evaluaciones se publican automáticamente cuando concluye el ciclo de evaluación de un proyecto."
+        />
 
         <!-- Áreas de Negocio & Especialidad -->
         @if ((c.businessAreas?.length ?? 0) > 0) {

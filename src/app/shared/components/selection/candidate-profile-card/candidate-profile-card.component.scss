@@ -1,0 +1,136 @@
+.capc__rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 0.8125rem;
+}
+
+.capc__star {
+  color: #f5a623;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.capc__no-rating {
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #64748b));
+  font-style: italic;
+}
+
+.capc__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.capc__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #64748b));
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.capc__bio {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #475569));
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.capc__section-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #64748b));
+  margin: 10px 0 6px;
+}
+
+.capc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.capc__chip {
+  background: var(--mat-sys-surface-container-high, var(--bg-tertiary, #f1f5f9));
+  color: var(--mat-sys-on-surface, #334155);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.capc__edu {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 6px;
+}
+
+.capc__edu-degree {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.capc__edu-inst {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant, var(--text-secondary, #64748b));
+}
+
+.capc__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.capc__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-primary, var(--color-primary, #0284c7));
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.capc__actions {
+  margin-top: 14px;
+}
+
+.capc__btn-public {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.capc__empty {
+  color: var(--mat-sys-outline, var(--text-secondary, #94a3b8));
+  font-size: 0.8125rem;
+  font-style: italic;
+}

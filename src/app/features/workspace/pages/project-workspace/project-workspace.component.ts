@@ -457,15 +457,17 @@ export class ProjectWorkspaceComponent {
   }
 
   startChat(targetUserId?: string): void {
+    if (!targetUserId) {
+      this.goToTab('chat');
+      return;
+    }
+
     const ctx = this.context();
     if (!ctx || this.loadingChat()) return;
 
-    const partnerId = targetUserId ?? ctx.project?.companyUserId;
-    if (!partnerId) return;
-
     this.loadingChat.set(true);
     this.chatService.createConversation(
-      [partnerId], 'direct', ctx.project?.id,
+      [targetUserId], 'direct', ctx.project?.id,
     ).subscribe({
       next: (res: any) => {
         this.loadingChat.set(false);

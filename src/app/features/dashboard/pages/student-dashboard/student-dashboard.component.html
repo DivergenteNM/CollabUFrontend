@@ -79,25 +79,25 @@
     <!-- Botones de acción rápida en el Hero -->
     <div class="hero__actions">
       @if (hasActiveProject()) {
-        <a mat-flat-button color="primary" [routerLink]="projectRoute()" class="hero__btn hero__btn--primary">
-          <mat-icon>rocket_launch</mat-icon> Ir a Mi Proyecto
-        </a>
-        <a mat-stroked-button routerLink="/projects" class="hero__btn">
-          <mat-icon>folder_open</mat-icon> Ver Convocatorias
-        </a>
-        <a mat-stroked-button routerLink="/profile" class="hero__btn">
-          <mat-icon>account_circle</mat-icon> Mi Perfil
-        </a>
+      <a mat-flat-button color="primary" [routerLink]="projectRoute()" class="hero__btn hero__btn--primary">
+        <mat-icon>rocket_launch</mat-icon> Ir a Mi Proyecto
+      </a>
+      <a mat-stroked-button routerLink="/projects" class="hero__btn">
+        <mat-icon>folder_open</mat-icon> Ver Convocatorias
+      </a>
+      <a mat-stroked-button routerLink="/profile" class="hero__btn">
+        <mat-icon>account_circle</mat-icon> Mi Perfil
+      </a>
       } @else {
-        <a mat-flat-button color="primary" routerLink="/projects" class="hero__btn hero__btn--primary">
-          <mat-icon>explore</mat-icon> Explorar Proyectos
-        </a>
-        <a mat-stroked-button routerLink="/matching" class="hero__btn">
-          <mat-icon>auto_awesome</mat-icon> Smart Matching
-        </a>
-        <a mat-stroked-button routerLink="/profile" class="hero__btn">
-          <mat-icon>account_circle</mat-icon> Mi Perfil
-        </a>
+      <a mat-flat-button color="primary" routerLink="/projects" class="hero__btn hero__btn--primary">
+        <mat-icon>explore</mat-icon> Explorar Proyectos
+      </a>
+      <a mat-stroked-button routerLink="/matching" class="hero__btn">
+        <mat-icon>auto_awesome</mat-icon> Smart Matching
+      </a>
+      <a mat-stroked-button routerLink="/profile" class="hero__btn">
+        <mat-icon>account_circle</mat-icon> Mi Perfil
+      </a>
       }
     </div>
   </header>
@@ -151,9 +151,10 @@
         <div class="active-project-hero-card__brand">
           <div class="active-project-hero-card__logo-wrap">
             @if (activeProject()?.companyLogoUrl) {
-              <img [src]="activeProject()!.companyLogoUrl" alt="Logo de la empresa" class="active-project-hero-card__logo" />
+            <img [src]="activeProject()!.companyLogoUrl" alt="Logo de la empresa"
+              class="active-project-hero-card__logo" />
             } @else {
-              <mat-icon class="active-project-hero-card__icon">domain</mat-icon>
+            <mat-icon class="active-project-hero-card__icon">domain</mat-icon>
             }
           </div>
           <div class="active-project-hero-card__titles">
@@ -164,16 +165,18 @@
             <div class="active-project-hero-card__meta">
               <span class="meta-tag"><mat-icon>business</mat-icon> {{ activeCompanyName() }}</span>
               @if (activeProject()?.projectType) {
-                <span class="meta-tag"><mat-icon>assignment</mat-icon> {{ activeProject()?.projectType }}</span>
+              <span class="meta-tag"><mat-icon>assignment</mat-icon> {{ activeProject()?.projectType }}</span>
               }
               @if (activeApplication()?.appliedAt) {
-                <span class="meta-tag"><mat-icon>event</mat-icon> Postulación: {{ activeApplication()?.appliedAt | date:'mediumDate' }}</span>
+              <span class="meta-tag"><mat-icon>event</mat-icon> Postulación: {{ activeApplication()?.appliedAt |
+                date:'mediumDate' }}</span>
               }
             </div>
           </div>
         </div>
         <div class="active-project-hero-card__cta">
-          <button mat-flat-button color="primary" class="btn-hero-workspace" (click)="router.navigate([projectRoute()])">
+          <button mat-flat-button color="primary" class="btn-hero-workspace"
+            (click)="router.navigate([projectRoute()])">
             <mat-icon>rocket_launch</mat-icon> Ir a Mi Proyecto
           </button>
         </div>
@@ -187,9 +190,7 @@
           <mat-icon>timeline</mat-icon>
           <span>Progreso General del Ciclo de Vida</span>
         </div>
-        <app-macro-phase-stepper
-          [status]="activeApplication()!.status"
-          [hasUpcomingInterview]="!!upcomingInterview()"
+        <app-macro-phase-stepper [status]="activeApplication()!.status" [hasUpcomingInterview]="!!upcomingInterview()"
           [interactive]="true" />
       </div>
     </mat-card>
@@ -198,23 +199,23 @@
     <div class="active-project-grid">
       <!-- Acción Requerida / Estado Inmediato -->
       @if (activeProjectNextAction(); as next) {
-        <mat-card class="next-action-card">
-          <mat-card-header class="next-action-card__header">
-            <div class="next-action-card__badge">
-              <mat-icon>{{ next.icon }}</mat-icon>
-              <span>{{ next.badge }}</span>
-            </div>
-          </mat-card-header>
-          <mat-card-content class="next-action-card__body">
-            <h3 class="next-action-card__title">{{ next.title }}</h3>
-            <p class="next-action-card__desc">{{ next.description }}</p>
-          </mat-card-content>
-          <mat-card-actions class="next-action-card__actions">
-            <button mat-flat-button color="primary" (click)="router.navigate([next.route])">
-              <mat-icon>{{ next.icon }}</mat-icon> {{ next.actionLabel }}
-            </button>
-          </mat-card-actions>
-        </mat-card>
+      <mat-card class="next-action-card">
+        <mat-card-header class="next-action-card__header">
+          <div class="next-action-card__badge">
+            <mat-icon>{{ next.icon }}</mat-icon>
+            <span>{{ next.badge }}</span>
+          </div>
+        </mat-card-header>
+        <mat-card-content class="next-action-card__body">
+          <h3 class="next-action-card__title">{{ next.title }}</h3>
+          <p class="next-action-card__desc">{{ next.description }}</p>
+        </mat-card-content>
+        <mat-card-actions class="next-action-card__actions">
+          <button mat-flat-button color="primary" (click)="router.navigate([next.route])">
+            <mat-icon>{{ next.icon }}</mat-icon> {{ next.actionLabel }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
       }
 
       <!-- Accesos Rápidos del Proyecto -->
@@ -582,7 +583,7 @@
               </div>
               <div class="quick-action-tile__text">
                 <span class="quick-action-tile__label">Smart Matching</span>
-                <span class="quick-action-tile__desc">Compatibilidad por IA</span>
+                <span class="quick-action-tile__desc">Compatibilidad con proyectos</span>
               </div>
               <mat-icon class="quick-action-tile__arrow">chevron_right</mat-icon>
             </a>

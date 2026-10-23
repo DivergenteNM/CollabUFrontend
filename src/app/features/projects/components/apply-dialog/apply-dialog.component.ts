@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
 
 import { ApplicationService } from '../../../applications/services/application.service';
@@ -23,12 +23,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 export interface ApplyDialogData {
   projectId: string;
   projectTitle: string;
+  companyId?: string;
+  companyName?: string;
 }
 
 @Component({
   selector: 'app-apply-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    RouterLink,
     MatDialogModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
     MatRadioModule, MatDatepickerModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, MatSnackBarModule, FileUploadComponent,
