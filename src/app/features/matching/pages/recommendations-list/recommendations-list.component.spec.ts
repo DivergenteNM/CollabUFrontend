@@ -61,6 +61,7 @@ describe('RecommendationsListComponent — desglose de afinidad', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('Python');
     expect(text).toContain('TensorFlow');
+    expect(text).toContain('Idioma extranjero');
   });
 
   it('no muestra la fila de faltantes cuando no hay habilidades faltantes', async () => {
