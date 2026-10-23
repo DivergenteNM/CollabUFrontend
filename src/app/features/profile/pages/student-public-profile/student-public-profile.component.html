@@ -116,7 +116,6 @@
             @if (s.averageRating || (reviewStats()?.totalReviews ?? 0) > 0) {
               <div class="student-hero-card__rating-row">
                 <app-star-rating [value]="reviewStats()?.averageRating ?? s.averageRating ?? 5" [readonly]="true" size="sm" />
-                <span class="rating-value">{{ (reviewStats()?.averageRating ?? s.averageRating ?? 5) | number:'1.1-1' }}</span>
                 <span class="rating-count">({{ reviewStats()?.totalReviews ?? s.totalRatings ?? 0 }} valoraciones)</span>
               </div>
             }

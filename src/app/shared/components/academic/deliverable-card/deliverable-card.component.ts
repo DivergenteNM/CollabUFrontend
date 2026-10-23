@@ -95,15 +95,15 @@ export interface DeliverableSubmitEvent {
         <!-- File link for submitted deliverables.
              fileUrl puede ser un fileId de Storage (upload real) o una URL
              completa (datos legacy/seed). Se distingue por el prefijo. -->
-        @if (deliverable().fileUrl; as url) {
-          @if (isExternalUrl(url)) {
-            <a class="dc__external-file" [href]="url" target="_blank" rel="noopener">
+        @if (deliverable().fileUrl && !deliverable().attachments?.length) {
+          @if (isExternalUrl(deliverable().fileUrl!)) {
+            <a class="dc__external-file" [href]="deliverable().fileUrl" target="_blank" rel="noopener">
               <mat-icon>attach_file</mat-icon>
-              <span>{{ extractFileName(url) }}</span>
+              <span>{{ extractFileName(deliverable().fileUrl!) }}</span>
               <mat-icon class="dc__external-icon">open_in_new</mat-icon>
             </a>
           } @else {
-            <app-file-link [fileId]="url" />
+            <app-file-link [fileId]="deliverable().fileUrl!" />
           }
         }
 

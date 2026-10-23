@@ -170,7 +170,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  .proj-icon { font-size: 18px; width: 18px; height: 18px; color: var(--text-tertiary); }
+  .proj-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; color: var(--text-tertiary); }
+  span { min-width: 0; }
 }
 
 .match-badge {
@@ -194,6 +195,7 @@
   height: 34px;
   line-height: 34px;
   padding: 0 12px;
+  white-space: nowrap;
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 }
 

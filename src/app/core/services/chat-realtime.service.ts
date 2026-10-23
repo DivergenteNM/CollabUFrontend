@@ -20,22 +20,29 @@ export class ChatRealtimeService {
 
   /** Estado observable de la conexión WebSocket, usado por la UI para dibujar el indicador. */
   readonly connectionStatus = signal<ConnectionStatus>('idle');
+  private boundSocket: Socket | null = null;
 
   connect(): void {
     const token = this.tokenService.getAccessToken();
     if (!token) return;
 
-    this.connectionStatus.set('connecting');
-    this.socket = this.wsService.connect(environment.wsChatPath, token);
+    const socket = this.wsService.connect(environment.wsChatPath, token);
+    this.socket = socket;
 
-    this.socket.on('connect', () => this.connectionStatus.set('connected'));
-    this.socket.on('disconnect', () => this.connectionStatus.set('disconnected'));
-    this.socket.on('connect_error', () => this.connectionStatus.set('error'));
-    this.socket.on('reconnect_attempt', () => this.connectionStatus.set('connecting'));
+    // WebSocketService cachea el socket por ruta: si ya estaba conectado, el evento `connect` no se repite
+    // (el aviso quedaba en «Conectando…») y volver a registrar los listeners duplicaba cada mensaje.
+    this.connectionStatus.set(socket.connected ? 'connected' : 'connecting');
+    if (this.boundSocket === socket) return;
+    this.boundSocket = socket;
 
-    this.socket.on('message', (msg: ChatMessage) => this.messages$.next(msg));
-    this.socket.on('typing', (data: { conversationId: string; userId: string; isTyping: boolean }) => this.typing$.next(data));
-    this.socket.on('user_status', (data: { userId: string; isOnline: boolean }) => this.userStatus$.next(data));
+    socket.on('connect', () => this.connectionStatus.set('connected'));
+    socket.on('disconnect', () => this.connectionStatus.set('disconnected'));
+    socket.on('connect_error', () => this.connectionStatus.set('error'));
+    socket.on('reconnect_attempt', () => this.connectionStatus.set('connecting'));
+
+    socket.on('message', (msg: ChatMessage) => this.messages$.next(msg));
+    socket.on('typing', (data: { conversationId: string; userId: string; isTyping: boolean }) => this.typing$.next(data));
+    socket.on('user_status', (data: { userId: string; isOnline: boolean }) => this.userStatus$.next(data));
   }
 
   private ensureConnected(): void {

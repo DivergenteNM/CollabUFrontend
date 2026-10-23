@@ -305,7 +305,7 @@
                               <p class="detail__deliverable-feedback-text">{{ del.feedback }}</p>
                             </div>
                           }
-                          @if (del.fileUrl) {
+                          @if (del.fileUrl && !del.attachments?.length) {
                             <div class="detail__deliverable-file">
                               <app-file-link [fileId]="del.fileUrl" />
                             </div>

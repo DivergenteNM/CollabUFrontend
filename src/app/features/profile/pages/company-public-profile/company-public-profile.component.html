@@ -126,7 +126,6 @@
             @if (c.rating || c.averageRating || (reviewStats()?.totalReviews ?? 0) > 0) {
               <div class="company-hero-card__rating-row">
                 <app-star-rating [value]="reviewStats()?.averageRating ?? c.rating ?? c.averageRating ?? 5" [readonly]="true" size="sm" />
-                <span class="rating-value">{{ (reviewStats()?.averageRating ?? c.rating ?? c.averageRating ?? 5) | number:'1.1-1' }}</span>
                 <span class="rating-count">({{ reviewStats()?.totalReviews ?? c.totalReviews ?? c.totalProjects ?? 0 }} valoraciones)</span>
               </div>
             }

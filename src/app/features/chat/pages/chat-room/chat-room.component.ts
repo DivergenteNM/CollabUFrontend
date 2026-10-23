@@ -185,6 +185,8 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.chatRealtime.onMessage().subscribe(msg => {
         if (msg.conversationId === convId) {
+          // Mensaje ya presente (historial o evento repetido): no se agrega de nuevo.
+          if (this.allMessages().some(m => m.id === msg.id)) return;
           // Remove from pending if it was our optimistic message
           const confirmedIds: string[] = [];
           this.pendingMessageIds.update(ids => {

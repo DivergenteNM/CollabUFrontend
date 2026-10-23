@@ -106,7 +106,7 @@ const ACTOR_LABEL: Record<FinalDocActor, { label: string; icon: string }> = {
                   </div>
 
                   <div class="fdp__row-actions">
-                    @if (canUpload(row.requirement)) {
+                    @if (canUpload(row.requirement) && row.submission?.status !== 'approved') {
                       <button mat-stroked-button [disabled]="uploading() === row.requirement.id" (click)="pickFile(row.requirement.id, fileInput)">
                         <mat-icon>upload_file</mat-icon>
                         {{ row.submission ? 'Reemplazar' : 'Subir' }}

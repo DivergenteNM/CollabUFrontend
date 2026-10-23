@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { httpResource } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { AdminService } from '../../services/admin.service';
+import { AuthStore } from '../../../../state/auth.store';
 import { SkillCatalogEntry, SkillCategory, AcademicProgram } from '../../../../core/models';
 
 const CATEGORY_OPTIONS: { value: SkillCategory; label: string }[] = [
@@ -136,6 +137,18 @@ export class SkillProgramsDialogComponent {
           </mat-select>
         </mat-form-field>
 
+        @if (authStore.isSuperAdmin()) {
+          <mat-form-field appearance="outline" class="cat-page__filter cat-page__filter--program">
+            <mat-label>Departamento</mat-label>
+            <mat-select [(ngModel)]="programFilter" (ngModelChange)="resource.reload()">
+              <mat-option [value]="null">Todos</mat-option>
+              @for (p of programs(); track p.id) {
+                <mat-option [value]="p.id">{{ p.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
         <span class="cat-page__count">{{ filteredSkills().length }} de {{ skills().length }}</span>
       </div>
 
@@ -180,6 +193,7 @@ export class SkillProgramsDialogComponent {
     .cat-page__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
     .cat-page__search { width: 280px; }
     .cat-page__filter { width: 200px; }
+    .cat-page__filter--program { width: 260px; }
     .cat-page__count { font-size: .8125rem; color: var(--mat-sys-on-surface-variant, #6b7280); margin-left: auto; }
     .cat-grid {
       display: grid;
@@ -208,9 +222,11 @@ export class SkillCatalogManagementComponent {
   private readonly dialog = inject(MatDialog);
   private readonly adminService = inject(AdminService);
   private readonly snackBar = inject(MatSnackBar);
+  protected readonly authStore = inject(AuthStore);
 
   readonly categoryOptions = CATEGORY_OPTIONS;
   categoryFilter: SkillCategory | null = null;
+  programFilter: string | null = null;
   readonly searchQuery = signal('');
 
   readonly programs = signal<AcademicProgram[]>([]);
@@ -221,6 +237,7 @@ export class SkillCatalogManagementComponent {
       params: {
         includeInactive: 'true',
         ...(this.categoryFilter ? { category: this.categoryFilter } : {}),
+        ...(this.programFilter ? { programId: this.programFilter } : {}),
       },
     }),
   );
